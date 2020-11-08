@@ -7,9 +7,6 @@ FULL_NAME="Microsoft PowerPoint"
 # The executable inside windows
 WIN_EXECUTABLE="C:\Program Files\Microsoft Office\root\Office16\MSPUB.EXE"
 
-# The icon in the icon folder
-ICON="publisher.svg"
-
 # GNOME categories
 CATEGORIES="Office"
 

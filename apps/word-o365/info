@@ -7,9 +7,6 @@ FULL_NAME="Microsoft Word"
 # The executable inside windows
 WIN_EXECUTABLE="C:\Program Files\Microsoft Office\root\Office16\WINWORD.EXE"
 
-# The icon in the icon folder
-ICON="word.svg"
-
 # GNOME categories
 CATEGORIES="Office"
 

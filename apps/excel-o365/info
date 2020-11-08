@@ -7,9 +7,6 @@ FULL_NAME="Microsoft Excel"
 # The executable inside windows
 WIN_EXECUTABLE="C:\Program Files\Microsoft Office\root\Office16\EXCEL.EXE"
 
-# The icon in the icon folder
-ICON="excel.svg"
-
 # GNOME categories
 CATEGORIES="Office"
 

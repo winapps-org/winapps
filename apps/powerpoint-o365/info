@@ -7,9 +7,6 @@ FULL_NAME="Microsoft PowerPoint"
 # The executable inside windows
 WIN_EXECUTABLE="C:\Program Files\Microsoft Office\Office16\POWERPNT.EXE"
 
-# The icon in the icon folder
-ICON="powerpoint.svg"
-
 # GNOME categories
 CATEGORIES="Office"
 

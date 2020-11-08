@@ -7,9 +7,6 @@ FULL_NAME="Microsoft Outlook"
 # The executable inside windows
 WIN_EXECUTABLE="C:\Program Files\Microsoft Office\root\Office16\OUTLOOK.EXE"
 
-# The icon in the icon folder
-ICON="outlook.svg"
-
 # GNOME categories
 CATEGORIES="Office"
 

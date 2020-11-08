@@ -7,9 +7,6 @@ FULL_NAME="Microsoft OneNote"
 # The executable inside windows
 WIN_EXECUTABLE="C:\Program Files\Microsoft Office\root\Office16\ONENOTE.EXE"
 
-# The icon in the icon folder
-ICON="onenote.svg"
-
 # GNOME categories
 CATEGORIES="Office"
 
