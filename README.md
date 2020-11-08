@@ -18,6 +18,7 @@ Currently supported apps
 - Microsoft Word
 - Microsoft Excel
 - Microsoft PowerPoint
+- Microsoft Outlook
 - Internet Explorer (just because)
 
 To Do

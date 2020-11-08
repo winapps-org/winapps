@@ -1,0 +1,14 @@
+# GNOME shortcut name
+NAME="Outlook"
+
+# Used for descriptions and window class
+FULL_NAME="Microsoft Outlook"
+
+# The executable inside windows
+WIN_EXECUTABLE="C:\Program Files\Microsoft Office\root\Office16\OUTLOOK.EXE"
+
+# GNOME categories
+CATEGORIES="Office"
+
+# GNOME mimetypes
+MIME_TYPES="application/vnd.ms-outlook;application/octet-stream;"
