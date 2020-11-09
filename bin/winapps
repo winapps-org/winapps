@@ -1,5 +1,10 @@
 #!/usr/bin/env bash
 
+if [ ! -f "${HOME}/.config/winapps/winapps.conf" ] && [ ! -f "${HOME}/.winapps" ]; then
+	echo "You need to create a ~/.config/winapps/winapps.conf configuration. Exiting..."
+	exit
+fi
+
 DIR="$(dirname "$(readlink -f "$0")")"
 RUN="$(date)-${RANDOM}"
 
@@ -37,11 +42,6 @@ fi
 if [ -z "$(which xfreerdp)" ]; then
 	echo "You need xfreerdp!"
 	echo "  sudo apt-get install -y freerdp2-x11"
-	exit
-fi
-
-if [ ! -f "${HOME}/.config/winapps/winapps.conf" ] && [ ! -f "${HOME}/.winapps" ]; then
-	echo "You need to create a ~/.config/winapps/winapps.conf configuration. Exiting..."
 	exit
 fi
 
