@@ -89,7 +89,6 @@ $ ./install.sh
 [sudo] password for fmstrat: 
 Installing...
   Checking for installed apps in RDP machine...
-  Checking for installed apps in RDP machine...
   Configuring Excel... Finished.
   Configuring PowerPoint... Finished.
   Configuring Word... Finished.
@@ -123,3 +122,18 @@ Adding applications to the installer is easy. Simply copy one of the application
 - Submit a Pull Request to add it to WinApps officially
 
 When running the installer, it will check for if any configured apps are installed, and if they are it will create the appropriate shortcuts on the host OS.
+
+## Checking for new application support
+The installer can be run multiple times, so simply run:
+``` bash
+$ git pull
+$ ./install.sh
+[sudo] password for fmstrat: 
+Installing...
+  Checking for installed apps in RDP machine...
+  Configuring Excel... Finished.
+  Configuring PowerPoint... Finished.
+  Configuring Word... Finished.
+  Configuring Windows... Finished.
+Installation complete.
+```
