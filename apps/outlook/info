@@ -5,7 +5,7 @@ NAME="Outlook"
 FULL_NAME="Microsoft Outlook"
 
 # The executable inside windows
-WIN_EXECUTABLE="C:\Program Files\Microsoft Office\root\Office16\OUTLOOK.EXE"
+WIN_EXECUTABLE="C:\Program Files\Microsoft Office\Office16\OUTLOOK.EXE"
 
 # GNOME categories
 CATEGORIES="Office"
