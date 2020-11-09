@@ -5,7 +5,7 @@ NAME="OneNote"
 FULL_NAME="Microsoft OneNote"
 
 # The executable inside windows
-WIN_EXECUTABLE="C:\Program Files\Microsoft Office\root\Office16\ONENOTE.EXE"
+WIN_EXECUTABLE="C:\Program Files\Microsoft Office\Office16\ONENOTE.EXE"
 
 # GNOME categories
 CATEGORIES="Office"

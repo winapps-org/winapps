@@ -1,5 +1,5 @@
 # GNOME shortcut name
-NAME="Word (Office365)"
+NAME="Word"
 
 # Used for descriptions and window class
 FULL_NAME="Microsoft Word"

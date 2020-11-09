@@ -1,5 +1,5 @@
 # GNOME shortcut name
-NAME="Excel (Office365)"
+NAME="Excel"
 
 # Used for descriptions and window class
 FULL_NAME="Microsoft Excel"

@@ -1,5 +1,5 @@
 # GNOME shortcut name
-NAME="Outlook (Office365)"
+NAME="Outlook"
 
 # Used for descriptions and window class
 FULL_NAME="Microsoft Outlook"
@@ -11,4 +11,4 @@ WIN_EXECUTABLE="C:\Program Files\Microsoft Office\root\Office16\OUTLOOK.EXE"
 CATEGORIES="Office"
 
 # GNOME mimetypes
-# MIME_TYPES="application/vnd.ms-excel;application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;application/vnd.openxmlformats-officedocument.spreadsheetml.template;application/vnd.ms-excel.sheet.macroEnabled.12;application/vnd.ms-excel.template.macroEnabled.12;application/vnd.ms-excel.addin.macroEnabled.12;application/vnd.ms-excel.sheet.binary.macroEnabled.12;"
+MIME_TYPES="application/vnd.ms-outlook;application/octet-stream;"

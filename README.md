@@ -14,15 +14,34 @@ Rather than wait around for this, WinApps was created as an easy, one command wa
 - You can right click on any files in your home directory to open with an application, too
 
 ## App support and "To Do"
+Note: The app list below is fueled by the community, and therefore many apps may be untested by the WinApps team.
+
 Currently supported apps
-- Microsoft Word
-- Microsoft Excel
-- Microsoft PowerPoint
-- Microsoft Outlook
-- Internet Explorer (just because)
+- Internet Explorer 11 (just because)
+- Microsoft Access (2016)
+- Microsoft Access (2019)
+- Microsoft Access (Office 365)
+- Microsoft Excel (2016)
+- Microsoft Excel (2019)
+- Microsoft Excel (Office 365)
+- Microsoft Word (2016)
+- Microsoft Word (2019)
+- Microsoft Word (Office 365)
+- Microsoft OneNote (2016)
+- Microsoft OneNote (2019)
+- Microsoft OneNote (Office 365)
+- Microsoft Outlook (2016)
+- Microsoft Outlook (2019)
+- Microsoft Outlook (Office 365)
+- Microsoft PowerPoint (2016)
+- Microsoft PowerPoint (2019)
+- Microsoft PowerPoint (Office 365)
+- Microsoft Publisher (2016)
+- Microsoft Publisher (2019)
+- Microsoft Publisher (Office 365)
 
 To Do
-- Add additional app configurations (Outlook, OneNote, IE, Edge, Photoshop, Acrobat, etc)
+- Add additional app configurations
 - Subsystem support: Add a script to remove (and re-add) the Explorer shell and other non-required Windows features to minimize overhead
 - Automate the Windows elements of the install
 
