@@ -1,5 +1,5 @@
 # WinApps for Linux
-Run Windows apps such as Microsoft Office in Linux (Ubuntu) and GNOME as if they were a part of the native OS, including Nautilus integration for right clicking on files of specific mime types to open them.
+Run Windows apps such as Microsoft Office in Linux (Ubuntu/Fedora) and GNOME/KDE as if they were a part of the native OS, including Nautilus integration for right clicking on files of specific mime types to open them.
 
 <img src="demo/demo.gif" width=1000>
 
