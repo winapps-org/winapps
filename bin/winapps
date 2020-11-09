@@ -1,22 +1,5 @@
 #!/usr/bin/env bash
 
-# Install windows in KVM
-# Use the user "User"
-# Name the machine "RDPWindows" in "About"
-# Allow remote desktop
-#
-# virsh autostart RDPWindows
-#  For 20.04:
-# sudo ln -s /etc/apparmor.d/usr.sbin.libvirtd /etc/apparmor.d/disable/
-
-# Windows Registry Editor Version 5.00
-
-#     [HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Terminal Server\TSAppAllowList]
-#     "fDisabledAllowList"=dword:00000001
-
-#     [HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Lsa]
-#     "LimitBlankPasswordUse"=dword:00000000
-
 DIR="$(dirname "$(readlink -f "$0")")"
 
 if [ -f /tmp/winapps ]; then
