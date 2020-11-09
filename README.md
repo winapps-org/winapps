@@ -33,8 +33,11 @@ You will need to create a `~/.config/winapps/winapps.conf` configuration file wi
 RDP_USER="MyWindowsUser"
 RDP_PASS="MyWindowsPassword"
 #RDP_IP="192.168.123.111"
+#DEBUG="true"
 ```
 If you are using Option 2 below with a pre-existing non-KVM RDP server, you can use the `RDP_IP` to specify it's location. If you are running a VM in KVM with NAT enabled, leave `RDP_IP` commented out and WinApps will auto-detect the right local IP.
+
+If you enable `DEBUG`, a log will be created on each application start in `~/.local/share/winapps/winapps.log`.
 
 ### Option 1 - Running KVM
 You can refer to the [KVM](https://www.linux-kvm.org) documentation for specifics, but the first thing you need to do is set up a Virtual Machine running Windows 10 Professional (or any version that supports RDP). Fist, clone WinApps and install KVM and FreeRDP:

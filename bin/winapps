@@ -1,16 +1,37 @@
 #!/usr/bin/env bash
 
 DIR="$(dirname "$(readlink -f "$0")")"
+RUN="$(date)-${RANDOM}"
 
-if [ -f /tmp/winapps ]; then
-	LAST_RAN=$(stat -t -c %Y /tmp/winapps)
-	touch /tmp/winapps
-	THIS_RUN=$(stat -t -c %Y /tmp/winapps)
+if [ ! -d "${HOME}/.local/share/winapps" ]; then
+	mkdir -p "${HOME}/.local/share/winapps"
+fi
+
+if [ -f "${HOME}/.config/winapps/winapps.conf" ]; then
+	. "${HOME}/.config/winapps/winapps.conf"
+else
+	. "${HOME}/.winapps"
+fi
+
+function dprint() {
+	if [ "${DEBUG}" = "true" ]; then
+		echo "[${RUN}] ${1}" >> "${HOME}/.local/share/winapps/winapps.log"
+	fi
+}
+
+dprint "START"
+
+if [ -f "${HOME}/.local/share/winapps/run" ]; then
+	LAST_RAN=$(stat -t -c %Y "${HOME}/.local/share/winapps/run")
+	dprint "LAST_RAN:${LAST_RAN}"
+	touch "${HOME}/.local/share/winapps/run"
+	THIS_RUN=$(stat -t -c %Y "${HOME}/.local/share/winapps/run")
+	dprint "THIS_RUN:${THIS_RUN}"
 	if (( $THIS_RUN - $LAST_RAN < 2 )); then
 		exit
 	fi
 else
-	touch /tmp/winapps
+	touch "${HOME}/.local/share/winapps/run"
 fi
 
 if [ -z "$(which xfreerdp)" ]; then
@@ -22,12 +43,6 @@ fi
 if [ ! -f "${HOME}/.config/winapps/winapps.conf" ] && [ ! -f "${HOME}/.winapps" ]; then
 	echo "You need to create a ~/.config/winapps/winapps.conf configuration. Exiting..."
 	exit
-fi
-
-if [ -f "${HOME}/.config/winapps/winapps.conf" ]; then
-	. "${HOME}/.config/winapps/winapps.conf"
-else
-	. "${HOME}/.winapps"
 fi
 
 if [ -z "${RDP_IP}" ]; then
@@ -46,14 +61,23 @@ if [ -z "${RDP_IP}" ]; then
 	RDP_IP=${RDP_IP%%\/*}
 fi
 
+dprint "1:${1}"
+dprint "2:${2}"
+dprint "@:${@}"
+
 if [ "${1}" = "windows" ]; then
 	xfreerdp /u:"${RDP_USER}" /p:"${RDP_PASS}" /v:${RDP_IP} /dynamic-resolution +auto-reconnect +home-drive /wm-class:"Microsoft Windows" 1> /dev/null 2>&1 &
 elif [ "${1}" != "install" ]; then
+	dprint "DIR:${DIR}"
 	. "${DIR}/../apps/${1}/info"
 	if [ -n "${2}" ]; then
+		dprint "HOME:${HOME}"
 		FILE=$(echo "${2}" | sed 's|'"${HOME}"'|\\\\tsclient\\home|;s|/|\\|g;s|\\|\\\\|g')
+		dprint "FILE:${HOME}"
 		xfreerdp /u:"${RDP_USER}" /p:"${RDP_PASS}" /v:${RDP_IP} +auto-reconnect +home-drive -wallpaper /span /wm-class:"${FULL_NAME}" /app:"${WIN_EXECUTABLE}" /app-icon:"${DIR}/../apps/${1}/icon.svg" /app-cmd:"\"${FILE}\"" 1> /dev/null 2>&1 &
 	else
 		xfreerdp /u:"${RDP_USER}" /p:"${RDP_PASS}" /v:${RDP_IP} +auto-reconnect +home-drive -wallpaper /span /wm-class:"${FULL_NAME}" /app:"${WIN_EXECUTABLE}" /app-icon:"${DIR}/../apps/${1}/icon.svg" 1> /dev/null 2>&1 &
 	fi
 fi
+
+dprint "END"
