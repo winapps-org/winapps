@@ -66,7 +66,7 @@ dprint "2:${2}"
 dprint "@:${@}"
 
 if [ "${1}" = "windows" ]; then
-	xfreerdp /u:"${RDP_USER}" /p:"${RDP_PASS}" /v:${RDP_IP} /dynamic-resolution +auto-reconnect +home-drive /wm-class:"Microsoft Windows" 1> /dev/null 2>&1 &
+	xfreerdp /d:"${RDP_DOMAIN}" /u:"${RDP_USER}" /p:"${RDP_PASS}" /v:${RDP_IP} /dynamic-resolution +auto-reconnect +home-drive /wm-class:"Microsoft Windows" 1> /dev/null 2>&1 &
 elif [ "${1}" != "install" ]; then
 	dprint "DIR:${DIR}"
 	. "${DIR}/../apps/${1}/info"
@@ -74,9 +74,9 @@ elif [ "${1}" != "install" ]; then
 		dprint "HOME:${HOME}"
 		FILE=$(echo "${2}" | sed 's|'"${HOME}"'|\\\\tsclient\\home|;s|/|\\|g;s|\\|\\\\|g')
 		dprint "FILE:${HOME}"
-		xfreerdp /u:"${RDP_USER}" /p:"${RDP_PASS}" /v:${RDP_IP} +auto-reconnect +home-drive -wallpaper /span /wm-class:"${FULL_NAME}" /app:"${WIN_EXECUTABLE}" /app-icon:"${DIR}/../apps/${1}/icon.svg" /app-cmd:"\"${FILE}\"" 1> /dev/null 2>&1 &
+		xfreerdp /d:"${RDP_DOMAIN}" /u:"${RDP_USER}" /p:"${RDP_PASS}" /v:${RDP_IP} +auto-reconnect +home-drive -wallpaper /span /wm-class:"${FULL_NAME}" /app:"${WIN_EXECUTABLE}" /app-icon:"${DIR}/../apps/${1}/icon.svg" /app-cmd:"\"${FILE}\"" 1> /dev/null 2>&1 &
 	else
-		xfreerdp /u:"${RDP_USER}" /p:"${RDP_PASS}" /v:${RDP_IP} +auto-reconnect +home-drive -wallpaper /span /wm-class:"${FULL_NAME}" /app:"${WIN_EXECUTABLE}" /app-icon:"${DIR}/../apps/${1}/icon.svg" 1> /dev/null 2>&1 &
+		xfreerdp /d:"${RDP_DOMAIN}" /u:"${RDP_USER}" /p:"${RDP_PASS}" /v:${RDP_IP} +auto-reconnect +home-drive -wallpaper /span /wm-class:"${FULL_NAME}" /app:"${WIN_EXECUTABLE}" /app-icon:"${DIR}/../apps/${1}/icon.svg" 1> /dev/null 2>&1 &
 	fi
 fi
 
