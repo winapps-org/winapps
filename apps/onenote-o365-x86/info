@@ -1,0 +1,14 @@
+# GNOME shortcut name
+NAME="OneNote"
+
+# Used for descriptions and window class
+FULL_NAME="Microsoft OneNote"
+
+# The executable inside windows
+WIN_EXECUTABLE="C:\Program Files (x86)\Microsoft Office\root\Office16\ONENOTE.EXE"
+
+# GNOME categories
+CATEGORIES="Office"
+
+# GNOME mimetypes
+MIME_TYPES="application/msonenote;"

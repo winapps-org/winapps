@@ -1,0 +1,14 @@
+# GNOME shortcut name
+NAME="PowerPoint"
+
+# Used for descriptions and window class
+FULL_NAME="Microsoft PowerPoint"
+
+# The executable inside windows
+WIN_EXECUTABLE="C:\Program Files (x86)\Microsoft Office\root\Office16\POWERPNT.EXE"
+
+# GNOME categories
+CATEGORIES="Office"
+
+# GNOME mimetypes
+MIME_TYPES="application/vnd.ms-powerpoint;application/vnd.openxmlformats-officedocument.presentationml.presentation;application/vnd.openxmlformats-officedocument.presentationml.template;application/vnd.openxmlformats-officedocument.presentationml.slideshow;application/vnd.ms-powerpoint.addin.macroEnabled.12;application/vnd.ms-powerpoint.presentation.macroEnabled.12;application/vnd.ms-powerpoint.template.macroEnabled.12;application/vnd.ms-powerpoint.slideshow.macroEnabled.12;"

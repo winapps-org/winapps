@@ -1,0 +1,14 @@
+# GNOME shortcut name
+NAME="Word"
+
+# Used for descriptions and window class
+FULL_NAME="Microsoft Word"
+
+# The executable inside windows
+WIN_EXECUTABLE="C:\Program Files (x86)\Microsoft Office\Office16\WINWORD.EXE"
+
+# GNOME categories
+CATEGORIES="Office"
+
+# GNOME mimetypes
+MIME_TYPES="application/msword;application/vnd.openxmlformats-officedocument.wordprocessingml.document;application/vnd.openxmlformats-officedocument.wordprocessingml.template;application/vnd.ms-word.document.macroEnabled.12;application/vnd.ms-word.template.macroEnabled.12;"
