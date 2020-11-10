@@ -158,3 +158,9 @@ Installing...
   Configuring Windows... Finished.
 Installation complete.
 ```
+
+## Shout outs
+- Some icons pulled from
+  - Fluent UI React - Icons under [MIT License](https://github.com/Fmstrat/fluent-ui-react/blob/master/LICENSE.md) 
+  - Fluent UI - Icons under [MIT License](https://github.com/Fmstrat/fluentui/blob/master/LICENSE) with [restricted use](https://static2.sharepointonline.com/files/fabric/assets/microsoft_fabric_assets_license_agreement_nov_2019.pdf)
+  
