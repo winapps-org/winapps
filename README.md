@@ -55,16 +55,17 @@ RDP_PASS="MyWindowsPassword"
 #RDP_DOMAIN="MYDOMAIN"
 #RDP_IP="192.168.123.111"
 #RDP_SCALE=100
+#MULTIMON="true"
 #DEBUG="true"
 ```
 
 Options:
-- When using Option 2 below with a pre-existing non-KVM RDP server, you can use the `RDP_IP` to specify it's location.
-- If you are running a VM in KVM with NAT enabled, leave `RDP_IP` commented out and WinApps will auto-detect the right local IP.
-- For domain users, you can uncomment and change `RDP_DOMAIN`.
+- When using Option 2 below with a pre-existing non-KVM RDP server, you can use the `RDP_IP` to specify it's location
+- If you are running a VM in KVM with NAT enabled, leave `RDP_IP` commented out and WinApps will auto-detect the right local IP
+- For domain users, you can uncomment and change `RDP_DOMAIN`
 - On high-resolution (UHD) displays, you can set `RDP_SCALE` to the scale you would like [100|140|160|180]
-
-If you enable `DEBUG`, a log will be created on each application start in `~/.local/share/winapps/winapps.log`.
+- For multi-monitor setups, you can try enabling `MULTIMON`, however if you get a black screen (FreeRDP bug) you will need to revert back
+- If you enable `DEBUG`, a log will be created on each application start in `~/.local/share/winapps/winapps.log`
 
 ### Option 1 - Running KVM
 You can refer to the [KVM](https://www.linux-kvm.org) documentation for specifics, but the first thing you need to do is set up a Virtual Machine running Windows 10 Professional (or any version that supports RDP). Fist, clone WinApps and install KVM and FreeRDP:
