@@ -54,9 +54,15 @@ RDP_USER="MyWindowsUser"
 RDP_PASS="MyWindowsPassword"
 #RDP_DOMAIN="MYDOMAIN"
 #RDP_IP="192.168.123.111"
+#RDP_SCALE=100
 #DEBUG="true"
 ```
-If you are using Option 2 below with a pre-existing non-KVM RDP server, you can use the `RDP_IP` to specify it's location. If you are running a VM in KVM with NAT enabled, leave `RDP_IP` commented out and WinApps will auto-detect the right local IP. Also, if you are using a domain user, you can uncomment and change `RDP_DOMAIN`.
+
+Options:
+- When using Option 2 below with a pre-existing non-KVM RDP server, you can use the `RDP_IP` to specify it's location.
+- If you are running a VM in KVM with NAT enabled, leave `RDP_IP` commented out and WinApps will auto-detect the right local IP.
+- For domain users, you can uncomment and change `RDP_DOMAIN`.
+- On high-resolution (UHD) displays, you can set `RDP_SCALE` to the scale you would like [100|140|160|180]
 
 If you enable `DEBUG`, a log will be created on each application start in `~/.local/share/winapps/winapps.log`.
 
