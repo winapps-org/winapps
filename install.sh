@@ -19,7 +19,7 @@ echo "ECHO DONE >>  \\\\tsclient\\home\\.local\\share\\winapps\\installed" >> ${
 touch ${HOME}/.local/share/winapps/installed
 LAST_RAN=$(stat -t -c %Y ${HOME}/.local/share/winapps/installed)
 sleep 6
-xfreerdp /u:"${RDP_USER}" /p:"${RDP_PASS}" /v:${RDP_IP} +auto-reconnect +home-drive -wallpaper /span /wm-class:"RDPInstaller" /app:"C:\Windows\System32\cmd.exe" /app-icon:"${DIR}/../icons/windows.svg" /app-cmd:"/C \\\\tsclient\\home\\.local\\share\\winapps\\installed.bat" 1> /dev/null 2>&1 &
+xfreerdp /d:"${RDP_DOMAIN}" /u:"${RDP_USER}" /p:"${RDP_PASS}" /v:${RDP_IP} +auto-reconnect +home-drive -wallpaper /span /wm-class:"RDPInstaller" /app:"C:\Windows\System32\cmd.exe" /app-icon:"${DIR}/../icons/windows.svg" /app-cmd:"/C \\\\tsclient\\home\\.local\\share\\winapps\\installed.bat" 1> /dev/null 2>&1 &
 sleep 6
 COUNT=0
 THIS_RUN=$(stat -t -c %Y ${HOME}/.local/share/winapps/installed)
