@@ -1,0 +1,14 @@
+# GNOME shortcut name
+NAME="Explorer"
+
+# Used for descriptions and window class
+FULL_NAME="Microsoft Explorer"
+
+# The executable inside windows
+WIN_EXECUTABLE="C:\Windows\explorer.exe"
+
+# GNOME categories
+CATEGORIES="Windows"
+
+# GNOME mimetypes
+MIME_TYPES=""
