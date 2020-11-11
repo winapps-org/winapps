@@ -1,0 +1,14 @@
+# GNOME shortcut name
+NAME="Cmd"
+
+# Used for descriptions and window class
+FULL_NAME="Command Prompt"
+
+# The executable inside windows
+WIN_EXECUTABLE="C:\Windows\System32\cmd.exe"
+
+# GNOME categories
+CATEGORIES="Windows"
+
+# GNOME mimetypes
+MIME_TYPES=""

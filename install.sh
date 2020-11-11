@@ -34,7 +34,6 @@ while (( $THIS_RUN - $LAST_RAN < 5 )); do
 	fi
 done
 echo " Finished."
-cat ${HOME}/.local/share/winapps/installed
 
 # Install apps
 COUNT=0
