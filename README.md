@@ -17,6 +17,7 @@ Rather than wait around for this, WinApps was created as an easy, one command wa
 Note: The app list below is fueled by the community, and therefore many apps may be untested by the WinApps team.
 
 Currently supported apps
+- Adobe Photoshop (CS6)
 - Command Prompt (cmd.exe)
 - Explorer (File Manager)
 - Internet Explorer 11 (just because)
