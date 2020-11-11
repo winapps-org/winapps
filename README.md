@@ -3,6 +3,8 @@ Run Windows apps such as Microsoft Office in Linux (Ubuntu/Fedora) and GNOME/KDE
 
 <img src="demo/demo.gif" width=1000>
 
+***Proud to have made the top spot on [r/linux](https://www.reddit.com/r/linux) on launch day.***
+
 ## How it works and why WinApps exists
 Back in April, Hayden Barnes [tweeted](https://twitter.com/unixterminal/status/1255919797692440578?lang=en) what appeared to be native Windows apps in a container or VM inside Ubuntu. However, no details have emerged on how this was accomplished, though it is likely a similar method to this but with an insider build Windows Container.
 
