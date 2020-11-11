@@ -5,7 +5,7 @@ NAME="Bridge CS6"
 FULL_NAME="Adobe Bridge CS6"
 
 # The executable inside windows
-WIN_EXECUTABLE="C:\Program Files\Adobe\Adobe Bridge 2020\Bridge.exe"
+WIN_EXECUTABLE="C:\Program Files\Adobe\Adobe Bridge CS6 (64 Bit)\Bridge.exe"
 
 # GNOME categories
 CATEGORIES="Adobe"

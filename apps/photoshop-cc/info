@@ -1,11 +1,11 @@
 # GNOME shortcut name
-NAME="Photoshop CS6"
+NAME="Photoshop CC"
 
 # Used for descriptions and window class
-FULL_NAME="Adobe Photoshop CS6"
+FULL_NAME="Adobe Photoshop CC"
 
 # The executable inside windows
-WIN_EXECUTABLE="C:\Program Files (x86)\Adobe\Adobe Photoshop CS6\Photoshop.exe"
+WIN_EXECUTABLE="C:\Program Files\Adobe\Adobe Photoshop 2020\Photoshop.exe"
 
 # GNOME categories
 CATEGORIES="Adobe"
