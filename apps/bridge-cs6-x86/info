@@ -1,0 +1,14 @@
+# GNOME shortcut name
+NAME="Bridge CS6"
+
+# Used for descriptions and window class
+FULL_NAME="Adobe Bridge CS6"
+
+# The executable inside windows
+WIN_EXECUTABLE="C:\Program Files (x86)\Adobe\Adobe Bridge CS6\Bridge.exe"
+
+# GNOME categories
+CATEGORIES="Adobe"
+
+# GNOME mimetypes
+MIME_TYPES="image/vnd.adobe.photoshop;"
