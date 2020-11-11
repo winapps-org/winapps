@@ -17,8 +17,9 @@ Rather than wait around for this, WinApps was created as an easy, one command wa
 Note: The app list below is fueled by the community, and therefore many apps may be untested by the WinApps team.
 
 Currently supported apps
-- Internet Explorer 11 (just because)
+- Command Prompt (cmd.exe)
 - Explorer (File Manager)
+- Internet Explorer 11 (just because)
 - Microsoft Access (2016)
 - Microsoft Access (2019)
 - Microsoft Access (Office 365)
@@ -40,6 +41,7 @@ Currently supported apps
 - Microsoft Publisher (2016)
 - Microsoft Publisher (2019)
 - Microsoft Publisher (Office 365)
+- Powershell
 
 To Do
 - Add additional app configurations
