@@ -1,0 +1,14 @@
+# GNOME shortcut name
+NAME="Powershell"
+
+# Used for descriptions and window class
+FULL_NAME="Microsoft Powershell"
+
+# The executable inside windows
+WIN_EXECUTABLE="C:\Windows\SysWOW64\WindowsPowerShell\v1.0\powershell.exe"
+
+# GNOME categories
+CATEGORIES="Windows"
+
+# GNOME mimetypes
+MIME_TYPES=""
