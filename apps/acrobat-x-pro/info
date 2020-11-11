@@ -1,0 +1,14 @@
+# GNOME shortcut name
+NAME="Acrobat X Pro"
+
+# Used for descriptions and window class
+FULL_NAME="Acrobat X Pro"
+
+# The executable inside windows
+WIN_EXECUTABLE="C:\Program Files (x86)\Adobe\Acrobat 10.0\Acrobat\Acrobat.exe"
+
+# GNOME categories
+CATEGORIES="Documents"
+
+# GNOME mimetypes
+MIME_TYPES="application/pdf;"
