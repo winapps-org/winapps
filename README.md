@@ -13,41 +13,40 @@ Rather than wait around for this, WinApps was created as an easy, one command wa
 - Files in your home directory are accessible via the `\\tsclient\home` mount inside the VM
 - You can right click on any files in your home directory to open with an application, too
 
-## App support and "To Do"
+## Currently supported applications
 Note: The app list below is fueled by the community, and therefore many apps may be untested by the WinApps team.
 
-Currently supported apps
-- Adobe Photoshop (CS6)
-- Command Prompt (cmd.exe)
-- Explorer (File Manager)
-- Internet Explorer 11 (just because)
-- Microsoft Access (2016)
-- Microsoft Access (2019)
-- Microsoft Access (Office 365)
-- Microsoft Excel (2016)
-- Microsoft Excel (2019)
-- Microsoft Excel (Office 365)
-- Microsoft Word (2016)
-- Microsoft Word (2019)
-- Microsoft Word (Office 365)
-- Microsoft OneNote (2016)
-- Microsoft OneNote (2019)
-- Microsoft OneNote (Office 365)
-- Microsoft Outlook (2016)
-- Microsoft Outlook (2019)
-- Microsoft Outlook (Office 365)
-- Microsoft PowerPoint (2016)
-- Microsoft PowerPoint (2019)
-- Microsoft PowerPoint (Office 365)
-- Microsoft Publisher (2016)
-- Microsoft Publisher (2019)
-- Microsoft Publisher (Office 365)
-- Powershell
+<table cellpadding="10" cellspacing="0" border="0">
+  <tr>
+    <td><img src="apps/photoshop-cs6/icon.svg" width="100"></td><td>Adobe Photoshop<br>(CS6)</td>
+    <td><img src="apps/cmd/icon.svg" width="100"></td><td>Command Prompt<br>(cmd.exe)</td>
+  </tr>
+  <tr>
+    <td><img src="apps/explorer/icon.svg" width="100"></td><td>Explorer<br>(File Manager)</td>
+    <td><img src="apps/iexplorer/icon.svg" width="100"></td><td>Internet Explorer<br>(11)</td>
+  </tr>
+  <tr>
+    <td><img src="apps/access/icon.svg" width="100"></td><td>Microsoft Access<br>(2016, 2019, o365)</td>
+    <td><img src="apps/excel/icon.svg" width="100"></td><td>Microsoft Excel<br>(2016, 2019, o365)</td>
+  </tr>
+  <tr>
+    <td><img src="apps/word/icon.svg" width="100"></td><td>Microsoft Word<br>(2016, 2019, o365)</td>
+    <td><img src="apps/onenote/icon.svg" width="100"></td><td>Microsoft OneNote<br>(2016, 2019, o365)</td>
+  </tr>
+  <tr>
+    <td><img src="apps/outlook/icon.svg" width="100"></td><td>Microsoft Outlook<br>(2016, 2019, o365)</td>
+    <td><img src="apps/powerpoint/icon.svg" width="100"></td><td>Microsoft PowerPoint<br>(2016, 2019, o365)</td>
+  </tr>
+  <tr>
+    <td><img src="apps/publisher/icon.svg" width="100"></td><td>Microsoft Publisher<br>(2016, 2019, o365)</td>
+    <td><img src="apps/powershell/icon.svg" width="100"></td><td>Powershell</td>
+  </tr>
+  <tr>
+    <td><img src="icons/windows.svg" width="100"></td><td>Windows<br>(Full RDP session)</td>
+    <td>&nbsp;</td><td>&nbsp;</td>
+  </tr>
 
-To Do
-- Add additional app configurations
-- Subsystem support: Add a script to remove (and re-add) the Explorer shell and other non-required Windows features to minimize overhead
-- Automate the Windows elements of the install
+</table>
 
 ## Installation
 
