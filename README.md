@@ -70,7 +70,14 @@ Note: The app list below is fueled by the community, and therefore many apps may
 
 ## Installation
 
-### Creating your WinApps configuration file
+### Step 1: Download the repo and prerequisites
+You will need to store the WinApps repo in a permanent place and not remove it after install. To get things going, use:
+``` bash
+sudo apt-get install -y freerdp2-x11
+git clone https://github.com/Fmstrat/winapps.git
+cd winapps
+```
+### Step 2: Creating your WinApps configuration file
 You will need to create a `~/.config/winapps/winapps.conf` configuration file with the following information in it:
 ``` bash
 RDP_USER="MyWindowsUser"
@@ -83,19 +90,19 @@ RDP_PASS="MyWindowsPassword"
 ```
 
 Options:
-- When using Option 2 below with a pre-existing non-KVM RDP server, you can use the `RDP_IP` to specify it's location
+- When using a pre-existing non-KVM RDP server, you can use the `RDP_IP` to specify it's location
 - If you are running a VM in KVM with NAT enabled, leave `RDP_IP` commented out and WinApps will auto-detect the right local IP
 - For domain users, you can uncomment and change `RDP_DOMAIN`
 - On high-resolution (UHD) displays, you can set `RDP_SCALE` to the scale you would like [100|140|160|180]
 - For multi-monitor setups, you can try enabling `MULTIMON`, however if you get a black screen (FreeRDP bug) you will need to revert back
 - If you enable `DEBUG`, a log will be created on each application start in `~/.local/share/winapps/winapps.log`
 
-### Option 1 - Running KVM
-You can refer to the [KVM](https://www.linux-kvm.org) documentation for specifics, but the first thing you need to do is set up a Virtual Machine running Windows 10 Professional (or any version that supports RDP). Fist, clone WinApps and install KVM and FreeRDP:
+### Step 3: Setting up your Windows VM
+
+#### Option 1 - Running KVM
+You can refer to the [KVM](https://www.linux-kvm.org) documentation for specifics, but the first thing you need to do is set up a Virtual Machine running Windows 10 Professional (or any version that supports RDP). First, clone WinApps and install KVM and FreeRDP:
 ``` bash
-git clone https://github.com/Fmstrat/winapps.git
-cd winapps
-sudo apt-get install -y virt-manager freerdp2-x11
+sudo apt-get install -y virt-manager
 ```
 
 Now set up KVM to run as your user instead of root and allow it through AppArmor (for Ubuntu 20.04 and above):
@@ -120,21 +127,35 @@ virsh define kvm/RDPWindows.xml
 virsh autostart RDPWindows
 ```
 
-You will now want to change any settings on the VM and install Windows and whatever programs you would like, such as Microsoft Office. You can access the VM with:
+You will now want to change any settings on the VM and install Windows and whatever programs you would like, such as Microsoft Office. If the definition fails, you can always manually create a VM. You can access VMs with:
 ``` bash
 virt-manager
 ```
 
-After the install process, you will want to:
+#### Option 2 - I already have an RDP server or VM
+If you already have an RDP server or VM, using WinApps is very straight forward. Simply skip to step 4!
+
+### Step 4: Configuring your Windows VM
+After the install process, or on your current RDP server, you will want to:
 - Go to the Start Menu
     - Type "About"
     - Open "About"
     - Change the PC name to "RDPWindows" (This will allow WinApps to detect the local IP)
 - Go to Control Panel
     - Under "System," allow remote connections for RDP
+    - Change the PC name to "RDPWindows" if you are using KVM (This will allow WinApps to detect the local IP)
+- Go to Settings
+    - Under "System", then "Remote Desktop" allow remote connections for RDP
 - Merge `kvm/RDPApps.reg` into the registry to enable RDP Applications
 
-And the final step is to run the installer:
+### Step 5: Connect GNOME/KDE to your Windows VM with shortcuts and file associations
+Lastly, check that FreeRDP can connect with:
+```
+bin/winapps check
+```
+You will see output from FreeRDP, as well as potentially have to accept the initial certificate. After that, a Windows Explorer window should pop up. You can close this window and press `Ctrl-C` to cancel out of FreeRDP.
+
+Then the final step is to run the installer:
 ``` bash
 $ ./install.sh
 [sudo] password for fmstrat: 
@@ -147,6 +168,7 @@ Installing...
 Installation complete.
 ```
 
+<<<<<<< HEAD
 ### Option 2 - I already have an RDP server or VM
 If you already have an RDP server or VM, using WinApps is very straight forward. Simply create your `~/.config/winapps/winapps.conf` configuration file, and run:
 ``` bash
@@ -165,10 +187,12 @@ Installation complete.
 ```
 You will need to make sure RDP Applications are enabled, which can be set by merging in `kvm/RDPApps.reg` into the registry.
 
+=======
+>>>>>>> aef6e144 (Added check function)
 ## Adding applications
 Adding applications to the installer is easy. Simply copy one of the application configurations in the `apps` folder, and:
 - Edit the variables for the application
-- Replace the `icon.svg` with an SVG for the application
+- Replace the `icon.svg` with an SVG for the application (appropriately licensed)
 - Re-run the installer
 - Submit a Pull Request to add it to WinApps officially
 
@@ -202,3 +226,7 @@ Installation complete.
   - Fluent UI - Icons under [MIT License](https://github.com/Fmstrat/fluentui/blob/master/LICENSE) with [restricted use](https://static2.sharepointonline.com/files/fabric/assets/microsoft_fabric_assets_license_agreement_nov_2019.pdf)
   - PKief's VSCode Material Icon Theme - Icons under [MIT License](https://github.com/Fmstrat/vscode-material-icon-theme/blob/master/LICENSE.md)
   - DiemenDesign's LibreICONS - Icons under [MIT License](https://github.com/Fmstrat/LibreICONS/blob/master/LICENSE)
+<<<<<<< HEAD
+=======
+  
+>>>>>>> aef6e144 (Added check function)
