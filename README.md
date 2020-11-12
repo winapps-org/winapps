@@ -174,6 +174,13 @@ Adding applications to the installer is easy. Simply copy one of the application
 
 When running the installer, it will check for if any configured apps are installed, and if they are it will create the appropriate shortcuts on the host OS.
 
+## Running applications manually
+WinApps offers a manual mode for running applications that are not configured. This is completed with the `manual` flag. Executables that are in the path do not require full path definition.
+``` bash
+./bin/winapps manual "C:\my\directory\executableNotInPath.exe"
+./bin/winapps manual executableInPath.exe
+```
+
 ## Checking for new application support
 The installer can be run multiple times, so simply run:
 ``` bash
