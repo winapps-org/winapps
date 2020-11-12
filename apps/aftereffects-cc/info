@@ -1,0 +1,14 @@
+# GNOME shortcut name
+NAME="After Effects CC"
+
+# Used for descriptions and window class
+FULL_NAME="Adobe After Effects CC"
+
+# The executable inside windows
+WIN_EXECUTABLE="C:\Program Files\Adobe\Adobe After Effects 2020\Support Files\AfterFX.exe"
+
+# GNOME categories
+CATEGORIES="Adobe"
+
+# GNOME mimetypes
+MIME_TYPES="application/vnd.adobe.aftereffects.project;application/vnd.adobe.aftereffects.template;"

@@ -1,0 +1,14 @@
+# GNOME shortcut name
+NAME="Premier CC"
+
+# Used for descriptions and window class
+FULL_NAME="Adobe Premier CC"
+
+# The executable inside windows
+WIN_EXECUTABLE="C:\Program Files\Adobe\Adobe Premiere Pro 2020\Adobe Premiere Pro.exe"
+
+# GNOME categories
+CATEGORIES="Adobe"
+
+# GNOME mimetypes
+MIME_TYPES="image/vnd.adobe.premiere;"

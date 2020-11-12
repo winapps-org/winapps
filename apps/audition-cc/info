@@ -1,0 +1,14 @@
+# GNOME shortcut name
+NAME="Audition CC"
+
+# Used for descriptions and window class
+FULL_NAME="Adobe Audition CC"
+
+# The executable inside windows
+WIN_EXECUTABLE="C:\Program Files\Adobe\Adobe Audition 2020\Adobe Audition.exe"
+
+# GNOME categories
+CATEGORIES="Adobe"
+
+# GNOME mimetypes
+MIME_TYPES=""

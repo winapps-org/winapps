@@ -1,0 +1,14 @@
+# GNOME shortcut name
+NAME="Lightroom CC"
+
+# Used for descriptions and window class
+FULL_NAME="Adobe Lightroom CC"
+
+# The executable inside windows
+WIN_EXECUTABLE="C:\Program Files\Adobe\Adobe Lightroom CC\lightroom.exe"
+
+# GNOME categories
+CATEGORIES="Adobe"
+
+# GNOME mimetypes
+MIME_TYPES=""

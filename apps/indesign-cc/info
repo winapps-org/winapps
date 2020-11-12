@@ -1,0 +1,14 @@
+# GNOME shortcut name
+NAME="InDesign CC"
+
+# Used for descriptions and window class
+FULL_NAME="Adobe InDesign CC"
+
+# The executable inside windows
+WIN_EXECUTABLE="C:\Program Files\Adobe\Adobe InDesign 2021\InDesign.exe"
+
+# GNOME categories
+CATEGORIES="Adobe"
+
+# GNOME mimetypes
+MIME_TYPES="application/x-adobe-indesign-interchange;application/x-adobe-indesign;"

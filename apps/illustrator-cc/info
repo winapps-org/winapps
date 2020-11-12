@@ -1,0 +1,14 @@
+# GNOME shortcut name
+NAME="Illustrator CC"
+
+# Used for descriptions and window class
+FULL_NAME="Adobe Illustrator CC"
+
+# The executable inside windows
+WIN_EXECUTABLE="C:\Program Files\Adobe\Adobe Illustrator 2021\Support Files\Contents\Windows\Illustrator.exe"
+
+# GNOME categories
+CATEGORIES="Adobe"
+
+# GNOME mimetypes
+MIME_TYPES="application/illustrator;"
