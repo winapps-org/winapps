@@ -125,6 +125,8 @@ virsh define kvm/RDPWindows.xml
 virsh autostart RDPWindows
 ```
 
+To increase performance of the VM and decrease resource utilization, read the [Improving Performance](#improving-performance) section.
+
 You will now want to change any settings on the VM and install Windows and whatever programs you would like, such as Microsoft Office. If the definition fails, you can always manually create a VM. You can access VMs with:
 ``` bash
 virt-manager
@@ -233,6 +235,26 @@ The following commands can be used to manage your application configurations:
 ./installer.sh --system              # Configure applications for the entire system
 ./installer.sh --user --uninstall    # Remove all configured applications for the current user
 ./installer.sh --system --uninstall  # Remove all configured applications for the entire system
+```
+
+## Improving performance
+
+#### Reducing idle CPU usage from ~25% to ~3%
+In KVM, the CPU timing is not optimized by default. Use `virsh edit RDPWindows` to edit the VM and change:
+``` xml
+<clock offset='localtime'>
+  <timer name='rtc' tickpolicy='catchup'/>
+  <timer name='pit' tickpolicy='delay'/>
+  <timer name='hpet' present='no'/>
+  <timer name='hypervclock' present='yes'/>
+</clock>
+```
+to:
+``` xml
+<clock offset='localtime'>
+  <timer name='hpet' present='yes'/>
+  <timer name='hypervclock' present='yes'/>
+</clock>
 ```
 
 ## Shout outs
