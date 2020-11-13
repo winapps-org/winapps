@@ -155,6 +155,8 @@ bin/winapps check
 ```
 You will see output from FreeRDP, as well as potentially have to accept the initial certificate. After that, a Windows Explorer window should pop up. You can close this window and press `Ctrl-C` to cancel out of FreeRDP.
 
+If this step fails, try restarting the VM.
+
 Then the final step is to run the installer:
 ``` bash
 $ ./installer.sh --user
