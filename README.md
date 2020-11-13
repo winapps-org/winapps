@@ -157,10 +157,10 @@ You will see output from FreeRDP, as well as potentially have to accept the init
 
 Then the final step is to run the installer:
 ``` bash
-$ ./install.sh
-[sudo] password for fmstrat: 
+$ ./installer.sh --user
+Removing any old configurations... 
 Installing...
-  Checking for installed apps in RDP machine...
+  Checking for installed apps in RDP machine (this may take a while)... Finished.
   Configuring Excel... Finished.
   Configuring PowerPoint... Finished.
   Configuring Word... Finished.
@@ -209,15 +209,32 @@ WinApps offers a manual mode for running applications that are not configured. T
 The installer can be run multiple times, so simply run:
 ``` bash
 $ git pull
-$ ./install.sh
-[sudo] password for fmstrat: 
+$ ./installer.sh --user
+Removing any old configurations... 
+  Removing /home/fmstrat/.local/share/applications/excel.desktop... Finished.
+  Removing /home/fmstrat/.local/share/applications/powerpoint.desktop... Finished.
+  Removing /home/fmstrat/.local/share/applications/windows.desktop... Finished.
+  Removing /home/fmstrat/.local/share/applications/word.desktop... Finished.
+  Removing /home/fmstrat/.local/bin/excel... Finished.
+  Removing /home/fmstrat/.local/bin/powerpoint... Finished.
+  Removing /home/fmstrat/.local/bin/windows... Finished.
+  Removing /home/fmstrat/.local/bin/word... Finished.
 Installing...
-  Checking for installed apps in RDP machine...
+  Checking for installed apps in RDP machine (this may take a while)... Finished.
   Configuring Excel... Finished.
   Configuring PowerPoint... Finished.
   Configuring Word... Finished.
   Configuring Windows... Finished.
 Installation complete.
+```
+
+## Installer usage
+The following commands can be used to manage your application configurations:
+``` bash
+./installer.sh --user                # Configure applications for the current user
+./installer.sh --system              # Configure applications for the entire system
+./installer.sh --user --uninstall    # Remove all configured applications for the current user
+./installer.sh --system --uninstall  # Remove all configured applications for the entire system
 ```
 
 ## Shout outs
