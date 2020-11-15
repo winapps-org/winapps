@@ -8,7 +8,7 @@ FULL_NAME="Microsoft Publisher"
 WIN_EXECUTABLE="C:\Program Files\Microsoft Office\root\Office16\MSPUB.EXE"
 
 # GNOME categories
-CATEGORIES="Office"
+CATEGORIES="WinApps;Office"
 
 # GNOME mimetypes
 MIME_TYPES="application/vnd.ms-publisher;"

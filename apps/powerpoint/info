@@ -8,7 +8,7 @@ FULL_NAME="Microsoft PowerPoint"
 WIN_EXECUTABLE="C:\Program Files\Microsoft Office\Office16\POWERPNT.EXE"
 
 # GNOME categories
-CATEGORIES="Office"
+CATEGORIES="WinApps;Office"
 
 # GNOME mimetypes
 MIME_TYPES="application/vnd.ms-powerpoint;application/vnd.openxmlformats-officedocument.presentationml.presentation;application/vnd.openxmlformats-officedocument.presentationml.template;application/vnd.openxmlformats-officedocument.presentationml.slideshow;application/vnd.ms-powerpoint.addin.macroEnabled.12;application/vnd.ms-powerpoint.presentation.macroEnabled.12;application/vnd.ms-powerpoint.template.macroEnabled.12;application/vnd.ms-powerpoint.slideshow.macroEnabled.12;"

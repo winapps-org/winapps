@@ -8,7 +8,7 @@ FULL_NAME="Microsoft Access"
 WIN_EXECUTABLE="C:\Program Files (x86)\Microsoft Office\root\Office16\MSACCESS.EXE"
 
 # GNOME categories
-CATEGORIES="Office"
+CATEGORIES="WinApps;Office"
 
 # GNOME mimetypes
 MIME_TYPES="application/x-msaccess;"

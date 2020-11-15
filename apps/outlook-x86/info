@@ -8,7 +8,7 @@ FULL_NAME="Microsoft Outlook"
 WIN_EXECUTABLE="C:\Program Files (x86)\Microsoft Office\Office16\OUTLOOK.EXE"
 
 # GNOME categories
-CATEGORIES="Office"
+CATEGORIES="WinApps;Office"
 
 # GNOME mimetypes
 MIME_TYPES="application/vnd.ms-outlook;application/octet-stream;"

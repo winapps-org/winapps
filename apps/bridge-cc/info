@@ -8,7 +8,7 @@ FULL_NAME="Adobe Bridge CS6"
 WIN_EXECUTABLE="C:\Program Files\Adobe\Adobe Bridge CS6 (64 Bit)\Bridge.exe"
 
 # GNOME categories
-CATEGORIES="Adobe"
+CATEGORIES="WinApps;Adobe"
 
 # GNOME mimetypes
 MIME_TYPES="image/vnd.adobe.photoshop;"

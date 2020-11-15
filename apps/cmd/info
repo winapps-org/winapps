@@ -8,7 +8,7 @@ FULL_NAME="Command Prompt"
 WIN_EXECUTABLE="C:\Windows\System32\cmd.exe"
 
 # GNOME categories
-CATEGORIES="Windows"
+CATEGORIES="WinApps;Windows"
 
 # GNOME mimetypes
 MIME_TYPES=""

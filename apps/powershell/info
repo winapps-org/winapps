@@ -8,7 +8,7 @@ FULL_NAME="Microsoft Powershell"
 WIN_EXECUTABLE="C:\Windows\SysWOW64\WindowsPowerShell\v1.0\powershell.exe"
 
 # GNOME categories
-CATEGORIES="Windows"
+CATEGORIES="WinApps;Windows"
 
 # GNOME mimetypes
 MIME_TYPES=""

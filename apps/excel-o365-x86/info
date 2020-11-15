@@ -8,7 +8,7 @@ FULL_NAME="Microsoft Excel"
 WIN_EXECUTABLE="C:\Program Files (x86)\Microsoft Office\root\Office16\EXCEL.EXE"
 
 # GNOME categories
-CATEGORIES="Office"
+CATEGORIES="WinApps;Office"
 
 # GNOME mimetypes
 MIME_TYPES="application/vnd.ms-excel;application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;application/vnd.openxmlformats-officedocument.spreadsheetml.template;application/vnd.ms-excel.sheet.macroEnabled.12;application/vnd.ms-excel.template.macroEnabled.12;application/vnd.ms-excel.addin.macroEnabled.12;application/vnd.ms-excel.sheet.binary.macroEnabled.12;"

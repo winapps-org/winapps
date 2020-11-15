@@ -8,7 +8,7 @@ FULL_NAME="Adobe Illustrator CC"
 WIN_EXECUTABLE="C:\Program Files\Adobe\Adobe Illustrator 2021\Support Files\Contents\Windows\Illustrator.exe"
 
 # GNOME categories
-CATEGORIES="Adobe"
+CATEGORIES="WinApps;Adobe"
 
 # GNOME mimetypes
 MIME_TYPES="application/illustrator;"

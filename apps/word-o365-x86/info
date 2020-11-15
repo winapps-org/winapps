@@ -8,7 +8,7 @@ FULL_NAME="Microsoft Word"
 WIN_EXECUTABLE="C:\Program Files (x86)\Microsoft Office\root\Office16\WINWORD.EXE"
 
 # GNOME categories
-CATEGORIES="Office"
+CATEGORIES="WinApps;Office"
 
 # GNOME mimetypes
 MIME_TYPES="application/msword;application/vnd.openxmlformats-officedocument.wordprocessingml.document;application/vnd.openxmlformats-officedocument.wordprocessingml.template;application/vnd.ms-word.document.macroEnabled.12;application/vnd.ms-word.template.macroEnabled.12;"

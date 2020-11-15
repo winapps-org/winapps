@@ -8,7 +8,7 @@ FULL_NAME="Adobe Premier CC"
 WIN_EXECUTABLE="C:\Program Files\Adobe\Adobe Premiere Pro 2020\Adobe Premiere Pro.exe"
 
 # GNOME categories
-CATEGORIES="Adobe"
+CATEGORIES="WinApps;Adobe"
 
 # GNOME mimetypes
 MIME_TYPES="image/vnd.adobe.premiere;"

@@ -8,7 +8,7 @@ FULL_NAME="Acrobat X Pro"
 WIN_EXECUTABLE="C:\Program Files (x86)\Adobe\Acrobat 10.0\Acrobat\Acrobat.exe"
 
 # GNOME categories
-CATEGORIES="Documents"
+CATEGORIES="WinApps;Documents"
 
 # GNOME mimetypes
 MIME_TYPES="application/pdf;"

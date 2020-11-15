@@ -8,7 +8,7 @@ FULL_NAME="Adobe Audition CC"
 WIN_EXECUTABLE="C:\Program Files\Adobe\Adobe Audition 2020\Adobe Audition.exe"
 
 # GNOME categories
-CATEGORIES="Adobe"
+CATEGORIES="WinApps;Adobe"
 
 # GNOME mimetypes
 MIME_TYPES=""

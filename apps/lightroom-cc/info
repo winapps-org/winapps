@@ -8,7 +8,7 @@ FULL_NAME="Adobe Lightroom CC"
 WIN_EXECUTABLE="C:\Program Files\Adobe\Adobe Lightroom CC\lightroom.exe"
 
 # GNOME categories
-CATEGORIES="Adobe"
+CATEGORIES="WinApps;Adobe"
 
 # GNOME mimetypes
 MIME_TYPES=""

@@ -8,7 +8,7 @@ FULL_NAME="Adobe Creative Cloud"
 WIN_EXECUTABLE="C:\Program Files\Adobe\Adobe Creative Cloud\ACC\Creative Cloud.exe"
 
 # GNOME categories
-CATEGORIES="Adobe"
+CATEGORIES="WinApps;Adobe"
 
 # GNOME mimetypes
 MIME_TYPES=""
