@@ -82,7 +82,12 @@ elif [ "${1}" = "manual" ]; then
 	xfreerdp ${RDP_FLAGS} /d:"${RDP_DOMAIN}" /u:"${RDP_USER}" /p:"${RDP_PASS}" /v:${RDP_IP} +auto-reconnect +home-drive -wallpaper /scale:${RDP_SCALE} /dynamic-resolution /${MULTI_FLAG} /app:"${2}" 1> /dev/null 2>&1 &
 elif [ "${1}" != "install" ]; then
 	dprint "DIR:${DIR}"
-	. "${DIR}/../apps/${1}/info"
+	if [ -e "${DIR}/../apps/${1}/info" ]; then
+		. "${DIR}/../apps/${1}/info"
+	else
+		echo "You need to run 'install.sh' first."
+		exit 1
+	fi
 	if [ -n "${2}" ]; then
 		dprint "HOME:${HOME}"
 		FILE=$(echo "${2}" | sed 's|'"${HOME}"'|\\\\tsclient\\home|;s|/|\\|g;s|\\|\\\\|g')
