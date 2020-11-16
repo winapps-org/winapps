@@ -35,7 +35,7 @@ Note: The app list below is fueled by the community, and therefore many apps may
   <tr>
   </tr>
     <td><img src="apps/photoshop-cc/icon.svg" width="100"></td><td>Adobe Photoshop<br>(CS6, CC)</td>
-    <td><img src="apps/premier-cc/icon.svg" width="100"></td><td>Adobe Premier<br>(CC)</td>
+    <td><img src="apps/premiere-pro-cc/icon.svg" width="100"></td><td>Adobe Premiere Pro<br>(CC)</td>
   </tr>
   <tr>
     <td><img src="apps/cmd/icon.svg" width="100"></td><td>Command Prompt<br>(cmd.exe)</td>
@@ -172,7 +172,6 @@ Installing...
 Installation complete.
 ```
 
-<<<<<<< HEAD
 ### Option 2 - I already have an RDP server or VM
 If you already have an RDP server or VM, using WinApps is very straight forward. Simply create your `~/.config/winapps/winapps.conf` configuration file, and run:
 ``` bash
@@ -191,8 +190,6 @@ Installation complete.
 ```
 You will need to make sure RDP Applications are enabled, which can be set by merging in `kvm/RDPApps.reg` into the registry.
 
-=======
->>>>>>> aef6e144 (Added check function)
 ## Adding applications
 Adding applications to the installer is easy. Simply copy one of the application configurations in the `apps` folder, and:
 - Edit the variables for the application
@@ -267,7 +264,3 @@ to:
   - Fluent UI - Icons under [MIT License](https://github.com/Fmstrat/fluentui/blob/master/LICENSE) with [restricted use](https://static2.sharepointonline.com/files/fabric/assets/microsoft_fabric_assets_license_agreement_nov_2019.pdf)
   - PKief's VSCode Material Icon Theme - Icons under [MIT License](https://github.com/Fmstrat/vscode-material-icon-theme/blob/master/LICENSE.md)
   - DiemenDesign's LibreICONS - Icons under [MIT License](https://github.com/Fmstrat/LibreICONS/blob/master/LICENSE)
-<<<<<<< HEAD
-=======
-  
->>>>>>> aef6e144 (Added check function)
