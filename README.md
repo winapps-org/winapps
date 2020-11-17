@@ -19,6 +19,9 @@ Note: The app list below is fueled by the community, and therefore many apps may
 <table cellpadding="10" cellspacing="0" border="0">
   <tr>
     <td><img src="apps/acrobat-x-pro/icon.svg" width="100"></td><td>Adobe Acrobat Pro<br>(X)</td>
+    <td><img src="apps/acrobat-reader-dc/icon.svg" width="100"></td><td>Adobe Acrobat Reader<br>(DC)</td>
+  </tr>
+  <tr>
     <td><img src="apps/aftereffects-cc/icon.svg" width="100"></td><td>Adobe After Effects<br>(CC)</td>
   </tr>
   <tr>
