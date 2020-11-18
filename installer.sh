@@ -22,22 +22,19 @@ function waInstall() {
 function waFindInstalled() {
 	echo -n "  Checking for installed apps in RDP machine (this may take a while)..."
 	rm -f ${HOME}/.local/share/winapps/installed.bat
+	rm -f ${HOME}/.local/share/winapps/installed.tmp
 	rm -f ${HOME}/.local/share/winapps/installed
 	for F in $(ls "${DIR}/apps"); do
 		. "${DIR}/apps/${F}/info"
-		echo "IF EXIST \"${WIN_EXECUTABLE}\" ECHO ${F} >> \\\\tsclient\\home\\.local\\share\\winapps\\installed" >> ${HOME}/.local/share/winapps/installed.bat
+		echo "IF EXIST \"${WIN_EXECUTABLE}\" ECHO ${F} >> \\\\tsclient\\home\\.local\\share\\winapps\\installed.tmp" >> ${HOME}/.local/share/winapps/installed.bat
 	done;
-	echo "ECHO DONE >>  \\\\tsclient\\home\\.local\\share\\winapps\\installed" >> ${HOME}/.local/share/winapps/installed.bat
-	touch ${HOME}/.local/share/winapps/installed
-	LAST_RAN=$(stat -t -c %Y ${HOME}/.local/share/winapps/installed)
-	sleep 15
+	echo "ECHO DONE >>  \\\\tsclient\\home\\.local\\share\\winapps\\installed.tmp" >> ${HOME}/.local/share/winapps/installed.bat
+	echo "RENAME \\\\tsclient\\home\\.local\\share\\winapps\\installed.tmp installed" >> ${HOME}/.local/share/winapps/installed.bat
+	echo "pause" >> ${HOME}/.local/share/winapps/installed.bat
 	xfreerdp /d:"${RDP_DOMAIN}" /u:"${RDP_USER}" /p:"${RDP_PASS}" /v:${RDP_IP} +auto-reconnect +home-drive -wallpaper /span /wm-class:"RDPInstaller" /app:"C:\Windows\System32\cmd.exe" /app-icon:"${DIR}/../icons/windows.svg" /app-cmd:"/C \\\\tsclient\\home\\.local\\share\\winapps\\installed.bat" 1> /dev/null 2>&1 &
-	sleep 15
 	COUNT=0
-	THIS_RUN=$(stat -t -c %Y ${HOME}/.local/share/winapps/installed)
-	while (( $THIS_RUN - $LAST_RAN < 5 )); do
+	while [ ! -f "${HOME}/.local/share/winapps/installed" ]; do
 		sleep 15
-		THIS_RUN=$(stat -t -c %Y ${HOME}/.local/share/winapps/installed)
 		COUNT=$((COUNT + 1))
 		if (( COUNT == 5 )); then
 			echo " Finished."
