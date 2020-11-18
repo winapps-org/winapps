@@ -2,3 +2,6 @@ Windows Registry Editor Version 5.00
 
     [HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Terminal Server\TSAppAllowList]
     "fDisabledAllowList"=dword:00000001
+
+    [HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services]
+    "fAllowUnlistedRemotePrograms"=dword:00000001
