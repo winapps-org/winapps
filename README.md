@@ -72,7 +72,7 @@ Note: The app list below is fueled by the community, and therefore many apps may
 ## Installation
 
 ### Step 1: Download the repo and prerequisites
-You will need to store the WinApps repo in a permanent place and not remove it after install. To get things going, use:
+To get things going, use:
 ``` bash
 sudo apt-get install -y freerdp2-x11
 git clone https://github.com/Fmstrat/winapps.git
