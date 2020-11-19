@@ -18,6 +18,7 @@ Please run "./installer.sh --system --uninstall" first.'
 }
 
 function waInstall() {
+	${SUDO} mkdir -p "${SYS_PATH}/apps"
 	. "${DIR}/bin/winapps" install
 }
 
@@ -56,19 +57,21 @@ function waFindInstalled() {
 }
 
 function waConfigureApps() {
+	${SUDO} cp "${DIR}/bin/winapps" "${BIN_PATH}/winapps"
 	COUNT=0
 	for F in $(cat "${HOME}/.local/share/winapps/installed" |sed 's/\r/\n/g'); do
 		if [ "${F}" != "DONE" ]; then
 			COUNT=$((COUNT + 1))
+			${SUDO} cp -r "apps/${F}" "${SYS_PATH}/apps"
 			. "${DIR}/apps/${F}/info"
 			echo -n "  Configuring ${NAME}..."
 			${SUDO} rm -f "${APP_PATH}/${F}.desktop"
 			echo "[Desktop Entry]
 Name=${NAME}
-Exec=${DIR}/bin/winapps ${F} %F
+Exec=${BIN_PATH}/winapps ${F} %F
 Terminal=false
 Type=Application
-Icon=${DIR}/apps/${F}/icon.svg
+Icon=${SYS_PATH}/apps/${F}/icon.svg
 StartupWMClass=${FULL_NAME}
 Comment=${FULL_NAME}
 Categories=${CATEGORIES}
@@ -76,7 +79,7 @@ MimeType=${MIME_TYPES}
 " |${SUDO} tee "${APP_PATH}/${F}.desktop" > /dev/null
 		${SUDO} rm -f "${BIN_PATH}/${F}"
 		echo "#!/usr/bin/env bash
-${DIR}/bin/winapps ${F} $@
+${BIN_PATH}/winapps ${F} $@
 " |${SUDO} tee "${BIN_PATH}/${F}" > /dev/null
 			${SUDO} chmod a+x "${BIN_PATH}/${F}"
 			echo " Finished."
@@ -92,25 +95,29 @@ ${DIR}/bin/winapps ${F} $@
 function waConfigureWindows() {
 	echo -n "  Configuring Windows..."
 	${SUDO} rm -f "${APP_PATH}/windows.desktop"
+	${SUDO} mkdir -p "${SYS_PATH}/icons"
+	${SUDO} cp "${DIR}/icons/windows.svg" "${SYS_PATH}/icons/windows.svg"
 	echo "[Desktop Entry]
 Name=Windows
-Exec=${DIR}/bin/winapps windows %F
+Exec=${BIN_PATH}/winapps windows %F
 Terminal=false
 Type=Application
-Icon=${DIR}/icons/windows.svg
+Icon=${SYS_PATH}/icons/windows.svg
 StartupWMClass=Micorosoft Windows
 Comment=Micorosoft Windows
 Categories=Windows
 " |${SUDO} tee "${APP_PATH}/windows.desktop" > /dev/null
 	${SUDO} rm -f "${BIN_PATH}/windows"
 	echo "#!/usr/bin/env bash
-${DIR}/bin/winapps windows
+${BIN_PATH}/winapps windows
 " |${SUDO} tee "/${BIN_PATH}/windows" > /dev/null
 	${SUDO} chmod a+x "${BIN_PATH}/windows"
 	echo " Finished."
 }
 
 function waUninstallUser() {
+	rm -f "${HOME}/.local/bin/winapps"
+	rm -rf "${HOME}/.local/share/winapps"
 	for F in $(grep -l -d skip "bin/winapps" "${HOME}/.local/share/applications/"*); do
 		echo -n "  Removing ${F}..."
 		${SUDO} rm ${F}
@@ -124,6 +131,8 @@ function waUninstallUser() {
 }
 
 function waUninstallSystem() {
+	${SUDO} rm -f "/usr/local/bin/winapps"
+	${SUDO} rm -rf "/usr/local/share/winapps"
 	for F in $(grep -l -d skip "bin/winapps" "/usr/share/applications/"*); do
 		if [ -z "${SUDO}" ]; then
 			waNoSudo
@@ -157,6 +166,7 @@ if [ "${INSTALL_TYPE}" = 'User' ]; then
 	SUDO=""
 	BIN_PATH="${HOME}/.local/bin"
 	APP_PATH="${HOME}/.local/share/applications"
+	SYS_PATH="${HOME}/.local/share/winapps"
 	if [ -n "${2}" ]; then
 		if [ "${2}" = '--uninstall' ]; then
 			# Uninstall
@@ -172,6 +182,7 @@ elif [ "${INSTALL_TYPE}" = 'System' ]; then
 	sudo ls > /dev/null
 	BIN_PATH="/usr/local/bin"
 	APP_PATH="/usr/share/applications"
+	SYS_PATH="/usr/local/share/winapps"
 	if [ -n "${2}" ]; then
 		if [ "${2}" = '--uninstall' ]; then
 			# Uninstall
