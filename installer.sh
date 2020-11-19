@@ -31,7 +31,6 @@ function waFindInstalled() {
 		. "${DIR}/apps/${F}/info"
 		echo "IF EXIST \"${WIN_EXECUTABLE}\" ECHO ${F} >> \\\\tsclient\\home\\.local\\share\\winapps\\installed.tmp" >> ${HOME}/.local/share/winapps/installed.bat
 	done;
-	echo "ECHO DONE >>  \\\\tsclient\\home\\.local\\share\\winapps\\installed.tmp" >> ${HOME}/.local/share/winapps/installed.bat
 	echo "RENAME \\\\tsclient\\home\\.local\\share\\winapps\\installed.tmp installed" >> ${HOME}/.local/share/winapps/installed.bat
 	xfreerdp /d:"${RDP_DOMAIN}" /u:"${RDP_USER}" /p:"${RDP_PASS}" /v:${RDP_IP} +auto-reconnect +home-drive -wallpaper /span /wm-class:"RDPInstaller" /app:"C:\Windows\System32\cmd.exe" /app-icon:"${DIR}/../icons/windows.svg" /app-cmd:"/C \\\\tsclient\\home\\.local\\share\\winapps\\installed.bat" 1> /dev/null 2>&1 &
 	COUNT=0
@@ -57,16 +56,33 @@ function waFindInstalled() {
 }
 
 function waConfigureApps() {
+	APPS=()
+	for F in $(cat "${HOME}/.local/share/winapps/installed" |sed 's/\r/\n/g'); do
+		. "${DIR}/apps/${F}/info"
+		APPS+=("${FULL_NAME} (${F})")
+	done
+	IFS=$'\n' APPS=($(sort <<<"${APPS[*]}"))
+	unset IFS
+	OPTIONS=("Set up all detected pre-configured applications" "Select which pre-configured applications to set up")
+	menuFromArr APP_INSTALL "How would you like to handle WinApps pre-configured applications?" "${OPTIONS[@]}"
+	if [ "${APP_INSTALL}" = "Select which pre-configured applications to set up" ]; then
+		checkbox_input "Which pre-configured apps would you like to set up?" APPS SELECTED_APPS
+		echo "" > "${HOME}/.local/share/winapps/installed"
+		for F in "${SELECTED_APPS[@]}"; do
+			APP="${F##*(}"
+			APP="${APP%%)}"
+			echo "${APP}" >> "${HOME}/.local/share/winapps/installed"
+		done
+	fi
 	${SUDO} cp "${DIR}/bin/winapps" "${BIN_PATH}/winapps"
 	COUNT=0
 	for F in $(cat "${HOME}/.local/share/winapps/installed" |sed 's/\r/\n/g'); do
-		if [ "${F}" != "DONE" ]; then
-			COUNT=$((COUNT + 1))
-			${SUDO} cp -r "apps/${F}" "${SYS_PATH}/apps"
-			. "${DIR}/apps/${F}/info"
-			echo -n "  Configuring ${NAME}..."
-			${SUDO} rm -f "${APP_PATH}/${F}.desktop"
-			echo "[Desktop Entry]
+		COUNT=$((COUNT + 1))
+		${SUDO} cp -r "apps/${F}" "${SYS_PATH}/apps"
+		. "${DIR}/apps/${F}/info"
+		echo -n "  Configuring ${NAME}..."
+		${SUDO} rm -f "${APP_PATH}/${F}.desktop"
+		echo "[Desktop Entry]
 Name=${NAME}
 Exec=${BIN_PATH}/winapps ${F} %F
 Terminal=false
@@ -77,13 +93,12 @@ Comment=${FULL_NAME}
 Categories=${CATEGORIES}
 MimeType=${MIME_TYPES}
 " |${SUDO} tee "${APP_PATH}/${F}.desktop" > /dev/null
-		${SUDO} rm -f "${BIN_PATH}/${F}"
-		echo "#!/usr/bin/env bash
+	${SUDO} rm -f "${BIN_PATH}/${F}"
+	echo "#!/usr/bin/env bash
 ${BIN_PATH}/winapps ${F} $@
 " |${SUDO} tee "${BIN_PATH}/${F}" > /dev/null
-			${SUDO} chmod a+x "${BIN_PATH}/${F}"
-			echo " Finished."
-		fi
+		${SUDO} chmod a+x "${BIN_PATH}/${F}"
+		echo " Finished."
 	done
 	rm -f "${HOME}/.local/share/winapps/installed"
 	rm -f "${HOME}/.local/share/winapps/installed.bat"
