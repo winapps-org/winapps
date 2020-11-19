@@ -2,6 +2,8 @@
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
+. "${DIR}/install/inquirer.sh"
+
 function waUsage() {
 	echo 'Usage:
   ./installer.sh --user    # Install everything in ${HOME}
@@ -30,15 +32,23 @@ function waFindInstalled() {
 	done;
 	echo "ECHO DONE >>  \\\\tsclient\\home\\.local\\share\\winapps\\installed.tmp" >> ${HOME}/.local/share/winapps/installed.bat
 	echo "RENAME \\\\tsclient\\home\\.local\\share\\winapps\\installed.tmp installed" >> ${HOME}/.local/share/winapps/installed.bat
-	echo "pause" >> ${HOME}/.local/share/winapps/installed.bat
 	xfreerdp /d:"${RDP_DOMAIN}" /u:"${RDP_USER}" /p:"${RDP_PASS}" /v:${RDP_IP} +auto-reconnect +home-drive -wallpaper /span /wm-class:"RDPInstaller" /app:"C:\Windows\System32\cmd.exe" /app-icon:"${DIR}/../icons/windows.svg" /app-cmd:"/C \\\\tsclient\\home\\.local\\share\\winapps\\installed.bat" 1> /dev/null 2>&1 &
 	COUNT=0
 	while [ ! -f "${HOME}/.local/share/winapps/installed" ]; do
-		sleep 15
+		sleep 5
 		COUNT=$((COUNT + 1))
-		if (( COUNT == 5 )); then
+		if (( COUNT == 15 )); then
 			echo " Finished."
-			echo "The RDP connection failed to connect or run."
+			echo ""
+			echo "The RDP connection failed to connect or run. Please confirm FreeRDP can connect with:"
+			echo "  bin/winapps check"
+			echo ""
+			echo "If it cannot connect, this is most likely due to:"
+			echo "  - You need to accept the security cert the first time you connect (with 'check')"
+			echo "  - Not enabling RDP in the Windows VM"
+			echo "  - Not being able to connect to the IP of the VM"
+			echo "  - Incorrect user credentials in winapps.conf"
+			echo "  - Not merging install/RDPApps.reg into the VM"
 			exit
 		fi
 	done
@@ -133,8 +143,17 @@ function waUninstallSystem() {
 }
 
 if [ -z "${1}" ]; then
-	waUsage
+	OPTIONS=(User System)
+	menuFromArr INSTALL_TYPE "Would you like to install for the current user or the whole system?" "${OPTIONS[@]}"
 elif [ "${1}" = '--user' ]; then
+	INSTALL_TYPE='User'
+elif [ "${1}" = '--system' ]; then
+	INSTALL_TYPE='System'
+else
+	waUsage
+fi
+
+if [ "${INSTALL_TYPE}" = 'User' ]; then
 	SUDO=""
 	BIN_PATH="${HOME}/.local/bin"
 	APP_PATH="${HOME}/.local/share/applications"
@@ -148,7 +167,7 @@ elif [ "${1}" = '--user' ]; then
 			usage
 		fi
 	fi
-elif [ "${1}" = '--system' ]; then
+elif [ "${INSTALL_TYPE}" = 'System' ]; then
 	SUDO="sudo"
 	sudo ls > /dev/null
 	BIN_PATH="/usr/local/bin"
@@ -163,8 +182,6 @@ elif [ "${1}" = '--system' ]; then
 			usage
 		fi
 	fi
-else
-	waUsage
 fi
 
 echo "Removing any old configurations..."

@@ -161,16 +161,29 @@ bin/winapps check
 ```
 You will see output from FreeRDP, as well as potentially have to accept the initial certificate. After that, a Windows Explorer window should pop up. You can close this window and press `Ctrl-C` to cancel out of FreeRDP.
 
-If this step fails, try restarting the VM.
+If this step fails, try restarting the VM, or your problem could be related to:
+- You need to accept the security cert the first time you connect (with 'check')
+- Not enabling RDP in the Windows VM
+- Not being able to connect to the IP of the VM
+- Incorrect user credentials in `~/.config/winapps/winapps.conf`
+- Not merging `install/RDPApps.reg` into the VM
 
-Then the final step is to run the installer:
+Then the final step is to run the installer which will prompt you for a system or user install:
 ``` bash
-$ ./installer.sh --user
+$ ./installer.sh
+? Would you like to install for the current user or the whole system? User
 Removing any old configurations... 
 Installing...
   Checking for installed apps in RDP machine (this may take a while)... Finished.
+  Configuring Acrobat X Pro... Finished.
+  Configuring Bridge CS6... Finished.
+  Configuring Cmd... Finished.
   Configuring Excel... Finished.
+  Configuring Explorer... Finished.
+  Configuring Internet Explorer... Finished.
+  Configuring Photoshop CS6... Finished.
   Configuring PowerPoint... Finished.
+  Configuring Powershell... Finished.
   Configuring Word... Finished.
   Configuring Windows... Finished.
 Installation complete.
@@ -214,7 +227,8 @@ WinApps offers a manual mode for running applications that are not configured. T
 The installer can be run multiple times, so simply run:
 ``` bash
 $ git pull
-$ ./installer.sh --user
+$ ./installer.sh
+? Would you like to install for the current user or the whole system? User
 Removing any old configurations... 
   Removing /home/fmstrat/.local/share/applications/excel.desktop... Finished.
   Removing /home/fmstrat/.local/share/applications/powerpoint.desktop... Finished.
@@ -226,15 +240,22 @@ Removing any old configurations...
   Removing /home/fmstrat/.local/bin/word... Finished.
 Installing...
   Checking for installed apps in RDP machine (this may take a while)... Finished.
+  Configuring Acrobat X Pro... Finished.
+  Configuring Bridge CS6... Finished.
+  Configuring Cmd... Finished.
   Configuring Excel... Finished.
+  Configuring Explorer... Finished.
+  Configuring Internet Explorer... Finished.
+  Configuring Photoshop CS6... Finished.
   Configuring PowerPoint... Finished.
+  Configuring Powershell... Finished.
   Configuring Word... Finished.
   Configuring Windows... Finished.
 Installation complete.
 ```
 
 ## Installer usage
-The following commands can be used to manage your application configurations:
+The following optional commands can be used to manage your application configurations without prompts:
 ``` bash
 ./installer.sh --user                # Configure applications for the current user
 ./installer.sh --system              # Configure applications for the entire system
