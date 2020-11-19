@@ -142,7 +142,7 @@ virt-manager
 If you already have an RDP server or VM, using WinApps is very straight forward. Simply skip to step 4!
 
 ### Step 4: Configuring your Windows VM
-After the install process, or on your current RDP server, you will want to:
+After the install process, or on your current RDP server, you will want to complete the following steps. These steps should be completed regardless of whether you use a KVM based VM, another virtualization software, or a remote RDP server.
 - Go to the Start Menu
     - Type "About"
     - Open "About"
@@ -152,7 +152,7 @@ After the install process, or on your current RDP server, you will want to:
     - Change the PC name to "RDPWindows" if you are using KVM (This will allow WinApps to detect the local IP)
 - Go to Settings
     - Under "System", then "Remote Desktop" allow remote connections for RDP
-- Merge `kvm/RDPApps.reg` into the registry to enable RDP Applications
+- Merge `install/RDPApps.reg` into the registry to enable RDP Applications
 
 ### Step 5: Connect GNOME/KDE to your Windows VM with shortcuts and file associations
 Lastly, check that FreeRDP can connect with:
