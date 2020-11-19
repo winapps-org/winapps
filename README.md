@@ -283,6 +283,11 @@ to:
 </clock>
 ```
 
+## Common issues
+- **Black window**: This is a FreeRDP bug that sometimes comes up. Try restarting the application or rerunning the command. If that doesn't work, ensure you have `MULTIMON` disabled.
+- **Arch Linux Fails to define VM**: We're working on creating a KVM template for Arch, until then, manually create your VM in `virt-manager`
+
+
 ## Shout outs
 - Some icons pulled from
   - Fluent UI React - Icons under [MIT License](https://github.com/Fmstrat/fluent-ui-react/blob/master/LICENSE.md) 
