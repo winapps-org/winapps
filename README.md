@@ -175,6 +175,7 @@ $ ./installer.sh
 Removing any old configurations... 
 Installing...
   Checking for installed apps in RDP machine (this may take a while)... Finished.
+? How would you like to handle WinApps pre-configured applications? Set up all detected pre-configured applications
   Configuring Acrobat X Pro... Finished.
   Configuring Bridge CS6... Finished.
   Configuring Cmd... Finished.
@@ -240,6 +241,7 @@ Removing any old configurations...
   Removing /home/fmstrat/.local/bin/word... Finished.
 Installing...
   Checking for installed apps in RDP machine (this may take a while)... Finished.
+? How would you like to handle WinApps pre-configured applications? Set up all detected pre-configured applications
   Configuring Acrobat X Pro... Finished.
   Configuring Bridge CS6... Finished.
   Configuring Cmd... Finished.
