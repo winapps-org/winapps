@@ -1,4 +1,3 @@
-# powershell.exe -ExecutionPolicy Bypass -File \\tsclient\home\Documents\Repos\winapps\install\ExtractPrograms.ps1 > \\tsclient\home\.local\share\winapps\include
 
 Function Get-Icon {
     <#

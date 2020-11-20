@@ -33,6 +33,8 @@ set -e
 arrow="$(echo -e '\xe2\x9d\xaf')"
 checked="$(echo -e '\xe2\x97\x89')"
 unchecked="$(echo -e '\xe2\x97\xaf')"
+down_arrow=$(echo -e '\u23f7')
+up_arrow=$(echo -e '\u23f6')
 
 black="$(tput setaf 0)"
 red="$(tput setaf 1)"
@@ -174,11 +176,26 @@ select_indices() {
   done
 }
 
+print_checkbox_line_arrow() {
+  if [ "${_checkbox_selected[$1]}" = true ]; then
+    printf "${cyan}${arrow}${green}${checked}${normal} ${_checkbox_list[$1]} ${normal}"
+  else
+    printf "${cyan}${arrow}${normal}${unchecked} ${_checkbox_list[$1]} ${normal}"
+  fi
+}
 
+print_checkbox_line() {
+  if [ "${_checkbox_selected[$1]}" = true ]; then
+    printf " ${green}${checked}${normal} ${_checkbox_list[$1]} ${normal}"
+  else
+    printf " ${normal}${unchecked} ${_checkbox_list[$1]} ${normal}"
+  fi
+}
 
-
-on_checkbox_input_up() {
-  remove_checkbox_instructions
+# https://www.gnu.org/software/termutils/manual/termutils-2.0/html_chapter/tput_1.html
+# http://linuxcommand.org/lc3_adv_tput.php
+on_checkbox_input_up2() {
+  #remove_checkbox_instructions
   tput cub "$(tput cols)"
 
   if [ "${_checkbox_selected[$_current_index]}" = true ]; then
@@ -195,49 +212,158 @@ on_checkbox_input_up() {
   else
     _current_index=$((_current_index-1))
 
-    tput cuu1
-    tput cub "$(tput cols)"
-    tput el
+    tput cuu1 # Up one line
+    tput cub "$(tput cols)" # Back to beginning (does this work?)
+    tput el # Clear to end of line
   fi
 
   if [ "${_checkbox_selected[$_current_index]}" = true ]; then
     printf "${cyan}${arrow}${green}${checked}${normal} ${_checkbox_list[$_current_index]} ${normal}"
   else
     printf "${cyan}${arrow}${normal}${unchecked} ${_checkbox_list[$_current_index]} ${normal}"
+  fi
+}
+
+on_checkbox_input_up() {
+  #remove_checkbox_instructions
+  tput cub "$(tput cols)"
+  if (( ${_current_row} > 0 )) || (( ${#_checkbox_list[@]} <= 5 )); then
+    print_checkbox_line $_current_index
+    tput el
+    if [ $_current_index = 0 ]; then
+      _current_index=$((${#_checkbox_list[@]}-1))
+      _current_row=4
+      tput cud $((${#_checkbox_list[@]}-1))
+      tput cub "$(tput cols)"
+    else
+      _current_index=$((_current_index-1))
+      _current_row=$((_current_row-1))
+      tput cuu1
+      tput cub "$(tput cols)"
+      tput el
+    fi
+    print_checkbox_line_arrow $_current_index
+  else
+    if [ $_current_index = 0 ]; then
+      _current_index=$((${#_checkbox_list[@]}-1))
+      _current_row=4
+      tput cuu 1
+      tput cub "$(tput cols)"
+      tput el
+      printf "  ${cyan}${up_arrow}${normal}"
+      for I in 4 3 2 1; do
+        tput cud1
+        tput cub "$(tput cols)"
+        tput el
+        print_checkbox_line $((_current_index-I))
+      done
+      tput cud1
+      tput cub "$(tput cols)"
+      tput el
+      print_checkbox_line_arrow $((_current_index))
+      tput cud1
+      tput cub "$(tput cols)"
+      tput el
+      printf "  ${dim}${down_arrow}${normal}"
+      tput cuu 1
+    else
+      _current_index=$((_current_index-1))
+      tput cud 5
+      tput cub "$(tput cols)"
+      tput el
+      printf "  ${cyan}${down_arrow}${normal}"
+      for I in 4 3 2 1; do
+        tput cuu1
+        tput cub "$(tput cols)"
+        tput el
+        print_checkbox_line $((_current_index+I))
+      done
+      tput cuu1
+      tput cub "$(tput cols)"
+      tput el
+      print_checkbox_line_arrow $((_current_index))
+      if [ $_current_index = 0 ]; then
+        tput cuu1
+        tput cub "$(tput cols)"
+        tput el
+        printf "  ${dim}${up_arrow}${normal}"
+        tput cud1
+      fi
+    fi
   fi
 }
 
 on_checkbox_input_down() {
-  remove_checkbox_instructions
+  #remove_checkbox_instructions
   tput cub "$(tput cols)"
-
-  if [ "${_checkbox_selected[$_current_index]}" = true ]; then
-    printf " ${green}${checked}${normal} ${_checkbox_list[$_current_index]} ${normal}"
-  else
-    printf " ${unchecked} ${_checkbox_list[$_current_index]} ${normal}"
-  fi
-
-  tput el
-
-  if [ $_current_index = $((${#_checkbox_list[@]}-1)) ]; then
-    _current_index=0
-    tput cuu $((${#_checkbox_list[@]}-1))
-    tput cub "$(tput cols)"
-  else
-    _current_index=$((_current_index+1))
-    tput cud1
-    tput cub "$(tput cols)"
+  if (( ${_current_row} < 4 )) || (( ${#_checkbox_list[@]} <= 5 )); then
+    print_checkbox_line $_current_index
     tput el
-  fi
-
-  if [ "${_checkbox_selected[$_current_index]}" = true ]; then
-    printf "${cyan}${arrow}${green}${checked}${normal} ${_checkbox_list[$_current_index]} ${normal}"
+    if [ $_current_index = $((${#_checkbox_list[@]}-1)) ]; then
+      _current_index=0
+      _current_row=0
+      tput cuu $((${#_checkbox_list[@]}-1))
+      tput cub "$(tput cols)"
+    else
+      _current_index=$((_current_index+1))
+      _current_row=$((_current_row+1))
+      tput cud1
+      tput cub "$(tput cols)"
+      tput el
+    fi
+    print_checkbox_line_arrow $_current_index
   else
-    printf "${cyan}${arrow}${normal}${unchecked} ${_checkbox_list[$_current_index]} ${normal}"
+    if [ $_current_index = $((${#_checkbox_list[@]}-1)) ]; then
+      _current_index=0
+      _current_row=0
+      tput cuu 5
+      tput cub "$(tput cols)"
+      tput el
+      printf "  ${dim}${up_arrow}${normal}"
+      tput cud1
+      tput cub "$(tput cols)"
+      tput el
+      print_checkbox_line_arrow $((_current_index))
+      for I in 1 2 3 4; do
+        tput cud1
+        tput cub "$(tput cols)"
+        tput el
+        print_checkbox_line $((_current_index+I))
+      done
+      tput cud1
+      tput cub "$(tput cols)"
+      tput el
+      printf "  ${cyan}${down_arrow}${normal}"
+      tput cuu 5
+    else
+      _current_index=$((_current_index+1))
+      tput cuu 5
+      tput cub "$(tput cols)"
+      tput el
+      printf "  ${cyan}${up_arrow}${normal}"
+      for I in 4 3 2 1; do
+        tput cud1
+        tput cub "$(tput cols)"
+        tput el
+        print_checkbox_line $((_current_index-I))
+      done
+      tput cud1
+      tput cub "$(tput cols)"
+      tput el
+      print_checkbox_line_arrow $((_current_index))
+      if [ $_current_index = $((${#_checkbox_list[@]}-1)) ]; then
+        tput cud1
+        tput cub "$(tput cols)"
+        tput el
+        printf "  ${dim}${down_arrow}${normal}"
+        tput cuu1
+      fi
+    fi
   fi
 }
 
 on_checkbox_input_enter() {
+  remove_checkbox_instructions
   local OLD_IFS
   OLD_IFS=$IFS
   _checkbox_selected_indices=()
@@ -254,11 +380,19 @@ on_checkbox_input_enter() {
   tput cud $((${#_checkbox_list[@]}-${_current_index}))
   tput cub "$(tput cols)"
 
-  for i in $(seq $((${#_checkbox_list[@]}+1))); do
-    tput el1
-    tput el
-    tput cuu1
-  done
+  if (( ${#_checkbox_list[@]} <= 5 )); then
+    for i in $(seq $((${#_checkbox_list[@]}+1))); do
+      tput el1
+      tput el
+      tput cuu1
+    done
+  else
+    for i in $(seq 8); do
+      tput el1
+      tput el
+      tput cuu1
+    done
+  fi
   tput cub "$(tput cols)"
 
   tput cuf $((${#prompt}+3))
@@ -274,7 +408,7 @@ on_checkbox_input_enter() {
 }
 
 on_checkbox_input_space() {
-  remove_checkbox_instructions
+  #remove_checkbox_instructions
   tput cub "$(tput cols)"
   tput el
   if [ "${_checkbox_selected[$_current_index]}" = true ]; then
@@ -283,11 +417,7 @@ on_checkbox_input_space() {
     _checkbox_selected[$_current_index]=true
   fi
 
-  if [ "${_checkbox_selected[$_current_index]}" = true ]; then
-    printf "${cyan}${arrow}${green}${checked}${normal} ${_checkbox_list[$_current_index]} ${normal}"
-  else
-    printf "${cyan}${arrow}${normal}${unchecked} ${_checkbox_list[$_current_index]} ${normal}"
-  fi
+  print_checkbox_line_arrow $_current_index
 }
 
 remove_checkbox_instructions() {
@@ -316,6 +446,7 @@ _checkbox_input() {
   prompt=$1
   eval _checkbox_list=( '"${'${2}'[@]}"' )
   _current_index=0
+  _current_row=0
   _first_keystroke=true
 
   trap control_c SIGINT EXIT
@@ -336,26 +467,31 @@ _checkbox_input() {
     done
   fi
 
+  if (( ${#_checkbox_list[@]} > 5 )); then
+    tput cub "$(tput cols)"
+    print "  ${dim}${up_arrow}${normal}"
+  fi
+
   for i in $(gen_index ${#_checkbox_list[@]}); do
     tput cub "$(tput cols)"
     if [ $i = 0 ]; then
-      if [ "${_checkbox_selected[$i]}" = true ]; then
-        print "${cyan}${arrow}${green}${checked}${normal} ${_checkbox_list[$i]} ${normal}"
-      else
-        print "${cyan}${arrow}${normal}${unchecked} ${_checkbox_list[$i]} ${normal}"
-      fi
+      print_checkbox_line_arrow $i
     else
-      if [ "${_checkbox_selected[$i]}" = true ]; then
-        print " ${green}${checked}${normal} ${_checkbox_list[$i]} ${normal}"
-      else
-        print " ${unchecked} ${_checkbox_list[$i]} ${normal}"
-      fi
+      print_checkbox_line $i
     fi
+    print ""
     tput el
+    if (( $i > 3 )) && (( ${#_checkbox_list[@]} > 5 )); then
+      print "  ${cyan}${down_arrow}${normal}"
+      break
+    fi
   done
 
   for j in $(gen_index ${#_checkbox_list[@]}); do
     tput cuu1
+    if (( $j > 4 )); then
+      break
+    fi
   done
 
   on_keypress on_checkbox_input_up on_checkbox_input_down on_checkbox_input_space on_checkbox_input_enter on_default on_default on_checkbox_input_ascii
