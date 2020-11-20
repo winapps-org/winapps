@@ -170,25 +170,12 @@ If this step fails, try restarting the VM, or your problem could be related to:
 
 Then the final step is to run the installer which will prompt you for a system or user install:
 ``` bash
-$ ./installer.sh
-? Would you like to install for the current user or the whole system? User
-Removing any old configurations... 
-Installing...
-  Checking for installed apps in RDP machine (this may take a while)... Finished.
-? How would you like to handle WinApps pre-configured applications? Set up all detected pre-configured applications
-  Configuring Acrobat X Pro... Finished.
-  Configuring Bridge CS6... Finished.
-  Configuring Cmd... Finished.
-  Configuring Excel... Finished.
-  Configuring Explorer... Finished.
-  Configuring Internet Explorer... Finished.
-  Configuring Photoshop CS6... Finished.
-  Configuring PowerPoint... Finished.
-  Configuring Powershell... Finished.
-  Configuring Word... Finished.
-  Configuring Windows... Finished.
-Installation complete.
+./installer.sh
 ```
+This will take you through the following process:
+
+<img src="demo/installer.gif" width=1000>
+
 
 ### Option 2 - I already have an RDP server or VM
 If you already have an RDP server or VM, using WinApps is very straight forward. Simply create your `~/.config/winapps/winapps.conf` configuration file, and run:
@@ -225,38 +212,12 @@ WinApps offers a manual mode for running applications that are not configured. T
 ```
 
 ## Checking for new application support
-The installer can be run multiple times, so simply run:
+The installer can be run multiple times, so simply run the below again and it will remove any current installations and update for the latest applications.
 ``` bash
-$ git pull
-$ ./installer.sh
-? Would you like to install for the current user or the whole system? User
-Removing any old configurations... 
-  Removing /home/fmstrat/.local/share/applications/excel.desktop... Finished.
-  Removing /home/fmstrat/.local/share/applications/powerpoint.desktop... Finished.
-  Removing /home/fmstrat/.local/share/applications/windows.desktop... Finished.
-  Removing /home/fmstrat/.local/share/applications/word.desktop... Finished.
-  Removing /home/fmstrat/.local/bin/excel... Finished.
-  Removing /home/fmstrat/.local/bin/powerpoint... Finished.
-  Removing /home/fmstrat/.local/bin/windows... Finished.
-  Removing /home/fmstrat/.local/bin/word... Finished.
-Installing...
-  Checking for installed apps in RDP machine (this may take a while)... Finished.
-? How would you like to handle WinApps pre-configured applications? Set up all detected pre-configured applications
-  Configuring Acrobat X Pro... Finished.
-  Configuring Bridge CS6... Finished.
-  Configuring Cmd... Finished.
-  Configuring Excel... Finished.
-  Configuring Explorer... Finished.
-  Configuring Internet Explorer... Finished.
-  Configuring Photoshop CS6... Finished.
-  Configuring PowerPoint... Finished.
-  Configuring Powershell... Finished.
-  Configuring Word... Finished.
-  Configuring Windows... Finished.
-Installation complete.
+./installer.sh
 ```
 
-## Installer usage
+## Optional installer command line arguments
 The following optional commands can be used to manage your application configurations without prompts:
 ``` bash
 ./installer.sh --user                # Configure applications for the current user
