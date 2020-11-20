@@ -79,14 +79,21 @@ Note: The officially configured application list below is fueled by the communit
 
 ## Installation
 
-### Step 1: Download the repo and prerequisites
+### Step 1: Set up a Windows Virtual Machine
+The best solution for running a VM as a subsystem for WinApps would be KVM. KVM is a CPU and memory-efficient virtualization engine bundled with most major Linux distributions. To set up the VM for WinApps, follow this guide:
+
+- [Creating a Virtual Machine in KVM](docs/KVM.md)
+
+If you already have a Virtual Machine or server you wish to use with WinApps, you will need to merge `kvm/RDPApps.reg` into the VM's Windows Registry. If this VM is in KVM and you want to use auto-IP detection, you will need to name the machine `RDPWindows`. Directions for both of these can be found in the guide linked above.
+
+### Step 2: Download the repo and prerequisites
 To get things going, use:
 ``` bash
 sudo apt-get install -y freerdp2-x11
 git clone https://github.com/Fmstrat/winapps.git
 cd winapps
 ```
-### Step 2: Creating your WinApps configuration file
+### Step 3: Creating your WinApps configuration file
 You will need to create a `~/.config/winapps/winapps.conf` configuration file with the following information in it:
 ``` bash
 RDP_USER="MyWindowsUser"
@@ -109,60 +116,7 @@ Options:
 - For multi-monitor setups, you can try enabling `MULTIMON`, however if you get a black screen (FreeRDP bug) you will need to revert back
 - If you enable `DEBUG`, a log will be created on each application start in `~/.local/share/winapps/winapps.log`
 
-### Step 3: Setting up your Windows VM
-
-#### Option 1 - Running KVM
-You can refer to the [KVM](https://www.linux-kvm.org) documentation for specifics, but the first thing you need to do is set up a Virtual Machine running Windows 10 Professional (or any version that supports RDP). First, clone WinApps and install KVM and FreeRDP:
-``` bash
-sudo apt-get install -y virt-manager
-```
-
-Now set up KVM to run as your user instead of root and allow it through AppArmor (for Ubuntu 20.04 and above):
-``` bash
-sudo sed -i "s/#user = "root"/user = "$(id -un)"/g" /etc/libvirt/qemu.conf
-sudo sed -i "s/#group = "root"/group = "$(id -gn)"/g" /etc/libvirt/qemu.conf
-sudo usermod -a -G kvm $(id -un)
-sudo usermod -a -G libvirt $(id -un)
-sudo systemctl restart libvirtd
-sudo ln -s /etc/apparmor.d/usr.sbin.libvirtd /etc/apparmor.d/disable/
-
-sleep 5
-
-sudo virsh net-autostart default
-sudo virsh net-start default
-```
-**You will likely need to reboot to ensure your current shell is added to the group.**
-
-Next, define a VM called RDPWindows from the sample XML file with:
-``` bash
-virsh define kvm/RDPWindows.xml
-virsh autostart RDPWindows
-```
-
-To increase performance of the VM and decrease resource utilization, read the [Improving Performance](#improving-performance) section.
-
-You will now want to change any settings on the VM and install Windows and whatever programs you would like, such as Microsoft Office. If the definition fails, you can always manually create a VM. You can access VMs with:
-``` bash
-virt-manager
-```
-
-#### Option 2 - I already have an RDP server or VM
-If you already have an RDP server or VM, using WinApps is very straight forward. Simply skip to step 4!
-
-### Step 4: Configuring your Windows VM
-After the install process, or on your current RDP server, you will want to complete the following steps. These steps should be completed regardless of whether you use a KVM based VM, another virtualization software, or a remote RDP server.
-- Go to the Start Menu
-    - Type "About"
-    - Open "About"
-    - Change the PC name to "RDPWindows" (This will allow WinApps to detect the local IP)
-- Go to Control Panel
-    - Under "System," allow remote connections for RDP
-    - Change the PC name to "RDPWindows" if you are using KVM (This will allow WinApps to detect the local IP)
-- Go to Settings
-    - Under "System", then "Remote Desktop" allow remote connections for RDP
-- Merge `install/RDPApps.reg` into the registry to enable RDP Applications
-
-### Step 5: Connect GNOME/KDE to your Windows VM with shortcuts and file associations
+### Step 4: Run the WinApps installer
 Lastly, check that FreeRDP can connect with:
 ```
 bin/winapps check
@@ -184,24 +138,6 @@ This will take you through the following process:
 
 <img src="demo/installer.gif" width=1000>
 
-
-### Option 2 - I already have an RDP server or VM
-If you already have an RDP server or VM, using WinApps is very straight forward. Simply create your `~/.config/winapps/winapps.conf` configuration file, and run:
-``` bash
-$ git clone https://github.com/Fmstrat/winapps.git
-$ cd winapps
-$ sudo apt-get install -y freerdp2-x11
-$ ./install.sh
-[sudo] password for fmstrat: 
-Installing...
-  Checking for installed apps in RDP machine...
-  Configuring Excel... Finished.
-  Configuring PowerPoint... Finished.
-  Configuring Word... Finished.
-  Configuring Windows... Finished.
-Installation complete.
-```
-You will need to make sure RDP Applications are enabled, which can be set by merging in `kvm/RDPApps.reg` into the registry.
 
 ## Adding applications
 Adding applications to the installer is easy. Simply copy one of the application configurations in the `apps` folder, and:
@@ -234,30 +170,8 @@ The following optional commands can be used to manage your application configura
 ./installer.sh --system --uninstall  # Remove all configured applications for the entire system
 ```
 
-## Improving performance
-
-#### Reducing idle CPU usage from ~25% to ~3%
-In KVM, the CPU timing is not optimized by default. Use `virsh edit RDPWindows` to edit the VM and change:
-``` xml
-<clock offset='localtime'>
-  <timer name='rtc' tickpolicy='catchup'/>
-  <timer name='pit' tickpolicy='delay'/>
-  <timer name='hpet' present='no'/>
-  <timer name='hypervclock' present='yes'/>
-</clock>
-```
-to:
-``` xml
-<clock offset='localtime'>
-  <timer name='hpet' present='yes'/>
-  <timer name='hypervclock' present='yes'/>
-</clock>
-```
-
 ## Common issues
 - **Black window**: This is a FreeRDP bug that sometimes comes up. Try restarting the application or rerunning the command. If that doesn't work, ensure you have `MULTIMON` disabled.
-- **Arch Linux Fails to define VM**: We're working on creating a KVM template for Arch, until then, manually create your VM in `virt-manager`
-
 
 ## Shout outs
 - Some icons pulled from
