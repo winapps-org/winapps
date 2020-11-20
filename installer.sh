@@ -3,7 +3,7 @@
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
 MAKEDEMO=0
-USEDEMO=1
+USEDEMO=0
 
 . "${DIR}/install/inquirer.sh"
 
