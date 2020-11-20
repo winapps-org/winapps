@@ -377,16 +377,17 @@ on_checkbox_input_enter() {
     fi
   done
 
-  tput cud $((${#_checkbox_list[@]}-${_current_index}))
-  tput cub "$(tput cols)"
-
   if (( ${#_checkbox_list[@]} <= 5 )); then
+    tput cud $((${#_checkbox_list[@]}-${_current_index}))
+    tput cub "$(tput cols)"
     for i in $(seq $((${#_checkbox_list[@]}+1))); do
       tput el1
       tput el
       tput cuu1
     done
   else
+    tput cud $((6-${_current_row}))
+    tput cub "$(tput cols)"
     for i in $(seq 8); do
       tput el1
       tput el

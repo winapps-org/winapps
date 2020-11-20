@@ -2,6 +2,9 @@
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
+MAKEDEMO=0
+USEDEMO=1
+
 . "${DIR}/install/inquirer.sh"
 
 INSTALLED_EXES=()
@@ -26,44 +29,57 @@ function waInstall() {
 
 function waFindInstalled() {
 	echo -n "  Checking for installed apps in RDP machine (this may take a while)..."
-	rm -f ${HOME}/.local/share/winapps/installed.bat
-	rm -f ${HOME}/.local/share/winapps/installed.tmp
-	rm -f ${HOME}/.local/share/winapps/installed
-	cp "${DIR}/install/ExtractPrograms.ps1" ${HOME}/.local/share/winapps/ExtractPrograms.ps1
-	for F in $(ls "${DIR}/apps"); do
-		. "${DIR}/apps/${F}/info"
-		echo "IF EXIST \"${WIN_EXECUTABLE}\" ECHO ${F} >> \\\\tsclient\\home\\.local\\share\\winapps\\installed.tmp" >> ${HOME}/.local/share/winapps/installed.bat
-	done;
-	echo "powershell.exe -ExecutionPolicy Bypass -File \\\\tsclient\\home\\.local\\share\\winapps\\ExtractPrograms.ps1 > \\\\tsclient\home\\.local\\share\\winapps\\detected" >> ${HOME}/.local/share/winapps/installed.bat
-	echo "RENAME \\\\tsclient\\home\\.local\\share\\winapps\\installed.tmp installed" >> ${HOME}/.local/share/winapps/installed.bat
-	xfreerdp /d:"${RDP_DOMAIN}" /u:"${RDP_USER}" /p:"${RDP_PASS}" /v:${RDP_IP} +auto-reconnect +home-drive -wallpaper /span /wm-class:"RDPInstaller" /app:"C:\Windows\System32\cmd.exe" /app-icon:"${DIR}/../icons/windows.svg" /app-cmd:"/C \\\\tsclient\\home\\.local\\share\\winapps\\installed.bat" 1> /dev/null 2>&1 &
-	COUNT=0
-	while [ ! -f "${HOME}/.local/share/winapps/installed" ]; do
-		sleep 5
-		COUNT=$((COUNT + 1))
-		if (( COUNT == 15 )); then
-			echo " Finished."
-			echo ""
-			echo "The RDP connection failed to connect or run. Please confirm FreeRDP can connect with:"
-			echo "  bin/winapps check"
-			echo ""
-			echo "If it cannot connect, this is most likely due to:"
-			echo "  - You need to accept the security cert the first time you connect (with 'check')"
-			echo "  - Not enabling RDP in the Windows VM"
-			echo "  - Not being able to connect to the IP of the VM"
-			echo "  - Incorrect user credentials in winapps.conf"
-			echo "  - Not merging install/RDPApps.reg into the VM"
+	if [ $USEDEMO != 1 ]; then
+		rm -f ${HOME}/.local/share/winapps/installed.bat
+		rm -f ${HOME}/.local/share/winapps/installed.tmp
+		rm -f ${HOME}/.local/share/winapps/installed
+		rm -f ${HOME}/.local/share/winapps/detected
+		cp "${DIR}/install/ExtractPrograms.ps1" ${HOME}/.local/share/winapps/ExtractPrograms.ps1
+		for F in $(ls "${DIR}/apps"); do
+			. "${DIR}/apps/${F}/info"
+			echo "IF EXIST \"${WIN_EXECUTABLE}\" ECHO ${F} >> \\\\tsclient\\home\\.local\\share\\winapps\\installed.tmp" >> ${HOME}/.local/share/winapps/installed.bat
+		done;
+		echo "powershell.exe -ExecutionPolicy Bypass -File \\\\tsclient\\home\\.local\\share\\winapps\\ExtractPrograms.ps1 > \\\\tsclient\home\\.local\\share\\winapps\\detected" >> ${HOME}/.local/share/winapps/installed.bat
+		echo "RENAME \\\\tsclient\\home\\.local\\share\\winapps\\installed.tmp installed" >> ${HOME}/.local/share/winapps/installed.bat
+		xfreerdp /d:"${RDP_DOMAIN}" /u:"${RDP_USER}" /p:"${RDP_PASS}" /v:${RDP_IP} +auto-reconnect +home-drive -wallpaper /span /wm-class:"RDPInstaller" /app:"C:\Windows\System32\cmd.exe" /app-icon:"${DIR}/../icons/windows.svg" /app-cmd:"/C \\\\tsclient\\home\\.local\\share\\winapps\\installed.bat" 1> /dev/null 2>&1 &
+		COUNT=0
+		while [ ! -f "${HOME}/.local/share/winapps/installed" ]; do
+			sleep 5
+			COUNT=$((COUNT + 1))
+			if (( COUNT == 15 )); then
+				echo " Finished."
+				echo ""
+				echo "The RDP connection failed to connect or run. Please confirm FreeRDP can connect with:"
+				echo "  bin/winapps check"
+				echo ""
+				echo "If it cannot connect, this is most likely due to:"
+				echo "  - You need to accept the security cert the first time you connect (with 'check')"
+				echo "  - Not enabling RDP in the Windows VM"
+				echo "  - Not being able to connect to the IP of the VM"
+				echo "  - Incorrect user credentials in winapps.conf"
+				echo "  - Not merging install/RDPApps.reg into the VM"
+				exit
+			fi
+		done
+		if [ $MAKEDEMO = 1 ]; then
+			rm -rf /tmp/winapps_demo
+			cp -a ${HOME}/.local/share/winapps /tmp/winapps_demo
 			exit
 		fi
-	done
+	else
+		rm -rf ${HOME}/.local/share/winapps
+		cp -a /tmp/winapps_demo ${HOME}/.local/share/winapps
+		#sleep 3
+	fi
 	echo " Finished."
 }
 
 function waConfigureApp() {
 		. "${SYS_PATH}/apps/${1}/info"
 		echo -n "  Configuring ${NAME}..."
-		${SUDO} rm -f "${APP_PATH}/${1}.desktop"
-		echo "[Desktop Entry]
+		if [ ${USEDEMO} != 1 ]; then
+			${SUDO} rm -f "${APP_PATH}/${1}.desktop"
+			echo "[Desktop Entry]
 Name=${NAME}
 Exec=${BIN_PATH}/winapps ${1} %F
 Terminal=false
@@ -74,11 +90,12 @@ Comment=${FULL_NAME}
 Categories=${CATEGORIES}
 MimeType=${MIME_TYPES}
 " |${SUDO} tee "${APP_PATH}/${1}.desktop" > /dev/null
-	${SUDO} rm -f "${BIN_PATH}/${1}"
-	echo "#!/usr/bin/env bash
+			${SUDO} rm -f "${BIN_PATH}/${1}"
+			echo "#!/usr/bin/env bash
 ${BIN_PATH}/winapps ${1} $@
 " |${SUDO} tee "${BIN_PATH}/${1}" > /dev/null
-		${SUDO} chmod a+x "${BIN_PATH}/${1}"
+			${SUDO} chmod a+x "${BIN_PATH}/${1}"
+		fi
 		echo " Finished."
 }
 
@@ -191,10 +208,11 @@ MIME_TYPES=\"\"
 
 function waConfigureWindows() {
 	echo -n "  Configuring Windows..."
-	${SUDO} rm -f "${APP_PATH}/windows.desktop"
-	${SUDO} mkdir -p "${SYS_PATH}/icons"
-	${SUDO} cp "${DIR}/icons/windows.svg" "${SYS_PATH}/icons/windows.svg"
-	echo "[Desktop Entry]
+	if [ ${USEDEMO} != 1 ]; then
+		${SUDO} rm -f "${APP_PATH}/windows.desktop"
+		${SUDO} mkdir -p "${SYS_PATH}/icons"
+		${SUDO} cp "${DIR}/icons/windows.svg" "${SYS_PATH}/icons/windows.svg"
+		echo "[Desktop Entry]
 Name=Windows
 Exec=${BIN_PATH}/winapps windows %F
 Terminal=false
@@ -204,11 +222,12 @@ StartupWMClass=Micorosoft Windows
 Comment=Micorosoft Windows
 Categories=Windows
 " |${SUDO} tee "${APP_PATH}/windows.desktop" > /dev/null
-	${SUDO} rm -f "${BIN_PATH}/windows"
-	echo "#!/usr/bin/env bash
+		${SUDO} rm -f "${BIN_PATH}/windows"
+		echo "#!/usr/bin/env bash
 ${BIN_PATH}/winapps windows
 " |${SUDO} tee "/${BIN_PATH}/windows" > /dev/null
-	${SUDO} chmod a+x "${BIN_PATH}/windows"
+		${SUDO} chmod a+x "${BIN_PATH}/windows"
+	fi
 	echo " Finished."
 }
 
