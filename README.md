@@ -14,7 +14,15 @@ WinApps was created as an easy, one command way to include apps running inside a
 - You can right click on any files in your home directory to open with an application, too
 
 ## Currently supported applications
-Note: The app list below is fueled by the community, and therefore many apps may be untested by the WinApps team.
+### WinApps supports ***ANY*** installed application on your system.
+
+It does this by:
+1. Scanning your system for offically configured applications (below)
+2. Scanning your system for any other EXE files with install records in the Windows Registry
+
+Any officially configured applications will have support for high-resolution icons and mime types for automatically detecting what files can be opened by each application. Any other detected executable files will leverage the icons pulled from the EXE.
+
+Note: The officially configured application list below is fueled by the community, and therefore some apps may be untested by the WinApps team.
 
 <table cellpadding="10" cellspacing="0" border="0">
   <tr>
