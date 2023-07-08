@@ -173,9 +173,6 @@ The following optional commands can be used to manage your application configura
 ./installer.sh --system --uninstall  # Remove all configured applications for the entire system
 ```
 
-## Common issues
-- **Black window**: This is a FreeRDP bug that sometimes comes up. Try restarting the application or rerunning the command. If that doesn't work, ensure you have `MULTIMON` disabled.
-
 ## Shout outs
 - Some icons pulled from
   - Fluent UI React - Icons under [MIT License](https://github.com/Fmstrat/fluent-ui-react/blob/master/LICENSE.md) 
