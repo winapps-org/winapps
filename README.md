@@ -6,8 +6,6 @@ Run Windows apps such as Microsoft Office/Adobe in Linux (Ubuntu/Fedora) and GNO
 
 <img src="demo/demo.gif" width=1000>
 
-***Proud to have made the top spot on [r/linux](https://www.reddit.com/r/linux) on launch day.***
-
 ## How it works
 WinApps was created as an easy, one command way to include apps running inside a VM (or on any RDP server) directly into GNOME as if they were native applications. WinApps works by:
 - Running a Windows RDP server in a background VM container
