@@ -1,3 +1,5 @@
+use winapps;
+
 fn main() {
-    println!("Hello, world!");
+    println!("Test lib: {}", winapps::add(1, 2));
 }
