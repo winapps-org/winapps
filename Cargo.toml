@@ -1,0 +1,6 @@
+[workspace]
+members = [
+    "winapps",
+    "winapps-cli",
+    "winapps-gui",
+]
