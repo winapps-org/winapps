@@ -22,21 +22,14 @@ jobs:
   rust-clippy-analyze:
     name: Run rust-clippy analyzing
     runs-on: ubuntu-latest
+    
     permissions:
       contents: read
       security-events: write
-      actions: read # only required for a private repository by github/codeql-action/upload-sarif to get the Action run status
+      
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
-
-      - name: Install Rust toolchain
-        uses: actions-rs/toolchain@16499b5e05bf2e26879000db0c1d13f7e13fa3af #@v1
-        with:
-          profile: minimal
-          toolchain: stable
-          components: clippy
-          override: true
+        uses: actions/checkout@v3
 
       - name: Install required cargo
         run: cargo install clippy-sarif sarif-fmt
