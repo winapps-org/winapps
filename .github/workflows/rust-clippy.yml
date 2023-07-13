@@ -1,0 +1,48 @@
+# This workflow uses actions that are not certified by GitHub.
+# They are provided by a third-party and are governed by
+# separate terms of service, privacy policy, and support
+# documentation.
+# rust-clippy is a tool that runs a bunch of lints to catch common
+# mistakes in your Rust code and help improve your Rust code.
+# More details at https://github.com/rust-lang/rust-clippy
+# and https://rust-lang.github.io/rust-clippy/
+
+name: Rust Clippy
+
+on:
+  push:
+    branches: [ "rewrite", "*" ]
+  pull_request:
+    # The branches below must be a subset of the branches above
+    branches: [ "rewrite" ]
+  schedule:
+    - cron: '23 2 * * 5'
+
+jobs:
+  rust-clippy-analyze:
+    name: Run rust-clippy analyzing
+    runs-on: ubuntu-latest
+    
+    permissions:
+      contents: read
+      security-events: write
+      
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Install required cargo
+        run: cargo install clippy-sarif sarif-fmt
+
+      - name: Run rust-clippy
+        run:
+          cargo clippy
+          --all-features
+          --message-format=json | clippy-sarif | tee rust-clippy-results.sarif | sarif-fmt
+        continue-on-error: true
+
+      - name: Upload analysis results to GitHub
+        uses: github/codeql-action/upload-sarif@v2
+        with:
+          sarif_file: rust-clippy-results.sarif
+          wait-for-processing: true
