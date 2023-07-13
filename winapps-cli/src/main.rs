@@ -25,8 +25,7 @@ fn main() {
         }
         Some((_, _)) => {
             cli.about("Command not found try existing ones!")
-                .print_help()
-                .unwrap();
+                .print_help();
         }
         _ => unreachable!(),
     }
