@@ -3,6 +3,9 @@ name: Rust Fmt
 on:
   push:
     branches: [ "rewrite" ]
+    
+env:
+  CARGO_TERM_COLOR: always
 
 jobs:
   format:
