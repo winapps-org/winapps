@@ -3,6 +3,9 @@ name: Rust Fmt
 on:
   push:
     branches: [ "rewrite" ]
+
+permissions:
+  pull-requests: write
     
 env:
   CARGO_TERM_COLOR: always
@@ -10,6 +13,10 @@ env:
 jobs:
   format:
     runs-on: ubuntu-latest
+    
+    permissions:
+      contents: write
+    
     steps:
       - uses: actions/checkout@v3
       - name: Formatting Code
