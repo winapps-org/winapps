@@ -1,0 +1,20 @@
+name: Rust Check
+
+on:
+  push:
+    branches: [ "rewrite" ]
+  pull_request:
+    branches: [ "rewrite" ]
+    
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  format:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v3
+      - uses: mirlahiji/rust-action@master
+        with:
+          args: cd integration-test && cargo fmt -- --check && cargo clippy -- -Dwarnings && cargo test
