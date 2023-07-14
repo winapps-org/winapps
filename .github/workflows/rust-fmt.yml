@@ -22,7 +22,6 @@ jobs:
       - name: Formatting Code
         run: cargo fmt --all --verbose
       - name: Create Pull Request
-      - name: pull-request
         run: |
           gh_pr_up() { gh pr create $* || gh pr edit $* }
           gh_pr_up --title "Bot Fix: Formatting" --body "Fix formatting with cargo fmt"
