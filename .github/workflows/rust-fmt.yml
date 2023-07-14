@@ -12,9 +12,8 @@ jobs:
       - name: Formatting Code
         run: cargo fmt --all
       - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v5
+        uses: repo-sync/pull-request@v2
         with:
-          commit-message: Fix Formatt
-          title: Formatt Code
-          body: Running cargo fmt --all results
-          branch: rewrite
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          destination_branch: "rewrite"
+          source_branch: rewrite
