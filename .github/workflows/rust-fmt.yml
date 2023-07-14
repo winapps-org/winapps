@@ -20,7 +20,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Formatting Code
-        run: cargo fmt --all
+        run: cargo fmt --all --verbose
       - name: Create Pull Request
         uses: repo-sync/pull-request@v2
         with:
