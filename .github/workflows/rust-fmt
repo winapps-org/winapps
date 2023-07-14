@@ -1,0 +1,14 @@
+name: Rust Fmt
+
+on:
+  push:
+    branches: [ "rewrite" ]
+
+jobs:
+  format:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: mbrobbel/rustfmt-check@master
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
