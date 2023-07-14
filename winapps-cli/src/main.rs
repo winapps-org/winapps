@@ -12,7 +12,7 @@ fn cli() -> Command {
 
 fn main() {
     let cli = cli();
-    let matches = cli.clone(         ).get_matches();
+    let matches = cli.clone().get_matches();
 
     match matches.subcommand() {
         Some(("check", _)) => {
