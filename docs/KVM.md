@@ -135,7 +135,7 @@ Leave everything as default and click `Next` through the installer. This will in
 
 ![](kvm/25.png)
 
-Once you finish the driver install, you will need to make some registry changes to enable RDP Applications to run on the system. Start by downloading the [RDPApps.reg](/install/RDPApps.reg), right clicking on the `Raw` button, and clicking on `Save target as`.
+Once you finish the driver install, you will need to make some registry changes to enable RDP Applications to run on the system. Start by downloading the [RDPApps.reg](/install/RDPApps.reg) file, right clicking on the `Raw` button, and clicking on `Save target as`.
 
 ![](kvm/26.png)
 
