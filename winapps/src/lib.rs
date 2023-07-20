@@ -7,6 +7,16 @@ use std::{
     path::Path,
 };
 
+mod freerdp;
+
+pub trait RemoteClient {
+    fn check_depends(&self);
+
+    fn load_config(&self, path: &str);
+
+    fn run_app(&self, app: &str);
+}
+
 #[derive(new, Debug, Deserialize, Serialize)]
 pub struct Config {
     #[new(value = "HostConfig::new()")]
@@ -31,16 +41,6 @@ pub struct RemoteConfig {
     username: String,
     #[new(value = "\"RDPPass\".to_string()")]
     password: String,
-}
-
-pub trait RemoteClient {
-    fn check_depends(&self) -> bool {
-        panic!("Dependency check not implemented!");
-    }
-
-    fn load_config(&self, path: &str);
-
-    fn run_app(&self, app: &str);
 }
 
 pub fn load_config(path: Option<&str>) -> Config {
