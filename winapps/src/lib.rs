@@ -60,12 +60,14 @@ pub fn load_config(path: Option<&str>) -> Config {
         let mut config_file =
             File::create(&config_file).expect("Failed to create configuration file");
 
-        let gen_config = toml::to_string(&config).expect("Failed to generate default configuration");
+        let gen_config =
+            toml::to_string(&config).expect("Failed to generate default configuration");
         write!(config_file, "{}", gen_config).expect("Failed to write configuration file");
     }
 
     let config_file = fs::read_to_string(config_file).expect("Failed to read configuration file");
-    let config: Config = toml::from_str(config_file.as_str()).expect("Failed to parse the configuration");
+    let config: Config =
+        toml::from_str(config_file.as_str()).expect("Failed to parse the configuration");
 
     config
 }
