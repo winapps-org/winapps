@@ -5,14 +5,14 @@ on:
     branches: [ "rewrite" ]
   pull_request:
     branches: [ "rewrite" ]
-    
+
 env:
   CARGO_TERM_COLOR: always
 
 jobs:
   format:
     runs-on: ubuntu-latest
-    
+
     steps:
       - uses: actions/checkout@v3
       - uses: mirlahiji/rust-action@master

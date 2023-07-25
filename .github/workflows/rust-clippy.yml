@@ -22,11 +22,11 @@ jobs:
   rust-clippy-analyze:
     name: Run rust-clippy analyzing
     runs-on: ubuntu-latest
-    
+
     permissions:
       contents: read
       security-events: write
-      
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
