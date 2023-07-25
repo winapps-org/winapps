@@ -1,1 +1,4 @@
+ci:
+  autoupdate_branch: "rewrite"
+
 repos: []
