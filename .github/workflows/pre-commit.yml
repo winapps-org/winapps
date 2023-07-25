@@ -1,0 +1,14 @@
+name: pre-commit-ci-lite
+
+on:
+  push:
+    branches: [ "rewrite" ]
+  pull_request:
+    branches: [ "rewrite" ]
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: pre-commit-ci/lite-action@v1.0.1
+        if: always()
