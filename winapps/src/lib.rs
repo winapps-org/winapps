@@ -1,3 +1,5 @@
+pub mod quickemu;
+
 use derive_new::new;
 use home::home_dir;
 use serde::{Deserialize, Serialize};

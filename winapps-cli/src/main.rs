@@ -1,4 +1,5 @@
 use clap::Command;
+use winapps::quickemu::{create_vm, run_vm};
 
 fn cli() -> Command {
     Command::new("winapps-cli")
@@ -8,6 +9,8 @@ fn cli() -> Command {
         .allow_external_subcommands(true)
         .subcommand(Command::new("check").about("Checks remote connection"))
         .subcommand(Command::new("connect").about("Connects to remote"))
+        .subcommand(Command::new("create-vm").about("Create a windows 10 vm using quickemu"))
+        .subcommand(Command::new("run-vm").about("Start the vm using quickemu"))
 }
 
 fn main() {
@@ -22,6 +25,14 @@ fn main() {
         }
         Some(("connect", _)) => {
             println!("Connecting to remote");
+        }
+        Some(("create-vm", _)) => {
+            println!("Creating windows 10 vm..");
+            create_vm();
+        }
+        Some(("run-vm", _)) => {
+            println!("Starting vm..");
+            run_vm();
         }
         Some((_, _)) => {
             cli.about("Command not found, try existing ones!")
