@@ -18,15 +18,18 @@ on:
   schedule:
     - cron: '23 2 * * 5'
 
+env:
+  CARGO_TERM_COLOR: always
+
 jobs:
   rust-clippy-analyze:
     name: Run rust-clippy analyzing
     runs-on: ubuntu-latest
-    
+
     permissions:
       contents: read
       security-events: write
-      
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v3

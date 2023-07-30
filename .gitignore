@@ -1,6 +1,10 @@
 # Generated files
 target/
 
-# The library shouldn't decide about the exact versions of 
+# The library shouldn't decide about the exact versions of
 # its dependencies, but let the downstream crate decide.
 Cargo.lock
+
+# We don't want to commit IDE configuration files.
+.idea/
+.vscode/

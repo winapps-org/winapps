@@ -24,8 +24,9 @@ fn main() {
             println!("Connecting to remote");
         }
         Some((_, _)) => {
-            cli.about("Command not found try existing ones!")
-                .print_help();
+            cli.about("Command not found, try existing ones!")
+                .print_help()
+                .expect("Couldn't print help");
         }
         _ => unreachable!(),
     }
