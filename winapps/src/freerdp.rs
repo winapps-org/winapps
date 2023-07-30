@@ -1,4 +1,4 @@
-pub mod freerdp {
+pub mod freerdp_back {
     use crate::RemoteClient;
 
     struct Freerdp {}
@@ -8,11 +8,11 @@ pub mod freerdp {
             todo!()
         }
 
-        fn load_config(&self, path: &str) {
+        fn load_config(&self, _path: &str) {
             todo!()
         }
 
-        fn run_app(&self, app: &str) {
+        fn run_app(&self, _app: &str) {
             todo!()
         }
     }
