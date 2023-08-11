@@ -16,7 +16,7 @@ To get things going, use:
 ``` bash
 brew install --cask xquartz # reboot after installing this
 brew install coreutils freerdp
-git clone https://github.com/winapps-org/winapps.git
+git clone -b legacy-macos https://github.com/winapps-org/winapps.git
 cd winapps
 ```
 
