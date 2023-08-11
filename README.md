@@ -7,7 +7,7 @@ Originally created by fmstrat https://github.com/Fmstrat/winapps/
 ### Step 1: Set up a Windows Virtual Machine
 The best solution for running a VM as a subsystem for WinApps would be KVM. KVM is a CPU and memory-efficient virtualization engine. To set up the VM for WinApps, follow this guide:
 
-- [Creating a Virtual Machine in KVM using UTM](docs/UTM.md)
+- [Creating a Virtual Machine in KVM using UTM](docs/KVM.md)
 
 If you already have a Virtual Machine or server you wish to use with WinApps, you will need to merge `install/RDPApps.reg` into the VM's Windows Registry. If this VM is in KVM and you want to use auto-IP detection, you will need to name the machine `RDPWindows`. Directions for both of these can be found in the guide linked above.
 
