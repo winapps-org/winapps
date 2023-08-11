@@ -28,11 +28,16 @@ function dprint() {
 
 dprint "START"
 
+if [ -z "$(which gstat)" ]; then
+  echo "You need gnu coreutils! (gstat)"
+  echo "  brew install coreutils"
+fi
+
 if [ -f "${HOME}/.local/share/winapps/run" ]; then
-	LAST_RAN=$(stat -t -c %Y "${HOME}/.local/share/winapps/run")
+	LAST_RAN=$(gstat -t -c %Y "${HOME}/.local/share/winapps/run")
 	dprint "LAST_RAN:${LAST_RAN}"
 	touch "${HOME}/.local/share/winapps/run"
-	THIS_RUN=$(stat -t -c %Y "${HOME}/.local/share/winapps/run")
+	THIS_RUN=$(gstat -t -c %Y "${HOME}/.local/share/winapps/run")
 	dprint "THIS_RUN:${THIS_RUN}"
 	if (( $THIS_RUN - $LAST_RAN < 2 )); then
 		exit
@@ -43,24 +48,13 @@ fi
 
 if [ -z "$(which xfreerdp)" ]; then
 	echo "You need xfreerdp!"
-	echo "  sudo apt-get install -y freerdp2-x11"
+	echo "  brew install freerdp"
 	exit
 fi
 
 if [ -z "${RDP_IP}" ]; then
-	if [ -z "$(groups |grep libvirt)" ]; then
-		echo "You are not a member of the libvirt group. Run the below then reboot."
-		echo '  sudo usermod -a -G libvirt $(whoami)'
-		echo '  sudo usermod -a -G kvm $(whoami)'
-		exit
-	fi
-	if [ -z "$(virsh list |grep RDPWindows)" ]; then
-		echo "RDPWindows is not running, run:"
-		echo "  virsh start RDPWindows"
-		exit
-	fi
-	RDP_IP=$(virsh net-dhcp-leases default |grep RDPWindows |awk '{print $5}')
-	RDP_IP=${RDP_IP%%\/*}
+  echo "Specify an IP! Automatic IP discovery is not supported on macOS!"
+  exit
 fi
 
 dprint "1:${1}"
@@ -81,28 +75,8 @@ elif [ "${1}" = "manual" ]; then
 	dprint "MANUAL:${2}"
 	xfreerdp ${RDP_FLAGS} /d:"${RDP_DOMAIN}" /u:"${RDP_USER}" /p:"${RDP_PASS}" /v:${RDP_IP} +auto-reconnect +home-drive -wallpaper /scale:${RDP_SCALE} /dynamic-resolution /${MULTI_FLAG} /app:"${2}" 1> /dev/null 2>&1 &
 elif [ "${1}" != "install" ]; then
-	dprint "DIR:${DIR}"
-	if [ -e "${DIR}/../apps/${1}/info" ]; then
-		. "${DIR}/../apps/${1}/info"
-		ICON="${DIR}/../apps/${1}/icon.svg"
-	elif [ -e "${HOME}/.local/share/winapps/apps/${1}/info" ]; then
-		. "${HOME}/.local/share/winapps/apps/${1}/info"
-		ICON="${HOME}/.local/share/winapps/apps/${1}/icon.svg"
-	elif [ -e "/usr/local/share/winapps/apps/${1}/info" ]; then
-		. "/usr/local/share/winapps/apps/${1}/info"
-		ICON="/usr/local/share/winapps/apps/${1}/icon.svg"
-	else
-		echo "You need to run 'install.sh' first."
-		exit 1
-	fi
-	if [ -n "${2}" ]; then
-		dprint "HOME:${HOME}"
-		FILE=$(echo "${2}" | sed 's|'"${HOME}"'|\\\\tsclient\\home|;s|/|\\|g;s|\\|\\\\|g')
-		dprint "FILE:${FILE}"
-		xfreerdp ${RDP_FLAGS} /d:"${RDP_DOMAIN}" /u:"${RDP_USER}" /p:"${RDP_PASS}" /v:${RDP_IP} +auto-reconnect +clipboard +home-drive -wallpaper /scale:${RDP_SCALE} /dynamic-resolution /${MULTI_FLAG} /wm-class:"${FULL_NAME}" /app:"${WIN_EXECUTABLE}" /app-icon:"${ICON}" /app-cmd:"\"${FILE}\"" 1> /dev/null 2>&1 &
-	else
-		xfreerdp ${RDP_FLAGS} /d:"${RDP_DOMAIN}" /u:"${RDP_USER}" /p:"${RDP_PASS}" /v:${RDP_IP} +auto-reconnect +clipboard +home-drive -wallpaper /scale:${RDP_SCALE} /dynamic-resolution /${MULTI_FLAG} /wm-class:"${FULL_NAME}" /app:"${WIN_EXECUTABLE}" /app-icon:"${ICON}" 1> /dev/null 2>&1 &
-	fi
+  echo "This command is unsupported on macOS!"
+  exit
 fi
 
 dprint "END"
