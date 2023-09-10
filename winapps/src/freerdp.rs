@@ -23,5 +23,3 @@ pub mod freerdp_back {
         }
     }
 }
-
-
