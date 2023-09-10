@@ -14,7 +14,7 @@ pub mod freerdp_back {
             xfreerdp.spawn().expect("Freerdp execution failed! It needs to be installed!");
             println!("Freerdp found!");
             
-            println!("Checks success!");
+            println!("All dependencies found!");
         }
 
         fn run_app(&self, config: Config, _app: &str) {
