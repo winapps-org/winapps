@@ -1,18 +1,23 @@
 pub mod freerdp_back {
-    use crate::RemoteClient;
+    use std::process::{Command, Stdio};
 
-    struct Freerdp {}
+    use crate::{RemoteClient, Config};
+
+    pub struct Freerdp {}
 
     impl RemoteClient for Freerdp {
-        fn check_depends(&self) {
-            todo!()
+        fn check_depends(&self, _config: Config) {
+
+            let mut xfreerdp = Command::new("xfreerdp");
+            xfreerdp.stdout(Stdio::null());
+            xfreerdp.args(["-h"]);
+            xfreerdp.spawn().expect("Freerdp execution failed! It needs to be installed!");
+            println!("Freerdp found!");
+            
+            println!("Checks success!");
         }
 
-        fn load_config(&self, _path: &str) {
-            todo!()
-        }
-
-        fn run_app(&self, _app: &str) {
+        fn run_app(&self, config: Config, _app: &str) {
             todo!()
         }
     }

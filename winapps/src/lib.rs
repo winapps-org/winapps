@@ -1,20 +1,18 @@
 use derive_new::new;
-use home::home_dir;
 use serde::{Deserialize, Serialize};
 use std::io::Write;
 use std::{
+    env,
     fs::{self, File},
     path::Path,
 };
 
-mod freerdp;
+pub mod freerdp;
 
 pub trait RemoteClient {
-    fn check_depends(&self);
+    fn check_depends(&self, config: Config);
 
-    fn load_config(&self, path: &str);
-
-    fn run_app(&self, app: &str);
+    fn run_app(&self, config: Config, app: &str);
 }
 
 #[derive(new, Debug, Deserialize, Serialize)]
@@ -44,8 +42,8 @@ pub struct RemoteConfig {
 }
 
 pub fn load_config(path: Option<&str>) -> Config {
-    let home = home_dir().expect("Could not find the home path!");
-    let default = &format!("{}{}", home.to_str().unwrap(), "/.config/winapps/");
+    let config = env::var("XDG_CONFIG_HOME").expect("Could not find the home path!");
+    let default = &format!("{}{}", config, "/winapps/");
     let path = Path::new(path.unwrap_or(default));
     let config = Config::new();
 

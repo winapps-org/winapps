@@ -1,4 +1,6 @@
 use clap::Command;
+use winapps::RemoteClient;
+use winapps::freerdp::freerdp_back::Freerdp;
 
 fn cli() -> Command {
     Command::new("winapps-cli")
@@ -14,14 +16,20 @@ fn main() {
     let cli = cli();
     let matches = cli.clone().get_matches();
 
+    let client: &dyn RemoteClient = &Freerdp{};
+
     match matches.subcommand() {
         Some(("check", _)) => {
             println!("Checking remote connection");
 
-            let _config = winapps::load_config(None);
+            let config = winapps::load_config(None);
+            client.check_depends(config);
         }
         Some(("connect", _)) => {
             println!("Connecting to remote");
+
+            let config = winapps::load_config(None);
+            client.run_app(config, "explorer");
         }
         Some((_, _)) => {
             cli.about("Command not found, try existing ones!")
