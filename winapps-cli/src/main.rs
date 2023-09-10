@@ -1,6 +1,6 @@
-use clap::Command;
-use winapps::RemoteClient;
+pub(crate) use clap::Command;
 use winapps::freerdp::freerdp_back::Freerdp;
+use winapps::RemoteClient;
 
 fn cli() -> Command {
     Command::new("winapps-cli")
@@ -16,7 +16,7 @@ fn main() {
     let cli = cli();
     let matches = cli.clone().get_matches();
 
-    let client: &dyn RemoteClient = &Freerdp{};
+    let client: &dyn RemoteClient = &Freerdp {};
 
     match matches.subcommand() {
         Some(("check", _)) => {
