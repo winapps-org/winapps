@@ -1,6 +1,6 @@
 use clap::Command;
 use winapps::freerdp::freerdp_back::Freerdp;
-use winapps::quickemu::{create_vm, run_vm};
+use winapps::quickemu::{create_vm, kill_vm, start_vm};
 use winapps::RemoteClient;
 
 fn cli() -> Command {
@@ -11,8 +11,16 @@ fn cli() -> Command {
         .allow_external_subcommands(true)
         .subcommand(Command::new("check").about("Checks remote connection"))
         .subcommand(Command::new("connect").about("Connects to remote"))
-        .subcommand(Command::new("create-vm").about("Create a windows 10 vm using quickemu"))
-        .subcommand(Command::new("run-vm").about("Start the vm using quickemu"))
+        .subcommand(
+            Command::new("vm")
+                .about("Manage a windows 10 vm using quickemu")
+                .subcommand_required(true)
+                .arg_required_else_help(true)
+                .allow_external_subcommands(true)
+                .subcommand(Command::new("create").about("Create a windows 10 vm using quickget"))
+                .subcommand(Command::new("start").about("Start the vm"))
+                .subcommand(Command::new("kill").about("Kill the running VM")),
+        )
 }
 
 fn main() {
@@ -34,14 +42,32 @@ fn main() {
             let config = winapps::load_config(None);
             client.run_app(config, "explorer");
         }
-        Some(("create-vm", _)) => {
-            println!("Creating windows 10 vm..");
-            create_vm();
+
+        Some(("vm", command)) => {
+            match command.subcommand() {
+                Some(("create", _)) => {
+                    println!("Creating windows 10 vm..");
+                    create_vm();
+                }
+                Some(("start", _)) => {
+                    println!("Starting vm..");
+                    start_vm();
+                }
+
+                Some(("kill", _)) => {
+                    println!("Killing vm..");
+                    kill_vm();
+                }
+
+                Some((_, _)) => {
+                    cli.about("Command not found, try existing ones!")
+                        .print_help()
+                        .expect("Couldn't print help");
+                }
+                _ => unreachable!(),
+            };
         }
-        Some(("run-vm", _)) => {
-            println!("Starting vm..");
-            run_vm();
-        }
+
         Some((_, _)) => {
             cli.about("Command not found, try existing ones!")
                 .print_help()

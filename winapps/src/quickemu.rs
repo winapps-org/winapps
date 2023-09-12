@@ -1,5 +1,6 @@
 use home::home_dir;
 use std::env;
+use std::fs;
 use std::path::PathBuf;
 use std::process::exit;
 use std::process::Command;
@@ -51,17 +52,15 @@ pub fn create_vm() {
     println!("{}", String::from_utf8_lossy(&output.stdout));
 }
 
-pub fn run_vm() {
+pub fn start_vm() {
     let data_dir = get_data_dir();
 
-    let output = match Command::new("quickemu")
+    let command = match Command::new("quickemu")
         .current_dir(data_dir)
         .args(["--vm", "windows-10-22H2.conf", "--display", "none"])
         .spawn()
-        .unwrap()
-        .wait_with_output()
     {
-        Ok(o) => o,
+        Ok(c) => c,
         Err(e) => {
             println!("Failed to execute quickemu: {}", e);
             println!("Please make sure quickemu is installed and in your PATH");
@@ -69,5 +68,38 @@ pub fn run_vm() {
         }
     };
 
+    let output = match command.wait_with_output() {
+        Ok(o) => o,
+        Err(e) => {
+            println!("Failed to gather output from quickemu: {}", e);
+            println!("Please make sure quickemu is installed and in your PATH");
+            exit(1);
+        }
+    };
+
     println!("{}", String::from_utf8_lossy(&output.stdout));
+}
+
+pub fn kill_vm() {
+    let data_dir = get_data_dir();
+
+    match fs::read_to_string(data_dir.join("windows-10/windows-10-22H2.pid")) {
+        Ok(pid) => {
+            let pid = pid.trim();
+
+            println!("Killing VM with PID {}", pid);
+
+            match Command::new("kill").arg(pid).spawn() {
+                Ok(_) => (),
+                Err(e) => {
+                    println!("Failed to kill VM: {}", e);
+                    exit(1);
+                }
+            }
+        }
+        Err(e) => {
+            println!("Failed to read PID file: {}", e);
+            exit(1);
+        }
+    }
 }
