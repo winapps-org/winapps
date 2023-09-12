@@ -1,5 +1,7 @@
 use clap::Command;
+use winapps::freerdp::freerdp_back::Freerdp;
 use winapps::quickemu::{create_vm, run_vm};
+use winapps::RemoteClient;
 
 fn cli() -> Command {
     Command::new("winapps-cli")
@@ -17,14 +19,20 @@ fn main() {
     let cli = cli();
     let matches = cli.clone().get_matches();
 
+    let client: &dyn RemoteClient = &Freerdp {};
+
     match matches.subcommand() {
         Some(("check", _)) => {
             println!("Checking remote connection");
 
-            let _config = winapps::load_config(None);
+            let config = winapps::load_config(None);
+            client.check_depends(config);
         }
         Some(("connect", _)) => {
             println!("Connecting to remote");
+
+            let config = winapps::load_config(None);
+            client.run_app(config, "explorer");
         }
         Some(("create-vm", _)) => {
             println!("Creating windows 10 vm..");

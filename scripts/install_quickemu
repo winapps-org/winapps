@@ -9,8 +9,8 @@ import sys
 def clone_repo():
     print("📦 Cloning quickemu...")
 
-    print("> git clone --filter=blob:none https://github.com/wimpysworld/quickemu /tmp/quickemu")
-    os.system("git clone --filter=blob:none https://github.com/wimpysworld/quickemu /tmp/quickemu")
+    print("> git clone --filter=blob:none https://github.com/quickemu-project/quickemu /tmp/quickemu")
+    os.system("git clone --filter=blob:none https://github.com/quickemu-project/quickemu /tmp/quickemu")
 
     print("> mkdir -p ~/.local/bin")
     os.system("mkdir -p ~/.local/bin")

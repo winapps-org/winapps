@@ -18,6 +18,9 @@ on:
   schedule:
     - cron: '23 2 * * 5'
 
+env:
+  CARGO_TERM_COLOR: always
+
 jobs:
   rust-clippy-analyze:
     name: Run rust-clippy analyzing

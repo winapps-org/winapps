@@ -1,11 +1,19 @@
 use home::home_dir;
+use std::env;
 use std::path::PathBuf;
 use std::process::exit;
 use std::process::Command;
 
-pub(crate) fn get_data_dir() -> PathBuf {
+pub fn get_data_dir() -> PathBuf {
     let home = home_dir().expect("Could not find the home path!");
-    let data_dir = home.join(".local/share/winapps");
+
+    let data_dir = match env::var("XDG_DATA_HOME") {
+        Ok(dir) => PathBuf::from(dir).join("winapps"),
+        Err(_) => {
+            println!("Couldn't read XDG_DATA_HOME, falling back to ~/.local/share");
+            home.join(".local/share/winapps")
+        }
+    };
 
     if !data_dir.exists() {
         let dir = data_dir.clone();
@@ -48,8 +56,7 @@ pub fn run_vm() {
 
     let output = match Command::new("quickemu")
         .current_dir(data_dir)
-        .arg("--vm")
-        .arg("windows-10-22H2.conf")
+        .args(["--vm", "windows-10-22H2.conf", "--display", "none"])
         .spawn()
         .unwrap()
         .wait_with_output()
