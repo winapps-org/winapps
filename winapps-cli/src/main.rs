@@ -27,19 +27,16 @@ fn main() {
     let cli = cli();
     let matches = cli.clone().get_matches();
 
+    let config = winapps::load_config(None);
     let client: &dyn RemoteClient = &Freerdp {};
 
     match matches.subcommand() {
         Some(("check", _)) => {
             println!("Checking remote connection");
-
-            let config = winapps::load_config(None);
             client.check_depends(config);
         }
         Some(("connect", _)) => {
             println!("Connecting to remote");
-
-            let config = winapps::load_config(None);
             client.run_app(config, "explorer");
         }
 
@@ -47,16 +44,16 @@ fn main() {
             match command.subcommand() {
                 Some(("create", _)) => {
                     println!("Creating windows 10 vm..");
-                    create_vm();
+                    create_vm(config);
                 }
                 Some(("start", _)) => {
                     println!("Starting vm..");
-                    start_vm();
+                    start_vm(config);
                 }
 
                 Some(("kill", _)) => {
                     println!("Killing vm..");
-                    kill_vm();
+                    kill_vm(config);
                 }
 
                 Some((_, _)) => {

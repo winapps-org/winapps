@@ -1,38 +1,9 @@
-use home::home_dir;
-use std::env;
+use crate::{get_data_dir, save_config, Config};
 use std::fs;
-use std::path::PathBuf;
 use std::process::exit;
 use std::process::Command;
 
-pub fn get_data_dir() -> PathBuf {
-    let home = home_dir().expect("Could not find the home path!");
-
-    let data_dir = match env::var("XDG_DATA_HOME") {
-        Ok(dir) => PathBuf::from(dir).join("winapps"),
-        Err(_) => {
-            println!("Couldn't read XDG_DATA_HOME, falling back to ~/.local/share");
-            home.join(".local/share/winapps")
-        }
-    };
-
-    if !data_dir.exists() {
-        let dir = data_dir.clone();
-        println!(
-            "Data directory {:?} does not exist! Creating...",
-            dir.to_str()
-        );
-        std::fs::create_dir_all(dir).expect("Failed to create directory");
-    }
-
-    if !data_dir.is_dir() {
-        panic!("Data directory {:?} is not a directory!", data_dir.to_str());
-    }
-
-    data_dir
-}
-
-pub fn create_vm() {
+pub fn create_vm(mut config: Config) {
     let data_dir = get_data_dir();
 
     let output = match Command::new("quickget")
@@ -49,15 +20,25 @@ pub fn create_vm() {
         }
     };
 
+    config.vm.name = "windows-10-22H2".to_string();
+    config.vm.short_name = "windows-10".to_string();
+
+    save_config(&config, None).expect("Failed to save config, VM will not start properly");
+
     println!("{}", String::from_utf8_lossy(&output.stdout));
 }
 
-pub fn start_vm() {
+pub fn start_vm(config: Config) {
     let data_dir = get_data_dir();
 
     let command = match Command::new("quickemu")
         .current_dir(data_dir)
-        .args(["--vm", "windows-10-22H2.conf", "--display", "none"])
+        .args([
+            "--vm",
+            &format!("{}.conf", config.vm.name),
+            "--display",
+            "none",
+        ])
         .spawn()
     {
         Ok(c) => c,
@@ -80,10 +61,12 @@ pub fn start_vm() {
     println!("{}", String::from_utf8_lossy(&output.stdout));
 }
 
-pub fn kill_vm() {
+pub fn kill_vm(config: Config) {
     let data_dir = get_data_dir();
 
-    match fs::read_to_string(data_dir.join("windows-10/windows-10-22H2.pid")) {
+    match fs::read_to_string(
+        data_dir.join(format!("{}/{}.pid", config.vm.short_name, config.vm.name)),
+    ) {
         Ok(pid) => {
             let pid = pid.trim();
 
