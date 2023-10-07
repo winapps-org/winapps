@@ -31,13 +31,13 @@ pub struct HostConfig {
 
 #[derive(new, Debug, Deserialize, Serialize)]
 pub struct RemoteConfig {
-    #[new(value = "\"RDPWindows\".to_string()")]
+    #[new(value = "\"127.0.0.1\".to_string()")]
     host: String,
     #[new(value = "\"WORKGROUP\".to_string()")]
     domain: String,
-    #[new(value = "\"RDPUser\".to_string()")]
+    #[new(value = "\"Quickemu\".to_string()")]
     username: String,
-    #[new(value = "\"RDPPass\".to_string()")]
+    #[new(value = "\"quickemu\".to_string()")]
     password: String,
 }
 
