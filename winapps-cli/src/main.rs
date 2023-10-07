@@ -29,7 +29,7 @@ fn main() {
             println!("Connecting to remote");
 
             let config = winapps::load_config(None);
-            client.run_app(config, "explorer");
+            client.run_app(config, "explorer.exe");
         }
         Some((_, _)) => {
             cli.about("Command not found, try existing ones!")
