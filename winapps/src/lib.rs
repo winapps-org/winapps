@@ -1,5 +1,8 @@
+pub mod errors;
+pub mod freerdp;
 pub mod quickemu;
 
+use crate::errors::WinappsError;
 use derive_new::new;
 use home::home_dir;
 use serde::{Deserialize, Serialize};
@@ -10,8 +13,7 @@ use std::{
     fs::{self, File},
     path::Path,
 };
-
-pub mod freerdp;
+use tracing::{info, warn};
 
 pub trait RemoteClient {
     fn check_depends(&self, config: Config);
@@ -59,22 +61,24 @@ pub fn get_config_file(path: Option<&str>) -> PathBuf {
     let default = match env::var("XDG_CONFIG_HOME") {
         Ok(dir) => PathBuf::from(dir).join("winapps"),
         Err(_) => {
-            println!("Couldn't read XDG_CONFIG_HOME, falling back to ~/.config");
-            home_dir()
-                .expect("Could not find the home path!")
-                .join(".config/winapps")
+            warn!("Couldn't read XDG_CONFIG_HOME, falling back to ~/.config");
+            unwrap_or_panic!(home_dir(), "Couldn't find the home directory").join(".config/winapps")
         }
     };
 
-    let path = Path::new(path.unwrap_or(default.to_str().unwrap()));
+    let path = Path::new(path.unwrap_or(unwrap_or_panic!(
+        default.to_str(),
+        "Couldn't convert path {:?} to string",
+        default
+    )));
 
     if !path.exists() {
-        println!("{:?} does not exist! Creating...", path);
+        info!("{:?} does not exist! Creating...", path);
         fs::create_dir_all(path).expect("Failed to create directory");
     }
 
     if !path.is_dir() {
-        panic!("Config directory {:?} is not a directory!", path);
+        error!("Config directory {:?} is not a directory", path).panic();
     }
 
     path.join("config.toml")
@@ -85,54 +89,76 @@ pub fn load_config(path: Option<&str>) -> Config {
     let config_path = get_config_file(path);
 
     if !config_path.exists() {
-        save_config(&config, path).expect("Failed to write default configuration");
+        unwrap_or_panic!(
+            save_config(&config, path),
+            "Failed to write default configuration"
+        );
+
         return config;
     }
 
-    let config_file = fs::read_to_string(config_path).expect("Failed to read configuration file");
-    let config: Config =
-        toml::from_str(config_file.as_str()).expect("Failed to parse the configuration");
+    let config_file = unwrap_or_panic!(
+        fs::read_to_string(config_path),
+        "Failed to read configuration file"
+    );
+
+    let config: Config = unwrap_or_panic!(
+        toml::from_str(config_file.as_str()),
+        "Failed to parse configuration file",
+    );
 
     config
 }
 
-pub fn save_config(config: &Config, path: Option<&str>) -> std::io::Result<()> {
+pub fn save_config(config: &Config, path: Option<&str>) -> Result<(), WinappsError> {
     let config_path = get_config_file(path);
-    let serialized_config = toml::to_string(&config).expect("Failed to serialize configuration");
+    let serialized_config = unwrap_or_panic!(
+        toml::to_string(&config),
+        "Failed to serialize configuration"
+    );
 
     let mut config_file = match config_path.exists() {
-        true => File::open(&config_path).expect("Failed to open configuration file"),
-        false => File::create(&config_path).expect("Failed to create configuration file"),
+        true => unwrap_or_panic!(
+            File::open(&config_path),
+            "Failed to open configuration file"
+        ),
+        false => unwrap_or_panic!(
+            File::create(&config_path),
+            "Failed to create configuration file"
+        ),
     };
 
-    write!(config_file, "{}", serialized_config)
+    if let Err(e) = write!(config_file, "{}", serialized_config) {
+        return Err(error_from!(e, "Failed to write configuration file"));
+    }
+
+    Ok(())
 }
 
 pub fn get_data_dir() -> PathBuf {
-    let data_dir = match env::var("XDG_DATA_HOME") {
+    let path = match env::var("XDG_DATA_HOME") {
         Ok(dir) => PathBuf::from(dir).join("winapps"),
         Err(_) => {
-            println!("Couldn't read XDG_DATA_HOME, falling back to ~/.local/share");
-            home_dir()
-                .expect("Could not find the home path!")
+            warn!("Couldn't read XDG_DATA_HOME, falling back to ~/.local/share");
+            unwrap_or_panic!(home_dir(), "Couldn't find the home directory")
                 .join(".local/share/winapps")
         }
     };
 
-    if !data_dir.exists() {
-        let dir = data_dir.clone();
-        println!(
+    if !path.exists() {
+        let dir = path.clone();
+        info!(
             "Data directory {:?} does not exist! Creating...",
             dir.to_str()
         );
         fs::create_dir_all(dir).expect("Failed to create directory");
     }
 
-    if !data_dir.is_dir() {
-        panic!("Data directory {:?} is not a directory!", data_dir);
+    if !path.is_dir() {
+        error!("Data directory {:?} is not a directory", path).panic();
     }
 
-    data_dir
+    path
 }
 
 pub fn add(left: usize, right: usize) -> usize {
