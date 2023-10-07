@@ -31,7 +31,7 @@ impl WinappsError {
     }
 
     /// This function prints the error to the console and exits the program with an exit code of 1.
-    pub fn unrecoverable(&self) -> ! {
+    pub fn exit(&self) -> ! {
         self.error();
 
         tracing::error!("Unrecoverable error, exiting...");
@@ -102,7 +102,7 @@ where
     T: Sized + Debug,
     U: IntoError<T>,
 {
-    val.into_error(msg).unwrap_or_else(|e| e.unrecoverable())
+    val.into_error(msg).unwrap_or_else(|e| e.exit())
 }
 
 /// This function unwraps a `Result` or `Option` and returns the value if it exists.
