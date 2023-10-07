@@ -1,29 +1,25 @@
-use crate::{get_data_dir, save_config, Config};
+use crate::{get_data_dir, save_config, unwrap_or_exit, Config};
 use std::fs;
-use std::process::exit;
 use std::process::Command;
+use tracing::info;
 
 pub fn create_vm(mut config: Config) {
     let data_dir = get_data_dir();
 
-    let output = match Command::new("quickget")
-        .current_dir(data_dir)
-        .arg("windows")
-        .arg("10")
-        .output()
-    {
-        Ok(o) => o,
-        Err(e) => {
-            println!("Failed to execute quickget: {}", e);
-            println!("Please make sure quickget is installed and in your PATH");
-            exit(1);
-        }
-    };
+    let output = unwrap_or_exit!(
+        Command::new("quickget")
+            .current_dir(data_dir)
+            .arg("windows")
+            .arg("10")
+            .output(),
+        "Failed to execute quickget: \n\
+        Please make sure quickget is installed and in your PATH"
+    );
 
     config.vm.name = "windows-10-22H2".to_string();
     config.vm.short_name = "windows-10".to_string();
 
-    save_config(&config, None).expect("Failed to save config, VM will not start properly");
+    unwrap_or_exit!(save_config(&config, None), "Failed to save config");
 
     println!("{}", String::from_utf8_lossy(&output.stdout));
 }
@@ -31,32 +27,24 @@ pub fn create_vm(mut config: Config) {
 pub fn start_vm(config: Config) {
     let data_dir = get_data_dir();
 
-    let command = match Command::new("quickemu")
-        .current_dir(data_dir)
-        .args([
-            "--vm",
-            &format!("{}.conf", config.vm.name),
-            "--display",
-            "none",
-        ])
-        .spawn()
-    {
-        Ok(c) => c,
-        Err(e) => {
-            println!("Failed to execute quickemu: {}", e);
-            println!("Please make sure quickemu is installed and in your PATH");
-            exit(1);
-        }
-    };
+    let command = unwrap_or_exit!(
+        Command::new("quickemu")
+            .current_dir(data_dir)
+            .args([
+                "--vm",
+                &format!("{}.conf", config.vm.name),
+                "--display",
+                "none",
+            ])
+            .spawn(),
+        "Failed to execute quickemu: \n\
+        Please make sure quickemu is installed and in your PATH"
+    );
 
-    let output = match command.wait_with_output() {
-        Ok(o) => o,
-        Err(e) => {
-            println!("Failed to gather output from quickemu: {}", e);
-            println!("Please make sure quickemu is installed and in your PATH");
-            exit(1);
-        }
-    };
+    let output = unwrap_or_exit!(
+        command.wait_with_output(),
+        "Failed to gather output from quickemu / stdout"
+    );
 
     println!("{}", String::from_utf8_lossy(&output.stdout));
 }
@@ -64,25 +52,17 @@ pub fn start_vm(config: Config) {
 pub fn kill_vm(config: Config) {
     let data_dir = get_data_dir();
 
-    match fs::read_to_string(
-        data_dir.join(format!("{}/{}.pid", config.vm.short_name, config.vm.name)),
-    ) {
-        Ok(pid) => {
-            let pid = pid.trim();
+    let pid = unwrap_or_exit!(
+        fs::read_to_string(
+            data_dir.join(format!("{}/{}.pid", config.vm.short_name, config.vm.name)),
+        ),
+        "Failed to read PID file, is the VM running and the config correct?"
+    );
 
-            println!("Killing VM with PID {}", pid);
+    info!("Killing VM with PID {}", pid);
 
-            match Command::new("kill").arg(pid).spawn() {
-                Ok(_) => (),
-                Err(e) => {
-                    println!("Failed to kill VM: {}", e);
-                    exit(1);
-                }
-            }
-        }
-        Err(e) => {
-            println!("Failed to read PID file: {}", e);
-            exit(1);
-        }
-    }
+    unwrap_or_exit!(
+        Command::new("kill").arg(pid).spawn(),
+        "Failed to kill VM (execute kill)"
+    );
 }
