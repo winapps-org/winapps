@@ -1,4 +1,4 @@
-pub(crate) use clap::Command;
+use clap::{arg, Command};
 use winapps::freerdp::freerdp_back::Freerdp;
 use winapps::RemoteClient;
 
@@ -10,6 +10,11 @@ fn cli() -> Command {
         .allow_external_subcommands(true)
         .subcommand(Command::new("check").about("Checks remote connection"))
         .subcommand(Command::new("connect").about("Connects to remote"))
+        .subcommand(
+            Command::new("app")
+                .about("Connects to app on remote")
+                .arg(arg!(<APP> "App to open")),
+        )
 }
 
 fn main() {
@@ -29,7 +34,13 @@ fn main() {
             println!("Connecting to remote");
 
             let config = winapps::load_config(None);
-            client.run_app(config, "explorer.exe");
+            client.run_app(config, None);
+        }
+        Some(("app", sub_matches)) => {
+            println!("Connecting to app on remote");
+
+            let config = winapps::load_config(None);
+            client.run_app(config, sub_matches.get_one::<String>("APP"));
         }
         Some((_, _)) => {
             cli.about("Command not found, try existing ones!")

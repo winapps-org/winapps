@@ -12,7 +12,7 @@ pub mod freerdp;
 pub trait RemoteClient {
     fn check_depends(&self, config: Config);
 
-    fn run_app(&self, config: Config, app: &str);
+    fn run_app(&self, config: Config, app: Option<&String>);
 }
 
 #[derive(new, Debug, Deserialize, Serialize)]
