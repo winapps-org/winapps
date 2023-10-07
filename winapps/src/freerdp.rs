@@ -29,28 +29,28 @@ pub mod freerdp_back {
             match app {
                 Some(exe) => {
                     xfreerdp.args([
-                        "/app:".to_owned() + exe,
-                        "-wallpaper".to_owned(),
-                        "/d:".to_owned() + &config.rdp.domain,
-                        "/u:".to_owned() + &config.rdp.username,
-                        "/p:".to_owned() + &config.rdp.password,
-                        "/v:".to_owned() + &config.rdp.host,
-                        "/dynamic-resolution".to_owned(),
-                        "+auto-reconnect".to_owned(),
-                        "+clipboard".to_owned(),
-                        "+home-drive".to_owned(),
+                        &format!("/app:{}", exe),
+                        "-wallpaper",
+                        &format!("/d:{}", &config.rdp.domain),
+                        &format!("/u:{}", &config.rdp.username),
+                        &format!("/p:{}", &config.rdp.password),
+                        &format!("/v:{}", &config.rdp.host),
+                        "/dynamic-resolution",
+                        "+auto-reconnect",
+                        "+clipboard",
+                        "+home-drive",
                     ]);
                 }
                 None => {
                     xfreerdp.args([
-                        "/d:".to_owned() + &config.rdp.domain,
-                        "/u:".to_owned() + &config.rdp.username,
-                        "/p:".to_owned() + &config.rdp.password,
-                        "/v:".to_owned() + &config.rdp.host,
-                        "/dynamic-resolution".to_owned(),
-                        "+auto-reconnect".to_owned(),
-                        "+clipboard".to_owned(),
-                        "+home-drive".to_owned(),
+                        &format!("/d:{}", &config.rdp.domain),
+                        &format!("/u:{}", &config.rdp.username),
+                        &format!("/p:{}", &config.rdp.password),
+                        &format!("/v:{}", &config.rdp.host),
+                        "/dynamic-resolution",
+                        "+auto-reconnect",
+                        "+clipboard",
+                        "+home-drive",
                     ]);
                 }
             }
