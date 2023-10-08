@@ -34,6 +34,7 @@ pub fn start_vm(config: Config) {
     let command = match Command::new("quickemu")
         .current_dir(data_dir)
         .args([
+            "--ignore-msrs-always",
             "--vm",
             &format!("{}.conf", config.vm.name),
             "--display",
