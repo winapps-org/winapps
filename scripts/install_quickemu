@@ -6,41 +6,46 @@ import shutil
 import sys
 
 
+def _(c: str):
+    """Execute the command `c` and print it"""
+    print("> " + c)
+    os.system(c)
+
+
 def clone_repo():
+    if os.path.exists(os.path.expanduser("~/.local/share/quickemu")):
+        print("📦 quickemu is already installed. Updating...")
+        update_quickemu()
+        return
+
     print("📦 Cloning quickemu...")
 
-    print("> git clone --filter=blob:none https://github.com/quickemu-project/quickemu /tmp/quickemu")
-    os.system("git clone --filter=blob:none https://github.com/quickemu-project/quickemu /tmp/quickemu")
-
-    print("> mkdir -p ~/.local/bin")
-    os.system("mkdir -p ~/.local/bin")
-
-    print("> mv /tmp/quickemu/quickemu ~/.local/bin")
-    os.system("mv /tmp/quickemu/quickemu ~/.local/bin")
-
-    print("> mv /tmp/quickemu/macrecovery ~/.local/bin")
-    os.system("mv /tmp/quickemu/macrecovery ~/.local/bin")
-
-    print("> mv /tmp/quickemu/quickget ~/.local/bin")
-    os.system("mv /tmp/quickemu/quickget ~/.local/bin")
-
-    print("> mv /tmp/quickemu/windowskey ~/.local/bin")
-    os.system("mv /tmp/quickemu/windowskey ~/.local/bin")
-
-    print("> rm -rf /tmp/quickemu")
-    os.system("rm -rf /tmp/quickemu")
+    _("git clone --filter=blob:none https://github.com/quickemu-project/quickemu ~/.local/share/quickemu")
+    _("mkdir -p ~/.local/bin")
+    _("ln -s ~/.local/share/quickemu/quickemu ~/.local/bin/quickemu")
+    _("ln -s ~/.local/share/quickemu/macrecovery ~/.local/bin/macrecovery")
+    _("ln -s ~/.local/share/quickemu/quickget ~/.local/bin/quickget")
+    _("ln -s ~/.local/share/quickemu/windowskey ~/.local/bin/windowskey")
 
     print("Installation complete.")
+    print("⚠️ Make sure ~/.local/bin is in your PATH.")
+
+
+def update_quickemu():
+    print("📦 Updating quickemu...")
+
+    _("cd ~/.local/share/quickemu")
+    _("git pull")
+
+    print("Update complete.")
     print("⚠️ Make sure ~/.local/bin is in your PATH.")
 
 
 def install_fedora():
     print("📦 Installing dependencies...")
 
-    cmd = "sudo dnf install qemu bash coreutils edk2-tools grep jq lsb procps python3 genisoimage usbutils util-linux " \
-          "sed spice-gtk-tools swtpm wget xdg-user-dirs xrandr unzip socat -y"
-    print("> " + cmd)
-    os.system(cmd)
+    _("sudo dnf install qemu bash coreutils edk2-tools grep jq lsb procps python3 genisoimage usbutils"
+        + " util-linux sed spice-gtk-tools swtpm wget xdg-user-dirs xrandr unzip socat -y")
 
     clone_repo()
 
@@ -50,13 +55,9 @@ def install_fedora():
 def install_deb():
     print("📦 Installing dependencies...")
 
-    print("> sudo apt update")
-    os.system("sudo apt update")
-
-    cmd = "sudo apt install qemu bash coreutils ovmf grep jq lsb-base procps python3 genisoimage usbutils util-linux " \
-          "sed spice-client-gtk libtss2-tcti-swtpm0 wget xdg-user-dirs zsync unzip socat -y"
-    print("> " + cmd)
-    os.system(cmd)
+    _("sudo apt update")
+    _("sudo apt install qemu bash coreutils ovmf grep jq lsb-base procps python3 genisoimage usbutils"
+        + " util-linux sed spice-client-gtk libtss2-tcti-swtpm0 wget xdg-user-dirs zsync unzip socat -y")
 
     clone_repo()
 
@@ -66,14 +67,9 @@ def install_deb():
 def install_ubuntu():
     print("⚠️ Adding ppa...")
 
-    print("> sudo apt-add-repository ppa:flexiondotorg/quickemu")
-    os.system("sudo apt-add-repository ppa:flexiondotorg/quickemu")
-
-    print("> sudo apt update")
-    os.system("sudo apt update")
-
-    print("> sudo apt install quickemu -y")
-    os.system("sudo apt install quickemu -y")
+    _("sudo apt-add-repository ppa:flexiondotorg/quickemu")
+    _("sudo apt update")
+    _("sudo apt install quickemu -y")
 
     sys.exit(0)
 
