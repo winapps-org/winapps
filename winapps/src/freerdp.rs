@@ -33,7 +33,6 @@ pub mod freerdp_back {
                 Some(exe) => {
                     xfreerdp.args([
                         &format!("/app:{}", exe),
-                        "-wallpaper",
                         &format!("/d:{}", &config.rdp.domain),
                         &format!("/u:{}", &config.rdp.username),
                         &format!("/p:{}", &config.rdp.password),
