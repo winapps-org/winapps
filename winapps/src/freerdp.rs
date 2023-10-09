@@ -1,7 +1,8 @@
 pub mod freerdp_back {
     use std::process::{Command, Stdio};
+    use tracing::{info, warn};
 
-    use crate::{Config, RemoteClient};
+    use crate::{unwrap_or_exit, Config, RemoteClient};
 
     pub struct Freerdp {}
 
@@ -11,18 +12,21 @@ pub mod freerdp_back {
             xfreerdp.stdout(Stdio::null());
             xfreerdp.stderr(Stdio::null());
             xfreerdp.args(["-h"]);
-            xfreerdp
-                .spawn()
-                .expect("Freerdp execution failed! It needs to be installed!");
-            println!("Freerdp found!");
 
-            println!("All dependencies found!");
-            println!("Running explorer as test!");
-            println!("Check yourself if it appears correctly!");
+            unwrap_or_exit!(
+                xfreerdp.spawn(),
+                "Freerdp execution failed! It needs to be installed!",
+            );
+
+            info!("Freerdp found!");
+
+            info!("All dependencies found!");
+            info!("Running explorer as test!");
+            warn!("Check yourself if it appears correctly!");
 
             self.run_app(config, Some(&"explorer.exe".to_string()));
 
-            println!("Test finished!");
+            info!("Test finished!");
         }
 
         fn run_app(&self, config: Config, app: Option<&String>) {
@@ -56,7 +60,11 @@ pub mod freerdp_back {
                     ]);
                 }
             }
-            xfreerdp.spawn().expect("Freerdp execution failed!");
+
+            unwrap_or_exit!(
+                xfreerdp.spawn(),
+                "Freerdp execution failed, check logs above!",
+            );
         }
     }
 }
