@@ -1,5 +1,3 @@
-#![allow(clippy::crate_in_macro_def)]
-
 use std::error::Error;
 use std::fmt::Debug;
 use std::process::exit;
@@ -51,7 +49,7 @@ impl WinappsError {
 #[macro_export]
 macro_rules! error {
     ($($fmt:tt)*) => {
-       crate::errors::WinappsError::Message(format!($($fmt)*))
+       $crate::errors::WinappsError::Message(format!($($fmt)*))
     };
 }
 
@@ -61,7 +59,7 @@ macro_rules! error {
 #[macro_export]
 macro_rules! error_from {
     ($err:expr, $($fmt:tt)*) => {
-       crate::errors::WinappsError::WithError(anyhow::Error::new($err), format!($($fmt)*))
+       $crate::errors::WinappsError::WithError(anyhow::Error::new($err), format!($($fmt)*))
     };
 }
 
@@ -123,10 +121,10 @@ where
 #[macro_export]
 macro_rules! unwrap_or_exit {
     ($expr:expr) => {{
-        crate::errors::unwrap_or_exit($expr, "Expected a value, got None / Error".into())
+        $crate::errors::unwrap_or_exit($expr, "Expected a value, got None / Error".into())
     }};
     ($expr:expr, $($fmt:tt)*) => {{
-        crate::errors::unwrap_or_exit($expr, format!($($fmt)*))
+        $crate::errors::unwrap_or_exit($expr, format!($($fmt)*))
     }};
 }
 
@@ -137,9 +135,9 @@ macro_rules! unwrap_or_exit {
 #[macro_export]
 macro_rules! unwrap_or_panic {
     ($expr:expr) => {{
-        crate::errors::unwrap_or_panic($expr, "Expected a value, got None / Error".into())
+        $crate::errors::unwrap_or_panic($expr, "Expected a value, got None / Error".into())
     }};
     ($expr:expr, $($fmt:tt)*) => {{
-        crate::errors::unwrap_or_panic($expr, format!($($fmt)*))
+        $crate::errors::unwrap_or_panic($expr, format!($($fmt)*))
     }};
 }
