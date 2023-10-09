@@ -9,6 +9,7 @@ pub mod freerdp_back {
         fn check_depends(&self, config: Config) {
             let mut xfreerdp = Command::new("xfreerdp");
             xfreerdp.stdout(Stdio::null());
+            xfreerdp.stderr(Stdio::null());
             xfreerdp.args(["-h"]);
             xfreerdp
                 .spawn()
@@ -17,6 +18,7 @@ pub mod freerdp_back {
 
             println!("All dependencies found!");
             println!("Running explorer as test!");
+            println!("Check yourself if it appears correctly!");
 
             self.run_app(config, Some(&"explorer.exe".to_string()));
 
@@ -25,6 +27,8 @@ pub mod freerdp_back {
 
         fn run_app(&self, config: Config, app: Option<&String>) {
             let mut xfreerdp = Command::new("xfreerdp");
+            xfreerdp.stdout(Stdio::null());
+            xfreerdp.stderr(Stdio::null());
             match app {
                 Some(exe) => {
                     xfreerdp.args([
