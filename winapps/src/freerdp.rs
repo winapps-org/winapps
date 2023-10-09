@@ -13,7 +13,6 @@ pub mod freerdp_back {
             xfreerdp
                 .spawn()
                 .expect("Freerdp execution failed! It needs to be installed!");
-
             println!("Freerdp found!");
 
             println!("All dependencies found!");
