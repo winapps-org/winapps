@@ -160,7 +160,3 @@ pub fn get_data_dir() -> PathBuf {
 
     path
 }
-
-pub fn add(left: usize, right: usize) -> usize {
-    left + right
-}
