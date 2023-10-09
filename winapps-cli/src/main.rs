@@ -1,4 +1,4 @@
-use clap::Command;
+use clap::{arg, Command};
 use winapps::freerdp::freerdp_back::Freerdp;
 use winapps::quickemu::{create_vm, kill_vm, start_vm};
 use winapps::RemoteClient;
@@ -11,6 +11,11 @@ fn cli() -> Command {
         .allow_external_subcommands(true)
         .subcommand(Command::new("check").about("Checks remote connection"))
         .subcommand(Command::new("connect").about("Connects to remote"))
+        .subcommand(
+            Command::new("run")
+                .about("Connects to app on remote")
+                .arg(arg!(<APP> "App to open")),
+        )
         .subcommand(
             Command::new("vm")
                 .about("Manage a windows 10 vm using quickemu")
@@ -27,17 +32,24 @@ fn main() {
     let cli = cli();
     let matches = cli.clone().get_matches();
 
-    let config = winapps::load_config(None);
     let client: &dyn RemoteClient = &Freerdp {};
+    let config = winapps::load_config(None);
 
     match matches.subcommand() {
         Some(("check", _)) => {
             println!("Checking remote connection");
+
             client.check_depends(config);
         }
         Some(("connect", _)) => {
             println!("Connecting to remote");
-            client.run_app(config, "explorer");
+
+            client.run_app(config, None);
+        }
+        Some(("run", sub_matches)) => {
+            println!("Connecting to app on remote");
+
+            client.run_app(config, sub_matches.get_one::<String>("APP"));
         }
 
         Some(("vm", command)) => {
