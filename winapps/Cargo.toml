@@ -7,5 +7,6 @@ edition = "2021"
 
 [dependencies]
 derive-new = "0.5.9"
+home = "0.5.5"
 serde = { version = "1.0.171", features = ["derive"] }
 toml = "0.7.6"
