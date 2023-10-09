@@ -12,7 +12,7 @@ fn cli() -> Command {
         .subcommand(Command::new("check").about("Checks remote connection"))
         .subcommand(Command::new("connect").about("Connects to remote"))
         .subcommand(
-            Command::new("app")
+            Command::new("run")
                 .about("Connects to app on remote")
                 .arg(arg!(<APP> "App to open")),
         )
@@ -46,7 +46,7 @@ fn main() {
 
             client.run_app(config, None);
         }
-        Some(("app", sub_matches)) => {
+        Some(("run", sub_matches)) => {
             println!("Connecting to app on remote");
 
             client.run_app(config, sub_matches.get_one::<String>("APP"));
