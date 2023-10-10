@@ -91,8 +91,7 @@ impl<T> IntoError<T> for Option<T> {
     }
 }
 
-/// This macro unwraps either a `Result` or an `Option` and returns the value if it exists.
-/// It returns a `Result<_, WinappsError>` which can be used to return the error.
+/// This macro creates a `Result<_, WinappsError>` from either a `Result` or an `Option`.
 /// It also works for all other types that implement `IntoError`.
 /// Used internally by `winapps::unwrap_or_exit!` and `winapps::unwrap_or_panic!`.
 #[macro_export]
