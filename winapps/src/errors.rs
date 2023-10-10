@@ -17,7 +17,6 @@ pub enum WinappsError {
 
 impl WinappsError {
     /// This function prints the error to the console.
-    /// It is used internally by the `unrecoverable` and `panic` functions.
     /// All lines are logged as seperate messages, and the source of the error is also logged if it exists.
     fn error(&self) {
         let messages: Vec<String> = self.to_string().split('\n').map(|s| s.into()).collect();
@@ -92,52 +91,69 @@ impl<T> IntoError<T> for Option<T> {
     }
 }
 
-/// This function unwraps a `Result` or `Option` and returns the value if it exists.
-/// Should the value not exist, then the program will exit with an exit code of 1.
-/// Called internally by the `unwrap_or_exit!` macro, which you should probably use instead.
-pub fn unwrap_or_exit<T, U>(val: U, msg: String) -> T
-where
-    T: Sized + Debug,
-    U: IntoError<T>,
-{
-    val.into_error(msg).unwrap_or_else(|e| e.exit())
-}
+/// This macro unwraps either a `Result` or an `Option` and returns the value if it exists.
+/// It returns a `Result<_, WinappsError>` which can be used to return the error.
+/// It also works for all other types that implement `IntoError`.
+/// Used internally by `winapps::unwrap_or_exit!` and `winapps::unwrap_or_panic!`.
+#[macro_export]
+macro_rules! into_error {
+    ($val:expr) => {{
+        fn into_error_impl<T, U>(val: U) -> std::result::Result<T, $crate::errors::WinappsError>
+        where
+            T: std::marker::Sized + std::fmt::Debug,
+            U: $crate::errors::IntoError<T>,
+        {
+            val.into_error(
+                "Expected a value, got None / an Error. \
+                See log above for more detail."
+                    .into(),
+            )
+        }
 
-/// This function unwraps a `Result` or `Option` and returns the value if it exists.
-/// Should the value not exist, then the program will panic.
-/// Called internally by the `unwrap_or_panic!` macro, which you should probably use instead.
-pub fn unwrap_or_panic<T, U>(val: U, msg: String) -> T
-where
-    T: Sized + Debug,
-    U: IntoError<T>,
-{
-    val.into_error(msg).unwrap_or_else(|e| e.panic())
+        into_error_impl($val)
+    }};
+    ($val:expr, $msg:expr) => {{
+        fn into_error_impl<T, U>(
+            val: U,
+            msg: String,
+        ) -> std::result::Result<T, $crate::errors::WinappsError>
+        where
+            T: std::marker::Sized + std::fmt::Debug,
+            U: $crate::errors::IntoError<T>,
+        {
+            val.into_error(msg)
+        }
+
+        into_error_impl($val, $msg.into())
+    }};
 }
 
 /// This macro unwraps a `Result` or `Option` and returns the value if it exists.
 /// Should the value not exist, then the program will exit with exit code 1.
-/// Optionally, a message can be passed to the function which uses standard `format!` syntax.
-/// The result type has to implement `Debug` and `Sized`, and the error type has to implement `Error`, `Send`, `Sync` has to be `'static`.
+/// Optionally, a message can be passed to the function using standard `format!` syntax.
+/// The result type has to implement `Debug` and `Sized`, and the source error type has to implement `Error`, `Send`, `Sync` and has to be `'static`.
+/// See `winapps::unwrap_or_panic!` for a version that panics instead of exiting.
 #[macro_export]
 macro_rules! unwrap_or_exit {
     ($expr:expr) => {{
-        $crate::errors::unwrap_or_exit($expr, "Expected a value, got None / Error".into())
+        $crate::into_error!($expr).unwrap_or_else(|e| e.exit())
     }};
     ($expr:expr, $($fmt:tt)*) => {{
-        $crate::errors::unwrap_or_exit($expr, format!($($fmt)*))
+        $crate::into_error!($expr, format!($($fmt)*)).unwrap_or_else(|e| e.exit())
     }};
 }
 
 /// This macro unwraps a `Result` or `Option` and returns the value if it exists.
 /// Should the value not exist, then the program will panic.
-/// Optionally, a message can be passed to the function which uses standard `format!` syntax.
-/// The result type has to implement `Debug` and `Sized`, and the error type has to implement `Error`, `Send`, `Sync` has to be `'static`.
+/// Optionally, a message can be passed to the function using standard `format!` syntax.
+/// The result type has to implement `Debug` and `Sized`, and the error type has to implement `Error`, `Send`, `Sync` and has to be `'static`.
+/// See `winapps::unwrap_or_exit!` for a version that exits instead of panicking.
 #[macro_export]
 macro_rules! unwrap_or_panic {
     ($expr:expr) => {{
-        $crate::errors::unwrap_or_panic($expr, "Expected a value, got None / Error".into())
+        $crate::into_error!($expr).unwrap_or_else(|e| e.panic())
     }};
     ($expr:expr, $($fmt:tt)*) => {{
-        $crate::errors::unwrap_or_panic($expr, format!($($fmt)*))
+        $crate::into_error!($expr, format!($($fmt)*)).unwrap_or_else(|e| e.panic())
     }};
 }
