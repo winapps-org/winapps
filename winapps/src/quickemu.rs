@@ -54,18 +54,16 @@ pub fn kill_vm(config: Config) {
     let data_dir = get_data_dir();
 
     let pid = unwrap_or_exit!(
-        fs::read_to_string(data_dir.join(format!(
-            "{}/{}.pid",
-            config.vm.short_name,
-            config.vm.name.trim()
-        ))),
+        fs::read_to_string(
+            data_dir.join(format!("{}/{}.pid", config.vm.short_name, config.vm.name))
+        ),
         "Failed to read PID file, is the VM running and the config correct?"
     );
 
     info!("Killing VM with PID {}", pid);
 
     unwrap_or_exit!(
-        Command::new("kill").arg(pid).spawn(),
+        Command::new("kill").arg(pid.trim()).spawn(),
         "Failed to kill VM (execute kill)"
     );
 }
