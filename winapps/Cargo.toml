@@ -9,7 +9,6 @@ edition = "2021"
 anyhow = "1.0.75"
 derive-new = "0.5.9"
 home = "0.5.5"
-lazy_static = "1.4.0"
 serde = { version = "1.0.171", features = ["derive"] }
 thiserror = "1.0.49"
 toml = "0.8.2"
