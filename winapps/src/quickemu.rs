@@ -31,6 +31,7 @@ pub fn start_vm(config: Config) {
         Command::new("quickemu")
             .current_dir(data_dir)
             .args([
+                "--ignore-msrs-always",
                 "--vm",
                 &format!("{}.conf", config.vm.name),
                 "--display",
@@ -53,9 +54,11 @@ pub fn kill_vm(config: Config) {
     let data_dir = get_data_dir();
 
     let pid = unwrap_or_exit!(
-        fs::read_to_string(
-            data_dir.join(format!("{}/{}.pid", config.vm.short_name, config.vm.name)),
-        ),
+        fs::read_to_string(data_dir.join(format!(
+            "{}/{}.pid",
+            config.vm.short_name,
+            config.vm.name.trim()
+        ))),
         "Failed to read PID file, is the VM running and the config correct?"
     );
 
