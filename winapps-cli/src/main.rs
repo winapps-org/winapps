@@ -1,7 +1,7 @@
 use clap::{arg, Command};
 use winapps::freerdp::freerdp_back::Freerdp;
 use winapps::quickemu::{create_vm, kill_vm, start_vm};
-use winapps::RemoteClient;
+use winapps::{unwrap_or_panic, RemoteClient};
 
 fn cli() -> Command {
     Command::new("winapps-cli")
@@ -69,18 +69,22 @@ fn main() {
                 }
 
                 Some((_, _)) => {
-                    cli.about("Command not found, try existing ones!")
-                        .print_help()
-                        .expect("Couldn't print help");
+                    unwrap_or_panic!(
+                        cli.about("Command not found, try existing ones!")
+                            .print_help(),
+                        "Couldn't print help"
+                    );
                 }
                 _ => unreachable!(),
             };
         }
 
         Some((_, _)) => {
-            cli.about("Command not found, try existing ones!")
-                .print_help()
-                .expect("Couldn't print help");
+            unwrap_or_panic!(
+                cli.about("Command not found, try existing ones!")
+                    .print_help(),
+                "Couldn't print help"
+            );
         }
         _ => unreachable!(),
     }
