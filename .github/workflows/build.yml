@@ -16,16 +16,25 @@ jobs:
       fail-fast: false
       matrix:
         platform:
-          - os_name: Linux-aarch64
+          - os_name: Linux-i686-musl
             os: ubuntu-20.04
-            target: aarch64-unknown-linux-musl
-            bin: winapps-linux-arm64
+            target: i686-unknown-linux-musl
+            bin: winapps-linux-i686-musl
+          - os_name: Linux-i686
+            os: ubuntu-20.04
+            target: i686-unknown-linux-gnu
+            bin: winapps-linux-i686
+          - os_name: Linux-x86_64-musl
+            os: ubuntu-20.04
+            target: x84_64-unknown-linux-musl
+            bin: winapps-linux-amd64-musl
           - os_name: Linux-x86_64
             os: ubuntu-20.04
             target: x86_64-unknown-linux-gnu
             bin: winapps-linux-amd64
         toolchain:
-          - stable
+          - nightly
+
     steps:
       - uses: actions/checkout@v4
       - name: Build binary
