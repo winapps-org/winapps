@@ -1,0 +1,57 @@
+name: build and release
+
+on:
+  workflow_dispatch:
+  release:
+    types: [ created ]
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: ${{ matrix.platform.os_name }} with rust ${{ matrix.toolchain }}
+    runs-on: ${{ matrix.platform.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        platform:
+          - os_name: Linux-i686-musl
+            os: ubuntu-20.04
+            target: i686-unknown-linux-musl
+            bin: winapps-linux-i686-musl
+          - os_name: Linux-i686
+            os: ubuntu-20.04
+            target: i686-unknown-linux-gnu
+            bin: winapps-linux-i686
+          - os_name: Linux-x86_64-musl
+            os: ubuntu-20.04
+            target: x84_64-unknown-linux-musl
+            bin: winapps-linux-amd64-musl
+          - os_name: Linux-x86_64
+            os: ubuntu-20.04
+            target: x86_64-unknown-linux-gnu
+            bin: winapps-linux-amd64
+        toolchain:
+          - nightly
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build binary
+        uses: houseabsolute/actions-rust-cross@v0
+        with:
+          command: "build"
+          target: ${{ matrix.platform.target }}
+          toolchain: ${{ matrix.toolchain }}
+          args: "--release"
+          strip: true
+      - name: Rename binary (linux and macos)
+        run: mv target/${{ matrix.platform.target }}/release/winapps target/${{ matrix.platform.target }}/release/${{ matrix.platform.bin }}
+      - name: Generate SHA-256
+        run: shasum -a 256 target/${{ matrix.platform.target }}/release/${{ matrix.platform.bin }} | cut -d ' ' -f 1 > target/${{ matrix.platform.target }}/release/${{ matrix.platform.bin }}.sha256
+      - name: Release binary and SHA-256 checksum to GitHub
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            target/${{ matrix.platform.target }}/release/${{ matrix.platform.bin }}
+            target/${{ matrix.platform.target }}/release/${{ matrix.platform.bin }}.sha256
