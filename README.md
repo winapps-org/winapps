@@ -103,7 +103,7 @@ RDP_PASS="MyWindowsPassword"
 The username and password should be a full user account and password, such as the one created when setting up Windows or a domain user. It cannot be a user/PIN combination as those are not valid for RDP access.
 
 Options:
-- When using a pre-existing non-KVM RDP server, you can use the `RDP_IP` to specify it's location
+- When using a pre-existing non-KVM RDP server, you must use the `RDP_IP` to specify it's location
 - If you are running a VM in KVM with NAT enabled, leave `RDP_IP` commented out and WinApps will auto-detect the right local IP
 - For domain users, you can uncomment and change `RDP_DOMAIN`
 - On high-resolution (UHD) displays, you can set `RDP_SCALE` to the scale you would like [100|140|160|180]
