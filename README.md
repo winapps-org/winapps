@@ -79,7 +79,7 @@ The best solution for running a VM as a subsystem for WinApps would be KVM. KVM 
 
 - [Creating a Virtual Machine in KVM](docs/KVM.md)
 
-If you already have a Virtual Machine or server you wish to use with WinApps, you will need to merge `install/RDPApps.reg` into the VM's Windows Registry. If this VM is in KVM and you want to use auto-IP detection, you will need to name the machine `RDPWindows`. Directions for both of these can be found in the guide linked above.
+If you already have a Virtual Machine or server you wish to use with WinApps, you will need to merge `install/RDPApps.reg` into the VM's Windows Registry. If this VM is in KVM and you want to use auto-IP detection, you will need to name the machine `RDPWindows` (auto-IP detection not supported for non-KVM VMs). Directions for both of these can be found in the guide linked above.
 
 ### Step 2: Download the repo and prerequisites
 To get things going, use:
@@ -103,7 +103,7 @@ RDP_PASS="MyWindowsPassword"
 The username and password should be a full user account and password, such as the one created when setting up Windows or a domain user. It cannot be a user/PIN combination as those are not valid for RDP access.
 
 Options:
-- When using a pre-existing non-KVM RDP server, you can use the `RDP_IP` to specify it's location
+- When using a pre-existing non-KVM RDP server, you must use the `RDP_IP` to specify it's location
 - If you are running a VM in KVM with NAT enabled, leave `RDP_IP` commented out and WinApps will auto-detect the right local IP
 - For domain users, you can uncomment and change `RDP_DOMAIN`
 - On high-resolution (UHD) displays, you can set `RDP_SCALE` to the scale you would like [100|140|160|180]
