@@ -189,8 +189,8 @@ CATEGORIES=\"WinApps\"
 
 # GNOME mimetypes
 MIME_TYPES=\"\"
-" > "${SYS_PATH}/apps/${EXE}/info"
-						echo "${ICONS[$I]}" | base64 -d > "${SYS_PATH}/apps/${EXE}/icon.ico"
+" | sudo tee "${SYS_PATH}/apps/${EXE}/info" > /dev/null
+ 						echo "${ICONS[$I]}" | base64 -d | sudo tee "${SYS_PATH}/apps/${EXE}/icon.ico" > /dev/null
 						waConfigureApp "${EXE}" ico
 						COUNT=$((COUNT + 1))
 					fi
