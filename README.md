@@ -88,6 +88,11 @@ sudo apt install -y freerdp2-x11
 git clone https://github.com/winapps-org/winapps.git
 cd winapps
 ```
+
+> [!note]  
+> Ideally grab freerdp 3.0.0 or later, especially if you're having issues.  
+> You can find nightly builds here: https://github.com/FreeRDP/FreeRDP/wiki/Prebuilds
+
 ### Step 3: Creating your WinApps configuration file
 You will need to create a `~/.config/winapps/winapps.conf` configuration file with the following information in it:
 ``` bash
