@@ -4,7 +4,6 @@ if [ ! -f "${HOME}/.config/winapps/winapps.conf" ] && [ ! -f "${HOME}/.winapps" 
 	echo "You need to create a ~/.config/winapps/winapps.conf configuration. Exiting..."
 	exit
 fi
-
 DIR="$(dirname "$(readlink -f "$0")")"
 RUN="$(date)-${RANDOM}"
 
@@ -22,7 +21,7 @@ fi
 
 function dprint() {
 	if [ "${DEBUG}" = "true" ]; then
-		echo "[${RUN}] ${1}" >> "${HOME}/.local/share/winapps/winapps.log"
+		echo "[${RUN}] ${1}" >>"${HOME}/.local/share/winapps/winapps.log"
 	fi
 }
 
@@ -34,52 +33,59 @@ if [ -f "${HOME}/.local/share/winapps/run" ]; then
 	touch "${HOME}/.local/share/winapps/run"
 	THIS_RUN=$(stat -t -c %Y "${HOME}/.local/share/winapps/run")
 	dprint "THIS_RUN:${THIS_RUN}"
-	if (( $THIS_RUN - $LAST_RAN < 2 )); then
+	if (($THIS_RUN - $LAST_RAN < 2)); then
 		exit
 	fi
 else
 	touch "${HOME}/.local/share/winapps/run"
 fi
 
-if [ -z "$(which xfreerdp)" ]; then
-	echo "You need xfreerdp!"
-	echo "  sudo apt-get install -y freerdp2-x11"
-	exit
+if [ -z "${FREERDP_COMMAND}" ]; then
+	if command -v xfreerdp &> /dev/null
+	then
+		FREERDP_COMMAND="xfreerdp"
+	elif command -v xfreerdp3 &> /dev/null
+	then
+		FREERDP_COMMAND="xfreerdp3"
+	fi
+else
+	dprint "Using custom freerdp command ${FREERDP_COMMAND}"
 fi
 
 if [ -z "${RDP_IP}" ]; then
-	if [ -z "$(groups |grep libvirt)" ]; then
+	if [ -z "$(groups | grep libvirt)" ]; then
 		echo "You are not a member of the libvirt group. Run the below then reboot."
 		echo '  sudo usermod -a -G libvirt $(whoami)'
 		echo '  sudo usermod -a -G kvm $(whoami)'
 		exit
 	fi
-	if [ -z "$(virsh list |grep RDPWindows)" ]; then
+	if [ -z "$(virsh list | grep RDPWindows)" ]; then
 		echo "RDPWindows is not running, run:"
 		echo "  virsh start RDPWindows"
 		exit
 	fi
-	RDP_IP=$(virsh net-dhcp-leases default |grep RDPWindows |awk '{print $5}')
+	RDP_IP=$(virsh net-dhcp-leases default | grep RDPWindows | awk '{print $5}')
 	RDP_IP=${RDP_IP%%\/*}
+
 fi
 
 dprint "1:${1}"
 dprint "2:${2}"
 dprint "@:${@}"
 
-MULTI_FLAG="span"
+MULTI_FLAG="+span"
 if [ "${MULTIMON}" = "true" ]; then
-	MULTI_FLAG="multimon"
+	MULTI_FLAG="/multimon"
 fi
 
 if [ "${1}" = "windows" ]; then
-	xfreerdp ${RDP_FLAGS} /d:"${RDP_DOMAIN}" /u:"${RDP_USER}" /p:"${RDP_PASS}" /v:${RDP_IP} /scale:${RDP_SCALE} /dynamic-resolution +auto-reconnect +home-drive /wm-class:"Microsoft Windows" 1> /dev/null 2>&1 &
+	$FREERDP_COMMAND ${RDP_FLAGS} /d:"${RDP_DOMAIN}" /u:"${RDP_USER}" /p:"${RDP_PASS}" /scale:${RDP_SCALE} +dynamic-resolution +auto-reconnect +home-drive /wm-class:"Microsoft Windows" /v:${RDP_IP} 1>/dev/null 2>&1 &
 elif [ "${1}" = "check" ]; then
 	dprint "CHECK"
-	xfreerdp ${RDP_FLAGS} /d:"${RDP_DOMAIN}" /u:"${RDP_USER}" /p:"${RDP_PASS}" /v:${RDP_IP} +auto-reconnect +home-drive -wallpaper /scale:${RDP_SCALE} /dynamic-resolution /${MULTI_FLAG} /app:"explorer.exe"
+	$FREERDP_COMMAND ${RDP_FLAGS} /d:${RDP_DOMAIN} /u:${RDP_USER} /p:${RDP_PASS} /scale:${RDP_SCALE} +auto-reconnect +home-drive -wallpaper +dynamic-resolution ${MULTI_FLAG} /app:program:"explorer.exe" /v:${RDP_IP}
 elif [ "${1}" = "manual" ]; then
 	dprint "MANUAL:${2}"
-	xfreerdp ${RDP_FLAGS} /d:"${RDP_DOMAIN}" /u:"${RDP_USER}" /p:"${RDP_PASS}" /v:${RDP_IP} +auto-reconnect +home-drive -wallpaper /scale:${RDP_SCALE} /dynamic-resolution /${MULTI_FLAG} /app:"${2}" 1> /dev/null 2>&1 &
+	$FREERDP_COMMAND ${RDP_FLAGS} /d:"${RDP_DOMAIN}" /u:"${RDP_USER}" /p:"${RDP_PASS}" /scale:${RDP_SCALE} +auto-reconnect +home-drive +dynamic-resolution ${MULTI_FLAG} /app:programm:"${2}" /v:${RDP_IP} 1>/dev/null 2>&1 &
 elif [ "${1}" != "install" ]; then
 	dprint "DIR:${DIR}"
 	if [ -e "${DIR}/../apps/${1}/info" ]; then
@@ -99,9 +105,9 @@ elif [ "${1}" != "install" ]; then
 		dprint "HOME:${HOME}"
 		FILE=$(echo "${2}" | sed 's|'"${HOME}"'|\\\\tsclient\\home|;s|/|\\|g;s|\\|\\\\|g')
 		dprint "FILE:${FILE}"
-		xfreerdp ${RDP_FLAGS} /d:"${RDP_DOMAIN}" /u:"${RDP_USER}" /p:"${RDP_PASS}" /v:${RDP_IP} +auto-reconnect +clipboard +home-drive -wallpaper /scale:${RDP_SCALE} /dynamic-resolution /${MULTI_FLAG} /wm-class:"${FULL_NAME}" /app:"${WIN_EXECUTABLE}" /app-icon:"${ICON}" /app-cmd:"\"${FILE}\"" 1> /dev/null 2>&1 &
+		$FREERDP_COMMAND ${RDP_FLAGS} /d:${RDP_DOMAIN} /u:${RDP_USER} /p:${RDP_PASS} /scale:${RDP_SCALE} +auto-reconnect +clipboard +home-drive -wallpaper +dynamic-resolution ${MULTI_FLAG} /wm-class:"${FULL_NAME}" /app:program:"${WIN_EXECUTABLE}",icon:"${ICON}",name:"${FULL_NAME}",cmd:"\"$FILE\"" /v:${RDP_IP} 1>/dev/null 2>&1 &
 	else
-		xfreerdp ${RDP_FLAGS} /d:"${RDP_DOMAIN}" /u:"${RDP_USER}" /p:"${RDP_PASS}" /v:${RDP_IP} +auto-reconnect +clipboard +home-drive -wallpaper /scale:${RDP_SCALE} /dynamic-resolution /${MULTI_FLAG} /wm-class:"${FULL_NAME}" /app:"${WIN_EXECUTABLE}" /app-icon:"${ICON}" 1> /dev/null 2>&1 &
+		$FREERDP_COMMAND ${RDP_FLAGS} /d:${RDP_DOMAIN} /u:${RDP_USER} /p:${RDP_PASS} /scale:${RDP_SCALE} +auto-reconnect +clipboard +home-drive -wallpaper +dynamic-resolution ${MULTI_FLAG} /wm-class:"${FULL_NAME}" /app:program:"${WIN_EXECUTABLE}",icon:"${ICON}",name:"${FULL_NAME}" /v:${RDP_IP} 1>/dev/null 2>&1 &
 	fi
 fi
 
