@@ -118,7 +118,7 @@ function waConfigureApps() {
 	
 	if [ "${INSTALL_TYPE}" != 'User' ]; then
 		menuFromArr APP_INSTALL "How would you like to handle WinApps pre-configured applications?" "${OPTIONS[@]}"
-	else"grep -l -d skip"
+	else "grep -l -d skip"
 		menuFromArr APP_INSTALL "How would you like to handle WinApps pre-configured applications? If any web browser is set-up, may be configured as default browser." "${OPTIONS[@]}"
 	fi
 	if [ "${APP_INSTALL}" = "Select which pre-configured applications to set up" ]; then
