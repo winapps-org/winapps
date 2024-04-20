@@ -196,8 +196,8 @@ The following optional commands can be used to manage your application configura
 ./installer.sh --user --uninstall    # Remove all configured applications for the current user
 ./installer.sh --system --uninstall  # Remove all configured applications for the entire system
 ```
-./installer.sh --user --setupAllOfficiallySupportedApps    # Configures all officially support applications for the current user
-./installer.sh --system --setupAllOfficiallySupportedApps  # Configures all officially support applications for the entire system
+./installer.sh --user --setupAllOfficiallySupportedApps    # Configures all officially supported applications for the current user
+./installer.sh --system --setupAllOfficiallySupportedApps  # Configures all officially supported applications for the entire system
 ```
 
 ## Shout outs
