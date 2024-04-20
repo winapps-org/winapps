@@ -12,3 +12,6 @@ CATEGORIES="WinApps;Office"
 
 # GNOME mimetypes
 MIME_TYPES="application/vnd.ms-outlook;application/octet-stream;"
+
+# System Icon
+ICON="ms-outlook"

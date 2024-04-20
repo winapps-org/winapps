@@ -75,16 +75,19 @@ function waFindInstalled() {
 }
 
 function waConfigureApp() {
-		. "${SYS_PATH}/apps/${1}/info"
-		echo -n "  Configuring ${NAME}..."
-		if [ ${USEDEMO} != 1 ]; then
-			${SUDO} rm -f "${APP_PATH}/${1}.desktop"
-			echo "[Desktop Entry]
+	if [ -z "${ICON}" ]; then
+		ICON=${SYS_PATH}/apps/${1}/icon.${2}
+	fi
+	. "${SYS_PATH}/apps/${1}/info"
+	echo -n "  Configuring ${NAME}..."
+	if [ ${USEDEMO} != 1 ]; then
+		${SUDO} rm -f "${APP_PATH}/${1}.desktop"
+		echo "[Desktop Entry]
 Name=${NAME}
 Exec=${BIN_PATH}/winapps ${1} %F
 Terminal=false
 Type=Application
-Icon=${SYS_PATH}/apps/${1}/icon.${2}
+Icon=$ICON
 StartupWMClass=${FULL_NAME}
 Comment=${FULL_NAME}
 Categories=${CATEGORIES}
@@ -93,10 +96,11 @@ MimeType=${MIME_TYPES}
 			${SUDO} rm -f "${BIN_PATH}/${1}"
 			echo "#!/usr/bin/env bash
 ${BIN_PATH}/winapps ${1} $@
-" |${SUDO} tee "${BIN_PATH}/${1}" > /dev/null
-			${SUDO} chmod a+x "${BIN_PATH}/${1}"
-		fi
-		echo " Finished."
+" | ${SUDO} tee "${BIN_PATH}/${1}" >/dev/null
+		${SUDO} chmod a+x "${BIN_PATH}/${1}"
+	fi
+	echo " Finished."
+	ICON=""
 }
 
 function waConfigureApps() {
@@ -217,7 +221,7 @@ Name=Windows
 Exec=${BIN_PATH}/winapps windows %F
 Terminal=false
 Type=Application
-Icon=${SYS_PATH}/icons/windows.svg
+Icon=distributor-logo-windows
 StartupWMClass=Micorosoft Windows
 Comment=Micorosoft Windows
 Categories=Windows
