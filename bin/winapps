@@ -53,6 +53,7 @@ else
 		dprint "Using custom freerdp command ${FREERDP_COMMAND}"
 	else
 		echo "You have supplied a custom FreeRDP command, but the command is not available."
+		exit
 	fi
 fi
 
