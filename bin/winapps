@@ -49,7 +49,11 @@ if [ -z "${FREERDP_COMMAND}" ]; then
 		FREERDP_COMMAND="xfreerdp3"
 	fi
 else
-	dprint "Using custom freerdp command ${FREERDP_COMMAND}"
+	if command -v $FREERDP_COMMAND &> /dev/null
+		dprint "Using custom freerdp command ${FREERDP_COMMAND}"
+	else
+		echo "You have supplied a custom FreeRDP command, but the command is not available."
+	fi
 fi
 
 if [ -z "${RDP_IP}" ]; then
