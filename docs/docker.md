@@ -2,7 +2,7 @@
 
 ## Why docker?
 
-While working with virsh is completely fine for winapps you have to setup and optimise you vm manually. Docker on the other hand setups most of the stuff automatically and makes the vm highly portable between linux distros.
+While working with virsh is completely fine for winapps, however you have to setup and optimise you vm manually. Docker on the other hand setups most of the stuff automatically and also makes the vm highly portable between linux distros.
 
 # Requirements
 
@@ -42,3 +42,24 @@ services:
 Now you can tune the ram/usage by changing RAM_SIZE/CPU_CORES. You can also specify the windows versions you want to use.
 
 Note: Older versions than Windows 10 are not officially supported. However they might still work with some additional tuning.
+
+You can now just run:
+```shell
+docker compose up
+```
+
+After this just open http://127.0.0.1:8006 in your webbrowser and finish you windows installation as usual. 
+
+Note: RDP will be automatically enabled, however you still need to load the reg files into you vm. You VM IP is your localhost since all ports specified will be passed through.
+
+Now you should be ready to go and try to connect to your vm with winapps.
+
+For stopping the vm just use:
+```shell 
+docker compose stop
+```
+
+For starting again afterwards use:
+```shell
+docker compose start
+```
