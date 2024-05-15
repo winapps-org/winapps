@@ -12,3 +12,6 @@ CATEGORIES="WinApps;Windows"
 
 # GNOME mimetypes
 MIME_TYPES=""
+
+# System Icon
+ICON="Terminal"
