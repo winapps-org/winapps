@@ -44,7 +44,6 @@ repos:
     rev: v6.2.1
     hooks:
       - id: beautysh
-        fail_fast: true
         additional_dependencies:
           - setuptools
 
