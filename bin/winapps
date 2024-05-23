@@ -57,7 +57,7 @@ else
 fi
 
 if [ -z "${RDP_IP}" ]; then
-	if [ ! "$(groups | grep -v libvirt)" ]; then
+	if [ ! "$(groups | grep -o libvirt)" ]; then
 		echo "You are not a member of the libvirt group. Run the below then reboot."
 		echo '  sudo usermod -a -G libvirt $(whoami)'
 		echo '  sudo usermod -a -G kvm $(whoami)'
@@ -88,10 +88,10 @@ if [ "${1}" = "windows" ]; then
 	$FREERDP_COMMAND ${RDP_FLAGS} /d:"${RDP_DOMAIN}" /u:"${RDP_USER}" /p:"${RDP_PASS}" /scale:${RDP_SCALE} +dynamic-resolution +auto-reconnect +home-drive /wm-class:"Microsoft Windows" /v:${RDP_IP} 1>/dev/null 2>&1 &
 elif [ "${1}" = "check" ]; then
 	dprint "CHECK"
-	$FREERDP_COMMAND ${RDP_FLAGS} /d:"${RDP_DOMAIN}" /u:"${RDP_USER}" /p:"${RDP_PASS}" /scale:${RDP_SCALE} +auto-reconnect +home-drive -wallpaper +dynamic-resolution ${MULTI_FLAG} /app:program:"explorer.exe" /v:${RDP_IP}
+	$FREERDP_COMMAND ${RDP_FLAGS} /d:"${RDP_DOMAIN}" /u:"${RDP_USER}" /p:"${RDP_PASS}" /scale:${RDP_SCALE} +auto-reconnect +home-drive -wallpaper +dynamic-resolution ${MULTI_FLAG} /app:"explorer.exe" /v:${RDP_IP}
 elif [ "${1}" = "manual" ]; then
 	dprint "MANUAL:${2}"
-	$FREERDP_COMMAND ${RDP_FLAGS} /d:"${RDP_DOMAIN}" /u:"${RDP_USER}" /p:"${RDP_PASS}" /scale:${RDP_SCALE} +auto-reconnect +home-drive +dynamic-resolution ${MULTI_FLAG} /app:program:"${2}" /v:"${RDP_IP}" 1>/dev/null 2>&1 &
+	$FREERDP_COMMAND ${RDP_FLAGS} /d:"${RDP_DOMAIN}" /u:"${RDP_USER}" /p:"${RDP_PASS}" /scale:${RDP_SCALE} +auto-reconnect +home-drive +dynamic-resolution ${MULTI_FLAG} /app:"${2}" /v:"${RDP_IP}" 1>/dev/null 2>&1 &
 elif [ "${1}" != "install" ]; then
 	dprint "DIR:${DIR}"
 	if [ -e "${DIR}/../apps/${1}/info" ]; then
@@ -114,9 +114,9 @@ elif [ "${1}" != "install" ]; then
 		dprint "HOME:${HOME}"
 		FILE=$(echo "${2}" | sed 's|'"${HOME}"'|\\\\tsclient\\home|;s|/|\\|g;s|\\|\\\\|g')
 		dprint "FILE:${FILE}"
-		$FREERDP_COMMAND ${RDP_FLAGS} /d:"${RDP_DOMAIN}" /u:"${RDP_USER}" /p:"${RDP_PASS}" /scale:${RDP_SCALE} +auto-reconnect +clipboard +home-drive -wallpaper +dynamic-resolution ${MULTI_FLAG} /wm-class:"${FULL_NAME}" /app:program:"${WIN_EXECUTABLE}",icon:"${ICON}",name:"${FULL_NAME}",cmd:"\"$FILE\"" /v:"${RDP_IP}" 1>/dev/null 2>&1 &
+		$FREERDP_COMMAND ${RDP_FLAGS} /d:"${RDP_DOMAIN}" /u:"${RDP_USER}" /p:"${RDP_PASS}" /scale:${RDP_SCALE} +auto-reconnect +clipboard +home-drive -wallpaper +dynamic-resolution ${MULTI_FLAG} /wm-class:"${FULL_NAME}" /app:"${WIN_EXECUTABLE}",icon:"${ICON}",name:"${FULL_NAME}",cmd:"\"$FILE\"" /v:"${RDP_IP}" 1>/dev/null 2>&1 &
 	else
-		$FREERDP_COMMAND ${RDP_FLAGS} /d:"${RDP_DOMAIN}" /u:"${RDP_USER}" /p:"${RDP_PASS}" /scale:${RDP_SCALE} +auto-reconnect +clipboard +home-drive -wallpaper +dynamic-resolution ${MULTI_FLAG} /wm-class:"${FULL_NAME}" /app:program:"${WIN_EXECUTABLE}",icon:"${ICON}",name:"${FULL_NAME}" /v:"${RDP_IP}" 1>/dev/null 2>&1 &
+		$FREERDP_COMMAND ${RDP_FLAGS} /d:"${RDP_DOMAIN}" /u:"${RDP_USER}" /p:"${RDP_PASS}" /scale:${RDP_SCALE} +auto-reconnect +clipboard +home-drive -wallpaper +dynamic-resolution ${MULTI_FLAG} /wm-class:"${FULL_NAME}" /app:"${WIN_EXECUTABLE}",icon:"${ICON}",name:"${FULL_NAME}" /v:"${RDP_IP}" 1>/dev/null 2>&1 &
 	fi
 fi
 
