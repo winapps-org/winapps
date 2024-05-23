@@ -50,7 +50,9 @@ docker compose up
 
 After this just open http://127.0.0.1:8006 in your webbrowser and finish you windows installation as usual. 
 
-Note: RDP will be automatically enabled, however you still need to load the reg files into you vm. You VM IP is your localhost since all ports specified will be passed through.
+Change the RDP_IP config to localhost or "127.0.0.1.
+
+Note: RDP will be automatically enabled, however you still need to load the reg files into you vm.
 
 Now you should be ready to go and try to connect to your vm with winapps.
 
