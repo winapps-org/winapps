@@ -1,75 +1,75 @@
 #!/usr/bin/env bash
 
 if [ ! -f "${HOME}/.config/winapps/winapps.conf" ] && [ ! -f "${HOME}/.winapps" ]; then
-	echo "You need to create a ~/.config/winapps/winapps.conf configuration. Exiting..."
-	exit
+    echo "You need to create a ~/.config/winapps/winapps.conf configuration. Exiting..."
+    exit
 fi
 DIR="$(dirname "$(readlink -f "$0")")"
 RUN="$(date)-${RANDOM}"
 
 if [ ! -d "${HOME}/.local/share/winapps" ]; then
-	mkdir -p "${HOME}/.local/share/winapps"
+    mkdir -p "${HOME}/.local/share/winapps"
 fi
 
 RDP_SCALE=100
 
 if [ -f "${HOME}/.config/winapps/winapps.conf" ]; then
-	. "${HOME}/.config/winapps/winapps.conf"
+    . "${HOME}/.config/winapps/winapps.conf"
 else
-	. "${HOME}/.winapps"
+    . "${HOME}/.winapps"
 fi
 
 function dprint() {
-	if [ "${DEBUG}" = "true" ]; then
-		echo "[${RUN}] ${1}" >>"${HOME}/.local/share/winapps/winapps.log"
-	fi
+    if [ "${DEBUG}" = "true" ]; then
+        echo "[${RUN}] ${1}" >>"${HOME}/.local/share/winapps/winapps.log"
+    fi
 }
 
 dprint "START"
 
 if [ -f "${HOME}/.local/share/winapps/run" ]; then
-	LAST_RAN=$(stat -t -c %Y "${HOME}/.local/share/winapps/run")
-	dprint "LAST_RAN:${LAST_RAN}"
-	touch "${HOME}/.local/share/winapps/run"
-	THIS_RUN=$(stat -t -c %Y "${HOME}/.local/share/winapps/run")
-	dprint "THIS_RUN:${THIS_RUN}"
-	if ((THIS_RUN - LAST_RAN < 2)); then
-		exit
-	fi
+    LAST_RAN=$(stat -t -c %Y "${HOME}/.local/share/winapps/run")
+    dprint "LAST_RAN:${LAST_RAN}"
+    touch "${HOME}/.local/share/winapps/run"
+    THIS_RUN=$(stat -t -c %Y "${HOME}/.local/share/winapps/run")
+    dprint "THIS_RUN:${THIS_RUN}"
+    if ((THIS_RUN - LAST_RAN < 2)); then
+        exit
+    fi
 else
-	touch "${HOME}/.local/share/winapps/run"
+    touch "${HOME}/.local/share/winapps/run"
 fi
 
 if [ -z "${FREERDP_COMMAND}" ]; then
-	if command -v xfreerdp &> /dev/null
-	then
-		FREERDP_COMMAND="xfreerdp"
-	elif command -v xfreerdp3 &> /dev/null
-	then
-		FREERDP_COMMAND="xfreerdp3"
-	fi
+    if command -v xfreerdp &> /dev/null
+    then
+        FREERDP_COMMAND="xfreerdp"
+    elif command -v xfreerdp3 &> /dev/null
+    then
+        FREERDP_COMMAND="xfreerdp3"
+    fi
 elif command -v $FREERDP_COMMAND &> /dev/null
 then
-		dprint "Using custom freerdp command ${FREERDP_COMMAND}"
+    dprint "Using custom freerdp command ${FREERDP_COMMAND}"
 else
-	echo "You have supplied a custom FreeRDP command, but the command is not available."
-	exit
+    echo "You have supplied a custom FreeRDP command, but the command is not available."
+    exit
 fi
 
 if [ -z "${RDP_IP}" ]; then
-	if [ ! "$(groups | grep -v libvirt)" ]; then
-		echo "You are not a member of the libvirt group. Run the below then reboot."
-		echo '  sudo usermod -a -G libvirt $(whoami)'
-		echo '  sudo usermod -a -G kvm $(whoami)'
-		exit
-	fi
-	if [ ! "$(virsh list | grep -v RDPWindows)" ]; then
-		echo "RDPWindows is not running, run:"
-		echo "  virsh start RDPWindows"
-		exit
-	fi
-	RDP_IP=$(virsh net-dhcp-leases default | grep RDPWindows | awk '{print $5}')
-	RDP_IP=${RDP_IP%%\/*}
+    if [ ! "$(groups | grep -v libvirt)" ]; then
+        echo "You are not a member of the libvirt group. Run the below then reboot."
+        echo '  sudo usermod -a -G libvirt $(whoami)'
+        echo '  sudo usermod -a -G kvm $(whoami)'
+        exit
+    fi
+    if [ ! "$(virsh list | grep -v RDPWindows)" ]; then
+        echo "RDPWindows is not running, run:"
+        echo "  virsh start RDPWindows"
+        exit
+    fi
+    RDP_IP=$(virsh net-dhcp-leases default | grep RDPWindows | awk '{print $5}')
+    RDP_IP=${RDP_IP%%\/*}
 
 fi
 
@@ -81,43 +81,43 @@ dprint "@:${@}"
 
 MULTI_FLAG="+span"
 if [ "${MULTIMON}" = "true" ]; then
-	MULTI_FLAG="/multimon"
+    MULTI_FLAG="/multimon"
 fi
 
 if [ "${1}" = "windows" ]; then
-	$FREERDP_COMMAND ${RDP_FLAGS} /d:"${RDP_DOMAIN}" /u:"${RDP_USER}" /p:"${RDP_PASS}" /scale:${RDP_SCALE} +dynamic-resolution +auto-reconnect +home-drive /wm-class:"Microsoft Windows" /v:${RDP_IP} 1>/dev/null 2>&1 &
+    $FREERDP_COMMAND ${RDP_FLAGS} /d:"${RDP_DOMAIN}" /u:"${RDP_USER}" /p:"${RDP_PASS}" /scale:${RDP_SCALE} +dynamic-resolution +auto-reconnect +home-drive /wm-class:"Microsoft Windows" /v:${RDP_IP} 1>/dev/null 2>&1 &
 elif [ "${1}" = "check" ]; then
-	dprint "CHECK"
-	$FREERDP_COMMAND ${RDP_FLAGS} /d:"${RDP_DOMAIN}" /u:"${RDP_USER}" /p:"${RDP_PASS}" /scale:${RDP_SCALE} +auto-reconnect +home-drive -wallpaper +dynamic-resolution ${MULTI_FLAG} /app:program:"explorer.exe" /v:${RDP_IP}
+    dprint "CHECK"
+    $FREERDP_COMMAND ${RDP_FLAGS} /d:"${RDP_DOMAIN}" /u:"${RDP_USER}" /p:"${RDP_PASS}" /scale:${RDP_SCALE} +auto-reconnect +home-drive -wallpaper +dynamic-resolution ${MULTI_FLAG} /app:program:"explorer.exe" /v:${RDP_IP}
 elif [ "${1}" = "manual" ]; then
-	dprint "MANUAL:${2}"
-	$FREERDP_COMMAND ${RDP_FLAGS} /d:"${RDP_DOMAIN}" /u:"${RDP_USER}" /p:"${RDP_PASS}" /scale:${RDP_SCALE} +auto-reconnect +home-drive +dynamic-resolution ${MULTI_FLAG} /app:program:"${2}" /v:"${RDP_IP}" 1>/dev/null 2>&1 &
+    dprint "MANUAL:${2}"
+    $FREERDP_COMMAND ${RDP_FLAGS} /d:"${RDP_DOMAIN}" /u:"${RDP_USER}" /p:"${RDP_PASS}" /scale:${RDP_SCALE} +auto-reconnect +home-drive +dynamic-resolution ${MULTI_FLAG} /app:program:"${2}" /v:"${RDP_IP}" 1>/dev/null 2>&1 &
 elif [ "${1}" != "install" ]; then
-	dprint "DIR:${DIR}"
-	if [ -e "${DIR}/../apps/${1}/info" ]; then
-		# shellcheck disable=SC1090
-		. "${DIR}/../apps/${1}/info"
-		ICON="${DIR}/../apps/${1}/icon.svg"
-	elif [ -e "${HOME}/.local/share/winapps/apps/${1}/info" ]; then
-		# shellcheck disable=SC1090
-		. "${HOME}/.local/share/winapps/apps/${1}/info"
-		ICON="${HOME}/.local/share/winapps/apps/${1}/icon.svg"
-	elif [ -e "/usr/local/share/winapps/apps/${1}/info" ]; then
-		# shellcheck disable=SC1090
-		. "/usr/local/share/winapps/apps/${1}/info"
-		ICON="/usr/local/share/winapps/apps/${1}/icon.svg"
-	else
-		echo "You need to run 'installer.sh' first."
-		exit 1
-	fi
-	if [ -n "${2}" ]; then
-		dprint "HOME:${HOME}"
-		FILE=$(echo "${2}" | sed 's|'"${HOME}"'|\\\\tsclient\\home|;s|/|\\|g;s|\\|\\\\|g')
-		dprint "FILE:${FILE}"
-		$FREERDP_COMMAND ${RDP_FLAGS} /d:"${RDP_DOMAIN}" /u:"${RDP_USER}" /p:"${RDP_PASS}" /scale:${RDP_SCALE} +auto-reconnect +clipboard +home-drive -wallpaper +dynamic-resolution ${MULTI_FLAG} /wm-class:"${FULL_NAME}" /app:program:"${WIN_EXECUTABLE}",icon:"${ICON}",name:"${FULL_NAME}",cmd:"\"$FILE\"" /v:"${RDP_IP}" 1>/dev/null 2>&1 &
-	else
-		$FREERDP_COMMAND ${RDP_FLAGS} /d:"${RDP_DOMAIN}" /u:"${RDP_USER}" /p:"${RDP_PASS}" /scale:${RDP_SCALE} +auto-reconnect +clipboard +home-drive -wallpaper +dynamic-resolution ${MULTI_FLAG} /wm-class:"${FULL_NAME}" /app:program:"${WIN_EXECUTABLE}",icon:"${ICON}",name:"${FULL_NAME}" /v:"${RDP_IP}" 1>/dev/null 2>&1 &
-	fi
+    dprint "DIR:${DIR}"
+    if [ -e "${DIR}/../apps/${1}/info" ]; then
+        # shellcheck disable=SC1090
+        . "${DIR}/../apps/${1}/info"
+        ICON="${DIR}/../apps/${1}/icon.svg"
+    elif [ -e "${HOME}/.local/share/winapps/apps/${1}/info" ]; then
+        # shellcheck disable=SC1090
+        . "${HOME}/.local/share/winapps/apps/${1}/info"
+        ICON="${HOME}/.local/share/winapps/apps/${1}/icon.svg"
+    elif [ -e "/usr/local/share/winapps/apps/${1}/info" ]; then
+        # shellcheck disable=SC1090
+        . "/usr/local/share/winapps/apps/${1}/info"
+        ICON="/usr/local/share/winapps/apps/${1}/icon.svg"
+    else
+        echo "You need to run 'installer.sh' first."
+        exit 1
+    fi
+    if [ -n "${2}" ]; then
+        dprint "HOME:${HOME}"
+        FILE=$(echo "${2}" | sed 's|'"${HOME}"'|\\\\tsclient\\home|;s|/|\\|g;s|\\|\\\\|g')
+        dprint "FILE:${FILE}"
+        $FREERDP_COMMAND ${RDP_FLAGS} /d:"${RDP_DOMAIN}" /u:"${RDP_USER}" /p:"${RDP_PASS}" /scale:${RDP_SCALE} +auto-reconnect +clipboard +home-drive -wallpaper +dynamic-resolution ${MULTI_FLAG} /wm-class:"${FULL_NAME}" /app:program:"${WIN_EXECUTABLE}",icon:"${ICON}",name:"${FULL_NAME}",cmd:"\"$FILE\"" /v:"${RDP_IP}" 1>/dev/null 2>&1 &
+    else
+        $FREERDP_COMMAND ${RDP_FLAGS} /d:"${RDP_DOMAIN}" /u:"${RDP_USER}" /p:"${RDP_PASS}" /scale:${RDP_SCALE} +auto-reconnect +clipboard +home-drive -wallpaper +dynamic-resolution ${MULTI_FLAG} /wm-class:"${FULL_NAME}" /app:program:"${WIN_EXECUTABLE}",icon:"${ICON}",name:"${FULL_NAME}" /v:"${RDP_IP}" 1>/dev/null 2>&1 &
+    fi
 fi
 
 dprint "END"

@@ -198,6 +198,3 @@ sudo systemctl restart libvirtd
 sudo ln -s /etc/apparmor.d/usr.sbin.libvirtd /etc/apparmor.d/disable/
 ```
 You will likely need to reboot to ensure your current shell is added to the group.
-
-
-
