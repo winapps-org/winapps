@@ -57,7 +57,7 @@ else
 fi
 
 if [ -z "${RDP_IP}" ]; then
-	if [ ! "$(groups | grep -o libvirt)" ]; then
+	if [ "$(groups | grep -v libvirt)" ]; then
 		echo "You are not a member of the libvirt group. Run the below then reboot."
 		echo '  sudo usermod -a -G libvirt $(whoami)'
 		echo '  sudo usermod -a -G kvm $(whoami)'
