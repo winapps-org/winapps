@@ -26,6 +26,8 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+# shellcheck disable=all
+
 # store the current set options
 OLD_SET=$-
 set -e

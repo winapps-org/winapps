@@ -42,14 +42,18 @@ function waFindInstalled() {
         rm -f "$HOME/.local/share/winapps/installed"
         rm -f "$HOME/.local/share/winapps/detected"
         cp "$DIR/install/ExtractPrograms.ps1" "$HOME/.local/share/winapps/ExtractPrograms.ps1"
+        # FIXME
+        # shellcheck disable=SC2066
         for F in "$DIR/apps"; do
             [[ -e "$F" ]] || break
-            . "$DIR/apps/${F}/info"
-            echo "IF EXIST \"${WIN_EXECUTABLE}\" ECHO ${F} >> \\\\tsclient\\home\\.local\\share\\winapps\\installed.tmp" >>"$HOME/.local/share/winapps/installed.bat"
+            # shellcheck disable=SC1090
+            . "$DIR/apps/$F/info"
+            printf "IF EXIST \"%s\" ECHO %s >> \\\\tsclient\\home\\.local\\share\\winapps\\installed.tmp" "$WIN_EXECUTABLE" "$F" >>"$HOME/.local/share/winapps/installed.bat"
         done
-        echo "powershell.exe -ExecutionPolicy Bypass -File \\\\tsclient\\home\\.local\\share\\winapps\\ExtractPrograms.ps1 > \\\\tsclient\home\\.local\\share\\winapps\\detected" >>"$HOME/.local/share/winapps/installed.bat"
-        echo "RENAME \\\\tsclient\\home\\.local\\share\\winapps\\installed.tmp installed" >>"$HOME/.local/share/winapps/installed.bat"
-        $FREERDP_COMMAND /d:"${RDP_DOMAIN}" /u:"${RDP_USER}" /p:"${RDP_PASS}" +auto-reconnect +home-drive -wallpaper +span /app:program:"C:\Windows\System32\cmd.exe",cmd:"/C \\\\tsclient\\home\\.local\\share\\winapps\\installed.bat" /v:${RDP_IP} 1>/dev/null 2>&1 &
+        printf "powershell.exe -ExecutionPolicy Bypass -File \\\\tsclient\\home\\.local\\share\\winapps\\ExtractPrograms.ps1 > \\\\tsclient\home\\.local\\share\\winapps\\detected" >>"$HOME/.local/share/winapps/installed.bat"
+        printf "RENAME \\\\tsclient\\home\\.local\\share\\winapps\\installed.tmp installed" >>"$HOME/.local/share/winapps/installed.bat"
+        # shellcheck disable=SC2140
+        $FREERDP_COMMAND /d:"$RDP_DOMAIN" /u:"$RDP_USER" /p:"$RDP_PASS" +auto-reconnect +home-drive -wallpaper +span /app:program:"C:\Windows\System32\cmd.exe",cmd:"/C \\\\tsclient\\home\\.local\\share\\winapps\\installed.bat" /v:"$RDP_IP" 1>/dev/null 2>&1 &
         COUNT=0
         while [ ! -f "$HOME/.local/share/winapps/installed" ]; do
             sleep 5
@@ -71,7 +75,7 @@ function waFindInstalled() {
         done
         if [ $MAKEDEMO = 1 ]; then
             rm -rf /tmp/winapps_demo
-            cp -a "$HOME/.local/share/winapps /tmp/winapps_demo"
+            cp -a "$HOME/.local/share/winapps" /tmp/winapps_demo
             exit
         fi
     else
@@ -83,29 +87,29 @@ function waFindInstalled() {
 }
 
 function waConfigureApp() {
-    if [ -z "${ICON}" ]; then
-        ICON=$SYS_PATH/apps/${1}/icon.${2}
+    if [ -z "$ICON" ]; then
+        ICON=$SYS_PATH/apps/$1/icon.$2
     fi
-
-    . "$SYS_PATH/apps/${1}/info"
+    # shellcheck disable=SC1090
+    . "$SYS_PATH/apps/$1/info"
     echo -n "  Configuring $NAME..."
     if [ $USEDEMO != 1 ]; then
-        $SUDO rm -f "$APP_PATH/${1}.desktop"
+        $SUDO rm -f "$APP_PATH/$1.desktop"
         echo "[Desktop Entry]
 Name=$NAME
-Exec=$BIN_PATH/winapps ${1} %F
+Exec=$BIN_PATH/winapps $1 %F
 Terminal=false
 Type=Application
 Icon=$ICON
-StartupWMClass=${FULL_NAME}
-Comment=${FULL_NAME}
-Categories=${CATEGORIES}
-MimeType=${MIME_TYPES}
-        " | $SUDO tee "$APP_PATH/${1}.desktop" >/dev/null
-        $SUDO rm -f "$BIN_PATH/${1}"
-        echo "#!/usr/bin/env bash $BIN_PATH/winapps ${1} $*
-        " | $SUDO tee "$BIN_PATH/${1}" >/dev/null
-        $SUDO chmod a+x "$BIN_PATH/${1}"
+StartupWMClass=$FULL_NAME
+Comment=$FULL_NAME
+Categories=$CATEGORIES
+MimeType=$MIME_TYPES
+        " | $SUDO tee "$APP_PATH/$1.desktop" >/dev/null
+        $SUDO rm -f "$BIN_PATH/$1"
+        echo "#!/usr/bin/env bash $BIN_PATH/winapps $1 $*
+        " | $SUDO tee "$BIN_PATH/$1" >/dev/null
+        $SUDO chmod a+x "$BIN_PATH/$1"
     fi
     echo " Finished."
 
@@ -114,21 +118,24 @@ MimeType=${MIME_TYPES}
 
 function waConfigureApps() {
     APPS=()
-    for F in $(cat "$HOME/.local/share/winapps/installed" | sed 's/\r/\n/g'); do
-        . "$DIR/apps/${F}/info"
-        APPS+=("${FULL_NAME} (${F})")
+    while IFS= read -r F; do
+        # shellcheck disable=SC1090
+        . "$DIR/apps/$F/info"
+        APPS+=("$FULL_NAME ($F)")
         INSTALLED_EXES+=("$(echo "${WIN_EXECUTABLE##*\\}" | tr '[:upper:]' '[:lower:]')")
-    done
+    done < <(sed 's/\r/\n/g' < "$HOME/.local/share/winapps/installed")
+    # FIXME
+    # shellcheck disable=SC2207,SC2031
     IFS=$'\n' APPS=($(sort <<<"${APPS[*]}"))
     unset IFS
     OPTIONS=("Set up all detected pre-configured applications" "Select which pre-configured applications to set up" "Do not set up any pre-configured applications")
 
-    if [ "${INSTALL_TYPE}" != 'User' ]; then
+    if [ "$INSTALL_TYPE" != 'User' ]; then
         menuFromArr APP_INSTALL "How would you like to handle WinApps pre-configured applications?" "${OPTIONS[@]}"
     else "grep -l -d skip"
         menuFromArr APP_INSTALL "How would you like to handle WinApps pre-configured applications? If any web browser is set-up, may be configured as default browser." "${OPTIONS[@]}"
     fi
-    if [ "${APP_INSTALL}" = "Select which pre-configured applications to set up" ]; then
+    if [ "$APP_INSTALL" = "Select which pre-configured applications to set up" ]; then
         checkbox_input "Which pre-configured apps would you like to set up?" APPS SELECTED_APPS
         echo "" >"$HOME/.local/share/winapps/installed"
         for F in "${SELECTED_APPS[@]}"; do
@@ -139,16 +146,16 @@ function waConfigureApps() {
     fi
     $SUDO cp "$DIR/bin/winapps" "$BIN_PATH/winapps"
     COUNT=0
-    if [ "${APP_INSTALL}" != "Do not set up any pre-configured applications" ]; then
-        for F in $(cat "$HOME/.local/share/winapps/installed" | sed 's/\r/\n/g'); do
+    if [ "$APP_INSTALL" != "Do not set up any pre-configured applications" ]; then
+        while IFS= read -r F; do
             COUNT=$((COUNT + 1))
-            $SUDO cp -r "apps/${F}" "$SYS_PATH/apps"
-            waConfigureApp "${F}" svg
-        done
+            $SUDO cp -r "apps/$F" "$SYS_PATH/apps"
+            waConfigureApp "$F" svg
+        done < <(sed 's/\r/\n/g' < "$HOME/.local/share/winapps/installed")
     fi
     rm -f "$HOME/.local/share/winapps/installed"
     rm -f "$HOME/.local/share/winapps/installed.bat"
-    if (($COUNT == 0)); then
+    if ((COUNT == 0)); then
         echo "  No configured applications."
     fi
 }
@@ -156,14 +163,14 @@ function waConfigureApps() {
 function waConfigureAppsAllOfficiallySupported(){
     $SUDO cp "$DIR/bin/winapps" "$BIN_PATH/winapps"
     COUNT=0
-    for F in $(cat "$HOME/.local/share/winapps/installed" | sed 's/\r/\n/g'); do
+    while IFS= read -r F; do
         COUNT=$((COUNT + 1))
-        $SUDO cp -r "apps/${F}" "$SYS_PATH/apps"
-        waConfigureApp "${F}" svg
-    done
+        $SUDO cp -r "apps/$F" "$SYS_PATH/apps"
+        waConfigureApp "$F" svg
+    done < <(sed 's/\r/\n/g' < "$HOME/.local/share/winapps/installed")
     rm -f "$HOME/.local/share/winapps/installed"
     rm -f "$HOME/.local/share/winapps/installed.bat"
-    if (($COUNT == 0)); then
+    if ((COUNT == 0)); then
         echo "  No configured applications."
     fi
 }
@@ -171,15 +178,17 @@ function waConfigureAppsAllOfficiallySupported(){
 function waConfigureDetectedApps() {
     if [ -f "$HOME/.local/share/winapps/detected" ]; then
         sed -i 's/\r//g' "$HOME/.local/share/winapps/detected"
+        # shellcheck disable=SC1091
         . "$HOME/.local/share/winapps/detected"
         APPS=()
+        # shellcheck disable=SC2153
         for I in "${!NAMES[@]}"; do
             EXE=${EXES[$I]##*\\}
             EXE_LOWER=$(echo "$EXE" | tr '[:upper:]' '[:lower:]')
             if (
                 dlm=$'\x1F'
                 IFS="$dlm"
-                [[ "$dlm${INSTALLED_EXES[*]}$dlm" != *"$dlm${EXE_LOWER}$dlm"* ]]
+                [[ "$dlm${INSTALLED_EXES[*]}$dlm" != *"$dlm$EXE_LOWER$dlm"* ]]
                 ); then
                 APPS+=("${NAMES[$I]} ($EXE)")
             fi
@@ -188,7 +197,7 @@ function waConfigureDetectedApps() {
         unset IFS
         OPTIONS=("Set up all detected applications" "Select which applications to set up" "Do not set up any applications")
         menuFromArr APP_INSTALL "How would you like to handle other detected applications?" "${OPTIONS[@]}"
-        if [ "${APP_INSTALL}" = "Select which applications to set up" ]; then
+        if [ "$APP_INSTALL" = "Select which applications to set up" ]; then
             checkbox_input "Which other apps would you like to set up?" APPS SELECTED_APPS
             echo "" >"$HOME/.local/share/winapps/installed"
             for F in "${SELECTED_APPS[@]}"; do
@@ -197,7 +206,7 @@ function waConfigureDetectedApps() {
                 APP="${F% (*}"
                 echo "$EXE|${APP}" >>"$HOME/.local/share/winapps/installed"
             done
-        elif [ "${APP_INSTALL}" = "Set up all detected applications" ]; then
+        elif [ "$APP_INSTALL" = "Set up all detected applications" ]; then
             for I in "${!EXES[@]}"; do
                 EXE=${EXES[$I]##*\\}
                 echo "$EXE|${NAMES[$I]}" >>"$HOME/.local/share/winapps/installed"
@@ -227,6 +236,7 @@ CATEGORIES=\"WinApps\"
 # GNOME mimetypes
 MIME_TYPES=\"\"
                         " | sudo tee "$SYS_PATH/apps/$EXE/info" >/dev/null
+                        # shellcheck disable=SC2153
                         echo "${ICONS[$I]}" | base64 -d | sudo tee "$SYS_PATH/apps/$EXE/icon.ico" >/dev/null
                         waConfigureApp "$EXE" ico
                         COUNT=$((COUNT + 1))
@@ -306,7 +316,7 @@ function waUninstallSystem() {
     done
 }
 
-if [ -z "${1}" ]; then
+if [ -z "$1" ]; then
     OPTIONS=(User System)
     menuFromArr INSTALL_TYPE "Would you like to install for the current user or the whole system?" "${OPTIONS[@]}"
 elif [ "$1" = '--user' ]; then
