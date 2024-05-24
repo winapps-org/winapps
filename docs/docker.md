@@ -38,8 +38,7 @@ services:
       VERSION: "tiny11"
       RAM_SIZE: "4G"
       CPU_CORES: "4"
-    privileged:
-true
+    privileged: true
     ports:
       - 8006:8006
       - 3389:3389/tcp
