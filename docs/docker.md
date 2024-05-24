@@ -8,11 +8,17 @@ While working with virsh is completely fine for winapps, however you have to set
 
 Since docker manages the dependencies of the container automatically you only need to install docker or podman itself. (Podman is recommended because of the faster container startup times. Note that podman and docker are interchangeable so no instructions will change depending on which one you use)
 
-Note: This will only work on linux systems since some kernel interfaces (like kvm) are needed by the vm. Because of this performance can vary in kernel versions (newer will likely perform better).
+When using podman you want to make sure podman socket is enabled with:
+```shell
+sudo systemctl enable --now podman.socket
+```
+
+> [!NOTE]
+> This will only work on linux systems since some kernel interfaces (like kvm) are needed by the vm. Because of this performance can vary in kernel versions (newer will likely perform better).
 
 # Setup docker container
 
-The easiest way to setup a windows vm is by using docker compose. Just create a `docker-compose.yml` with following content:
+The easiest way to setup a windows vm is by using docker compose. Just create a `compose.yml` with following content:
 
 ```yaml
 name: "winapps"
@@ -25,8 +31,8 @@ services:
     image: dockurr/windows
     container_name: windows
     environment:
-      VERSION: "win11"
-      RAM_SIZE: "8G"
+      VERSION: "tiny11"
+      RAM_SIZE: "4G"
       CPU_CORES: "4"
     privileged:true
     ports:
@@ -41,7 +47,8 @@ services:
 
 Now you can tune the ram/usage by changing RAM_SIZE/CPU_CORES. You can also specify the windows versions you want to use. You might also want to take a look at the [docker image repo](https://github.com/dockur/windows).
 
-Note: Older versions than Windows 10 are not officially supported. However they might still work with some additional tuning.
+> [!NOTE]
+> Older versions than Windows 10 are not officially supported. However they might still work with some additional tuning.
 
 You can now just run:
 ```shell
