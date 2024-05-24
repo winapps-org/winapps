@@ -8,6 +8,10 @@ While working with virsh is completely fine for winapps, however you have to set
 
 Since docker manages the dependencies of the container automatically you only need to install docker or podman itself. (Podman is recommended because of the faster container startup times. Note that podman and docker are interchangeable so no instructions will change depending on which one you use)
 
+You might also want to take a look in the docs:
+- [podman docs](https://docs.podman.io/)
+- [docker docs](https://docs.docker.com/)
+
 When using podman you want to make sure podman socket is enabled with:
 ```shell
 sudo systemctl enable --now podman.socket
