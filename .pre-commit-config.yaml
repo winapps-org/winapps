@@ -6,7 +6,7 @@ repos:
     rev: v1.5.5
     hooks:
       - id: chmod
-        args: ["777"]
+        args: ["775"]
         files: (\.sh|winapps)$
       - id: forbid-crlf
       - id: remove-crlf
