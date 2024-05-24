@@ -39,7 +39,7 @@ services:
       - data:/storage
 ```
 
-Now you can tune the ram/usage by changing RAM_SIZE/CPU_CORES. You can also specify the windows versions you want to use.
+Now you can tune the ram/usage by changing RAM_SIZE/CPU_CORES. You can also specify the windows versions you want to use. You might also want to take a look at the [docker image repo](https://github.com/dockur/windows).
 
 Note: Older versions than Windows 10 are not officially supported. However they might still work with some additional tuning.
 
@@ -50,9 +50,9 @@ docker compose up
 
 After this just open http://127.0.0.1:8006 in your webbrowser and finish you windows installation as usual. 
 
-Change the RDP_IP config to localhost or "127.0.0.1.
+Change the RDP_IP in your winapps config to localhost or "127.0.0.1".
 
-Note: RDP will be automatically enabled, however you still need to load the reg files into you vm.
+RDP will be automatically enabled, however you still need to load the reg files into you vm.
 
 Now you should be ready to go and try to connect to your vm with winapps.
 
