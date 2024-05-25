@@ -80,12 +80,13 @@ Note: The officially configured application list below is fueled by the communit
 ## Installation
 
 ### Step 1: Set up a Windows Virtual Machine
+The best solution for running a VM as a subsystem for WinApps would be docker. Docker allows to automize the install process and still uses kvm/qemu under the hood. We still provide the outdated KVM install instructions.
+To set up the VM for WinApps, follow this guide:
 
-The best solution for running a VM as a subsystem for WinApps would be KVM. KVM is a CPU and memory-efficient virtualization engine bundled with most major Linux distributions. To set up the VM for WinApps, follow this guide:
+- [Creating a Virtual Machine with docker](docs/docker.md)
+- [Creating a Virtual Machine in KVM (outdated)](docs/KVM.md)
 
-- [Creating a Virtual Machine in KVM](docs/KVM.md)
-
-If you already have a Virtual Machine or server you wish to use with WinApps, you will need to merge `install/RDPApps.reg` into the VM's Windows Registry. If this VM is in KVM and you want to use auto-IP detection, you will need to name the machine `RDPWindows` (auto-IP detection not supported for non-KVM VMs). Directions for both of these can be found in the guide linked above.
+If you already have a Virtual Machine or server you wish to use with WinApps, you will need to merge `install/RDPApps.reg` into the VM's Windows Registry.
 
 ### Step 2: Download the repo and prerequisites
 
