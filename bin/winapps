@@ -86,14 +86,18 @@ if [ "$MULTIMON" = "true" ]; then
     MULTI_FLAG="/multimon"
 fi
 
+if [[ -n "$RDP_FLAGS" ]]; then
+    FREERDP_COMMAND="$FREERDP_COMMAND $RDP_FLAGS"
+fi
+
 if [ "$1" = "windows" ]; then
-    $FREERDP_COMMAND "$RDP_FLAGS" /d:"$RDP_DOMAIN" /u:"$RDP_USER" /p:"$RDP_PASS" /scale:$RDP_SCALE +dynamic-resolution +auto-reconnect +home-drive /wm-class:"Microsoft Windows" /v:"$RDP_IP" 1>/dev/null 2>&1 &
+    $FREERDP_COMMAND /d:"$RDP_DOMAIN" /u:"$RDP_USER" /p:"$RDP_PASS" /scale:$RDP_SCALE +dynamic-resolution +auto-reconnect +home-drive /wm-class:"Microsoft Windows" /v:"$RDP_IP" 1>/dev/null 2>&1 &
 elif [ "$1" = "check" ]; then
     dprint "CHECK"
-    $FREERDP_COMMAND "$RDP_FLAGS" /d:"$RDP_DOMAIN" /u:"$RDP_USER" /p:"$RDP_PASS" /scale:$RDP_SCALE +auto-reconnect +home-drive -wallpaper +dynamic-resolution $MULTI_FLAG /app:program:"explorer.exe" /v:"$RDP_IP"
+    $FREERDP_COMMAND /d:"$RDP_DOMAIN" /u:"$RDP_USER" /p:"$RDP_PASS" /scale:$RDP_SCALE +auto-reconnect +home-drive -wallpaper +dynamic-resolution $MULTI_FLAG /app:program:"explorer.exe" /v:"$RDP_IP"
 elif [ "$1" = "manual" ]; then
     dprint "MANUAL:$2"
-    $FREERDP_COMMAND "$RDP_FLAGS" /d:"$RDP_DOMAIN" /u:"$RDP_USER" /p:"$RDP_PASS" /scale:$RDP_SCALE +auto-reconnect +home-drive +dynamic-resolution $MULTI_FLAG /app:program:"$2" /v:"$RDP_IP" 1>/dev/null 2>&1 &
+    $FREERDP_COMMAND /d:"$RDP_DOMAIN" /u:"$RDP_USER" /p:"$RDP_PASS" /scale:$RDP_SCALE +auto-reconnect +home-drive +dynamic-resolution $MULTI_FLAG /app:program:"$2" /v:"$RDP_IP" 1>/dev/null 2>&1 &
 elif [ "$1" != "install" ]; then
     dprint "DIR:${DIR}"
     if [ -e "${DIR}/../apps/$1/info" ]; then
@@ -117,9 +121,9 @@ elif [ "$1" != "install" ]; then
         FILE=$(echo "$2" | sed 's|'"$HOME"'|\\\\tsclient\\home|;s|/|\\|g;s|\\|\\\\|g')
         dprint "FILE:${FILE}"
         # shellcheck disable=SC2140
-        $FREERDP_COMMAND "$RDP_FLAGS" /d:"$RDP_DOMAIN" /u:"$RDP_USER" /p:"$RDP_PASS" /scale:$RDP_SCALE +auto-reconnect +clipboard +home-drive -wallpaper +dynamic-resolution $MULTI_FLAG /wm-class:"$FULL_NAME" /app:program:"$WIN_EXECUTABLE",icon:"$ICON",name:"$FULL_NAME",cmd:"\"$FILE\"" /v:"$RDP_IP" 1>/dev/null 2>&1 &
+        $FREERDP_COMMAND /d:"$RDP_DOMAIN" /u:"$RDP_USER" /p:"$RDP_PASS" /scale:$RDP_SCALE +auto-reconnect +clipboard +home-drive -wallpaper +dynamic-resolution $MULTI_FLAG /wm-class:"$FULL_NAME" /app:program:"$WIN_EXECUTABLE",icon:"$ICON",name:"$FULL_NAME",cmd:"\"$FILE\"" /v:"$RDP_IP" 1>/dev/null 2>&1 &
     else
-        $FREERDP_COMMAND "$RDP_FLAGS" /d:"$RDP_DOMAIN" /u:"$RDP_USER" /p:"$RDP_PASS" /scale:$RDP_SCALE +auto-reconnect +clipboard +home-drive -wallpaper +dynamic-resolution $MULTI_FLAG /wm-class:"$FULL_NAME" /app:program:"$WIN_EXECUTABLE",icon:"$ICON",name:"$FULL_NAME" /v:"$RDP_IP" 1>/dev/null 2>&1 &
+        $FREERDP_COMMAND /d:"$RDP_DOMAIN" /u:"$RDP_USER" /p:"$RDP_PASS" /scale:$RDP_SCALE +auto-reconnect +clipboard +home-drive -wallpaper +dynamic-resolution $MULTI_FLAG /wm-class:"$FULL_NAME" /app:program:"$WIN_EXECUTABLE",icon:"$ICON",name:"$FULL_NAME" /v:"$RDP_IP" 1>/dev/null 2>&1 &
     fi
 fi
 
