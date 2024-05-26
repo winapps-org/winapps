@@ -59,7 +59,7 @@ You can now just run:
 docker compose up
 ```
 
-After this just open http://127.0.0.1:8006 in your webbrowser and finish you windows installation as usual. 
+After this just open http://127.0.0.1:8006 in your webbrowser and finish you windows installation as usual.
 
 > [!WARNING]
 > Change the RDP_IP in your winapps config to localhost or "127.0.0.1".
@@ -71,7 +71,7 @@ After this just open http://127.0.0.1:8006 in your webbrowser and finish you win
 Now you should be ready to go and try to connect to your vm with winapps.
 
 For stopping the vm just use:
-```shell 
+```shell
 docker compose stop
 ```
 
