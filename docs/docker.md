@@ -61,10 +61,10 @@ docker compose up
 
 After this just open http://127.0.0.1:8006 in your webbrowser and finish you windows installation as usual. 
 
-> [!WARN]
+> [!WARNING]
 > Change the RDP_IP in your winapps config to localhost or "127.0.0.1".
 
-> [!WARN]
+> [!WARNING]
 > RDP will be automatically enabled, however you still need to load the [reg file](https://github.com/winapps-org/winapps/blob/main/install%2FRDPApps.reg) into you vm.
 > Just use a browser inside the vm to download.
 
