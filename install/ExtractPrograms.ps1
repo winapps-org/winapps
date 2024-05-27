@@ -63,7 +63,7 @@ Function Get-Icon {
         .EXAMPLE
             Get-Icon -Path 'C:\windows\system32\WindowsPowerShell\v1.0\PowerShell.exe' -ToBitmap
 
-            Tag                  : 
+            Tag                  :
             PhysicalDimension    : {Width=32, Height=32}
             Size                 : {Width=32, Height=32}
             Width                : 32
@@ -173,25 +173,25 @@ Function Get-Icon {
         $Path = Convert-Path -Path $Path
         Write-Debug $Path
         If (Test-Path -Path $Path) {
-            #$Icon = [System.Drawing.Icon]::ExtractAssociatedIcon($Path)| 
-            $Icon = [System.Drawing.Icon]::ExtractAssociatedIcon($Path)| 
+            #$Icon = [System.Drawing.Icon]::ExtractAssociatedIcon($Path)|
+            $Icon = [System.Drawing.Icon]::ExtractAssociatedIcon($Path)|
             Add-Member -MemberType NoteProperty -Name FullName -Value $Path -PassThru
             If ($PSBoundParameters.ContainsKey('ToBytes')) {
                 Write-Verbose "Retrieving bytes"
                 $MemoryStream = New-Object System.IO.MemoryStream
                 $Icon.save($MemoryStream)
                 Write-Debug ($MemoryStream | Out-String)
-                $MemoryStream.ToArray()   
-                $MemoryStream.Flush()  
-                $MemoryStream.Dispose()           
+                $MemoryStream.ToArray()
+                $MemoryStream.Flush()
+                $MemoryStream.Dispose()
             } ElseIf ($PSBoundParameters.ContainsKey('ToBitmap')) {
                 $Icon.ToBitMap()
             } ElseIf ($PSBoundParameters.ContainsKey('ToBase64')) {
                 $MemoryStream = New-Object System.IO.MemoryStream
                 $Icon.save($MemoryStream)
                 Write-Debug ($MemoryStream | Out-String)
-                $Bytes = $MemoryStream.ToArray()   
-                $MemoryStream.Flush() 
+                $Bytes = $MemoryStream.ToArray()
+                $MemoryStream.Flush()
                 $MemoryStream.Dispose()
                 [convert]::ToBase64String($Bytes)
             }  Else {
@@ -219,4 +219,3 @@ Get-ItemProperty "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\*" |
         "EXES+=(""$Exe"")"
         "ICONS+=(""$Icon"")"
     }
-
