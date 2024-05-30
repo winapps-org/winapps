@@ -122,9 +122,8 @@ function waConfigureApps() {
         APPS+=("$FULL_NAME ($F)")
         INSTALLED_EXES+=("$(echo "${WIN_EXECUTABLE##*\\}" | tr '[:upper:]' '[:lower:]')")
     done < <(sed 's/\r/\n/g' < "$HOME/.local/share/winapps/installed")
-    # FIXME
-    # shellcheck disable=SC2207,SC2031
-    IFS=$'\n' APPS=($(sort <<<"${APPS[*]}"))
+    IFS=$'\n'
+    APPS=($(sort <<<"${APPS[*]}"))
     unset IFS
     OPTIONS=("Set up all detected pre-configured applications" "Select which pre-configured applications to set up" "Do not set up any pre-configured applications")
 
