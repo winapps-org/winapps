@@ -42,12 +42,10 @@ function waFindInstalled() {
         rm -f "$HOME/.local/share/winapps/installed"
         rm -f "$HOME/.local/share/winapps/detected"
         cp "$DIR/install/ExtractPrograms.ps1" "$HOME/.local/share/winapps/ExtractPrograms.ps1"
-        # FIXME
-        # shellcheck disable=SC2066
-        for F in "$DIR/apps"; do
+        for F in "$DIR"/apps/*; do
             [[ -e "$F" ]] || break
-            # shellcheck disable=SC1090
-            . "$DIR/apps/$F/info"
+            # shellcheck disable=SC1090,SC1091
+            . "$F/info"
             printf "IF EXIST \"%s\" ECHO %s >> \\\\tsclient\\home\\.local\\share\\winapps\\installed.tmp" "$WIN_EXECUTABLE" "$F" >>"$HOME/.local/share/winapps/installed.bat"
         done
         printf "powershell.exe -ExecutionPolicy Bypass -File \\\\tsclient\\home\\.local\\share\\winapps\\ExtractPrograms.ps1 > \\\\tsclient\home\\.local\\share\\winapps\\detected" >>"$HOME/.local/share/winapps/installed.bat"
@@ -124,9 +122,10 @@ function waConfigureApps() {
         APPS+=("$FULL_NAME ($F)")
         INSTALLED_EXES+=("$(echo "${WIN_EXECUTABLE##*\\}" | tr '[:upper:]' '[:lower:]')")
     done < <(sed 's/\r/\n/g' < "$HOME/.local/share/winapps/installed")
+    IFS=$'\n'
     # FIXME
-    # shellcheck disable=SC2207,SC2031
-    IFS=$'\n' APPS=($(sort <<<"${APPS[*]}"))
+    # shellcheck disable=SC2207
+    APPS=($(sort <<<"${APPS[*]}"))
     unset IFS
     OPTIONS=("Set up all detected pre-configured applications" "Select which pre-configured applications to set up" "Do not set up any pre-configured applications")
 
@@ -282,27 +281,27 @@ function waUninstallUser() {
     grep -l -d skip "bin/winapps" "$HOME/.local/share/applications/"* -s | while IFS= read -r F
     do
         echo -n "  Removing $F..."
-        "$SUDO" rm "$F"
+        $SUDO rm "$F"
         echo " Finished."
     done
     grep -l -d skip "bin/winapps" "$HOME/.local/bin/"* -s | while IFS= read -r F
     do
         echo -n "  Removing $F..."
-        "$SUDO" rm "$F"
+        $SUDO rm "$F"
         echo " Finished."
     done
 }
 
 function waUninstallSystem() {
-    "$SUDO" rm -f "/usr/local/bin/winapps"
-    "$SUDO" rm -rf "/usr/local/share/winapps"
+    $SUDO rm -f "/usr/local/bin/winapps"
+    $SUDO rm -rf "/usr/local/share/winapps"
     grep -l -d skip "bin/winapps" "/usr/share/applications/"* -s | while IFS= read -r F
     do
         if [ -z "$SUDO" ]; then
             waNoSudo
         fi
         echo -n "  Removing $F..."
-        "$SUDO" rm "$F"
+        $SUDO rm "$F"
         echo " Finished."
     done
     grep -l -d skip "bin/winapps" "/usr/local/bin/"* -s | while IFS= read -r F
@@ -311,7 +310,7 @@ function waUninstallSystem() {
             waNoSudo
         fi
         echo -n "  Removing $F..."
-        "$SUDO" rm "$F"
+        $SUDO rm "$F"
         echo " Finished."
     done
 }
