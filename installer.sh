@@ -42,7 +42,7 @@ function waFindInstalled() {
         rm -f "$HOME/.local/share/winapps/installed"
         rm -f "$HOME/.local/share/winapps/detected"
         cp "$DIR/install/ExtractPrograms.ps1" "$HOME/.local/share/winapps/ExtractPrograms.ps1"
-        for F in $DIR/apps/*; do
+        for F in "$DIR"/apps/*; do
             [[ -e "$F" ]] || break
             # shellcheck disable=SC1090,SC1091
             . "$F/info"
