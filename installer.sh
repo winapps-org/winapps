@@ -45,7 +45,7 @@ function waFindInstalled() {
         for F in $(ls "${DIR}/apps"); do
             # shellcheck disable=SC1090,SC1091
             . "$DIR/apps/$F/info"
-	    printf "IF EXIST \"%s\" ECHO %s >> \\\\\\\\tsclient\\home\\.local\\share\\winapps\\installed.tmp\n" "$WIN_EXECUTABLE" "$F" >> "$HOME/.local/share/winapps/installed.bat"
+            printf "IF EXIST \"%s\" ECHO %s >> \\\\\\\\tsclient\\home\\.local\\share\\winapps\\installed.tmp\n" "$WIN_EXECUTABLE" "$F" >> "$HOME/.local/share/winapps/installed.bat"
         done
         printf "powershell.exe -ExecutionPolicy Bypass -File \\\\\\\\tsclient\\home\\.local\\share\\winapps\\\\ExtractPrograms.ps1 > \\\\\\\\tsclient\home\\.local\\share\\winapps\\detected\n" >> "$HOME/.local/share/winapps/installed.bat"
         printf "RENAME \\\\\\\\tsclient\\home\\.local\\share\\winapps\\installed.tmp installed\n" >> "$HOME/.local/share/winapps/installed.bat"        # shellcheck disable=SC2140
@@ -84,7 +84,7 @@ function waFindInstalled() {
 
 function waConfigureApp() {
     if [[ -z $1 ]]; then
-	return 1
+        return 1
     fi
     if [ -z "$ICON" ]; then
         ICON=$SYS_PATH/apps/$1/icon.$2
@@ -118,10 +118,10 @@ MimeType=$MIME_TYPES
 function waConfigureApps() {
     APPS=()
     while IFS= read -r F; do
-	[[ -n $F ]] || continue
+        [[ -n $F ]] || continue
         # shellcheck disable=SC1090
-	F=$(echo $F | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
-	echo \"$F\" >> test
+        F=$(echo $F | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
+        echo \"$F\" >> test
         . "$DIR/apps/$F/info"
         APPS+=("$FULL_NAME ($F)")
         INSTALLED_EXES+=("$(echo "${WIN_EXECUTABLE##*\\}" | tr '[:upper:]' '[:lower:]')")
