@@ -123,6 +123,7 @@ function waConfigureApps() {
         INSTALLED_EXES+=("$(echo "${WIN_EXECUTABLE##*\\}" | tr '[:upper:]' '[:lower:]')")
     done < <(sed 's/\r/\n/g' < "$HOME/.local/share/winapps/installed")
     IFS=$'\n'
+    # FIXME
     # shellcheck disable=SC2207
     APPS=($(sort <<<"${APPS[*]}"))
     unset IFS
