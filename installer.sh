@@ -83,6 +83,9 @@ function waFindInstalled() {
 }
 
 function waConfigureApp() {
+    if [[ -z $1 ]]; then
+	return 1
+    fi
     if [ -z "$ICON" ]; then
         ICON=$SYS_PATH/apps/$1/icon.$2
     fi
