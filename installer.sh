@@ -42,15 +42,13 @@ function waFindInstalled() {
         rm -f "$HOME/.local/share/winapps/installed"
         rm -f "$HOME/.local/share/winapps/detected"
         cp "$DIR/install/ExtractPrograms.ps1" "$HOME/.local/share/winapps/ExtractPrograms.ps1"
-        for F in "$DIR"/apps/*; do
-            [[ -e "$F" ]] || break
+        for F in $(ls "${DIR}/apps"); do
             # shellcheck disable=SC1090,SC1091
-            . "$F/info"
-            printf "IF EXIST \"%s\" ECHO %s >> \\\\tsclient\\home\\.local\\share\\winapps\\installed.tmp" "$WIN_EXECUTABLE" "$F" >>"$HOME/.local/share/winapps/installed.bat"
+            . "$DIR/apps/$F/info"
+	    printf "IF EXIST \"%s\" ECHO %s >> \\\\\\\\tsclient\\home\\.local\\share\\winapps\\installed.tmp\n" "$WIN_EXECUTABLE" "$F" >> "$HOME/.local/share/winapps/installed.bat"
         done
-        printf "powershell.exe -ExecutionPolicy Bypass -File \\\\tsclient\\home\\.local\\share\\winapps\\ExtractPrograms.ps1 > \\\\tsclient\home\\.local\\share\\winapps\\detected" >>"$HOME/.local/share/winapps/installed.bat"
-        printf "RENAME \\\\tsclient\\home\\.local\\share\\winapps\\installed.tmp installed" >>"$HOME/.local/share/winapps/installed.bat"
-        # shellcheck disable=SC2140
+        printf "powershell.exe -ExecutionPolicy Bypass -File \\\\\\\\tsclient\\home\\.local\\share\\winapps\\\\ExtractPrograms.ps1 > \\\\\\\\tsclient\home\\.local\\share\\winapps\\detected\n" >> "$HOME/.local/share/winapps/installed.bat"
+        printf "RENAME \\\\\\\\tsclient\\home\\.local\\share\\winapps\\installed.tmp installed\n" >> "$HOME/.local/share/winapps/installed.bat"        # shellcheck disable=SC2140
         $FREERDP_COMMAND /d:"$RDP_DOMAIN" /u:"$RDP_USER" /p:"$RDP_PASS" +auto-reconnect +home-drive -wallpaper +span /app:program:"C:\Windows\System32\cmd.exe",cmd:"/C \\\\tsclient\\home\\.local\\share\\winapps\\installed.bat" /v:"$RDP_IP" 1>/dev/null 2>&1 &
         COUNT=0
         while [ ! -f "$HOME/.local/share/winapps/installed" ]; do
@@ -117,7 +115,10 @@ MimeType=$MIME_TYPES
 function waConfigureApps() {
     APPS=()
     while IFS= read -r F; do
+	[[ -n $F ]] || continue
         # shellcheck disable=SC1090
+	F=$(echo $F | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
+	echo \"$F\" >> test
         . "$DIR/apps/$F/info"
         APPS+=("$FULL_NAME ($F)")
         INSTALLED_EXES+=("$(echo "${WIN_EXECUTABLE##*\\}" | tr '[:upper:]' '[:lower:]')")
