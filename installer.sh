@@ -44,7 +44,7 @@ function waFindInstalled() {
         cp "$DIR/install/ExtractPrograms.ps1" "$HOME/.local/share/winapps/ExtractPrograms.ps1"
         for F in $DIR/apps; do
             [[ -e "$F" ]] || break
-            # shellcheck disable=SC1090
+            # shellcheck disable=SC1090,SC1091
             . "$F/info"
             printf "IF EXIST \"%s\" ECHO %s >> \\\\tsclient\\home\\.local\\share\\winapps\\installed.tmp" "$WIN_EXECUTABLE" "$F" >>"$HOME/.local/share/winapps/installed.bat"
         done
