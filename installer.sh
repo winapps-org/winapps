@@ -42,12 +42,10 @@ function waFindInstalled() {
         rm -f "$HOME/.local/share/winapps/installed"
         rm -f "$HOME/.local/share/winapps/detected"
         cp "$DIR/install/ExtractPrograms.ps1" "$HOME/.local/share/winapps/ExtractPrograms.ps1"
-        # FIXME
-        # shellcheck disable=SC2066
         for F in "$DIR/apps"; do
             [[ -e "$F" ]] || break
             # shellcheck disable=SC1090
-            . "$DIR/apps/$F/info"
+            . "$F/info"
             printf "IF EXIST \"%s\" ECHO %s >> \\\\tsclient\\home\\.local\\share\\winapps\\installed.tmp" "$WIN_EXECUTABLE" "$F" >>"$HOME/.local/share/winapps/installed.bat"
         done
         printf "powershell.exe -ExecutionPolicy Bypass -File \\\\tsclient\\home\\.local\\share\\winapps\\ExtractPrograms.ps1 > \\\\tsclient\home\\.local\\share\\winapps\\detected" >>"$HOME/.local/share/winapps/installed.bat"
