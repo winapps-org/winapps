@@ -282,27 +282,27 @@ function waUninstallUser() {
     grep -l -d skip "bin/winapps" "$HOME/.local/share/applications/"* -s | while IFS= read -r F
     do
         echo -n "  Removing $F..."
-        "$SUDO" rm "$F"
+        $SUDO rm "$F"
         echo " Finished."
     done
     grep -l -d skip "bin/winapps" "$HOME/.local/bin/"* -s | while IFS= read -r F
     do
         echo -n "  Removing $F..."
-        "$SUDO" rm "$F"
+        $SUDO rm "$F"
         echo " Finished."
     done
 }
 
 function waUninstallSystem() {
-    "$SUDO" rm -f "/usr/local/bin/winapps"
-    "$SUDO" rm -rf "/usr/local/share/winapps"
+    $SUDO rm -f "/usr/local/bin/winapps"
+    $SUDO rm -rf "/usr/local/share/winapps"
     grep -l -d skip "bin/winapps" "/usr/share/applications/"* -s | while IFS= read -r F
     do
         if [ -z "$SUDO" ]; then
             waNoSudo
         fi
         echo -n "  Removing $F..."
-        "$SUDO" rm "$F"
+        $SUDO rm "$F"
         echo " Finished."
     done
     grep -l -d skip "bin/winapps" "/usr/local/bin/"* -s | while IFS= read -r F
@@ -311,7 +311,7 @@ function waUninstallSystem() {
             waNoSudo
         fi
         echo -n "  Removing $F..."
-        "$SUDO" rm "$F"
+        $SUDO rm "$F"
         echo " Finished."
     done
 }
