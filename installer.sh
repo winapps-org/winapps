@@ -45,12 +45,12 @@ function waFindInstalled() {
         for F in $(ls "${DIR}/apps"); do
             # shellcheck disable=SC1090,SC1091
             . "$DIR/apps/$F/info"
-            printf "IF EXIST \"%s\" ECHO %s >> \\\\\\\\tsclient\\home\\.local\\share\\winapps\\installed.tmp\n" "$WIN_EXECUTABLE" "$F" >> "$HOME/.local/share/winapps/installed.bat"
+            printf "IF EXIST \"%s\" ECHO %s >> %s\n" "$WIN_EXECUTABLE" "$F" '\\tsclient\home\.local\share\winapps\installed.tmp' >> "$HOME/.local/share/winapps/installed.bat"
         done
-        printf "powershell.exe -ExecutionPolicy Bypass -File \\\\\\\\tsclient\\home\\.local\\share\\winapps\\\\ExtractPrograms.ps1 > \\\\\\\\tsclient\home\\.local\\share\\winapps\\detected\n" >> "$HOME/.local/share/winapps/installed.bat"
-        printf "RENAME \\\\\\\\tsclient\\home\\.local\\share\\winapps\\installed.tmp installed\n" >> "$HOME/.local/share/winapps/installed.bat"
+        printf "%s\n" 'powershell.exe -ExecutionPolicy Bypass -File \\tsclient\home\.local\share\\winapps\ExtractPrograms.ps1 > \\tsclient\home\.local\share\winapps\detected' >> "$HOME/.local/share/winapps/installed.bat"
+        printf "%s\n" 'RENAME \\tsclient\home\.local\share\winapps\installed.tmp installed' >> "$HOME/.local/share/winapps/installed.bat"
         # shellcheck disable=SC2140
-        $FREERDP_COMMAND /d:"$RDP_DOMAIN" /u:"$RDP_USER" /p:"$RDP_PASS" +auto-reconnect +home-drive -wallpaper +span /app:program:"C:\Windows\System32\cmd.exe",cmd:"/C \\\\tsclient\\home\\.local\\share\\winapps\\installed.bat" /v:"$RDP_IP" 1>/dev/null 2>&1 &
+        $FREERDP_COMMAND /d:"$RDP_DOMAIN" /u:"$RDP_USER" /p:"$RDP_PASS" +auto-reconnect +home-drive -wallpaper +span /app:program:"C:\Windows\System32\cmd.exe",cmd:"$(printf '/C %s' '\\tsclient\home\.local\share\winapps\installed.bat')" /v:"$RDP_IP" 1>/dev/null 2>&1 &
         COUNT=0
         while [ ! -f "$HOME/.local/share/winapps/installed" ]; do
             sleep 5
