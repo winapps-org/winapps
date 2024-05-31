@@ -48,7 +48,8 @@ function waFindInstalled() {
             printf "IF EXIST \"%s\" ECHO %s >> \\\\\\\\tsclient\\home\\.local\\share\\winapps\\installed.tmp\n" "$WIN_EXECUTABLE" "$F" >> "$HOME/.local/share/winapps/installed.bat"
         done
         printf "powershell.exe -ExecutionPolicy Bypass -File \\\\\\\\tsclient\\home\\.local\\share\\winapps\\\\ExtractPrograms.ps1 > \\\\\\\\tsclient\home\\.local\\share\\winapps\\detected\n" >> "$HOME/.local/share/winapps/installed.bat"
-        printf "RENAME \\\\\\\\tsclient\\home\\.local\\share\\winapps\\installed.tmp installed\n" >> "$HOME/.local/share/winapps/installed.bat"        # shellcheck disable=SC2140
+        printf "RENAME \\\\\\\\tsclient\\home\\.local\\share\\winapps\\installed.tmp installed\n" >> "$HOME/.local/share/winapps/installed.bat"
+        # shellcheck disable=SC2140
         $FREERDP_COMMAND /d:"$RDP_DOMAIN" /u:"$RDP_USER" /p:"$RDP_PASS" +auto-reconnect +home-drive -wallpaper +span /app:program:"C:\Windows\System32\cmd.exe",cmd:"/C \\\\tsclient\\home\\.local\\share\\winapps\\installed.bat" /v:"$RDP_IP" 1>/dev/null 2>&1 &
         COUNT=0
         while [ ! -f "$HOME/.local/share/winapps/installed" ]; do
