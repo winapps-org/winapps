@@ -122,7 +122,7 @@ function waConfigureApps() {
     while IFS= read -r F; do
         [[ -n $F ]] || continue
         F=$(echo "$F" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
-        echo \""$F"\" >> test
+        echo \""$F"\" >> "test"
         # shellcheck disable=SC1090
         . "$DIR/apps/$F/info"
         APPS+=("$FULL_NAME ($F)")
