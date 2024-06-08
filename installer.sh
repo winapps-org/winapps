@@ -42,7 +42,8 @@ function waFindInstalled() {
         rm -f "$HOME/.local/share/winapps/installed"
         rm -f "$HOME/.local/share/winapps/detected"
         cp "$DIR/install/ExtractPrograms.ps1" "$HOME/.local/share/winapps/ExtractPrograms.ps1"
-        for F in $(ls "${DIR}/apps"); do
+        for F in "$DIR"/apps/*; do
+            [[ -e "$F" ]] || break
             # shellcheck disable=SC1090,SC1091
             . "$DIR/apps/$F/info"
             printf "IF EXIST \"%s\" ECHO %s >> %s\n" "$WIN_EXECUTABLE" "$F" '\\tsclient\home\.local\share\winapps\installed.tmp' >> "$HOME/.local/share/winapps/installed.bat"
@@ -120,9 +121,9 @@ function waConfigureApps() {
     APPS=()
     while IFS= read -r F; do
         [[ -n $F ]] || continue
+        F=$(echo "$F" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
+        echo \""$F"\" >> test
         # shellcheck disable=SC1090
-        F=$(echo $F | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
-        echo \"$F\" >> test
         . "$DIR/apps/$F/info"
         APPS+=("$FULL_NAME ($F)")
         INSTALLED_EXES+=("$(echo "${WIN_EXECUTABLE##*\\}" | tr '[:upper:]' '[:lower:]')")
