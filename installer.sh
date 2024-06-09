@@ -44,8 +44,10 @@ function waFindInstalled() {
         cp "$DIR/install/ExtractPrograms.ps1" "$HOME/.local/share/winapps/ExtractPrograms.ps1"
         for F in "$DIR"/apps/*; do
             [[ -e "$F" ]] || break
+            F="$(basename "$F")" 
+
             # shellcheck disable=SC1090,SC1091
-            . "$F/info"
+            . "$DIR/apps/$F/info"
             printf "IF EXIST \"%s\" ECHO %s >> %s\n" "$WIN_EXECUTABLE" "$F" '\\tsclient\home\.local\share\winapps\installed.tmp' >> "$HOME/.local/share/winapps/installed.bat"
         done
         printf "%s\n" 'powershell.exe -ExecutionPolicy Bypass -File \\tsclient\home\.local\share\\winapps\ExtractPrograms.ps1 > \\tsclient\home\.local\share\winapps\detected' >> "$HOME/.local/share/winapps/installed.bat"
@@ -152,6 +154,8 @@ function waConfigureApps() {
     COUNT=0
     if [ "$APP_INSTALL" != "Do not set up any pre-configured applications" ]; then
         while IFS= read -r F; do
+            F=$(echo "$F" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
+
             COUNT=$((COUNT + 1))
             $SUDO cp -r "apps/$F" "$SYS_PATH/apps"
             waConfigureApp "$F" svg
@@ -168,6 +172,8 @@ function waConfigureAppsAllOfficiallySupported(){
     $SUDO cp "$DIR/bin/winapps" "$BIN_PATH/winapps"
     COUNT=0
     while IFS= read -r F; do
+        F=$(echo "$F" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
+        
         COUNT=$((COUNT + 1))
         $SUDO cp -r "apps/$F" "$SYS_PATH/apps"
         waConfigureApp "$F" svg
@@ -285,12 +291,16 @@ function waUninstallUser() {
     rm -rf "$HOME/.local/share/winapps"
     grep -l -d skip "bin/winapps" "$HOME/.local/share/applications/"* -s | while IFS= read -r F
     do
+        F=$(echo "$F" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
+
         echo -n "  Removing $F..."
         $SUDO rm "$F"
         echo " Finished."
     done
     grep -l -d skip "bin/winapps" "$HOME/.local/bin/"* -s | while IFS= read -r F
     do
+        F=$(echo "$F" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
+
         echo -n "  Removing $F..."
         $SUDO rm "$F"
         echo " Finished."
@@ -302,6 +312,8 @@ function waUninstallSystem() {
     $SUDO rm -rf "/usr/local/share/winapps"
     grep -l -d skip "bin/winapps" "/usr/share/applications/"* -s | while IFS= read -r F
     do
+        F=$(echo "$F" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
+
         if [ -z "$SUDO" ]; then
             waNoSudo
         fi
@@ -311,6 +323,8 @@ function waUninstallSystem() {
     done
     grep -l -d skip "bin/winapps" "/usr/local/bin/"* -s | while IFS= read -r F
     do
+        F=$(echo "$F" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
+
         if [ -z "$SUDO" ]; then
             waNoSudo
         fi
