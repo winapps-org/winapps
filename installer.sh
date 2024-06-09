@@ -44,7 +44,7 @@ function waFindInstalled() {
         cp "$DIR/install/ExtractPrograms.ps1" "$HOME/.local/share/winapps/ExtractPrograms.ps1"
         for F in "$DIR"/apps/*; do
             [[ -e "$F" ]] || break
-            F="$(basename "$F")" 
+            F="$(basename "$F")"
 
             # shellcheck disable=SC1090,SC1091
             . "$DIR/apps/$F/info"
@@ -173,7 +173,7 @@ function waConfigureAppsAllOfficiallySupported(){
     COUNT=0
     while IFS= read -r F; do
         F=$(echo "$F" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
-        
+
         COUNT=$((COUNT + 1))
         $SUDO cp -r "apps/$F" "$SYS_PATH/apps"
         waConfigureApp "$F" svg
