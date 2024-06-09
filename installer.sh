@@ -45,7 +45,7 @@ function waFindInstalled() {
         for F in "$DIR"/apps/*; do
             [[ -e "$F" ]] || break
             # shellcheck disable=SC1090,SC1091
-            . "$DIR/apps/$F/info"
+            . "$F/info"
             printf "IF EXIST \"%s\" ECHO %s >> %s\n" "$WIN_EXECUTABLE" "$F" '\\tsclient\home\.local\share\winapps\installed.tmp' >> "$HOME/.local/share/winapps/installed.bat"
         done
         printf "%s\n" 'powershell.exe -ExecutionPolicy Bypass -File \\tsclient\home\.local\share\\winapps\ExtractPrograms.ps1 > \\tsclient\home\.local\share\winapps\detected' >> "$HOME/.local/share/winapps/installed.bat"
