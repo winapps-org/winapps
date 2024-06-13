@@ -110,7 +110,7 @@ Categories=$CATEGORIES
 MimeType=$MIME_TYPES
         " | $SUDO tee "$APP_PATH/$1.desktop" >/dev/null
         $SUDO rm -f "$BIN_PATH/$1"
-        echo "#!/usr/bin/env bash $BIN_PATH/winapps $1 $*
+        echo -e "#!/usr/bin/env bash \n $BIN_PATH/winapps $1 $*
         " | $SUDO tee "$BIN_PATH/$1" >/dev/null
         $SUDO chmod a+x "$BIN_PATH/$1"
     fi
