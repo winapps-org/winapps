@@ -65,8 +65,8 @@ if [ -z "$RDP_IP" ]; then
         echo "  sudo usermod -a -G kvm $(whoami)"
         exit
     fi
-    if virsh list | grep -vq RDPWindows; then
-        echo "RDPWindows is not running, run:"
+    if ! virsh list --state-running --name | grep -q '^RDPWindows$'; then
+        echo "RDPWindows is not running. Please run:"
         echo "  virsh start RDPWindows"
         exit
     fi
