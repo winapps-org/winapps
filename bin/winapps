@@ -71,8 +71,7 @@ if [ -z "$RDP_IP" ]; then
         echo "  virsh start RDPWindows"
         exit
     fi
-    RDP_IP=$(virsh net-dhcp-leases default | grep RDPWindows | awk '{print $5}')
-    RDP_IP=${RDP_IP%%\/*}
+    RDP_IP=$(virsh net-dhcp-leases default | grep "RDPWindows" | grep -oE '([0-9]{1,3}\.){3}[0-9]{1,3}')
 fi
 
 dprint "1:$1"
