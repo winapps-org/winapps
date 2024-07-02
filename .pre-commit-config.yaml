@@ -6,13 +6,13 @@ repos:
     rev: v1.5.5
     hooks:
       - id: chmod
-        args: ["775"]
+        args: [ "775" ]
         files: (\.sh|winapps)$
       - id: forbid-crlf
       - id: remove-crlf
       - id: forbid-tabs
       - id: remove-tabs
-        args: [--whitespaces-count, "2"]
+        args: [ --whitespaces-count, "2" ]
 
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.6.0
@@ -36,7 +36,7 @@ repos:
       - id: forbid-submodules
       - id: mixed-line-ending
       - id: pretty-format-json
-        args: ["--autofix", "--no-sort-keys"]
+        args: [ "--autofix", "--no-sort-keys" ]
       - id: sort-simple-yaml
       - id: trailing-whitespace
 
