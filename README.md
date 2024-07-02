@@ -1,21 +1,21 @@
-# winapps
+# WinApps
 
-The winapps main project
-Originally created by fmstrat https://github.com/Fmstrat/winapps/
+The WinApps main project, [originally created by fmstrat](https://github.com/Fmstrat/winapps)
 
-Run Windows apps such as Microsoft Office/Adobe in Linux (Ubuntu/Fedora) and GNOME/KDE as if they were a part of the native OS, including Nautilus integration for right clicking on files of specific mime types to open them.
+Run Windows apps such as Microsoft Office/Adobe in Linux (Ubuntu/Fedora) and GNOME/KDE as if they were a part of the native OS,
+including Nautilus integration for right-clicking on files of specific mime types to open them.
 
 <img src="demo/demo.gif" width=1000>
 
 ## How it works
 
-WinApps was created as an easy, one command way to include apps running inside a VM (or on any RDP server) directly into GNOME as if they were native applications. WinApps works by:
+WinApps was created as an easy, one-command way to include apps running inside a VM (or on any RDP server) directly into GNOME as if they were native applications. WinApps works by:
 
 - Running a Windows RDP server in a background VM container
 - Checking the RDP server for installed applications such as Microsoft Office
 - If those programs are installed, it creates shortcuts leveraging FreeRDP for both the CLI and the GNOME tray
 - Files in your home directory are accessible via the `\\tsclient\home` mount inside the VM
-- You can right click on any files in your home directory to open with an application, too
+- You can right-click on any files in your home directory to open with an application, too
 
 ## Currently supported applications
 
@@ -23,7 +23,7 @@ WinApps was created as an easy, one command way to include apps running inside a
 
 It does this by:
 
-1. Scanning your system for offically configured applications (below)
+1. Scanning your system for the officially configured applications (below)
 2. Scanning your system for any other EXE files with install records in the Windows Registry
 
 Any officially configured applications will have support for high-resolution icons and mime types for automatically detecting what files can be opened by each application. Any other detected executable files will leverage the icons pulled from the EXE.
@@ -79,14 +79,17 @@ Note: The officially configured application list below is fueled by the communit
 
 ## Installation
 
-### Step 1: Set up a Windows Virtual Machine
-The best solution for running a VM as a subsystem for WinApps would be docker. Docker allows to automize the install process and still uses kvm/qemu under the hood. We still provide the outdated KVM install instructions.
+### Step 1: Set up a Windows virtual machine
+
+The best solution for running a VM as a subsystem for WinApps would be Docker.
+Docker allows automizing the installation process and still uses KVM/QEMU under the hood.
+We still provide the outdated KVM install instructions.
 To set up the VM for WinApps, follow this guide:
 
-- [Creating a Virtual Machine with docker](docs/docker.md)
-- [Creating a Virtual Machine in KVM (outdated)](docs/KVM.md)
+- [Creating a virtual machine with Docker](docs/docker.md)
+- [Creating a virtual machine in KVM (outdated)](docs/KVM.md)
 
-If you already have a Virtual Machine or server you wish to use with WinApps, you will need to merge `install/RDPApps.reg` into the VM's Windows Registry.
+If you already have a virtual machine or server you wish to use with WinApps, you will need to merge `install/RDPApps.reg` into the VM's Windows Registry.
 
 ### Step 2: Download the repo and prerequisites
 
@@ -118,22 +121,23 @@ RDP_PASS="MyWindowsPassword"
 #FREERDP_COMMAND="xfreerdp"
 ```
 
-The username and password should be a full user account and password, such as the one created when setting up Windows or a domain user. It cannot be a user/PIN combination as those are not valid for RDP access.
+The username and password should be a full user account and password, such as the one created when setting up Windows
+or a domain user. It can't be a user/PIN combination as those aren't valid for RDP access.
 
 Options:
 
-- When using a pre-existing non-KVM RDP server, you must use the `RDP_IP` to specify it's location
-- If you are running a VM in KVM with NAT enabled, leave `RDP_IP` commented out and WinApps will auto-detect the right local IP
+- When using a pre-existing non-KVM RDP server, you must use the `RDP_IP` to specify its location
+- If you're running a VM in KVM with NAT enabled, leave `RDP_IP` commented out and WinApps will auto-detect the right local IP
 - For domain users, you can uncomment and change `RDP_DOMAIN`
 - On high-resolution (UHD) displays, you can set `RDP_SCALE` to the scale you would like [100|140|160|180]
 - To add flags to the FreeRDP call, such as `/audio-mode:1` to pass in a mic, use the `RDP_FLAGS` configuration option
-- For multi-monitor setups, you can try enabling `MULTIMON`, however if you get a black screen (FreeRDP bug) you will need to revert back
+- For multi-monitor setups, you can try enabling `MULTIMON`, however, if you get a black screen (FreeRDP bug) you will need to revert
 - If you enable `DEBUG`, a log will be created on each application start in `~/.local/share/winapps/winapps.log`
-- If you are on a system, where the command for freeredp is not xfreerdp, change `FREERDP_COMMAND` to it.
+- If you're on a system, where the command for freerdp is not xfreerdp, change `FREERDP_COMMAND` to it.
 
 ### Step 4: Run the WinApps installer
 
-Lastly, check that FreeRDP can connect with:
+Lastly, check if FreeRDP can connect with:
 
 ```
 bin/winapps check
@@ -149,7 +153,7 @@ If this step fails, try restarting the VM, or your problem could be related to:
 - Incorrect user credentials in `~/.config/winapps/winapps.conf`
 - Not merging `install/RDPApps.reg` into the VM
 
-Then the final step is to run the installer which will prompt you for a system or user install:
+Then the final step is to run the installer which will prompt you to a system or user install:
 
 ```bash
 ./installer.sh
@@ -168,11 +172,13 @@ Adding applications with custom icons and mime types to the installer is easy. S
 - Re-run the installer
 - Submit a Pull Request to add it to WinApps officially
 
-When running the installer, it will check for if any configured apps are installed, and if they are it will create the appropriate shortcuts on the host OS.
+When running the installer, it will check for if any configured apps are installed, and if they are,
+it will create the appropriate shortcuts on the host OS.
 
 ## Running applications manually
 
-WinApps offers a manual mode for running applications that are not configured. This is completed with the `manual` flag. Executables that are in the path do not require full path definition.
+WinApps offers a manual mode for running applications that aren't configured. This is completed with the `manual` flag.
+Executables that are in the path don't require full path definition.
 
 ```bash
 ./bin/winapps manual "C:\my\directory\executableNotInPath.exe"
@@ -181,7 +187,7 @@ WinApps offers a manual mode for running applications that are not configured. T
 
 ## Checking for new application support
 
-The installer can be run multiple times, so simply run the below again and it will remove any current installations and update for the latest applications.
+The installer can be run multiple times, so simply run the below again, and it will remove any current installations and update for the latest applications.
 
 ```bash
 ./installer.sh
@@ -200,7 +206,7 @@ The following optional commands can be used to manage your application configura
 ./installer.sh --system --setupAllOfficiallySupportedApps  # Configures all officially supported applications for the entire system
 ```
 
-## Shout outs
+## Shout-outs
 
 - Some icons pulled from
   - Fluent UI React - Icons under [MIT License](https://github.com/Fmstrat/fluent-ui-react/blob/master/LICENSE.md)
