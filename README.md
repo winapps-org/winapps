@@ -1,6 +1,6 @@
 # WinApps
 
-The WinApps main project, [originally created by fmstrat](https://github.com/Fmstrat/winapps)
+The WinApps main project, [originally created by Fmstrat](https://github.com/Fmstrat/winapps)
 
 Run Windows apps such as Microsoft Office/Adobe in Linux (Ubuntu/Fedora) and GNOME/KDE as if they were a part of the native OS,
 including Nautilus integration for right-clicking on files of specific mime types to open them.
@@ -69,7 +69,7 @@ Note: The officially configured application list below is fueled by the communit
   </tr>
   <tr>
     <td><img src="apps/publisher/icon.svg" width="100"></td><td>Microsoft Publisher<br>(2016, 2019, o365)</td>
-    <td><img src="apps/powershell/icon.svg" width="100"></td><td>Powershell</td>
+    <td><img src="apps/powershell/icon.svg" width="100"></td><td>PowerShell</td>
   </tr>
   <tr>
     <td><img src="icons/windows.svg" width="100"></td><td>Windows<br>(Full RDP session)</td>
