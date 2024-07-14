@@ -1,425 +1,1410 @@
 #!/usr/bin/env bash
+# shellcheck disable=SC2034              # Silence warnings regarding unused variables globally.
 
-if ! command -v bc &> /dev/null
-then
-    echo "You need bc!"
-    exit
-fi
+### GLOBAL CONSTANTS ###
+# ANSI ESCAPE SEQUENCES
+readonly BOLD_TEXT="\033[1m"             # Bold
+readonly CLEAR_TEXT="\033[0m"            # Clear
+readonly COMMAND_TEXT="\033[0;37m"       # Grey
+readonly DONE_TEXT="\033[0;32m"          # Green
+readonly ERROR_TEXT="\033[1;31m"         # Bold + Red
+readonly EXIT_TEXT="\033[1;41;37m"       # Bold + White + Red Background
+readonly FAIL_TEXT="\033[0;91m"          # Bright Red
+readonly INFO_TEXT="\033[0;33m"          # Orange/Yellow
+readonly SUCCESS_TEXT="\033[1;42;37m"    # Bold + White + Green Background
 
-DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
+# ERROR CODES
+readonly EC_FAILED_CD="1"                # Failed to change directory to location of script.
+readonly EC_BAD_ARGUMENT="2"             # Unsupported argument passed to script.
+readonly EC_EXISTING_INSTALL="3"         # Existing conflicting WinApps installation.
+readonly EC_NO_CONFIG="4"                # Absence of a valid WinApps configuration file.
+readonly EC_MISSING_DEPS="5"             # Missing dependencies.
+readonly EC_NO_SUDO="6"                  # Insufficient privilages to invoke superuser access.
+readonly EC_NOT_IN_GROUP="7"             # Current user not in group 'libvirt' and/or 'kvm'.
+readonly EC_VM_OFF="8"                   # Windows VM powered off.
+readonly EC_VM_PAUSED="9"                # Windows VM paused.
+readonly EC_VM_ABSENT="10"               # Windows VM does not exist.
+readonly EC_VM_NO_IP="11"                # Windows VM does not have an IP address.
+readonly EC_VM_BAD_PORT="12"             # Windows VM is unreachable via RDP_PORT.
+readonly EC_RDP_FAIL="13"                # FreeRDP failed to establish a connection with the Windows VM.
+readonly EC_APPQUERY_FAIL="14"           # Failed to query the Windows VM for installed applications.
 
-MAKEDEMO=0
-USEDEMO=0
+# PATHS
+# 'BIN'
+readonly SYS_BIN_PATH="/usr/local/bin"                                              # UNIX path to 'bin' directory for a '--system' WinApps installation.
+readonly USER_BIN_PATH="${HOME}/.local/bin"                                         # UNIX path to 'bin' directory for a '--user' WinApps installation.
+readonly USER_BIN_PATH_WIN="\\\\tsclient\\home\\.local\\bin"                        # WINDOWS path to 'bin' directory for a '--user' WinApps installation.
+# 'APP'
+readonly SYS_APP_PATH="/usr/share/applications"                                     # UNIX path to 'applications' directory for a '--system' WinApps installation.
+readonly USER_APP_PATH="${HOME}/.local/share/applications"                          # UNIX path to 'applications' directory for a '--user' WinApps installation.
+readonly USER_APP_PATH_WIN="\\\\tsclient\\home\\.local\\share\\applications"        # WINDOWS oath to 'applications' directory for a '--user' WinApps installation.
+# 'APPDATA'
+readonly SYS_APPDATA_PATH="/usr/local/share/winapps"                                # UNIX path to 'application data' directory for a '--system' WinApps installation.
+readonly USER_APPDATA_PATH="${HOME}/.local/share/winapps"                           # UNIX path to 'application data' directory for a '--user' WinApps installation.
+readonly USER_APPDATA_PATH_WIN="\\\\tsclient\\home\\.local\\share\\winapps"         # WINDOWS path to 'application data' directory for a '--user' WinApps installation.
+# 'Installed Batch Script'
+readonly BATCH_SCRIPT_PATH="${USER_APPDATA_PATH}/installed.bat"                     # UNIX path to a batch script used to search the Windows VM for applications.
+readonly BATCH_SCRIPT_PATH_WIN="${USER_APPDATA_PATH_WIN}\\installed.bat"            # WINDOWS path to a batch script used to search the Windows VM for applications.
+# 'Installed File'
+readonly TMP_INST_FILE_PATH="${USER_APPDATA_PATH}/installed.tmp"                    # UNIX path to a temporary file containing the names of detected officially supported applications.
+readonly TMP_INST_FILE_PATH_WIN="${USER_APPDATA_PATH_WIN}\\installed.tmp"           # WINDOWS path to a temporary file containing the names of detected officially supported applications.
+readonly INST_FILE_PATH="${USER_APPDATA_PATH}/installed"                            # UNIX path to a file containing the names of detected officially supported applications.
+readonly INST_FILE_PATH_WIN="${USER_APPDATA_PATH_WIN}\\installed"                   # WINDOWS path to a file containing the names of detected officially supported applications.
+# 'PowerShell Script'
+readonly PS_SCRIPT_PATH="./install/ExtractPrograms.ps1"                             # UNIX path to a PowerShell script used to store the names, executable paths and icons (base64) of detected applications.
+readonly PS_SCRIPT_HOME_PATH="${USER_APPDATA_PATH}/ExtractPrograms.ps1"             # UNIX path to a copy of the PowerShell script within the user's home directory to enable access by Windows VM.
+readonly PS_SCRIPT_HOME_PATH_WIN="${USER_APPDATA_PATH_WIN}\\ExtractPrograms.ps1"    # WINDOWS path to a copy of the PowerShell script within the user's home directory to enable access by Windows VM.
+# 'Detected File'
+readonly DETECTED_FILE_PATH="${USER_APPDATA_PATH}/detected"                         # UNIX path to a file containing the output generated by the PowerShell script, formatted to define bash arrays.
+readonly DETECTED_FILE_PATH_WIN="${USER_APPDATA_PATH_WIN}\\detected"                # WINDOWS path to a file containing the output generated by the PowerShell script, formatted to define bash arrays.
+# 'FreeRDP Connection Test File'
+readonly TEST_PATH="${USER_APPDATA_PATH}/FreeRDP_Connection_Test"                   # UNIX path to temporary file whose existence is used to confirm a successful RDP connection was established.
+readonly TEST_PATH_WIN="${USER_APPDATA_PATH_WIN}\\FreeRDP_Connection_Test"          # WINDOWS path to temporary file whose existence is used to confirm a successful RDP connection was established.
+# 'WinApps Configuration File'
+readonly CONFIG_PATH="${HOME}/.config/winapps/winapps.conf"                         # UNIX path to the WinApps configuration file.
+# 'Inquirer Bash Script'
+readonly INQUIRER_PATH="./install/inquirer.sh"                                      # UNIX path to the 'inquirer' script, which is used to produce selection menus.
 
-# shellcheck disable=SC1094
-. "$DIR/install/inquirer.sh"
+# REMOTE DESKTOP CONFIGURATION
+readonly VM_NAME="RDPWindows"                                                       # Name of the Windows VM.
+readonly RDP_PORT=3389                                                              # Port used for RDP on the Windows VM.
+readonly WINAPPS_CONFIG="\
+RDP_USER=\"MyWindowsUser\"
+RDP_PASS=\"MyWindowsPassword\"
+#RDP_DOMAIN=\"MYDOMAIN\"
+#RDP_IP=\"192.168.123.111\"
+#RDP_SCALE=100
+#RDP_FLAGS=\"\"
+#MULTIMON=\"true\"
+#DEBUG=\"true\"
+#FREERDP_COMMAND=\"xfreerdp\""                                                      # Default WinApps configuration file content.
 
-INSTALLED_EXES=()
+### GLOBAL VARIABLES ###
+# USER INPUT
+OPT_SYSTEM=0          # Set to '1' if the user specifies '--system'.
+OPT_USER=0            # Set to '1' if the user specifies '--user'.
+OPT_UNINSTALL=0       # Set to '1' if the user specifies '--uninstall'.
+OPT_AOSA=0            # Set to '1' if the user specifies '--setupAllOfficiallySupportedApps'.
 
+# WINAPPS CONFIGURATION FILE
+RDP_USER=""           # Imported variable.
+RDP_PASS=""           # Imported variable.
+RDP_DOMAIN=""         # Imported variable.
+RDP_IP=""             # Imported variable.
+RDP_SCALE=100         # Imported variable.
+RDP_FLAGS=""          # Imported variable.
+MULTIMON="false"      # Imported variable.
+DEBUG="false"         # Imported variable.
+FREERDP_COMMAND=""    # Imported variable.
+MULTI_FLAG=""         # Set based on value of $MULTIMON.
+
+# PERMISSIONS AND DIRECTORIES
+SUDO=""               # Set to "sudo" if the user specifies '--system', or "" if the user specifies '--user'.
+BIN_PATH=""           # Set to $SYS_BIN_PATH if the user specifies '--system', or $USER_BIN_PATH if the user specifies '--user'.
+APP_PATH=""           # Set to $SYS_APP_PATH if the user specifies '--system', or $USER_APP_PATH if the user specifies '--user'.
+APPDATA_PATH=""       # Set to $SYS_APPDATA_PATH if the user specifies '--system', or $USER_APPDATA_PATH if the user specifies '--user'.
+
+# INSTALLATION PROCESS
+INSTALLED_EXES=()     # List of executable file names of officially supported applications that have already been configured during the current installation process.
+
+### TRAPS ###
+set -o errtrace                 # Ensure traps are inherited by all shell functions and subshells.
+trap "waTerminateScript" ERR    # Catch non-zero return values.
+
+### FUNCTIONS ###
+# Name: 'waTerminateScript'
+# Role: Terminates the script when a non-zero return value is encountered.
+# shellcheck disable=SC2317 # Silence warning regarding this function being unreachable.
+function waTerminateScript() {
+    # Store the non-zero exit status received by the trap.
+    local EXIT_STATUS=$?
+
+    # Display the exit status.
+    echo -e "${EXIT_TEXT}Exiting with status '${EXIT_STATUS}'.${CLEAR_TEXT}"
+
+    # Terminate the script.
+    exit "$EXIT_STATUS"
+}
+
+# Name: 'waUsage'
+# Role: Displays usage information for the script.
 function waUsage() {
-    echo "Usage:
-  ./installer.sh --user    # Install everything in $HOME
-  ./installer.sh --system  # Install everything in /usr"
-  exit
+    echo -e "Usage:
+  ${COMMAND_TEXT}./installer.sh --user${CLEAR_TEXT}                                        # Install WinApps and selected applications in ${HOME}
+  ${COMMAND_TEXT}./installer.sh --system${CLEAR_TEXT}                                      # Install WinApps and selected applications in /usr
+  ${COMMAND_TEXT}./installer.sh --user --setupAllOfficiallySupportedApps${CLEAR_TEXT}      # Install WinApps and all officially supported applications in ${HOME}
+  ${COMMAND_TEXT}./installer.sh --system --setupAllOfficiallySupportedApps${CLEAR_TEXT}    # Install WinApps and all officially supported applications in /usr
+  ${COMMAND_TEXT}./installer.sh --user --uninstall${CLEAR_TEXT}                            # Uninstall everything in ${HOME}
+  ${COMMAND_TEXT}./installer.sh --system --uninstall${CLEAR_TEXT}                          # Uninstall everything in /usr
+  ${COMMAND_TEXT}./installer.sh --help${CLEAR_TEXT}                                        # Display this usage message."
 }
 
-function waNoSudo() {
-    echo "You are attempting to switch from a --system install to a --user install.
-    Please run \"./installer.sh --system --uninstall\" first."
-    exit
+# Name: 'waSetWorkingDirectory'
+# Role: Changes the working directory to the directory containing the script.
+function waSetWorkingDirectory() {
+    # Declare variables.
+    local SCRIPT_DIR_PATH=""    # Stores the absolute path of the directory containing the script.
+
+    # Determine the absolute path to the directory containing the script.
+    SCRIPT_DIR_PATH=$(readlink -f "$(dirname "${BASH_SOURCE[0]}")")
+
+    # Silently change the working directory.
+    if ! cd "$SCRIPT_DIR_PATH" &>/dev/null; then
+        # Display the error type.
+        echo -e "${ERROR_TEXT}ERROR:${CLEAR_TEXT} ${BOLD_TEXT}DIRECTORY CHANGE FAILURE.${CLEAR_TEXT}"
+
+        # Display error details.
+        echo -e "${INFO_TEXT}Failed to change the working directory to ${CLEAR_TEXT}${COMMAND_TEXT}${SCRIPT_DIR_PATH}${CLEAR_TEXT}${INFO_TEXT}.${CLEAR_TEXT}"
+
+        # Display the suggested action(s).
+        echo "--------------------------------------------------------------------------------"
+        echo "Ensure:"
+        echo -e "  - ${COMMAND_TEXT}${SCRIPT_DIR_PATH}${CLEAR_TEXT} exists."
+        echo -e "  - ${COMMAND_TEXT}${SCRIPT_DIR_PATH}${CLEAR_TEXT} is valid and does not contain syntax errors."
+        echo -e "  - The current user has sufficient permissions to access ${COMMAND_TEXT}${SCRIPT_DIR_PATH}${CLEAR_TEXT}."
+        echo "--------------------------------------------------------------------------------"
+
+        # Terminate the script.
+        return "$EC_FAILED_CD"
+    fi
 }
 
-function waInstall() {
-    $SUDO mkdir -p "$SYS_PATH/apps"
-    . "$DIR/bin/winapps" install
-}
+# Name: 'waCheckInput'
+# Role: Sanitises input and guides users through selecting appropriate options if no arguments are provided.
+function waCheckInput() {
+    # Declare variables.
+    local OPTIONS=()         # Stores the options.
+    local SELECTED_OPTION    # Stores the option selected by the user.
 
-function waFindInstalled() {
-    echo -n "  Checking for installed apps in RDP machine (this may take a while)..."
-    if [ $USEDEMO != 1 ]; then
-        rm -f "$HOME/.local/share/winapps/installed.bat"
-        rm -f "$HOME/.local/share/winapps/installed.tmp"
-        rm -f "$HOME/.local/share/winapps/installed"
-        rm -f "$HOME/.local/share/winapps/detected"
-        cp "$DIR/install/ExtractPrograms.ps1" "$HOME/.local/share/winapps/ExtractPrograms.ps1"
-        for F in "$DIR"/apps/*; do
-            [[ -e "$F" ]] || break
-            F="$(basename "$F")"
+    if [[ $# -gt 0 ]]; then
+        # Parse arguments.
+        for argument in "$@"; do
+            case "$argument" in
+            "--user")
+                OPT_USER=1
+                ;;
+            "--system")
+                OPT_SYSTEM=1
+                ;;
+            "--setupAllOfficiallySupportedApps")
+                OPT_AOSA=1
+                ;;
+            "--uninstall")
+                OPT_UNINSTALL=1
+                ;;
+            "--help")
+                waUsage
+                exit 0
+                ;;
+            *)
+                # Display the error type.
+                echo -e "${ERROR_TEXT}ERROR:${CLEAR_TEXT} ${BOLD_TEXT}INVALID ARGUMENT.${CLEAR_TEXT}"
 
-            # shellcheck disable=SC1090,SC1091
-            . "$DIR/apps/$F/info"
-            printf "IF EXIST \"%s\" ECHO %s >> %s\n" "$WIN_EXECUTABLE" "$F" '\\tsclient\home\.local\share\winapps\installed.tmp' >> "$HOME/.local/share/winapps/installed.bat"
+                # Display the error details.
+                echo -e "${INFO_TEXT}Unsupported argument${CLEAR_TEXT} ${COMMAND_TEXT}${argument}${CLEAR_TEXT}${INFO_TEXT}.${CLEAR_TEXT}"
+
+                # Display the suggested action(s).
+                echo "--------------------------------------------------------------------------------"
+                waUsage
+                echo "--------------------------------------------------------------------------------"
+
+                # Terminate the script.
+                return "$EC_BAD_ARGUMENT"
+                ;;
+            esac
         done
-        printf "%s\n" 'powershell.exe -ExecutionPolicy Bypass -File \\tsclient\home\.local\share\\winapps\ExtractPrograms.ps1 > \\tsclient\home\.local\share\winapps\detected' >> "$HOME/.local/share/winapps/installed.bat"
-        printf "%s\n" 'RENAME \\tsclient\home\.local\share\winapps\installed.tmp installed' >> "$HOME/.local/share/winapps/installed.bat"
-        # shellcheck disable=SC2140
-        $FREERDP_COMMAND /d:"$RDP_DOMAIN" /u:"$RDP_USER" /p:"$RDP_PASS" +auto-reconnect +home-drive -wallpaper +span /app:program:"C:\Windows\System32\cmd.exe",cmd:"$(printf '/C %s' '\\tsclient\home\.local\share\winapps\installed.bat')" /v:"$RDP_IP" 1>/dev/null 2>&1 &
-        COUNT=0
-        while [ ! -f "$HOME/.local/share/winapps/installed" ]; do
-            sleep 5
-            COUNT=$((COUNT + 1))
-            if ((COUNT == 15)); then
-                echo " Finished."
-                echo ""
-                echo "The RDP connection failed to connect or run. Please confirm FreeRDP can connect with:"
-                echo "  bin/winapps check"
-                echo ""
-                echo "If it cannot connect, this is most likely due to:"
-                echo "  - You need to accept the security cert the first time you connect (with 'check')"
-                echo "  - Not enabling RDP in the Windows VM"
-                echo "  - Not being able to connect to the IP of the VM"
-                echo "  - Incorrect user credentials in winapps.conf"
-                echo "  - Not merging install/RDPApps.reg into the VM"
-                exit
-            fi
-        done
-        if [ $MAKEDEMO = 1 ]; then
-            rm -rf /tmp/winapps_demo
-            cp -a "$HOME/.local/share/winapps" /tmp/winapps_demo
-            exit
-        fi
     else
-        rm -rf "$HOME/.local/share/winapps"
-        cp -a /tmp/winapps_demo "$HOME/.local/share/winapps"
-        #sleep 3
+        # Install vs. uninstall?
+        OPTIONS=("Install" "Uninstall")
+        menuFromArr SELECTED_OPTION "Install or uninstall WinApps?" "${OPTIONS[@]}"
+
+        # Set flags.
+        if [[ "$SELECTED_OPTION" == "Uninstall" ]]; then
+            OPT_UNINSTALL=1
+        fi
+
+        # User vs. system?
+        OPTIONS=("Current User" "System")
+        menuFromArr SELECTED_OPTION "Configure WinApps for the current user '$(whoami)' or the whole system?" "${OPTIONS[@]}"
+
+        # Set flags.
+        if [[ "$SELECTED_OPTION" == "Current User" ]]; then
+            OPT_USER=1
+        elif [[ "$SELECTED_OPTION" == "System" ]]; then
+            OPT_SYSTEM=1
+        fi
+
+        # Automatic vs. manual?
+        if [ "$OPT_UNINSTALL" -eq 0 ]; then
+            OPTIONS=("Automatic" "Manual")
+            menuFromArr SELECTED_OPTION "Automatically install supported applications or choose manually?" "${OPTIONS[@]}"
+
+            # Set flags.
+            if [[ "$SELECTED_OPTION" == "Automatic" ]]; then
+                OPT_AOSA=1
+            fi
+        fi
+
+        # Newline.
+        echo ""
     fi
-    echo " Finished."
+
+    # Simultaneous 'User' and 'System'.
+    if [ "$OPT_SYSTEM" -eq 1 ] && [ "$OPT_USER" -eq 1 ]; then
+        # Display the error type.
+        echo -e "${ERROR_TEXT}ERROR:${CLEAR_TEXT} ${BOLD_TEXT}CONFLICTING ARGUMENTS.${CLEAR_TEXT}"
+
+        # Display the error details.
+        echo -e "${INFO_TEXT}You cannot specify both${CLEAR_TEXT} ${COMMAND_TEXT}--user${CLEAR_TEXT} ${INFO_TEXT}and${CLEAR_TEXT} ${COMMAND_TEXT}--system${CLEAR_TEXT} ${INFO_TEXT}simultaneously.${CLEAR_TEXT}"
+
+        # Display the suggested action(s).
+        echo "--------------------------------------------------------------------------------"
+        waUsage
+        echo "--------------------------------------------------------------------------------"
+
+        # Terminate the script.
+        return "$EC_BAD_ARGUMENT"
+    fi
+
+    # Simultaneous 'Uninstall' and 'AOSA'.
+    if [ "$OPT_UNINSTALL" -eq 1 ] && [ "$OPT_AOSA" -eq 1 ]; then
+        # Display the error type.
+        echo -e "${ERROR_TEXT}ERROR:${CLEAR_TEXT} ${BOLD_TEXT}CONFLICTING ARGUMENTS.${CLEAR_TEXT}"
+
+        # Display the error details.
+        echo -e "${INFO_TEXT}You cannot specify both${CLEAR_TEXT} ${COMMAND_TEXT}--uninstall${CLEAR_TEXT} ${INFO_TEXT}and${CLEAR_TEXT} ${COMMAND_TEXT}--aosa${CLEAR_TEXT} ${INFO_TEXT}simultaneously.${CLEAR_TEXT}"
+
+        # Display the suggested action(s).
+        echo "--------------------------------------------------------------------------------"
+        waUsage
+        echo "--------------------------------------------------------------------------------"
+
+        # Terminate the script.
+        return "$EC_BAD_ARGUMENT"
+    fi
+
+    # No 'User' or 'System'.
+    if [ "$OPT_SYSTEM" -eq 0 ] && [ "$OPT_USER" -eq 0 ]; then
+        # Display the error type.
+        echo -e "${ERROR_TEXT}ERROR:${CLEAR_TEXT} ${BOLD_TEXT}INSUFFICIENT ARGUMENTS.${CLEAR_TEXT}"
+
+        # Display the error details.
+        echo -e "${INFO_TEXT}You must specify either${CLEAR_TEXT} ${COMMAND_TEXT}--user${CLEAR_TEXT} ${INFO_TEXT}or${CLEAR_TEXT} ${COMMAND_TEXT}--system${CLEAR_TEXT} ${INFO_TEXT}to proceed.${CLEAR_TEXT}"
+
+        # Display the suggested action(s).
+        echo "--------------------------------------------------------------------------------"
+        waUsage
+        echo "--------------------------------------------------------------------------------"
+
+        # Terminate the script.
+        return "$EC_BAD_ARGUMENT"
+    fi
 }
 
-function waConfigureApp() {
-    if [[ -z $1 ]]; then
-        return 1
+# Name: 'waConfigurePathsAndPermissions'
+# Role: Sets paths and adjusts permissions as specified.
+function waConfigurePathsAndPermissions() {
+    if [ "$OPT_USER" -eq 1 ]; then
+        SUDO=""
+        BIN_PATH="$USER_BIN_PATH"
+        APP_PATH="$USER_APP_PATH"
+        APPDATA_PATH="$USER_APPDATA_PATH"
+    elif [ "$OPT_SYSTEM" -eq 1 ]; then
+        SUDO="sudo"
+        BIN_PATH="$SYS_BIN_PATH"
+        APP_PATH="$SYS_APP_PATH"
+        APPDATA_PATH="$SYS_APPDATA_PATH"
+
+        # Preemptively obtain superuser privileges.
+        sudo -v || {
+            # Display the error type.
+            echo -e "${ERROR_TEXT}ERROR:${CLEAR_TEXT} ${BOLD_TEXT}AUTHENTICATION FAILURE.${CLEAR_TEXT}"
+
+            # Display the error details.
+            echo -e "${INFO_TEXT}Failed to gain superuser privileges.${CLEAR_TEXT}"
+
+            # Display the suggested action(s).
+            echo "--------------------------------------------------------------------------------"
+            echo "Please check your password and try again."
+            echo "If you continue to experience issues, contact your system administrator."
+            echo "--------------------------------------------------------------------------------"
+
+            # Terminate the script.
+            return "$EC_NO_SUDO"
+        }
     fi
-    if [ -z "$ICON" ]; then
-        ICON=$SYS_PATH/apps/$1/icon.$2
+}
+
+# Name: 'waCheckExistingInstall'
+# Role: Identifies any existing WinApps installations that may conflict with the new installation.
+function waCheckExistingInstall() {
+    # Print feedback.
+    echo -n "Checking for existing conflicting WinApps installations... "
+
+    # Check for an existing 'user' installation.
+    if [ -f "${USER_BIN_PATH}/winapps" ]; then
+        # Complete the previous line.
+        echo -e "${FAIL_TEXT}Failed!${CLEAR_TEXT}\n"
+
+        # Display the error type.
+        echo -e "${ERROR_TEXT}ERROR:${CLEAR_TEXT} ${BOLD_TEXT}EXISTING 'USER' WINAPPS INSTALLATION.${CLEAR_TEXT}"
+
+        # Display the error details.
+        echo -e "${INFO_TEXT}A previous WinApps installation was detected for the current user.${CLEAR_TEXT}"
+
+        # Display the suggested action(s).
+        echo "--------------------------------------------------------------------------------"
+        echo -e "Please remove the existing WinApps installation using ${COMMAND_TEXT}./installer.sh --user --uninstall${CLEAR_TEXT}."
+        echo "--------------------------------------------------------------------------------"
+
+        # Terminate the script.
+        return "$EC_EXISTING_INSTALL"
     fi
-    # shellcheck disable=SC1090
-    . "$SYS_PATH/apps/$1/info"
-    echo -n "  Configuring $NAME..."
-    if [ $USEDEMO != 1 ]; then
-        $SUDO rm -f "$APP_PATH/$1.desktop"
-        echo "[Desktop Entry]
-Name=$NAME
-Exec=$BIN_PATH/winapps $1 %F
+
+    # Check for an existing 'system' installation.
+    if [ -f "${SYS_BIN_PATH}/winapps" ]; then
+        # Complete the previous line.
+        echo -e "${FAIL_TEXT}Failed!${CLEAR_TEXT}\n"
+
+        # Display the error type.
+        echo -e "${ERROR_TEXT}ERROR:${CLEAR_TEXT} ${BOLD_TEXT}EXISTING 'SYSTEM' WINAPPS INSTALLATION.${CLEAR_TEXT}"
+
+        # Display the error details.
+        echo -e "${INFO_TEXT}A previous system-wide WinApps installation was detected.${CLEAR_TEXT}"
+
+        # Display the suggested action(s).
+        echo "--------------------------------------------------------------------------------"
+        echo -e "Please remove the existing WinApps installation using ${COMMAND_TEXT}./installer.sh --system --uninstall${CLEAR_TEXT}."
+        echo "--------------------------------------------------------------------------------"
+
+        # Terminate the script.
+        return "$EC_EXISTING_INSTALL"
+    fi
+
+    # Print feedback.
+    echo -e "${DONE_TEXT}Done!${CLEAR_TEXT}"
+}
+
+# Name: 'waLoadConfig'
+# Role: Loads settings specified within the WinApps configuration file.
+function waLoadConfig() {
+    # Print feedback.
+    echo -n "Attempting to load WinApps configuration file... "
+
+    if [ ! -f "$CONFIG_PATH" ]; then
+        # Complete the previous line.
+        echo -e "${FAIL_TEXT}Failed!${CLEAR_TEXT}\n"
+
+        # Display the error type.
+        echo -e "${ERROR_TEXT}ERROR:${CLEAR_TEXT} ${BOLD_TEXT}MISSING CONFIGURATION FILE.${CLEAR_TEXT}"
+
+        # Display the error details.
+        echo -e "${INFO_TEXT}A valid WinApps configuration file was not found.${CLEAR_TEXT}"
+
+        # Display the suggested action(s).
+        echo "--------------------------------------------------------------------------------"
+        echo -e "Please create a configuration file at ${COMMAND_TEXT}${CONFIG_PATH}${CLEAR_TEXT}."
+        echo -e "\nThe configuration file should contain the following:"
+        echo -e "\n${COMMAND_TEXT}${WINAPPS_CONFIG}${CLEAR_TEXT}"
+        echo -e "\nThe ${COMMAND_TEXT}RDP_USER${CLEAR_TEXT} and ${COMMAND_TEXT}RDP_PASS${CLEAR_TEXT} fields should contain the Windows user's account name and password."
+        echo -e "Note that the Windows user's PIN combination CANNOT be used to populate ${COMMAND_TEXT}RDP_PASS${CLEAR_TEXT}."
+        echo "--------------------------------------------------------------------------------"
+
+        # Terminate the script.
+        return "$EC_NO_CONFIG"
+    else
+        # Load the WinApps configuration file.
+        # shellcheck source=/dev/null # Exclude this file from being checked by ShellCheck.
+        source "$CONFIG_PATH"
+    fi
+
+    # Print feedback.
+    echo -e "${DONE_TEXT}Done!${CLEAR_TEXT}"
+}
+
+# Name: 'waCheckDependencies'
+# Role: Terminate script if dependencies are missing.
+function waCheckDependencies() {
+    # Print feedback.
+    echo -n "Checking whether all dependencies are installed... "
+
+    # 'Basic Calculator'.
+    if ! command -v bc &>/dev/null; then
+        # Complete the previous line.
+        echo -e "${FAIL_TEXT}Failed!${CLEAR_TEXT}\n"
+
+        # Display the error type.
+        echo -e "${ERROR_TEXT}ERROR:${CLEAR_TEXT} ${BOLD_TEXT}MISSING DEPENDENCIES.${CLEAR_TEXT}"
+
+        # Display the error details.
+        echo -e "${INFO_TEXT}Please install 'Basic Calculator' to proceed.${CLEAR_TEXT}"
+
+        # Display the suggested action(s).
+        echo "--------------------------------------------------------------------------------"
+        echo "Debian/Ubuntu-based systems:"
+        echo -e "  ${COMMAND_TEXT}sudo apt install bc${CLEAR_TEXT}"
+        echo "Red Hat/Fedora-based systems:"
+        echo -e "  ${COMMAND_TEXT}sudo dnf install bc${CLEAR_TEXT}"
+        echo "Arch Linux systems:"
+        echo -e "  ${COMMAND_TEXT}sudo pacman -S bc${CLEAR_TEXT}"
+        echo "Gentoo Linux systems:"
+        echo -e "  ${COMMAND_TEXT}sudo emerge --ask sys-apps/bc${CLEAR_TEXT}"
+        echo "--------------------------------------------------------------------------------"
+
+        # Terminate the script.
+        return "$EC_MISSING_DEPS"
+    fi
+
+    # 'FreeRDP' (Version 3).
+    # Attempt to set a FreeRDP command if the command variable is empty.
+    if [ -z "$FREERDP_COMMAND" ]; then
+        if command -v xfreerdp &>/dev/null; then
+            FREERDP_COMMAND="xfreerdp"
+        elif command -v xfreerdp3 &>/dev/null; then
+            FREERDP_COMMAND="xfreerdp3"
+        fi
+    fi
+
+    if ! command -v "$FREERDP_COMMAND" &>/dev/null; then
+        # Complete the previous line.
+        echo -e "${FAIL_TEXT}Failed!${CLEAR_TEXT}\n"
+
+        # Display the error type.
+        echo -e "${ERROR_TEXT}ERROR:${CLEAR_TEXT} ${BOLD_TEXT}MISSING DEPENDENCIES.${CLEAR_TEXT}"
+
+        # Display the error details.
+        echo -e "${INFO_TEXT}Please install 'FreeRDP' to proceed.${CLEAR_TEXT}"
+
+        # Display the suggested action(s).
+        echo "--------------------------------------------------------------------------------"
+        echo "Debian/Ubuntu-based systems:"
+        echo -e "  ${COMMAND_TEXT}sudo apt install freerdp3-x11${CLEAR_TEXT}"
+        echo "Red Hat/Fedora-based systems:"
+        echo -e "  ${COMMAND_TEXT}sudo dnf install freerdp${CLEAR_TEXT}"
+        echo "Arch Linux systems:"
+        echo -e "  ${COMMAND_TEXT}sudo pacman -S freerdp${CLEAR_TEXT}"
+        echo "Gentoo Linux systems:"
+        echo -e "  ${COMMAND_TEXT}sudo emerge --ask net-misc/freerdp${CLEAR_TEXT}"
+        echo "--------------------------------------------------------------------------------"
+
+        # Terminate the script.
+        return "$EC_MISSING_DEPS"
+    fi
+
+    # 'libvirt' / 'virt-manager'.
+    if ! command -v virsh &>/dev/null; then
+        # Complete the previous line.
+        echo -e "${FAIL_TEXT}Failed!${CLEAR_TEXT}\n"
+
+        # Display the error type.
+        echo -e "${ERROR_TEXT}ERROR:${CLEAR_TEXT} ${BOLD_TEXT}MISSING DEPENDENCIES.${CLEAR_TEXT}"
+
+        # Display the error details.
+        echo -e "${INFO_TEXT}Please install 'Virtual Machine Manager' to proceed.${CLEAR_TEXT}"
+
+        # Display the suggested action(s).
+        echo "--------------------------------------------------------------------------------"
+        echo "Debian/Ubuntu-based systems:"
+        echo -e "  ${COMMAND_TEXT}sudo apt install virt-manager${CLEAR_TEXT}"
+        echo "Red Hat/Fedora-based systems:"
+        echo -e "  ${COMMAND_TEXT}sudo dnf install virt-manager${CLEAR_TEXT}"
+        echo "Arch Linux systems:"
+        echo -e "  ${COMMAND_TEXT}sudo pacman -S virt-manager${CLEAR_TEXT}"
+        echo "Gentoo Linux systems:"
+        echo -e "  ${COMMAND_TEXT}sudo emerge --ask app-emulation/virt-manager${CLEAR_TEXT}"
+        echo "--------------------------------------------------------------------------------"
+
+        # Terminate the script.
+        return "$EC_MISSING_DEPS"
+    fi
+
+    # Print feedback.
+    echo -e "${DONE_TEXT}Done!${CLEAR_TEXT}"
+}
+
+# Name: 'waCheckGroupMembership'
+# Role: Ensures the current user is part of the required groups.
+function waCheckGroupMembership() {
+    # Print feedback.
+    echo -n "Checking whether the user '$(whoami)' is part of the required groups... "
+
+    # Declare variables.
+    local USER_GROUPS=""    # Stores groups the current user belongs to.
+
+    # Identify groups the current user belongs to.
+    USER_GROUPS=$(groups "$(whoami)")
+
+    if ! (echo "$USER_GROUPS" | grep -q -E "\blibvirt\b") || ! (echo "$USER_GROUPS" | grep -q -E "\bkvm\b"); then
+        # Complete the previous line.
+        echo -e "${FAIL_TEXT}Failed!${CLEAR_TEXT}\n"
+
+        # Display the error type.
+        echo -e "${ERROR_TEXT}ERROR:${CLEAR_TEXT} ${BOLD_TEXT}GROUP MEMBERSHIP CHECK ERROR.${CLEAR_TEXT}"
+
+        # Display the error details.
+        echo -e "${INFO_TEXT}The current user '$(whoami)' is not part of group 'libvirt' and/or group 'kvm'.${CLEAR_TEXT}"
+
+        # Display the suggested action(s).
+        echo "--------------------------------------------------------------------------------"
+        echo "Please run the below commands, followed by a system reboot:"
+        echo -e "${COMMAND_TEXT}sudo usermod -a -G libvirt $(whoami)${CLEAR_TEXT}"
+        echo -e "${COMMAND_TEXT}sudo usermod -a -G kvm $(whoami)${CLEAR_TEXT}"
+        echo "--------------------------------------------------------------------------------"
+
+        # Terminate the script.
+        return "$EC_NOT_IN_GROUP"
+    fi
+
+    # Print feedback.
+    echo -e "${DONE_TEXT}Done!${CLEAR_TEXT}"
+}
+
+# Name: 'waCheckVMRunning'
+# Role: Checks the state of the Windows VM to ensure it is running.
+function waCheckVMRunning() {
+    # Print feedback.
+    echo -n "Checking the status of the Windows VM... "
+
+    # Declare variables.
+    local VM_STATE=""    # Stores the state of the Windows VM.
+
+    # Obtain VM Status
+    VM_STATE=$(virsh list --all | grep -w "$VM_NAME")
+
+    if [[ "$VM_STATE" == *"shut off"* ]]; then
+        # Complete the previous line.
+        echo -e "${FAIL_TEXT}Failed!${CLEAR_TEXT}\n"
+
+        # Display the error type.
+        echo -e "${ERROR_TEXT}ERROR:${CLEAR_TEXT} ${BOLD_TEXT}WINDOWS VM NOT RUNNING.${CLEAR_TEXT}"
+
+        # Display the error details.
+        echo -e "${INFO_TEXT}The Windows VM '${VM_NAME}' is powered off.${CLEAR_TEXT}"
+
+        # Display the suggested action(s).
+        echo "--------------------------------------------------------------------------------"
+        echo "Please run the below command to start the Windows VM:"
+        echo -e "${COMMAND_TEXT}virsh start ${VM_NAME}${CLEAR_TEXT}"
+        echo "--------------------------------------------------------------------------------"
+
+        # Terminate the script.
+        return "$EC_VM_OFF"
+    elif [[ "$VM_STATE" == *"paused"* ]]; then
+        # Complete the previous line.
+        echo -e "${FAIL_TEXT}Failed!${CLEAR_TEXT}\n"
+
+        # Display the error type.
+        echo -e "${ERROR_TEXT}ERROR:${CLEAR_TEXT} ${BOLD_TEXT}WINDOWS VM NOT RUNNING.${CLEAR_TEXT}"
+
+        # Display the error details.
+        echo -e "${INFO_TEXT}The Windows VM '${VM_NAME}' is paused.${CLEAR_TEXT}"
+
+        # Display the suggested action(s).
+        echo "--------------------------------------------------------------------------------"
+        echo "Please run the below command to resume the Windows VM:"
+        echo -e "${COMMAND_TEXT}virsh resume ${VM_NAME}${CLEAR_TEXT}"
+        echo "--------------------------------------------------------------------------------"
+
+        # Terminate the script.
+        return "$EC_VM_PAUSED"
+    elif [[ "$VM_STATE" != *"running"* ]]; then
+        # Complete the previous line.
+        echo -e "${FAIL_TEXT}Failed!${CLEAR_TEXT}\n"
+
+        # Display the error type.
+        echo -e "${ERROR_TEXT}ERROR:${CLEAR_TEXT} ${BOLD_TEXT}WINDOWS VM DOES NOT EXIST.${CLEAR_TEXT}"
+
+        # Display the error details.
+        echo -e "${INFO_TEXT}The Windows VM '${VM_NAME}' could not be found.${CLEAR_TEXT}"
+
+        # Display the suggested action(s).
+        echo "--------------------------------------------------------------------------------"
+        echo "Please ensure a Windows VM with the name '${VM_NAME}' exists."
+        echo "--------------------------------------------------------------------------------"
+
+        # Terminate the script.
+        return "$EC_VM_ABSENT"
+    fi
+
+    # Print feedback.
+    echo -e "${DONE_TEXT}Done!${CLEAR_TEXT}"
+}
+
+# Name: 'waCheckVMContactable'
+# Role: Assesses whether the Windows VM can be contacted (prior to attempting a remote desktop connection).
+function waCheckVMContactable() {
+    # Print feedback.
+    echo -n "Attempting to contact the Windows VM... "
+
+    # Declare variables.
+    local VM_MAC=""    # Stores the MAC address of the Windows VM.
+
+    # Obtain Windows VM IP Address
+    if [ -z "$RDP_IP" ]; then
+        VM_MAC=$(virsh domiflist "$VM_NAME" | grep -oE "([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})")    # VM MAC address.
+        RDP_IP=$(arp -n | grep "$VM_MAC" | grep -oE "([0-9]{1,3}\.){3}[0-9]{1,3}")                   # VM IP address.
+
+        if [ -z "$RDP_IP" ]; then
+            # Complete the previous line.
+            echo -e "${FAIL_TEXT}Failed!${CLEAR_TEXT}\n"
+
+            # Display the error type.
+            echo -e "${ERROR_TEXT}ERROR:${CLEAR_TEXT} ${BOLD_TEXT}NETWORK CONFIGURATION ERROR.${CLEAR_TEXT}"
+
+            # Display the error details.
+            echo -e "${INFO_TEXT}The IP address of the Windows VM '${VM_NAME}' could not be found.${CLEAR_TEXT}"
+
+            # Display the suggested action(s).
+            echo "--------------------------------------------------------------------------------"
+            echo "Please ensure networking is properly configured for the Windows VM."
+            echo "--------------------------------------------------------------------------------"
+
+            # Terminate the script.
+            return "$EC_VM_NO_IP"
+        fi
+    fi
+
+    # Check for an open RDP port.
+    if ! timeout 5 nc -z "$RDP_IP" "$RDP_PORT" &>/dev/null; then
+        # Complete the previous line.
+        echo -e "${FAIL_TEXT}Failed!${CLEAR_TEXT}\n"
+
+        # Display the error type.
+        echo -e "${ERROR_TEXT}ERROR:${CLEAR_TEXT} ${BOLD_TEXT}NETWORK CONFIGURATION ERROR.${CLEAR_TEXT}"
+
+        # Display the error details.
+        echo -e "${INFO_TEXT}Failed to establish a connection with the Windows VM '${VM_NAME}' at '${RDP_IP}:${RDP_PORT}'.${CLEAR_TEXT}"
+
+        # Display the suggested action(s).
+        echo "--------------------------------------------------------------------------------"
+        echo "Please ensure Remote Desktop is configured on the Windows VM as per the WinApps README."
+        echo "--------------------------------------------------------------------------------"
+
+        # Terminate the script.
+        return "$EC_VM_BAD_PORT"
+    fi
+
+    # Print feedback.
+    echo -e "${DONE_TEXT}Done!${CLEAR_TEXT}"
+}
+
+# Name: 'waCheckRDPAccess'
+# Role: Tests if the Windows VM is accessible via remote desktop.
+function waCheckRDPAccess() {
+    # Print feedback.
+    echo -n "Establishing a Remote Desktop connection with the Windows VM... "
+
+    # Declare variables.
+    local FREERDP_LOG=""     # Stores the path of the FreeRDP log file.
+    local FREERDP_PROC=""    # Stores the FreeRDP process ID.
+    local ELAPSED_TIME=""    # Stores the time counter.
+
+    # Log file path.
+    FREERDP_LOG="${USER_APPDATA_PATH}/FreeRDP_Test_$(date +'%Y%m%d_%H%M_%N').log"
+
+    # Ensure the output directory exists.
+    mkdir -p "$USER_APPDATA_PATH"
+
+    # Remove existing 'FreeRDP Connection Test' file.
+    rm -f "$TEST_PATH"
+
+    # This command should create a file on the host filesystem before terminating the RDP session. This command is silently executed as a background process.
+    # If the file is created, it means the Windows VM received the command via FreeRDP successfully and can read and write to the Linux home folder.
+    # Note: The following final line is expected within the log, indicating successful execution of the 'tsdiscon' command and termination of the RDP session.
+    # [INFO][com.freerdp.core] - [rdp_print_errinfo]: ERRINFO_LOGOFF_BY_USER (0x0000000C):The disconnection was initiated by the user logging off their session on the server.
+    # shellcheck disable=SC2140,SC2027 # Disable warnings regarding unquoted strings.
+    "$FREERDP_COMMAND" \
+/cert:tofu \
+/d:"$RDP_DOMAIN" \
+/u:"$RDP_USER" \
+/p:"$RDP_PASS" \
+/scale:"$RDP_SCALE" \
++auto-reconnect \
++home-drive \
+-wallpaper \
++dynamic-resolution \
+/app:\
+program:"C:\Windows\System32\cmd.exe",\
+cmd:"/C type NUL > "$TEST_PATH_WIN" && tsdiscon" \
+/v:"$RDP_IP" &>"$FREERDP_LOG" &
+
+    # Store the FreeRDP process ID.
+    FREERDP_PROC=$!
+
+    # Initialise the time counter.
+    ELAPSED_TIME=0
+
+    # Wait a maximum of 30 seconds for the background process to complete.
+    while [ "$ELAPSED_TIME" -lt 30 ]; do
+        # Check if the FreeRDP process is complete or if the test file exists.
+        if ! ps -p "$FREERDP_PROC" &>/dev/null || [ -f "$TEST_PATH" ]; then
+            break
+        fi
+
+        # Wait for 5 seconds.
+        sleep 5
+        ELAPSED_TIME=$((ELAPSED_TIME + 5))
+    done
+
+    # Check if FreeRDP process is not complete.
+    if ps -p "$FREERDP_PROC" &>/dev/null; then
+        # SIGKILL FreeRDP.
+        kill -9 "$FREERDP_PROC"
+    fi
+
+    # Check if test file does not exist.
+    if ! [ -f "$TEST_PATH" ]; then
+        # Complete the previous line.
+        echo -e "${FAIL_TEXT}Failed!${CLEAR_TEXT}\n"
+
+        # Display the error type.
+        echo -e "${ERROR_TEXT}ERROR:${CLEAR_TEXT} ${BOLD_TEXT}REMOTE DESKTOP PROTOCOL FAILURE.${CLEAR_TEXT}"
+
+        # Display the error details.
+        echo -e "${INFO_TEXT}FreeRDP failed to establish a connection with the Windows VM '${VM_NAME}'.${CLEAR_TEXT}"
+
+        # Display the suggested action(s).
+        echo "--------------------------------------------------------------------------------"
+        echo -e "Please view the log at ${COMMAND_TEXT}${FREERDP_LOG}${CLEAR_TEXT}."
+        echo "Troubleshooting Tips:"
+        echo "  - Ensure the user is logged out of the Windows VM prior to initiating the WinApps installation."
+        echo "  - Ensure the credentials within the WinApps configuration file are correct."
+        echo "  - Ensure the Windows VM is correctly named as specified within the README."
+        echo "  - Ensure 'Remote Desktop' is enabled within the Windows VM."
+        echo "  - Ensure you have merged 'RDPApps.reg' into the Windows VM's registry."
+        echo -e "  - Utilise a new certificate by removing relevant certificate(s) in ${COMMAND_TEXT}${HOME}/.config/freerdp/server${CLEAR_TEXT}."
+        echo "--------------------------------------------------------------------------------"
+
+        # Terminate the script.
+        return "$EC_RDP_FAIL"
+    else
+        # Remove the temporary test file.
+        rm -f "$TEST_PATH"
+    fi
+
+    # Print feedback.
+    echo -e "${DONE_TEXT}Done!${CLEAR_TEXT}"
+}
+
+# Name: 'waFindInstalled'
+# Role: Identifies installed applications on the Windows VM.
+function waFindInstalled() {
+    # Print feedback.
+    echo -n "Checking for installed Windows applications... "
+
+    # Declare variables.
+    local FREERDP_LOG=""     # Stores the path of the FreeRDP log file.
+    local FREERDP_PROC=""    # Stores the FreeRDP process ID.
+    local ELAPSED_TIME=""    # Stores the time counter.
+
+    # Log file path.
+    FREERDP_LOG="${USER_APPDATA_PATH}/FreeRDP_Scan_$(date +'%Y%m%d_%H%M_%N').log"
+
+    # Make the output directory if required.
+    mkdir -p "$USER_APPDATA_PATH"
+
+    # Remove temporary files from previous WinApps installations.
+    rm -f "$BATCH_SCRIPT_PATH" "$TMP_INST_FILE_PATH" "$INST_FILE_PATH" "$PS_SCRIPT_HOME_PATH" "$DETECTED_FILE_PATH"
+
+    # Copy PowerShell script to a directory within the user's home folder.
+    # This will enable the PowerShell script to be accessed and executed by the Windows VM.
+    cp "$PS_SCRIPT_PATH" "$PS_SCRIPT_HOME_PATH"
+
+    # Enumerate over each officially supported application.
+    for APPLICATION in ./apps/*; do
+        # Extract the name of the application from the absolute path of the folder.
+        APPLICATION="$(basename "$APPLICATION")"
+
+        # Source 'Info' File Containing:
+        # - The Application Name          (FULL_NAME)
+        # - The Shortcut Name             (NAME)
+        # - Application Categories        (CATEGORIES)
+        # - Executable Path               (WIN_EXECUTABLE)
+        # - Supported MIME Types          (MIME_TYPES)
+        # - Application Icon              (ICON)
+        # shellcheck source=/dev/null # Exclude this file from being checked by ShellCheck.
+        source "./apps/${APPLICATION}/info"
+
+        # Append commands to batch file.
+        echo "IF EXIST \"${WIN_EXECUTABLE}\" ECHO ${APPLICATION} >> ${TMP_INST_FILE_PATH_WIN}" >> "$BATCH_SCRIPT_PATH"
+    done
+
+    # Append a command to the batch script to run the PowerShell script and store it's output in the 'detected' file.
+    # shellcheck disable=SC2129 # Silence warning regarding repeated redirects.
+    echo "powershell.exe -ExecutionPolicy Bypass -File ${PS_SCRIPT_HOME_PATH_WIN} > ${DETECTED_FILE_PATH_WIN}" >> "$BATCH_SCRIPT_PATH"
+
+    # Append a command to the batch script to rename the temporary file containing the names of all detected officially supported applications.
+    echo "RENAME ${TMP_INST_FILE_PATH_WIN} installed" >> "$BATCH_SCRIPT_PATH"
+
+    # Append a command to the batch script to terminate the remote desktop session once all previous commands are complete.
+    echo "tsdiscon" >> "$BATCH_SCRIPT_PATH"
+
+    # Silently execute the batch script within the Windows VM in the background (Log Output To File)
+    # Note: The following final line is expected within the log, indicating successful execution of the 'tsdiscon' command and termination of the RDP session.
+    # [INFO][com.freerdp.core] - [rdp_print_errinfo]: ERRINFO_LOGOFF_BY_USER (0x0000000C):The disconnection was initiated by the user logging off their session on the server.
+    # shellcheck disable=SC2140,SC2027 # Disable warnings regarding unquoted strings.
+    "$FREERDP_COMMAND" \
+/cert:tofu \
+/d:"$RDP_DOMAIN" \
+/u:"$RDP_USER" \
+/p:"$RDP_PASS" \
+/scale:"$RDP_SCALE" \
++auto-reconnect \
++home-drive \
+-wallpaper \
++dynamic-resolution \
+/app:\
+program:"C:\Windows\System32\cmd.exe",\
+cmd:"/C "$BATCH_SCRIPT_PATH_WIN"" \
+/v:"$RDP_IP" &>"$FREERDP_LOG" &
+
+    # Store the FreeRDP process ID.
+    FREERDP_PROC=$!
+
+    # Initialise the time counter.
+    ELAPSED_TIME=0
+
+    # Wait a maximum of 60 seconds for the batch script to finish running.
+    while [ $ELAPSED_TIME -lt 60 ]; do
+        # Check if the FreeRDP process is complete or if the 'installed' file exists.
+        if ! ps -p "$FREERDP_PROC" &>/dev/null || [ -f "$INST_FILE_PATH" ]; then
+            break
+        fi
+
+        # Wait for 5 seconds.
+        sleep 5
+        ELAPSED_TIME=$((ELAPSED_TIME + 5))
+    done
+
+    # Check if the FreeRDP process is not complete.
+    if ps -p "$FREERDP_PROC" &>/dev/null; then
+        # SIGKILL FreeRDP.
+        kill -9 "$FREERDP_PROC"
+    fi
+
+    # Check if test file does not exist.
+    if ! [ -f "$INST_FILE_PATH" ]; then
+        # Complete the previous line.
+        echo -e "${FAIL_TEXT}Failed!${CLEAR_TEXT}\n"
+
+        # Display the error type.
+        echo -e "${ERROR_TEXT}ERROR:${CLEAR_TEXT} ${BOLD_TEXT}APPLICATION QUERY FAILURE.${CLEAR_TEXT}"
+
+        # Display the error details.
+        echo -e "${INFO_TEXT}Failed to query Windows VM '${VM_NAME}' for installed applications.${CLEAR_TEXT}"
+
+        # Display the suggested action(s).
+        echo "--------------------------------------------------------------------------------"
+        echo -e "Please view the log at ${COMMAND_TEXT}${FREERDP_LOG}${CLEAR_TEXT}."
+        echo "--------------------------------------------------------------------------------"
+
+        # Terminate the script.
+        return "$EC_APPQUERY_FAIL"
+    fi
+
+    # Print feedback.
+    echo -e "${DONE_TEXT}Done!${CLEAR_TEXT}"
+}
+
+# Name: 'waConfigureWindows'
+# Role: Create an application entry for launching Windows VM via Remote Desktop.
+function waConfigureWindows() {
+    # Print feedback.
+    echo -n "Creating an application entry for Windows VM... "
+
+    # Declare variables.
+    local WIN_BASH=""       # Stores the bash script to launch the Windows VM.
+    local WIN_DESKTOP=""    # Stores the '.desktop' file to launch the Windows VM.
+
+    # Populate variables.
+    WIN_BASH="\
+#!/usr/bin/env bash
+${BIN_PATH}/winapps windows"
+    WIN_DESKTOP="\
+[Desktop Entry]
+Name=Windows
+Exec=${BIN_PATH}/winapps windows %F
 Terminal=false
 Type=Application
-Icon=$ICON
-StartupWMClass=$FULL_NAME
-Comment=$FULL_NAME
-Categories=$CATEGORIES
-MimeType=$MIME_TYPES
-        " | $SUDO tee "$APP_PATH/$1.desktop" >/dev/null
-        $SUDO rm -f "$BIN_PATH/$1"
-        echo -e "#!/usr/bin/env bash \n $BIN_PATH/winapps $1 $*
-        " | $SUDO tee "$BIN_PATH/$1" >/dev/null
-        $SUDO chmod a+x "$BIN_PATH/$1"
-    fi
-    echo " Finished."
+Icon=${APPDATA_PATH}/icons/windows.svg
+StartupWMClass=Microsoft Windows
+Comment=Microsoft Windows VM"
 
-    ICON=""
+    # Copy the 'Windows' icon.
+    $SUDO cp "./icons/windows.svg" "${APPDATA_PATH}/icons/windows.svg"
+
+    # Write the desktop entry content to a file.
+    echo "$WIN_DESKTOP" | $SUDO tee "${APP_PATH}/windows.desktop" &>/dev/null
+
+    # Write the bash script to a file.
+    echo "$WIN_BASH" | $SUDO tee "${BIN_PATH}/windows" &>/dev/null
+
+    # Mark the bash script as executable.
+    $SUDO chmod a+x "${BIN_PATH}/windows"
+
+    # Print feedback.
+    echo -e "${DONE_TEXT}Done!${CLEAR_TEXT}"
 }
 
+# Name: 'waConfigureApp'
+# Role: Create application entries for a given application installed on the Windows VM.
+function waConfigureApp() {
+    # Declare variables.
+    local APP_ICON=""            # Stores the path to the application icon.
+    local APP_BASH=""            # Stores the bash script used to launch the application.
+    local APP_DESKTOP_FILE=""    # Stores the '.desktop' file used to launch the application.
+
+    # Source 'Info' File Containing:
+    # - The Application Name          (FULL_NAME)
+    # - The Shortcut Nsame            (NAME)
+    # - Application Categories        (CATEGORIES)
+    # - Executable Path               (WIN_EXECUTABLE)
+    # - Supported MIME Types          (MIME_TYPES)
+    # - Application Icon              (ICON)
+    # shellcheck source=/dev/null # Exclude this file from being checked by ShellCheck.
+    source "${APPDATA_PATH}/apps/${1}/info"
+
+    # Determine path to application icon using arguments passed to function.
+    APP_ICON="${APPDATA_PATH}/apps/${1}/icon.${2}"
+
+    # Determine the content of the bash script for the application.
+    APP_BASH="\
+#!/usr/bin/env bash
+${BIN_PATH}/winapps ${1}"
+
+    # Determine the content of the '.desktop' file for the application.
+    APP_DESKTOP_FILE="\
+[Desktop Entry]
+Name=${NAME}
+Exec=${BIN_PATH}/winapps ${1} %F
+Terminal=false
+Type=Application
+Icon=${APP_ICON}
+StartupWMClass=${FULL_NAME}
+Comment=${FULL_NAME}
+Categories=${CATEGORIES}
+MimeType=${MIME_TYPES}"
+
+    # Remove the existing '.desktop' file for the application if it exists.
+    $SUDO rm -f "${APP_PATH}/${1}.desktop"
+
+    # Remove the existing bash script for the application if it exists.
+    $SUDO rm -f "${BIN_PATH}/${1}"
+
+    # Store the '.desktop' file for the application.
+    echo "$APP_DESKTOP_FILE" | $SUDO tee "${APP_PATH}/${1}.desktop" &>/dev/null
+
+    # Store the bash script for the application.
+    echo "$APP_BASH" | $SUDO tee "${BIN_PATH}/${1}" &>/dev/null
+
+    # Mark bash script as executable.
+    $SUDO chmod a+x "${BIN_PATH}/${1}"
+}
+
+# Name: 'waConfigureOfficiallySupported'
+# Role: Create application entries for officially supported applications installed on the Windows VM.
+function waConfigureOfficiallySupported() {
+    # Declare variables.
+    local OSA_LIST=()    # Stores a list of all officially supported applications installed on the Windows VM.
+
+    # Read the list of officially supported applications that are installed on the Windows VM into an array, returning an empty array if no such files exist.
+    # This will remove leading and trailing whitespace characters as well as ignore empty lines.
+    readarray -t OSA_LIST < <(grep -v '^[[:space:]]*$' "$INST_FILE_PATH" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//' 2>/dev/null || true)
+
+    # Create application entries for each officially supported application.
+    for OSA in "${OSA_LIST[@]}"; do
+        # Print feedback.
+        echo -n "Creating an application entry for ${OSA}... "
+
+        # Copy application icon and information.
+        $SUDO cp -r "./apps/${OSA}" "${APPDATA_PATH}/apps"
+
+        # Configure the application.
+        waConfigureApp "$OSA" svg
+
+        # Print feedback.
+        echo -e "${DONE_TEXT}Done!${CLEAR_TEXT}"
+    done
+
+    # Delete 'install' file.
+    rm -f "$INST_FILE_PATH"
+}
+
+# Name: 'waConfigureApps'
+# Role: Allow the user to select which officially supported applications to configure.
 function waConfigureApps() {
-    APPS=()
-    while IFS= read -r F; do
-        [[ -n $F ]] || continue
-        F=$(echo "$F" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
-        # shellcheck disable=SC1090
-        . "$DIR/apps/$F/info"
-        APPS+=("$FULL_NAME ($F)")
+    # Declare variables.
+    local OSA_LIST=()         # Stores a list of all officially supported applications installed on the Windows VM.
+    local APPS=()             # Stores a list of both the simplified and full names of each installed officially supported application.
+    local OPTIONS=()          # Stores a list of options presented to the user.
+    local APP_INSTALL=""      # Stores the option selected by the user.
+    local SELECTED_APPS=()    # Stores the officially supported applications selected by the user.
+
+    # Read the list of officially supported applications that are installed on the Windows VM into an array, returning an empty array if no such files exist.
+    # This will remove leading and trailing whitespace characters as well as ignore empty lines.
+    readarray -t OSA_LIST < <(grep -v '^[[:space:]]*$' "$INST_FILE_PATH" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//' 2>/dev/null || true)
+
+    # Loop over each officially supported application installed on the Windows VM.
+    for OSA in "${OSA_LIST[@]}"; do
+        # Source 'Info' File Containing:
+        # - The Application Name          (FULL_NAME)
+        # - The Shortcut Nsame            (NAME)
+        # - Application Categories        (CATEGORIES)
+        # - Executable Path               (WIN_EXECUTABLE)
+        # - Supported MIME Types          (MIME_TYPES)
+        # - Application Icon              (ICON)
+        # shellcheck source=/dev/null # Exclude this file from being checked by ShellCheck.
+        source "./apps/${OSA}/info"
+
+        # Add both the simplified and full name of the application to an array.
+        APPS+=("${FULL_NAME} (${OSA})")
+
+        # Extract the executable file name (e.g. 'MyApp.exe') from the absolute path.
+        WIN_EXECUTABLE="${WIN_EXECUTABLE##*\\}"
+
+        # Trim any leading or trailing whitespace characters from the executable file name.
+        read -r WIN_EXECUTABLE <<< "$(echo "$WIN_EXECUTABLE" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')"
+
+        # Add the executable file name to the array.
         INSTALLED_EXES+=("$(echo "${WIN_EXECUTABLE##*\\}" | tr '[:upper:]' '[:lower:]')")
-    done < <(sed 's/\r/\n/g' < "$HOME/.local/share/winapps/installed")
+    done
+
+    # Sort the 'APPS' array in alphabetical order.
     IFS=$'\n'
-    # FIXME
-    # shellcheck disable=SC2207
-    APPS=($(sort <<<"${APPS[*]}"))
+    readarray -t APPS < <(sort <<<"${APPS[*]}")
     unset IFS
-    OPTIONS=("Set up all detected pre-configured applications" "Select which pre-configured applications to set up" "Do not set up any pre-configured applications")
 
-    if [ "$INSTALL_TYPE" != 'User' ]; then
-        menuFromArr APP_INSTALL "How would you like to handle WinApps pre-configured applications?" "${OPTIONS[@]}"
-    else "grep -l -d skip"
-        menuFromArr APP_INSTALL "How would you like to handle WinApps pre-configured applications? If any web browser is set-up, may be configured as default browser." "${OPTIONS[@]}"
-    fi
-    if [ "$APP_INSTALL" = "Select which pre-configured applications to set up" ]; then
-        checkbox_input "Which pre-configured apps would you like to set up?" APPS SELECTED_APPS
-        echo "" >"$HOME/.local/share/winapps/installed"
-        for F in "${SELECTED_APPS[@]}"; do
-            APP="${F##*(}"
-            APP="${APP%%)}"
-            echo "${APP}" >>"$HOME/.local/share/winapps/installed"
+    # Prompt user to select which officially supported applications to configure.
+    OPTIONS=(
+        "Set up all detected officially supported applications"
+        "Choose specific officially supported applications to set up"
+        "Skip setting up any officially supported applications"
+    )
+    menuFromArr APP_INSTALL "How would you like to handle officially supported applications?" "${OPTIONS[@]}"
+
+    # Remove unselected officially supported applications from the 'install' file.
+    if [[ "$APP_INSTALL" == "Choose specific officially supported applications to set up" ]]; then
+        checkbox_input "Which officially supported applications would you like to set up?" APPS SELECTED_APPS
+
+        # Clear/create the 'install' file.
+        echo "" >"$INST_FILE_PATH"
+
+        # Add each selected officially supported application back to the 'install' file.
+        for SELECTED_APP in "${SELECTED_APPS[@]}"; do
+            # Capture the substring within (but not including) the parentheses.
+            # This substring represents the officially supported application name (see above loop).
+            SELECTED_APP="${SELECTED_APP##*(}"
+            SELECTED_APP="${SELECTED_APP%%)}"
+
+            # Add the substring back to the 'install' file.
+            echo "$SELECTED_APP" >> "$INST_FILE_PATH"
         done
     fi
-    $SUDO cp "$DIR/bin/winapps" "$BIN_PATH/winapps"
-    COUNT=0
-    if [ "$APP_INSTALL" != "Do not set up any pre-configured applications" ]; then
-        while IFS= read -r F; do
-            F=$(echo "$F" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
 
-            COUNT=$((COUNT + 1))
-            $SUDO cp -r "apps/$F" "$SYS_PATH/apps"
-            waConfigureApp "$F" svg
-        done < <(sed 's/\r/\n/g' < "$HOME/.local/share/winapps/installed")
-    fi
-    rm -f "$HOME/.local/share/winapps/installed"
-    rm -f "$HOME/.local/share/winapps/installed.bat"
-    if ((COUNT == 0)); then
-        echo "  No configured applications."
+    # Configure selected (or all) officially supported applications.
+    if [[ "$APP_INSTALL" != "Skip setting up any officially supported applications" ]]; then
+        waConfigureOfficiallySupported
     fi
 }
 
-function waConfigureAppsAllOfficiallySupported(){
-    $SUDO cp "$DIR/bin/winapps" "$BIN_PATH/winapps"
-    COUNT=0
-    while IFS= read -r F; do
-        F=$(echo "$F" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
-
-        COUNT=$((COUNT + 1))
-        $SUDO cp -r "apps/$F" "$SYS_PATH/apps"
-        waConfigureApp "$F" svg
-    done < <(sed 's/\r/\n/g' < "$HOME/.local/share/winapps/installed")
-    rm -f "$HOME/.local/share/winapps/installed"
-    rm -f "$HOME/.local/share/winapps/installed.bat"
-    if ((COUNT == 0)); then
-        echo "  No configured applications."
-    fi
-}
-
+# Name: 'waConfigureDetectedApps'
+# Role: Allow the user to select which detected applications to configure.
 function waConfigureDetectedApps() {
-    if [ -f "$HOME/.local/share/winapps/detected" ]; then
-        sed -i 's/\r//g' "$HOME/.local/share/winapps/detected"
-        # shellcheck disable=SC1091
-        . "$HOME/.local/share/winapps/detected"
-        APPS=()
-        # shellcheck disable=SC2153
-        for I in "${!NAMES[@]}"; do
-            EXE=${EXES[$I]##*\\}
-            EXE_LOWER=$(echo "$EXE" | tr '[:upper:]' '[:lower:]')
-            if (
-                dlm=$'\x1F'
-                IFS="$dlm"
-                [[ "$dlm${INSTALLED_EXES[*]}$dlm" != *"$dlm$EXE_LOWER$dlm"* ]]
-                ); then
-                APPS+=("${NAMES[$I]} ($EXE)")
+    # Declare variables.
+    local APPS=()                      # Stores a list of both the simplified and full names of each detected application.
+    local EXE_FILENAME=""              # Stores the executable filename of a given detected application.
+    local EXE_FILENAME_LOWERCASE=""    # Stores the executable filename of a given detected application in lowercase letters only.
+    local OPTIONS=()                   # Stores a list of options presented to the user.
+    local APP_INSTALL=""               # Stores the option selected by the user.
+    local SELECTED_APPS=()             # Detected applications selected by the user.
+    local DLM=$'\x1F'                  # Unit separator delimiter.
+
+    if [ -f "$DETECTED_FILE_PATH" ]; then
+        # On UNIX systems, lines are terminated with a newline character (\n).
+        # On WINDOWS systems, lines are terminated with both a carriage return (\r) and a newline (\n) character.
+        # Remove all carriage returns (\r) within the 'detected' file, as the file was written by the Windows VM.
+        sed -i 's/\r//g' "$DETECTED_FILE_PATH"
+
+        # Import the detected application names (NAMES), icons in base64 (ICONS) and executable paths (EXES).
+        # shellcheck source=/dev/null # Exclude this file from being checked by ShellCheck.
+        source "$DETECTED_FILE_PATH"
+
+        # shellcheck disable=SC2153 # Silence warnings regarding possible misspellings.
+        for APPNAME in "${!NAMES[@]}"; do
+            # Extract the executable file name (e.g. 'MyApp.exe').
+            EXE_FILENAME=${EXES[$APPNAME]##*\\}
+
+            # Convert the executable file name to lower-case (e.g. 'myapp.exe').
+            EXE_FILENAME_LOWERCASE=$(echo "$EXE_FILENAME" | tr '[:upper:]' '[:lower:]')
+
+            IFS="$DLM"
+            # Check if the executable was previously configured as part of setting up officially supported applications.
+            if [[ "${DLM}${INSTALLED_EXES[*]}${DLM}" != *"${DLM}${EXE_FILENAME_LOWERCASE}${DLM}"* ]]; then
+                # If not previously configured, add the application to the list of detected applications.
+                APPS+=("${NAMES[$APPNAME]} (${EXE_FILENAME})")
             fi
+            unset IFS
         done
+
+        # Sort the 'APPS' array in alphabetical order.
         IFS=$'\n' APPS=("$(sort <<<"${APPS[*]}")")
         unset IFS
-        OPTIONS=("Set up all detected applications" "Select which applications to set up" "Do not set up any applications")
+
+        # Prompt user to select which other detected applications to configure.
+        OPTIONS=(
+            "Set up all detected applications"
+            "Select which applications to set up"
+            "Do not set up any applications"
+        )
+
         menuFromArr APP_INSTALL "How would you like to handle other detected applications?" "${OPTIONS[@]}"
-        if [ "$APP_INSTALL" = "Select which applications to set up" ]; then
-            checkbox_input "Which other apps would you like to set up?" APPS SELECTED_APPS
-            echo "" >"$HOME/.local/share/winapps/installed"
-            for F in "${SELECTED_APPS[@]}"; do
-                EXE="${F##*(}"
-                EXE="${EXE%%)}"
-                APP="${F% (*}"
-                echo "$EXE|${APP}" >>"$HOME/.local/share/winapps/installed"
+
+        # Clear/create the 'install' file.
+        echo "" >"$INST_FILE_PATH"
+
+        # Add selected detected applications to the 'install' file.
+        if [[ "$APP_INSTALL" == "Select which applications to set up" ]]; then
+            checkbox_input "Which other applications would you like to set up?" APPS SELECTED_APPS
+            for SELECTED_APP in "${SELECTED_APPS[@]}"; do
+                # Capture the substring within (but not including) the parentheses.
+                # This substring represents the executable filename (see above loop).
+                EXE_FILENAME="${SELECTED_APP##*(}"
+                EXE_FILENAME="${EXE_FILENAME%%)}"
+
+                # Capture the substring prior to the space and parentheses.
+                # This substring represents the detected application name (see above loop).
+                APPNAME="${SELECTED_APP% (*}"
+
+                # Add lines in the format 'Executable File Name.exe|Application Name' to the 'install' file.
+                echo "${EXE_FILENAME}|${APPNAME}" >>"$INST_FILE_PATH"
             done
-        elif [ "$APP_INSTALL" = "Set up all detected applications" ]; then
-            for I in "${!EXES[@]}"; do
-                EXE=${EXES[$I]##*\\}
-                echo "$EXE|${NAMES[$I]}" >>"$HOME/.local/share/winapps/installed"
+        elif [[ "$APP_INSTALL" == "Set up all detected applications" ]]; then
+            for EXE_PATH in "${!EXES[@]}"; do
+                # Extract the executable filename (e.g. 'MyApp.exe').
+                EXE_FILENAME=${EXES[$EXE_PATH]##*\\}
+
+                # Add lines in the format 'Executable File Name.exe|Application Name' to the 'install' file.
+                echo "${EXE_FILENAME}|${NAMES[$EXE_PATH]}" >>"$INST_FILE_PATH"
             done
         fi
-        COUNT=0
-        if [ -f "$HOME/.local/share/winapps/installed" ]; then
-            while read -r LINE; do
-                EXE="${LINE%|*}"
-                NAME="${LINE#*|}"
-                for I in "${!NAMES[@]}"; do
-                    if [ "$NAME" = "${NAMES[$I]}" ] && [[ "${EXES[$I]}" == *"\\$EXE" ]]; then
-                        EXE=$(echo "$EXE" | tr '[:upper:]' '[:lower:]')
-                        $SUDO mkdir -p "$SYS_PATH/apps/$EXE"
-                        echo "# GNOME shortcut name
-NAME=\"$NAME\"
+
+        # Store the contents of the 'install' file within an array, returning an empty array if no such files exist.
+        readarray -t SELECTED_APPLICATIONS < <(grep -v '^[[:space:]]*$' "$INST_FILE_PATH" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//' 2>/dev/null || true)
+
+        for SELECTED_APP in "${SELECTED_APPLICATIONS[@]}"; do
+            # Store the executable filename.
+            EXE_FILENAME="${SELECTED_APP%|*}"
+
+            # Store the application name.
+            NAME="${SELECTED_APP#*|}"
+
+            for APPNAME in "${!NAMES[@]}"; do
+                if [[ "$NAME" == "${NAMES[$APPNAME]}" ]] && [[ "${EXES[$APPNAME]}" == *"\\${EXE_FILENAME}" ]]; then
+                    # Print feedback.
+                    echo -n "Creating an application entry for ${NAME}... "
+
+                    # Create directory to store application icon and information.
+                    $SUDO mkdir -p "${APPDATA_PATH}/apps/${EXE_FILENAME}"
+
+                    # Write application information to file.
+                    echo "\
+# GNOME shortcut name
+NAME=\"${NAME}\"
 
 # Used for descriptions and window class
-FULL_NAME=\"$NAME\"
+FULL_NAME=\"${NAME}\"
 
-# The executable inside windows
-WIN_EXECUTABLE=\"${EXES[$I]}\"
+# The executable inside Windows VM
+WIN_EXECUTABLE=\"${EXES[$APPNAME]}\"
 
 # GNOME categories
 CATEGORIES=\"WinApps\"
 
 # GNOME mimetypes
 MIME_TYPES=\"\"
-                        " | sudo tee "$SYS_PATH/apps/$EXE/info" >/dev/null
-                        # shellcheck disable=SC2153
-                        echo "${ICONS[$I]}" | base64 -d | sudo tee "$SYS_PATH/apps/$EXE/icon.ico" >/dev/null
-                        waConfigureApp "$EXE" ico
-                        COUNT=$((COUNT + 1))
-                    fi
-                done
-            done <"$HOME/.local/share/winapps/installed"
-            rm -f "$HOME/.local/share/winapps/installed"
-        fi
-        rm -f "$HOME/.local/share/winapps/installed.bat"
-        if ((COUNT == 0)); then
-            echo "  No configured applications."
-        fi
+                    " | $SUDO tee "${APPDATA_PATH}/apps/${EXE_FILENAME}/info" &>/dev/null
+
+                    # Write application icon to file.
+                    echo "${ICONS[$APPNAME]}" | base64 -d | $SUDO tee "${APPDATA_PATH}/apps/${EXE_FILENAME}/icon.ico" &>/dev/null
+
+                    # Configure the application.
+                    waConfigureApp "$EXE_FILENAME" ico
+
+                    # Print feedback.
+                    echo -e "${DONE_TEXT}Done!${CLEAR_TEXT}"
+                fi
+            done
+        done
+
+        # Delete 'install' file.
+        rm -f "$INST_FILE_PATH"
     fi
 }
 
-function waConfigureWindows() {
-    echo -n "  Configuring Windows..."
-    if [ $USEDEMO != 1 ]; then
-        $SUDO rm -f "$APP_PATH/windows.desktop"
-        $SUDO mkdir -p "$SYS_PATH/icons"
-        $SUDO cp "$DIR/icons/windows.svg" "$SYS_PATH/icons/windows.svg"
-        echo "[Desktop Entry]
-Name=Windows
-Exec=$BIN_PATH/winapps windows %F
-Terminal=false
-Type=Application
-Icon=$SYS_PATH/icons/windows.svg
-StartupWMClass=Microsoft Windows
-Comment=Microsoft Windows
-        " | $SUDO tee "$APP_PATH/windows.desktop" >/dev/null
-        $SUDO rm -f "$BIN_PATH/windows"
-        echo "#!/usr/bin/env bash
-$BIN_PATH/winapps windows
-        " | $SUDO tee "/$BIN_PATH/windows" >/dev/null
-        $SUDO chmod a+x "$BIN_PATH/windows"
+# Name: 'waInstall'
+# Role: Installs WinApps.
+function waInstall() {
+    # Print feedback.
+    echo -e "${BOLD_TEXT}Installing WinApps.${CLEAR_TEXT}"
+
+    # Check for existing conflicting WinApps installations.
+    waCheckExistingInstall
+
+    # Load the WinApps configuration file.
+    waLoadConfig
+
+    # Check for missing dependencies.
+    waCheckDependencies
+
+    # Update $MULTI_FLAG.
+    if [[ "$MULTIMON" == "true" ]]; then
+        MULTI_FLAG="/multimon"
+    else
+        MULTI_FLAG="+span"
     fi
-    echo " Finished."
+
+    # Append additional FreeRDP flags if required.
+    if [[ -n "$RDP_FLAGS" ]]; then
+        FREERDP_COMMAND="${FREERDP_COMMAND} ${RDP_FLAGS}"
+    fi
+
+    # Check the group membership of the current user.
+    waCheckGroupMembership
+
+    # Check if the Windows VM is powered on.
+    waCheckVMRunning
+
+    # Check if the Windows VM is contactable.
+    waCheckVMContactable
+
+    # Test RDP access to the Windows VM.
+    waCheckRDPAccess
+
+    # Create required directories.
+    $SUDO mkdir -p "$BIN_PATH"
+    $SUDO mkdir -p "$APP_PATH"
+    $SUDO mkdir -p "$APPDATA_PATH/apps"
+    $SUDO mkdir -p "$APPDATA_PATH/icons"
+
+    # Check for installed applications.
+    waFindInstalled
+
+    # Install the WinApps bash script.
+    $SUDO cp "./bin/winapps" "${BIN_PATH}/winapps"
+
+    # Configure the Windows VM application launcher.
+    waConfigureWindows
+
+    if [ "$OPT_AOSA" -eq 1 ]; then
+        # Automatically configure all officially supported applications.
+        waConfigureOfficiallySupported
+    else
+        # Configure officially supported applications.
+        waConfigureApps
+
+        # Configure other detected applications.
+        waConfigureDetectedApps
+    fi
+
+    # Print feedback.
+    echo -e "${SUCCESS_TEXT}INSTALLATION COMPLETE.${CLEAR_TEXT}"
 }
 
-function waUninstallUser() {
-    rm -f "$HOME/.local/bin/winapps"
-    rm -rf "$HOME/.local/share/winapps"
-    grep -l -d skip "bin/winapps" "$HOME/.local/share/applications/"* -s | while IFS= read -r F
-    do
-        F=$(echo "$F" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
+# Name: 'waUninstall'
+# Role: Uninstalls WinApps.
+function waUninstall() {
+    # Print feedback.
+    [ "$OPT_SYSTEM" -eq 1 ] && echo -e "${BOLD_TEXT}REMOVING SYSTEM INSTALLATION.${CLEAR_TEXT}"
+    [ "$OPT_USER" -eq 1 ] && echo -e "${BOLD_TEXT}REMOVING USER INSTALLATION.${CLEAR_TEXT}"
 
-        echo -n "  Removing $F..."
-        $SUDO rm "$F"
-        echo " Finished."
-    done
-    grep -l -d skip "bin/winapps" "$HOME/.local/bin/"* -s | while IFS= read -r F
-    do
-        F=$(echo "$F" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
+    # Declare variables.
+    local WINAPPS_DESKTOP_FILES=()       # Stores a list of '.desktop' file paths.
+    local WINAPPS_APP_BASH_SCRIPTS=()    # Stores a list of bash script paths.
+    local DESKTOP_FILE_NAME=""           # Stores the name of the '.desktop' file for the application.
+    local BASH_SCRIPT_NAME=""            # Stores the name of the application.
 
-        echo -n "  Removing $F..."
-        $SUDO rm "$F"
-        echo " Finished."
+    # Remove the 'WinApps' bash script.
+    $SUDO rm -f "${BIN_PATH}/winapps"
+
+    # Remove WinApps configuration data, temporary files and logs.
+    rm -rf "$USER_APPDATA_PATH"
+
+    # Remove application icons and shortcuts.
+    $SUDO rm -rf "$APPDATA_PATH"
+
+    # Store '.desktop' files containing "${BIN_PATH}/winapps" in an array, returning an empty array if no such files exist.
+    readarray -t WINAPPS_DESKTOP_FILES < <(grep -l -d skip "${BIN_PATH}/winapps" "${APP_PATH}/"* 2>/dev/null || true)
+
+    # Remove each '.desktop' file.
+    for DESKTOP_FILE_PATH in "${WINAPPS_DESKTOP_FILES[@]}"; do
+        # Trim leading and trailing whitespace from '.desktop' file path.
+        DESKTOP_FILE_PATH=$(echo "$DESKTOP_FILE_PATH" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
+
+        # Extract the file name.
+        DESKTOP_FILE_NAME=$(basename "$DESKTOP_FILE_PATH" | sed 's/\.[^.]*$//')
+
+        # Delete the file.
+        $SUDO rm "$DESKTOP_FILE_PATH"
+
+        # Print feedback.
+        echo "Removed '.desktop' file for '${DESKTOP_FILE_NAME}'."
     done
+
+    # Store the paths of bash scripts calling 'WinApps' to launch specific applications in an array, returning an empty array if no such files exist.
+    readarray -t WINAPPS_APP_BASH_SCRIPTS < <(grep -l -d skip "${BIN_PATH}/winapps" "${BIN_PATH}/"* 2>/dev/null || true)
+
+    # Remove each bash script.
+    for BASH_SCRIPT_PATH in "${WINAPPS_APP_BASH_SCRIPTS[@]}"; do
+        # Trim leading and trailing whitespace from bash script path.
+        BASH_SCRIPT_PATH=$(echo "$BASH_SCRIPT_PATH" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
+
+        # Extract the file name.
+        BASH_SCRIPT_NAME=$(basename "$BASH_SCRIPT_PATH" | sed 's/\.[^.]*$//')
+
+        # Delete the file.
+        $SUDO rm "$BASH_SCRIPT_PATH"
+
+        # Print feedback.
+        echo "Removed bash script for '${BASH_SCRIPT_NAME}'."
+    done
+
+    # Print caveats.
+    echo -e "\n${INFO_TEXT}Please note your WinApps configuration file was not removed.${CLEAR_TEXT}"
+    echo -e "${INFO_TEXT}You can remove this manually by running:${CLEAR_TEXT}"
+    echo -e "${COMMAND_TEXT}rm ${CONFIG_PATH}${CLEAR_TEXT}\n"
+
+    # Print feedback.
+    echo -e "${SUCCESS_TEXT}UNINSTALLATION COMPLETE.${CLEAR_TEXT}"
 }
 
-function waUninstallSystem() {
-    $SUDO rm -f "/usr/local/bin/winapps"
-    $SUDO rm -rf "/usr/local/share/winapps"
-    grep -l -d skip "bin/winapps" "/usr/share/applications/"* -s | while IFS= read -r F
-    do
-        F=$(echo "$F" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
+### SEQUENTIAL LOGIC ###
+# Welcome the user.
+echo -e "${BOLD_TEXT}\
+################################################################################
+#                                                                              #
+#                            WinApps Install Wizard                            #
+#                                                                              #
+################################################################################
+${CLEAR_TEXT}"
 
-        if [ -z "$SUDO" ]; then
-            waNoSudo
-        fi
-        echo -n "  Removing $F..."
-        $SUDO rm "$F"
-        echo " Finished."
-    done
-    grep -l -d skip "bin/winapps" "/usr/local/bin/"* -s | while IFS= read -r F
-    do
-        F=$(echo "$F" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
+# Source the contents of 'inquirer.sh'.
+# shellcheck source=/dev/null # Exclude this file from being checked by ShellCheck.
+source "$INQUIRER_PATH"
 
-        if [ -z "$SUDO" ]; then
-            waNoSudo
-        fi
-        echo -n "  Removing $F..."
-        $SUDO rm "$F"
-        echo " Finished."
-    done
-}
+# Set the working directory.
+waSetWorkingDirectory
 
-if [ -z "$1" ]; then
-    OPTIONS=(User System)
-    menuFromArr INSTALL_TYPE "Would you like to install for the current user or the whole system?" "${OPTIONS[@]}"
-elif [ "$1" = '--user' ]; then
-    INSTALL_TYPE='User'
-elif [ "$1" = '--system' ]; then
-    INSTALL_TYPE='System'
+# Sanitise and parse the user input.
+waCheckInput "$@"
+
+# Configure paths and permissions.
+waConfigurePathsAndPermissions
+
+# Install or uninstall WinApps.
+if [ "$OPT_UNINSTALL" -eq 1 ]; then
+    waUninstall
 else
-    waUsage
+    waInstall
 fi
 
-if [ "$INSTALL_TYPE" = 'User' ]; then
-    SUDO=""
-    BIN_PATH="$HOME/.local/bin"
-    APP_PATH="$HOME/.local/share/applications"
-    SYS_PATH="$HOME/.local/share/winapps"
-    mkdir -p "$BIN_PATH"
-    mkdir -p "$APP_PATH"
-    mkdir -p "$SYS_PATH"
-    if [ -n "$2" ]; then
-        if [ "$2" = '--uninstall' ]; then
-            # Uninstall
-            echo "Uninstalling..."
-            waUninstallUser
-            exit
-        elif [ "$2" = '--setupAllOfficiallySupportedApps' ]; then
-            echo "Setting up All Officially Supported Apps "
-            echo "Removing any old configurations..."
-            waUninstallUser
-            waUninstallSystem
-            waInstall
-            waFindInstalled
-            waConfigureWindows
-            waConfigureAppsAllOfficiallySupported
-            exit
-        else
-            usage
-        fi
-    fi
-elif [ "$INSTALL_TYPE" = 'System' ]; then
-    SUDO="sudo"
-    sudo ls >/dev/null
-    BIN_PATH="/usr/local/bin"
-    APP_PATH="/usr/share/applications"
-    SYS_PATH="/usr/local/share/winapps"
-    if [ -n "$2" ]; then
-        if [ "$2" = '--uninstall' ]; then
-            # Uninstall
-            echo "Uninstalling..."
-            waUninstallSystem
-            exit
-        elif [ "$2" = '--setupAllOfficiallySupportedApps' ]; then
-            echo "Setting up All Officially Supported Apps "
-            echo "Removing any old configurations..."
-            waUninstallUser
-            waUninstallSystem
-
-            echo "Installing..."
-            waInstall
-            waFindInstalled
-            waConfigureWindows
-            waConfigureAppsAllOfficiallySupported
-            exit
-        else
-            usage
-        fi
-    fi
-fi
-
-echo "Removing any old configurations..."
-waUninstallUser
-waUninstallSystem
-
-echo "Installing..."
-
-# Inititialize
-waInstall
-
-# Check for installed apps
-waFindInstalled
-
-# Install windows
-waConfigureWindows
-
-# Configure apps
-waConfigureApps
-waConfigureDetectedApps
-
-echo "Installation complete."
+exit 0
