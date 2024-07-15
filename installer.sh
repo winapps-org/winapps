@@ -216,7 +216,7 @@ function waCheckInput() {
     else
         # Install vs. uninstall?
         OPTIONS=("Install" "Uninstall")
-        menuFromArr SELECTED_OPTION "Install or uninstall WinApps?" "${OPTIONS[@]}"
+        inqMenu "Install or uninstall WinApps?" OPTIONS SELECTED_OPTION
 
         # Set flags.
         if [[ "$SELECTED_OPTION" == "Uninstall" ]]; then
@@ -225,7 +225,7 @@ function waCheckInput() {
 
         # User vs. system?
         OPTIONS=("Current User" "System")
-        menuFromArr SELECTED_OPTION "Configure WinApps for the current user '$(whoami)' or the whole system?" "${OPTIONS[@]}"
+        inqMenu "Configure WinApps for the current user '$(whoami)' or the whole system?" OPTIONS SELECTED_OPTION
 
         # Set flags.
         if [[ "$SELECTED_OPTION" == "Current User" ]]; then
@@ -236,8 +236,8 @@ function waCheckInput() {
 
         # Automatic vs. manual?
         if [ "$OPT_UNINSTALL" -eq 0 ]; then
-            OPTIONS=("Automatic" "Manual")
-            menuFromArr SELECTED_OPTION "Automatically install supported applications or choose manually?" "${OPTIONS[@]}"
+            OPTIONS=("Manual (Default)" "Automatic")
+            inqMenu "Automatically install supported applications or choose manually?" OPTIONS SELECTED_OPTION
 
             # Set flags.
             if [[ "$SELECTED_OPTION" == "Automatic" ]]; then
@@ -428,8 +428,8 @@ function waCheckDependencies() {
     # Print feedback.
     echo -n "Checking whether all dependencies are installed... "
 
-    # 'Basic Calculator'.
-    if ! command -v bc &>/dev/null; then
+    # 'Dialog'.
+    if ! command -v dialog &>/dev/null; then
         # Complete the previous line.
         echo -e "${FAIL_TEXT}Failed!${CLEAR_TEXT}\n"
 
@@ -437,18 +437,18 @@ function waCheckDependencies() {
         echo -e "${ERROR_TEXT}ERROR:${CLEAR_TEXT} ${BOLD_TEXT}MISSING DEPENDENCIES.${CLEAR_TEXT}"
 
         # Display the error details.
-        echo -e "${INFO_TEXT}Please install 'Basic Calculator' to proceed.${CLEAR_TEXT}"
+        echo -e "${INFO_TEXT}Please install 'dialog' to proceed.${CLEAR_TEXT}"
 
         # Display the suggested action(s).
         echo "--------------------------------------------------------------------------------"
         echo "Debian/Ubuntu-based systems:"
-        echo -e "  ${COMMAND_TEXT}sudo apt install bc${CLEAR_TEXT}"
+        echo -e "  ${COMMAND_TEXT}sudo apt install dialog${CLEAR_TEXT}"
         echo "Red Hat/Fedora-based systems:"
-        echo -e "  ${COMMAND_TEXT}sudo dnf install bc${CLEAR_TEXT}"
+        echo -e "  ${COMMAND_TEXT}sudo dnf install dialog${CLEAR_TEXT}"
         echo "Arch Linux systems:"
-        echo -e "  ${COMMAND_TEXT}sudo pacman -S bc${CLEAR_TEXT}"
+        echo -e "  ${COMMAND_TEXT}sudo pacman -S dialog${CLEAR_TEXT}"
         echo "Gentoo Linux systems:"
-        echo -e "  ${COMMAND_TEXT}sudo emerge --ask sys-apps/bc${CLEAR_TEXT}"
+        echo -e "  ${COMMAND_TEXT}sudo emerge --ask dialog${CLEAR_TEXT}"
         echo "--------------------------------------------------------------------------------"
 
         # Terminate the script.
@@ -1033,6 +1033,7 @@ function waConfigureApps() {
     local OPTIONS=()          # Stores a list of options presented to the user.
     local APP_INSTALL=""      # Stores the option selected by the user.
     local SELECTED_APPS=()    # Stores the officially supported applications selected by the user.
+    local TEMP_ARRAY=()                # Temporary array used for sorting elements of an array.
 
     # Read the list of officially supported applications that are installed on the Windows VM into an array, returning an empty array if no such files exist.
     # This will remove leading and trailing whitespace characters as well as ignore empty lines.
@@ -1065,8 +1066,9 @@ function waConfigureApps() {
 
     # Sort the 'APPS' array in alphabetical order.
     IFS=$'\n'
-    readarray -t APPS < <(sort <<<"${APPS[*]}")
+    TEMP_ARRAY=($(sort <<<"${APPS[*]}"))
     unset IFS
+    APPS=("${TEMP_ARRAY[@]}")
 
     # Prompt user to select which officially supported applications to configure.
     OPTIONS=(
@@ -1074,11 +1076,11 @@ function waConfigureApps() {
         "Choose specific officially supported applications to set up"
         "Skip setting up any officially supported applications"
     )
-    menuFromArr APP_INSTALL "How would you like to handle officially supported applications?" "${OPTIONS[@]}"
+    inqMenu "How would you like to handle officially supported applications?" OPTIONS APP_INSTALL
 
     # Remove unselected officially supported applications from the 'install' file.
     if [[ "$APP_INSTALL" == "Choose specific officially supported applications to set up" ]]; then
-        checkbox_input "Which officially supported applications would you like to set up?" APPS SELECTED_APPS
+        inqChkBx "Which officially supported applications would you like to set up?" APPS SELECTED_APPS
 
         # Clear/create the 'install' file.
         echo "" >"$INST_FILE_PATH"
@@ -1113,6 +1115,7 @@ function waConfigureDetectedApps() {
     local APP_INSTALL=""               # Stores the option selected by the user.
     local SELECTED_APPS=()             # Detected applications selected by the user.
     local APP_DESKTOP_FILE=""          # Stores the '.desktop' file used to launch the application.
+    local TEMP_ARRAY=()                # Temporary array used for sorting elements of an array.
 
     if [ -f "$DETECTED_FILE_PATH" ]; then
         # On UNIX systems, lines are terminated with a newline character (\n).
@@ -1146,8 +1149,10 @@ function waConfigureDetectedApps() {
         done
 
         # Sort the 'APPS' array in alphabetical order.
-        IFS=$'\n' APPS=("$(sort <<<"${APPS[*]}")")
+        IFS=$'\n'
+        TEMP_ARRAY=($(sort <<<"${APPS[*]}"))
         unset IFS
+        APPS=("${TEMP_ARRAY[@]}")
 
         # Prompt user to select which other detected applications to configure.
         OPTIONS=(
@@ -1155,11 +1160,11 @@ function waConfigureDetectedApps() {
             "Select which applications to set up"
             "Do not set up any applications"
         )
-        menuFromArr APP_INSTALL "How would you like to handle other detected applications?" "${OPTIONS[@]}"
+        inqMenu "How would you like to handle other detected applications?" OPTIONS APP_INSTALL
 
-        # Store selected detected applictions.
+        # Store selected detected applications.
         if [[ "$APP_INSTALL" == "Select which applications to set up" ]]; then
-            checkbox_input "Which other applications would you like to set up?" APPS SELECTED_APPS
+            inqChkBx "Which other applications would you like to set up?" APPS SELECTED_APPS
         elif [[ "$APP_INSTALL" == "Set up all detected applications" ]]; then
             readarray -t SELECTED_APPS <<<"${APPS[@]}"
         fi
