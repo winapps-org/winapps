@@ -1059,8 +1059,8 @@ function waConfigureApps() {
         # Trim any leading or trailing whitespace characters from the executable file name.
         read -r WIN_EXECUTABLE <<< "$(echo "$WIN_EXECUTABLE" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')"
 
-        # Add the executable file name to the array.
-        INSTALLED_EXES+=("$(echo "${WIN_EXECUTABLE##*\\}" | tr '[:upper:]' '[:lower:]')")
+        # Add the executable file name (in lowercase) to the array.
+        INSTALLED_EXES+=("${WIN_EXECUTABLE,,}")
     done
 
     # Sort the 'APPS' array in alphabetical order.
@@ -1107,12 +1107,12 @@ function waConfigureDetectedApps() {
     # Declare variables.
     local APPS=()                      # Stores a list of both the simplified and full names of each detected application.
     local EXE_FILENAME=""              # Stores the executable filename of a given detected application.
+    local EXE_FILENAME_NOEXT=""        # Stores the executable filename without the file extension of a given detected application.
     local EXE_FILENAME_LOWERCASE=""    # Stores the executable filename of a given detected application in lowercase letters only.
     local OPTIONS=()                   # Stores a list of options presented to the user.
     local APP_INSTALL=""               # Stores the option selected by the user.
     local SELECTED_APPS=()             # Detected applications selected by the user.
     local APP_DESKTOP_FILE=""          # Stores the '.desktop' file used to launch the application.
-    local DLM=$'\x1F'                  # Unit separator delimiter.
 
     if [ -f "$DETECTED_FILE_PATH" ]; then
         # On UNIX systems, lines are terminated with a newline character (\n).
@@ -1120,25 +1120,29 @@ function waConfigureDetectedApps() {
         # Remove all carriage returns (\r) within the 'detected' file, as the file was written by the Windows VM.
         sed -i 's/\r//g' "$DETECTED_FILE_PATH"
 
-        # Import the detected application names (NAMES), icons in base64 (ICONS) and executable paths (EXES).
+        # Import the detected application information:
+        # - Application Names               (NAMES)
+        # - Application Icons in base64     (ICONS)
+        # - Application Executable Paths    (EXES)
         # shellcheck source=/dev/null # Exclude this file from being checked by ShellCheck.
         source "$DETECTED_FILE_PATH"
 
         # shellcheck disable=SC2153 # Silence warnings regarding possible misspellings.
-        for APPNAME in "${!NAMES[@]}"; do
+        for INDEX in "${!NAMES[@]}"; do
             # Extract the executable file name (e.g. 'MyApp.exe').
-            EXE_FILENAME=${EXES[$APPNAME]##*\\}
+            EXE_FILENAME=${EXES[$INDEX]##*\\}
 
             # Convert the executable file name to lower-case (e.g. 'myapp.exe').
-            EXE_FILENAME_LOWERCASE=$(echo "$EXE_FILENAME" | tr '[:upper:]' '[:lower:]')
+            EXE_FILENAME_LOWERCASE="${EXE_FILENAME,,}"
 
-            IFS="$DLM"
+            # Remove the file extension (e.g. 'MyApp').
+            EXE_FILENAME_NOEXT="${EXE_FILENAME%.*}"
+
             # Check if the executable was previously configured as part of setting up officially supported applications.
-            if [[ "${DLM}${INSTALLED_EXES[*]}${DLM}" != *"${DLM}${EXE_FILENAME_LOWERCASE}${DLM}"* ]]; then
+            if [[ ! " ${INSTALLED_EXES[@]} " =~ " ${EXE_FILENAME_LOWERCASE} " ]]; then
                 # If not previously configured, add the application to the list of detected applications.
-                APPS+=("${NAMES[$APPNAME]} (${EXE_FILENAME})")
+                APPS+=("${NAMES[$INDEX]} (${EXE_FILENAME_NOEXT})")
             fi
-            unset IFS
         done
 
         # Sort the 'APPS' array in alphabetical order.
@@ -1151,86 +1155,62 @@ function waConfigureDetectedApps() {
             "Select which applications to set up"
             "Do not set up any applications"
         )
-
         menuFromArr APP_INSTALL "How would you like to handle other detected applications?" "${OPTIONS[@]}"
 
-        # Clear/create the 'install' file.
-        echo "" >"$INST_FILE_PATH"
-
-        # Add selected detected applications to the 'install' file.
+        # Store selected detected applictions.
         if [[ "$APP_INSTALL" == "Select which applications to set up" ]]; then
             checkbox_input "Which other applications would you like to set up?" APPS SELECTED_APPS
-            for SELECTED_APP in "${SELECTED_APPS[@]}"; do
-                # Capture the substring within (but not including) the parentheses.
-                # This substring represents the executable filename (see above loop).
-                EXE_FILENAME="${SELECTED_APP##*(}"
-                EXE_FILENAME="${EXE_FILENAME%%)}"
-
-                # Capture the substring prior to the space and parentheses.
-                # This substring represents the detected application name (see above loop).
-                APPNAME="${SELECTED_APP% (*}"
-
-                # Add lines in the format 'Executable File Name.exe|Application Name' to the 'install' file.
-                echo "${EXE_FILENAME}|${APPNAME}" >>"$INST_FILE_PATH"
-            done
         elif [[ "$APP_INSTALL" == "Set up all detected applications" ]]; then
-            for EXE_PATH in "${!EXES[@]}"; do
-                # Extract the executable filename (e.g. 'MyApp.exe').
-                EXE_FILENAME=${EXES[$EXE_PATH]##*\\}
-
-                # Add lines in the format 'Executable File Name.exe|Application Name' to the 'install' file.
-                echo "${EXE_FILENAME}|${NAMES[$EXE_PATH]}" >>"$INST_FILE_PATH"
-            done
+            readarray -t SELECTED_APPS <<<"${APPS[@]}"
         fi
 
-        # Store the contents of the 'install' file within an array, returning an empty array if no such files exist.
-        readarray -t SELECTED_APPLICATIONS < <(grep -v '^[[:space:]]*$' "$INST_FILE_PATH" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//' 2>/dev/null || true)
+        for SELECTED_APP in "${SELECTED_APPS[@]}"; do
+            # Capture the substring within (but not including) the parentheses.
+            # This substring represents the executable filename without the file extension (see above loop).
+            EXE_FILENAME_NOEXT="${SELECTED_APP##*(}"
+            EXE_FILENAME_NOEXT="${EXE_FILENAME_NOEXT%%)}"
 
-        for SELECTED_APP in "${SELECTED_APPLICATIONS[@]}"; do
-            # Store the executable filename.
-            EXE_FILENAME="${SELECTED_APP%|*}"
+            # Capture the substring prior to the space and parentheses.
+            # This substring represents the detected application name (see above loop).
+            PROGRAM_NAME="${SELECTED_APP% (*}"
 
-            # Store the application name.
-            NAME="${SELECTED_APP#*|}"
-
-            for APPNAME in "${!NAMES[@]}"; do
-                if [[ "$NAME" == "${NAMES[$APPNAME]}" ]] && [[ "${EXES[$APPNAME]}" == *"\\${EXE_FILENAME}" ]]; then
+            # Loop through all detected applications to find the detected application being processed.
+            for INDEX in "${!NAMES[@]}"; do
+                # Check for a matching detected application entry.
+                if [[ "${NAMES[$INDEX]}" == "$PROGRAM_NAME" ]] && [[ "${EXES[$INDEX]}" == *"\\$EXE_FILENAME_NOEXT"* ]]; then
                     # Print feedback.
-                    echo -n "Creating an application entry for ${NAME}... "
+                    echo -n "Creating an application entry for ${PROGRAM_NAME}... "
 
                     # Create directory to store application icon and information.
-                    $SUDO mkdir -p "${APPDATA_PATH}/apps/${EXE_FILENAME}"
+                    $SUDO mkdir -p "${APPDATA_PATH}/apps/${EXE_FILENAME_NOEXT}"
 
                     # Determine the content of the '.desktop' file for the application.
                     APP_DESKTOP_FILE="\
 # GNOME Shortcut Name
-NAME=\"${NAME}\"
+NAME=\"${PROGRAM_NAME}\"
 # Used for Descriptions and Window Class
-FULL_NAME=\"${NAME}\"
+FULL_NAME=\"${PROGRAM_NAME}\"
 # Executable within Windows VM
-WIN_EXECUTABLE=\"${EXES[$APPNAME]}\"
+WIN_EXECUTABLE=\"${EXES[$INDEX]}\"
 # GNOME Categories
 CATEGORIES=\"WinApps\"
 # GNOME MIME Types
 MIME_TYPES=\"\""
 
                     # Store the '.desktop' file for the application.
-                    echo "$APP_DESKTOP_FILE" | $SUDO tee "${APPDATA_PATH}/apps/${EXE_FILENAME}/info" &>/dev/null
+                    echo "$APP_DESKTOP_FILE" | $SUDO tee "${APPDATA_PATH}/apps/${EXE_FILENAME_NOEXT}/info" &>/dev/null
 
                     # Write application icon to file.
-                    echo "${ICONS[$APPNAME]}" | base64 -d | $SUDO tee "${APPDATA_PATH}/apps/${EXE_FILENAME}/icon.ico" &>/dev/null
+                    echo "${ICONS[$INDEX]}" | base64 -d | $SUDO tee "${APPDATA_PATH}/apps/${EXE_FILENAME_NOEXT}/icon.ico" &>/dev/null
 
                     # Configure the application.
-                    waConfigureApp "$EXE_FILENAME" ico
+                    waConfigureApp "$EXE_FILENAME_NOEXT" ico
 
                     # Print feedback.
                     echo -e "${DONE_TEXT}Done!${CLEAR_TEXT}"
                 fi
             done
         done
-
-        # Delete 'install' file.
-        rm -f "$INST_FILE_PATH"
     fi
 }
 
