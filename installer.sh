@@ -1066,6 +1066,7 @@ function waConfigureApps() {
 
     # Sort the 'APPS' array in alphabetical order.
     IFS=$'\n'
+    # shellcheck disable=SC2207 # Silence warnings regarding preferred use of 'mapfile' or 'read -a'.
     TEMP_ARRAY=($(sort <<<"${APPS[*]}"))
     unset IFS
     APPS=("${TEMP_ARRAY[@]}")
@@ -1142,7 +1143,7 @@ function waConfigureDetectedApps() {
             EXE_FILENAME_NOEXT="${EXE_FILENAME%.*}"
 
             # Check if the executable was previously configured as part of setting up officially supported applications.
-            if [[ ! " ${INSTALLED_EXES[@]} " =~ " ${EXE_FILENAME_LOWERCASE} " ]]; then
+            if [[ ! " ${INSTALLED_EXES[*]} " == *" ${EXE_FILENAME_LOWERCASE} "* ]]; then
                 # If not previously configured, add the application to the list of detected applications.
                 APPS+=("${NAMES[$INDEX]} (${EXE_FILENAME_NOEXT})")
             fi
@@ -1150,6 +1151,7 @@ function waConfigureDetectedApps() {
 
         # Sort the 'APPS' array in alphabetical order.
         IFS=$'\n'
+        # shellcheck disable=SC2207 # Silence warnings regarding preferred use of 'mapfile' or 'read -a'.
         TEMP_ARRAY=($(sort <<<"${APPS[*]}"))
         unset IFS
         APPS=("${TEMP_ARRAY[@]}")
@@ -1321,11 +1323,14 @@ function waUninstall() {
         # Extract the file name.
         DESKTOP_FILE_NAME=$(basename "$DESKTOP_FILE_PATH" | sed 's/\.[^.]*$//')
 
+        # Print feedback.
+        echo -n "Removing '.desktop' file for '${DESKTOP_FILE_NAME}'... "
+
         # Delete the file.
         $SUDO rm "$DESKTOP_FILE_PATH"
 
         # Print feedback.
-        echo "Removed '.desktop' file for '${DESKTOP_FILE_NAME}'."
+        echo -e "${DONE_TEXT}Done!${CLEAR_TEXT}"
     done
 
     # Store the paths of bash scripts calling 'WinApps' to launch specific applications in an array, returning an empty array if no such files exist.
@@ -1339,11 +1344,14 @@ function waUninstall() {
         # Extract the file name.
         BASH_SCRIPT_NAME=$(basename "$BASH_SCRIPT_PATH" | sed 's/\.[^.]*$//')
 
+        # Print feedback.
+        echo -n "Removing bash script for '${BASH_SCRIPT_NAME}'... "
+
         # Delete the file.
         $SUDO rm "$BASH_SCRIPT_PATH"
 
         # Print feedback.
-        echo "Removed bash script for '${BASH_SCRIPT_NAME}'."
+        echo -e "${DONE_TEXT}Done!${CLEAR_TEXT}"
     done
 
     # Print caveats.

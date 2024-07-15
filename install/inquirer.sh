@@ -7,7 +7,7 @@ declare -r ANSI_CLEAR_TEXT="\033[0m"       # Default text.
 declare -r DIALOG_HEIGHT=14                # Height of dialog window.
 declare -r TEXT_WIDTH_OFFSET=4             # Offset for fitting title text.
 declare -r CHK_OPTION_WIDTH_OFFSET=10      # Offset for fitting options.
-declare -r MNU_OPTION_WIDTH_OFFSET=7      # Offset for fitting options.
+declare -r MNU_OPTION_WIDTH_OFFSET=7       # Offset for fitting options.
 
 ### FUNCTIONS ###
 function inqMenu() {
@@ -37,7 +37,7 @@ function inqMenu() {
 
     # Find the length of the longest option to set the dialog width.
     for OPTION in "${TRIMMED_OPTIONS[@]}"; do
-        if [ "${#OPTION}" -gt $DIALOG_WIDTH ]; then
+        if [ "${#OPTION}" -gt "$DIALOG_WIDTH" ]; then
             DIALOG_WIDTH=${#OPTION}
         fi
     done
@@ -53,6 +53,7 @@ function inqMenu() {
     # Pad option text with trailing white space to left-align all options.
     for OPTION in "${TRIMMED_OPTIONS[@]}"; do
         local PAD_LENGTH=$((DIALOG_WIDTH - MNU_OPTION_WIDTH_OFFSET - ${#OPTION}))
+        # shellcheck disable=SC2155
         local PADDED_OPTION="${OPTION}$(printf '%*s' $PAD_LENGTH)"
         PADDED_OPTIONS+=("$PADDED_OPTION")
     done
@@ -86,7 +87,7 @@ function inqMenu() {
     sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
 
     # Remove escapes (introduced by 'dialog' if options have parentheses).
-    RETURN_STRING=$(echo "$RETURN_STRING" | sed 's/\\//g')
+    RETURN_STRING="${RETURN_STRING//\\/}" # ${variable//search/replace}
 
     # Display question and response.
     echo -e "${ANSI_LIGHT_GREEN}Q) ${ANSI_CLEAR_TEXT}${ANSI_LIGHT_BLUE}${DIALOG_TEXT}${ANSI_CLEAR_TEXT} --> ${ANSI_LIGHT_GREEN}${RETURN_STRING}${ANSI_CLEAR_TEXT}"
@@ -119,7 +120,7 @@ function inqChkBx() {
 
     # Find the length of the longest option to set the dialog width.
     for OPTION in "${TRIMMED_OPTIONS[@]}"; do
-        if [ "${#OPTION}" -gt $DIALOG_WIDTH ]; then
+        if [ "${#OPTION}" -gt "$DIALOG_WIDTH" ]; then
             DIALOG_WIDTH=${#OPTION}
         fi
     done
@@ -135,6 +136,7 @@ function inqChkBx() {
     # Pad option text with trailing white space to left-align all options.
     for OPTION in "${TRIMMED_OPTIONS[@]}"; do
         local PAD_LENGTH=$((DIALOG_WIDTH - CHK_OPTION_WIDTH_OFFSET - ${#OPTION}))
+        # shellcheck disable=SC2155
         local PADDED_OPTION="${OPTION}$(printf '%*s' $PAD_LENGTH)"
         PADDED_OPTIONS+=("$PADDED_OPTION")
     done
@@ -164,6 +166,7 @@ function inqChkBx() {
 2>&1 >/dev/tty) || exit 0
 
     # Convert the output string into an array.
+    # shellcheck disable=SC2001
     while IFS= read -r LINE; do
         LINE="${LINE/#\"}" # Remove leading double quote.
         LINE="${LINE/%\"}" # Remove trailing double quote.
@@ -173,10 +176,11 @@ function inqChkBx() {
     # Final modifications.
     for (( i=0; i<${#RETURN_ARRAY[@]}; i++ )); do
         # Remove white space added previously.
+        # shellcheck disable=SC2001
         RETURN_ARRAY[i]=$(echo "${RETURN_ARRAY[i]}" | \
         sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
 
         # Remove escapes (introduced by 'dialog' if options have parentheses).
-        RETURN_ARRAY[i]=$(echo "${RETURN_ARRAY[i]}" | sed 's/\\//g')
+        RETURN_ARRAY[i]=${RETURN_ARRAY[i]//\\/} # ${variable//search/replace}
     done
 }
