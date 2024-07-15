@@ -71,20 +71,20 @@ function inqMenu() {
     # Each option is enclosed in double quotes within the output string.
     # For example: '"Option 1  " "The  Second Option   " "    Option Number 3 "'
     SELECTED_OPTIONS_STRING=$(dialog \
-            --keep-tite \
-            --clear \
-            --no-shadow \
-            --menu \
-            "$DIALOG_TEXT" \
-            "$DIALOG_HEIGHT" \
-            "$DIALOG_WIDTH" \
-            "$OPTION_NUMBER" \
-            "${DIALOG_OPTIONS[@]}" \
-        2>&1 >/dev/tty) || exit 0
+--keep-tite \
+--clear \
+--no-shadow \
+--menu \
+"$DIALOG_TEXT" \
+"$DIALOG_HEIGHT" \
+"$DIALOG_WIDTH" \
+"$OPTION_NUMBER" \
+"${DIALOG_OPTIONS[@]}" \
+2>&1 >/dev/tty) || exit 0
 
     # Remove white space added previously.
     RETURN_STRING=$(echo "$SELECTED_OPTIONS_STRING" | \
-        sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
+    sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
 
     # Remove escapes (introduced by 'dialog' if options have parentheses).
     RETURN_STRING="${RETURN_STRING//\\/}" # ${variable//search/replace}
@@ -154,16 +154,16 @@ function inqChkBx() {
     # Each option is enclosed in double quotes within the output string.
     # For example: '"Option 1  " "The  Second Option   " "    Option Number 3 "'
     SELECTED_OPTIONS_STRING=$(dialog \
-            --keep-tite \
-            --clear \
-            --no-shadow \
-            --checklist \
-            "$DIALOG_TEXT" \
-            "$DIALOG_HEIGHT" \
-            "$DIALOG_WIDTH" \
-            "$OPTION_NUMBER" \
-            "${DIALOG_OPTIONS[@]}" \
-        2>&1 >/dev/tty) || exit 0
+--keep-tite \
+--clear \
+--no-shadow \
+--checklist \
+"$DIALOG_TEXT" \
+"$DIALOG_HEIGHT" \
+"$DIALOG_WIDTH" \
+"$OPTION_NUMBER" \
+"${DIALOG_OPTIONS[@]}" \
+2>&1 >/dev/tty) || exit 0
 
     # Convert the output string into an array.
     # shellcheck disable=SC2001
@@ -178,7 +178,7 @@ function inqChkBx() {
         # Remove white space added previously.
         # shellcheck disable=SC2001
         RETURN_ARRAY[i]=$(echo "${RETURN_ARRAY[i]}" | \
-            sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
+        sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
 
         # Remove escapes (introduced by 'dialog' if options have parentheses).
         RETURN_ARRAY[i]=${RETURN_ARRAY[i]//\\/} # ${variable//search/replace}
