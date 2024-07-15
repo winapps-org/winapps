@@ -69,7 +69,7 @@ readonly INQUIRER_PATH="./install/inquirer.sh"                                  
 readonly VM_NAME="RDPWindows"                                                       # Name of the Windows VM.
 readonly RDP_PORT=3389                                                              # Port used for RDP on the Windows VM.
 readonly WINAPPS_CONFIG="\
-RDP_USER=\"MyWindowsUser\"
+    RDP_USER=\"MyWindowsUser\"
 RDP_PASS=\"MyWindowsPassword\"
 #RDP_DOMAIN=\"MYDOMAIN\"
 #RDP_IP=\"192.168.123.111\"
@@ -919,16 +919,16 @@ function waConfigureWindows() {
     # Populate variables.
     WIN_BASH="\
 #!/usr/bin/env bash
-${BIN_PATH}/winapps windows"
+    ${BIN_PATH}/winapps windows"
     WIN_DESKTOP="\
-[Desktop Entry]
-Name=Windows
-Exec=${BIN_PATH}/winapps windows %F
-Terminal=false
-Type=Application
-Icon=${APPDATA_PATH}/icons/windows.svg
-StartupWMClass=Microsoft Windows
-Comment=Microsoft Windows VM"
+        [Desktop Entry]
+    Name=Windows
+    Exec=${BIN_PATH}/winapps windows %F
+    Terminal=false
+    Type=Application
+    Icon=${APPDATA_PATH}/icons/windows.svg
+    StartupWMClass=Microsoft Windows
+    Comment=Microsoft Windows VM"
 
     # Copy the 'Windows' icon.
     $SUDO cp "./icons/windows.svg" "${APPDATA_PATH}/icons/windows.svg"
@@ -969,21 +969,21 @@ function waConfigureApp() {
 
     # Determine the content of the bash script for the application.
     APP_BASH="\
-#!/usr/bin/env bash
-${BIN_PATH}/winapps ${1}"
+        #!/usr/bin/env bash
+    ${BIN_PATH}/winapps ${1}"
 
     # Determine the content of the '.desktop' file for the application.
     APP_DESKTOP_FILE="\
-[Desktop Entry]
-Name=${NAME}
-Exec=${BIN_PATH}/winapps ${1} %F
-Terminal=false
-Type=Application
-Icon=${APP_ICON}
-StartupWMClass=${FULL_NAME}
-Comment=${FULL_NAME}
-Categories=${CATEGORIES}
-MimeType=${MIME_TYPES}"
+        [Desktop Entry]
+    Name=${NAME}
+    Exec=${BIN_PATH}/winapps ${1} %F
+    Terminal=false
+    Type=Application
+    Icon=${APP_ICON}
+    StartupWMClass=${FULL_NAME}
+    Comment=${FULL_NAME}
+    Categories=${CATEGORIES}
+    MimeType=${MIME_TYPES}"
 
     # Store the '.desktop' file for the application.
     echo "$APP_DESKTOP_FILE" | $SUDO tee "${APP_PATH}/${1}.desktop" &>/dev/null
@@ -1193,16 +1193,16 @@ function waConfigureDetectedApps() {
 
                     # Determine the content of the '.desktop' file for the application.
                     APP_DESKTOP_FILE="\
-# GNOME Shortcut Name
-NAME=\"${PROGRAM_NAME}\"
-# Used for Descriptions and Window Class
-FULL_NAME=\"${PROGRAM_NAME}\"
-# Executable within Windows VM
-WIN_EXECUTABLE=\"${EXES[$INDEX]}\"
-# GNOME Categories
-CATEGORIES=\"WinApps\"
-# GNOME MIME Types
-MIME_TYPES=\"\""
+                        # GNOME Shortcut Name
+                    NAME=\"${PROGRAM_NAME}\"
+                    # Used for Descriptions and Window Class
+                    FULL_NAME=\"${PROGRAM_NAME}\"
+                    # Executable within Windows VM
+                    WIN_EXECUTABLE=\"${EXES[$INDEX]}\"
+                    # GNOME Categories
+                    CATEGORIES=\"WinApps\"
+                    # GNOME MIME Types
+                    MIME_TYPES=\"\""
 
                     # Store the '.desktop' file for the application.
                     echo "$APP_DESKTOP_FILE" | $SUDO tee "${APPDATA_PATH}/apps/${EXE_FILENAME_NOEXT}/info" &>/dev/null
@@ -1366,7 +1366,7 @@ function waUninstall() {
 ### SEQUENTIAL LOGIC ###
 # Welcome the user.
 echo -e "${BOLD_TEXT}\
-################################################################################
+    ################################################################################
 #                                                                              #
 #                            WinApps Install Wizard                            #
 #                                                                              #
