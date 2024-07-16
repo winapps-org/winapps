@@ -87,25 +87,7 @@ if [[ -n $RDP_FLAGS ]]; then
 	FREERDP_COMMAND="$FREERDP_COMMAND $RDP_FLAGS"
 fi
 
-if [ "$1" = "check" ]; then
-	# Open File Explorer
-	dprint "CHECK"
-	COMMAND=(
-		"${FREERDP_COMMAND}"
-		"/d:${RDP_DOMAIN}"
-		"/u:${RDP_USER}"
-		"/p:${RDP_PASS}"
-		"/scale:${RDP_SCALE}"
-		"+auto-reconnect"
-		"+home-drive"
-		"-wallpaper"
-		"+dynamic-resolution"
-		"${MULTI_FLAG}"
-		"/app:program:explorer.exe"
-		"/v:${RDP_IP}"
-	)
-	"${COMMAND[@]}"
-elif [ "$1" = "windows" ]; then
+if [ "$1" = "windows" ]; then
 	# Open Virtual Machine
 	dprint "WINDOWS"
 	COMMAND=(
