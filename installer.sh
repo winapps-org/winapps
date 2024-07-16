@@ -215,7 +215,7 @@ function waCheckInput() {
 	else
 		# Install vs. uninstall?
 		OPTIONS=("Install" "Uninstall")
-		inqMenu "Install or uninstall WinApps?" OPTIONS SELECTED_OPTION
+		inqMenu "Install or uninstall Win#110Apps?" OPTIONS SELECTED_OPTION
 
 		# Set flags.
 		if [[ $SELECTED_OPTION == "Uninstall" ]]; then
@@ -513,7 +513,7 @@ function waCheckDependencies() {
 		echo "You can also install FreeRDP as a Flatpak."
 		echo "Install Flatpak, add the Flathub repository and then install FreeRDP:"
 		echo -e "${COMMAND_TEXT}flatpak install flathub com.freerdp.FreeRDP${CLEAR_TEXT}"
-		echo -e "${COMMAND_TEST}sudo flatpak override --filesystem=home com.freerdp.FreeRDP${CLEAR_TEXT}"
+		echo -e "${COMMAND_TEXT}sudo flatpak override --filesystem=home com.freerdp.FreeRDP${CLEAR_TEXT}"
 		echo "--------------------------------------------------------------------------------"
 
 		# Terminate the script.
