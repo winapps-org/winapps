@@ -107,7 +107,12 @@ If you already have a Windows VM or server you wish to use with WinApps, you wil
         sudo emerge --ask=n sys-libs/dialog net-misc/freerdp:3
         ```
 
-> WinApps requires `FreeRDP` version 3 or later. If not available for your distribution through your package manager, you can install the [Flatpak](https://flathub.org/apps/com.freerdp.FreeRDP).
+Please note that WinApps requires `FreeRDP` version 3 or later. If not available for your distribution through your package manager, you can install the [Flatpak](https://flathub.org/apps/com.freerdp.FreeRDP).
+
+```bash
+flatpak install flathub com.freerdp.FreeRDP
+sudo flatpak override --filesystem=home com.freerdp.FreeRDP # To use `+home-drive`
+```
 
 ### Step 3: Create a WinApps Configuration File
 Create a configuration file at `~/.config/winapps/winapps.conf` containing the following:
