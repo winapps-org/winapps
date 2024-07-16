@@ -1,209 +1,329 @@
 #!/usr/bin/env bash
 
-if [ ! -f "$HOME/.config/winapps/winapps.conf" ] && [ ! -f "$HOME/.winapps" ]; then
-    echo "You need to create a ~/.config/winapps/winapps.conf configuration. Exiting..."
-    exit
-fi
+### GLOBAL CONSTANTS ###
+# ANSI ESCAPE SEQUENCES
+readonly ERROR_TEXT="\033[1;41;37m" # Bold + White + Red Background
+readonly CLEAR_TEXT="\033[0m"       # Clear
 
-DIR="$(dirname "$(readlink -f "$0")")"
-RUN="$(date)-$RANDOM"
+# ERROR CODES
+readonly EC_MISSING_CONFIG=1
+readonly EC_MISSING_FREERDP=2
+readonly EC_NOT_IN_GROUP=3
+readonly EC_VM_NOT_RUNNING=4
+readonly EC_VM_NO_IP=5
+readonly EC_VM_BAD_PORT=6
+readonly EC_UNSUPPORTED_APP=7
 
-if [ ! -d "$HOME/.local/share/winapps" ]; then
-    mkdir -p "$HOME/.local/share/winapps"
-fi
+# PATHS
+readonly APPDATA_PATH="${HOME}/.local/share/winapps"
+readonly SYS_APP_PATH="/usr/local/share/winapps"
+readonly LASTRUN_PATH="${APPDATA_PATH}/lastrun"
+readonly LOG_PATH="${APPDATA_PATH}/winapps.log"
+readonly CONFIG_PATH="${HOME}/.config/winapps/winapps.conf"
+# shellcheck disable=SC2155 # Silence warnings regarding masking return values through simultaneous declaration and assignment.
+readonly SCRIPT_DIR_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
 
+# OTHER
+readonly VM_NAME="RDPWindows"
+readonly RDP_PORT=3389
+# shellcheck disable=SC2155 # Silence warnings regarding masking return values through simultaneous declaration and assignment.
+readonly RUN="$(date)-${RANDOM}"
+
+### GLOBAL VARIABLES ###
+# WINAPPS CONFIGURATION FILE
+RDP_USER=""
+RDP_PASS=""
+RDP_DOMAIN=""
+RDP_IP=""
+RDP_FLAGS=""
+FREERDP_COMMAND=""
 RDP_SCALE=100
+MULTIMON="false"
+DEBUG="true"
+MULTI_FLAG=""
 
-if [ -f "$HOME/.config/winapps/winapps.conf" ]; then
-    # shellcheck source=/dev/null
-    . "$HOME/.config/winapps/winapps.conf"
-else
-    # shellcheck source=/dev/null
-    . "$HOME/.winapps"
-fi
+### FUNCTIONS ###
+# Name: 'waThrowExit'
+# Role: Throw an error message and exit the script.
+function waThrowExit() {
+    # Declare variables.
+    local ERR_CODE="$1"
 
+    # Throw error.
+    case "$ERR_CODE" in
+    "$EC_MISSING_CONFIG")
+        # Missing WinApps configuration file.
+        dprint "ERROR: MISSING WINAPPS CONFIGURATION FILE. EXITING."
+        echo -e "${ERROR_TEXT}ERROR: MISSING WINAPPS CONFIGURATION FILE.${CLEAR_TEXT}"
+        echo "Please create a WinApps configuration file at '${CONFIG_PATH}'".
+        ;;
+    "$EC_MISSING_FREERDP")
+        dprint "ERROR: FREERDP VERSION 3 IS NOT INSTALLED. EXITING."
+        echo -e "${ERROR_TEXT}ERROR: FREERDP VERSION 3 IS NOT INSTALLED.${CLEAR_TEXT}"
+        ;;
+    "$EC_NOT_IN_GROUP")
+        dprint "ERROR: USER NOT PART OF REQUIRED GROUPS. EXITING."
+        echo -e "${ERROR_TEXT}ERROR: USER NOT PART OF REQUIRED GROUPS.${CLEAR_TEXT}"
+        echo "Please run:"
+        echo "  sudo usermod -a -G libvirt $(whoami)"
+        echo "  sudo usermod -a -G kvm $(whoami)"
+        ;;
+    "$EC_VM_NOT_RUNNING")
+        dprint "ERROR: VM NOT RUNNING. EXITING."
+        echo -e "${ERROR_TEXT}ERROR: VM NOT RUNNING.${CLEAR_TEXT}"
+        echo "Please ensure the Windows VM is powered on."
+        ;;
+    "$EC_VM_NO_IP")
+        dprint "ERROR: VM UNREACHABLE. EXITING."
+        echo -e "${ERROR_TEXT}ERROR: VM UNREACHABLE.${CLEAR_TEXT}"
+        echo "Please ensure the Windows VM is assigned an IP address."
+        ;;
+    "$EC_VM_BAD_PORT")
+        dprint "ERROR: RDP PORT CLOSED. EXITING."
+        echo -e "${ERROR_TEXT}ERROR: RDP PORT CLOSED.${CLEAR_TEXT}"
+        echo "Please ensure Remote Desktop is correctly configured on the Windows VM."
+        ;;
+    "$EC_UNSUPPORTED_APP")
+        dprint "ERROR: APPLICATION NOT FOUND. EXITING."
+        echo -e "${ERROR_TEXT}ERROR: APPLICATION NOT FOUND.${CLEAR_TEXT}"
+        echo "Please ensure the program is correctly configured as an officially supported application."
+        ;;
+    esac
+
+    # Provide generic advice.
+    echo "Check the WinApps project README for more information."
+
+    # Terminate the script.
+    echo "Exiting with status '${ERR_CODE}'."
+    exit "$ERR_CODE"
+}
+
+# Name: 'dprint'
+# Role: Conditionally print debug messages to a log file, creating it if it does not exist.
 function dprint() {
-    if [ "$DEBUG" = "true" ]; then
-        echo "[$RUN] $1" >>"$HOME/.local/share/winapps/winapps.log"
+    [ "$DEBUG" = "true" ] && echo "[$RUN] $1" >>"$LOG_PATH"
+}
+
+# Name: 'waLoadConfig'
+# Role: Load the variables within the WinApps configuration file.
+function waLoadConfig() {
+    # Load WinApps configuration file.
+    if [ -f "$CONFIG_PATH" ]; then
+        # shellcheck source=/dev/null # Exclude WinApps configuration file from being checked by ShellCheck.
+        source "$CONFIG_PATH"
+    else
+        waThrowExit $EC_MISSING_CONFIG
+    fi
+
+    # Update 'MULTI_FLAG' based on 'MULTIMON'.
+    MULTI_FLAG=$([[ $MULTIMON == "true" ]] && echo "/multimon" || echo "+span")
+
+    # Append additional flags or parameters to FreeRDP.
+    [[ -n $RDP_FLAGS ]] && FREERDP_COMMAND="${FREERDP_COMMAND} ${RDP_FLAGS}"
+}
+
+# Name: 'waLastRun'
+# Role: Determine the last time this script was run.
+function waLastRun() {
+    # Declare variables.
+    local LAST_RUN_UNIX_TIME=0
+    local CURR_RUN_UNIX_TIME=0
+
+    # Store the time this script was run last as a unix timestamp.
+    if [ -f "$LASTRUN_PATH" ]; then
+        LAST_RUN_UNIX_TIME=$(stat -t -c %Y "$LASTRUN_PATH")
+        dprint "LAST_RUN: ${LAST_RUN_UNIX_TIME}"
+    fi
+
+    # Update the file modification time with the current time.
+    touch "$LASTRUN_PATH"
+    CURR_RUN_UNIX_TIME=$(stat -t -c %Y "$LASTRUN_PATH")
+    dprint "THIS_RUN: ${CURR_RUN_UNIX_TIME}"
+}
+
+function waGetFreeRDPCommand() {
+    # Attempt to set a FreeRDP command if the command variable is empty.
+    if [ -z "$FREERDP_COMMAND" ]; then
+        # Check for 'xfreerdp'.
+        if command -v xfreerdp &>/dev/null; then
+            # Check FreeRDP major version is 3 or greater.
+            FREERDP_MAJOR_VERSION=$(xfreerdp --version | head -n 1 | grep -o -m 1 '\b[0-9]\S*' | cut -d'.' -f1)
+            if [[ $FREERDP_MAJOR_VERSION =~ ^[0-9]+$ ]] && ((FREERDP_MAJOR_VERSION >= 3)); then
+                FREERDP_COMMAND="xfreerdp"
+            fi
+        # Check for 'xfreerdp3'.
+        elif command -v xfreerdp3 &>/dev/null; then
+            # Check FreeRDP major version is 3 or greater.
+            FREERDP_MAJOR_VERSION=$(xfreerdp3 --version | head -n 1 | grep -o -m 1 '\b[0-9]\S*' | cut -d'.' -f1)
+            if [[ $FREERDP_MAJOR_VERSION =~ ^[0-9]+$ ]] && ((FREERDP_MAJOR_VERSION >= 3)); then
+                FREERDP_COMMAND="xfreerdp3"
+            fi
+        fi
+
+        # Check for FreeRDP Flatpak (fallback option).
+        if [ -z "$FREERDP_COMMAND" ]; then
+            if command -v flatpak &>/dev/null; then
+                if flatpak list --columns=application | grep -q "^com.freerdp.FreeRDP$"; then
+                    # Check FreeRDP major version is 3 or greater.
+                    FREERDP_MAJOR_VERSION=$(flatpak list --columns=application,version | grep "^com.freerdp.FreeRDP" | awk '{print $2}' | cut -d'.' -f1)
+                    if [[ $FREERDP_MAJOR_VERSION =~ ^[0-9]+$ ]] && ((FREERDP_MAJOR_VERSION >= 3)); then
+                        FREERDP_COMMAND="flatpak run --command=xfreerdp com.freerdp.FreeRDP"
+                    fi
+                fi
+            fi
+        fi
+    fi
+
+    if command -v "$FREERDP_COMMAND" &>/dev/null || [ "$FREERDP_COMMAND" = "flatpak run --command=xfreerdp com.freerdp.FreeRDP" ]; then
+        dprint "Using FreeRDP command '${FREERDP_COMMAND}'."
+    else
+        waThrowExit "$EC_MISSING_FREERDP"
     fi
 }
 
+# Name: 'waCheckGroupMembership'
+# Role: Ensures the current user is part of the required groups.
+function waCheckGroupMembership() {
+    # Identify groups the current user belongs to.
+    # shellcheck disable=SC2155 # Silence warnings regarding masking return values through simultaneous declaration and assignment.
+    local USER_GROUPS=$(groups "$(whoami)")
+
+    if ! (echo "$USER_GROUPS" | grep -q -E "\blibvirt\b") || ! (echo "$USER_GROUPS" | grep -q -E "\bkvm\b"); then
+        waThrowExit "$EC_NOT_IN_GROUP"
+    fi
+}
+
+# Name: 'waCheckVMRunning'
+# Role: Throw an error if the Windows VM is not running.
+function waCheckVMRunning() {
+    ! virsh list --state-running --name | grep -q "^${VM_NAME}$" && waThrowExit "$EC_VM_NOT_RUNNING"
+}
+
+# Name: 'waCheckVMContactable'
+# Role: Assesses whether the Windows VM can be contacted.
+function waCheckVMContactable() {
+    # Declare variables.
+    local VM_MAC="" # Stores the MAC address of the Windows VM.
+
+    # Obtain Windows VM IP Address
+    if [ -z "$RDP_IP" ]; then
+        VM_MAC=$(virsh domiflist "$VM_NAME" | grep -oE "([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})") # VM MAC address.
+        RDP_IP=$(arp -n | grep "$VM_MAC" | grep -oE "([0-9]{1,3}\.){3}[0-9]{1,3}")                # VM IP address.
+        [ -z "$RDP_IP" ] && waThrowExit "$EC_VM_NO_IP"
+    fi
+
+    # Check for an open RDP port.
+    timeout 5 nc -z "$RDP_IP" "$RDP_PORT" &>/dev/null || waThrowExit "$EC_VM_BAD_PORT"
+}
+
+function waRunCommand() {
+    # Declare variables.
+    local ICON=""
+    local FILE_PATH=""
+
+    # Run option.
+    if [ "$1" = "windows" ]; then
+        # Open Windows VM.
+        dprint "WINDOWS"
+        $FREERDP_COMMAND \
+            /d:"$RDP_DOMAIN" \
+            /u:"$RDP_USER" \
+            /p:"$RDP_PASS" \
+            /scale:"$RDP_SCALE" \
+            +dynamic-resolution \
+            +auto-reconnect \
+            +home-drive \
+            /wm-class:"Microsoft Windows" \
+            /v:"$RDP_IP" &>/dev/null &
+    elif [ "$1" = "manual" ]; then
+        # Open specified application.
+        dprint "MANUAL: ${2}"
+        $FREERDP_COMMAND \
+            /cert:tofu \
+            /d:"$RDP_DOMAIN" \
+            /u:"$RDP_USER" \
+            /p:"$RDP_PASS" \
+            /scale:"$RDP_SCALE" \
+            +auto-reconnect \
+            +clipboard \
+            +home-drive \
+            -wallpaper \
+            +dynamic-resolution \
+            "$MULTI_FLAG" \
+            /app:program:"$2" \
+            /v:"$RDP_IP" &>/dev/null &
+    else
+        # Script summoned from right-click menu with officially supported application name plus/minus a file path.
+        if [ -e "${SCRIPT_DIR_PATH}/../apps/${1}/info" ]; then
+            # shellcheck source=/dev/null # Exclude this file from being checked by ShellCheck.
+            source "${SCRIPT_DIR_PATH}/../apps/${1}/info"
+            ICON="${SCRIPT_DIR_PATH}/../apps/${1}/icon.svg"
+        elif [ -e "${APPDATA_PATH}/apps/${1}/info" ]; then
+            # shellcheck source=/dev/null # Exclude this file from being checked by ShellCheck.
+            source "${APPDATA_PATH}/apps/${1}/info"
+            ICON="${APPDATA_PATH}/apps/${1}/icon.svg"
+        elif [ -e "${SYS_APP_PATH}/apps/${1}/info" ]; then
+            # shellcheck source=/dev/null # Exclude this file from being checked by ShellCheck.
+            source "${SYS_APP_PATH}/apps/${1}/info"
+            ICON="${SYS_APP_PATH}/apps/${1}/icon.svg"
+        else
+            waThrowExit "$EC_UNSUPPORTED_APP"
+        fi
+
+        # Check if a file path was specified, and pass this to the application.
+        if [ -z "$2" ]; then
+            # No file path specified.
+            $FREERDP_COMMAND \
+                /d:"$RDP_DOMAIN" \
+                /u:"$RDP_USER" \
+                /p:"$RDP_PASS" \
+                /scale:"$RDP_SCALE" \
+                +auto-reconnect \
+                +clipboard \
+                +home-drive \
+                -wallpaper \
+                +dynamic-resolution \
+                "$MULTI_FLAG" \
+                /wm-class:"$FULL_NAME" \
+                /app:program:"$WIN_EXECUTABLE",icon:"$ICON",name:"$FULL_NAME" \
+                /v:"$RDP_IP" &>/dev/null &
+        else
+            # Convert path from UNIX to Windows style.
+            FILE_PATH=$(echo "$2" | sed 's|'"${HOME}"'|\\\\tsclient\\home|;s|/|\\|g;s|\\|\\\\|g')
+            dprint "UNIX_FILE_PATH: ${2}"
+            dprint "WINDOWS_FILE_PATH: ${FILE_PATH}"
+
+            $FREERDP_COMMAND \
+                /cert:tofu \
+                /d:"$RDP_DOMAIN" \
+                /u:"$RDP_USER" \
+                /p:"$RDP_PASS" \
+                /scale:"$RDP_SCALE" \
+                +auto-reconnect \
+                +clipboard \
+                +home-drive \
+                -wallpaper \
+                +dynamic-resolution \
+                "$MULTI_FLAG" \
+                /wm-class:"$FULL_NAME" \
+                /app:program:"$WIN_EXECUTABLE",icon:"$ICON",name:$"FULL_NAME",cmd:\""$FILE_PATH"\" \
+                /v:"$RDP_IP" &>/dev/null &
+        fi
+    fi
+}
+
+### MAIN LOGIC ###
+#set -x # Enable for debugging.
 dprint "START"
-
-if [ -f "$HOME/.local/share/winapps/run" ]; then
-    LAST_RAN=$(stat -t -c %Y "$HOME/.local/share/winapps/run")
-    dprint "LAST_RAN:${LAST_RAN}"
-    touch "$HOME/.local/share/winapps/run"
-    THIS_RUN=$(stat -t -c %Y "$HOME/.local/share/winapps/run")
-    dprint "THIS_RUN:$THIS_RUN"
-    if ((THIS_RUN - LAST_RAN < 2)); then
-        exit
-    fi
-else
-    touch "$HOME/.local/share/winapps/run"
-fi
-
-if [ -z "${FREERDP_COMMAND}" ]; then
-    if command -v xfreerdp &> /dev/null
-    then
-        FREERDP_COMMAND="xfreerdp"
-    elif command -v xfreerdp3 &> /dev/null
-    then
-        FREERDP_COMMAND="xfreerdp3"
-    fi
-elif command -v "$FREERDP_COMMAND" &> /dev/null
-then
-    dprint "Using custom freerdp command $FREERDP_COMMAND"
-else
-    echo "You have supplied a custom FreeRDP command, but the command is not available."
-    exit
-fi
-
-if [ -z "$RDP_IP" ]; then
-    if groups | grep -vq libvirt; then
-        echo "You are not a member of the libvirt group. Run the below then reboot."
-        echo "  sudo usermod -a -G libvirt $(whoami)"
-        echo "  sudo usermod -a -G kvm $(whoami)"
-        exit
-    fi
-    if ! virsh list --state-running --name | grep -q '^RDPWindows$'; then
-        echo "RDPWindows is not running. Please run:"
-        echo "  virsh start RDPWindows"
-        exit
-    fi
-    RDP_IP=$(virsh net-dhcp-leases default | grep "RDPWindows" | grep -oE '([0-9]{1,3}\.){3}[0-9]{1,3}')
-fi
-
-dprint "1:$1"
-dprint "2:$2"
-# this is just for debug logging anyways
-# shellcheck disable=SC2145
-dprint "@:${@}"
-
-MULTI_FLAG="+span"
-if [ "$MULTIMON" = "true" ]; then
-    MULTI_FLAG="/multimon"
-fi
-
-# Append additional flags or parameters to FreeRDP
-if [[ -n "$RDP_FLAGS" ]]; then
-    FREERDP_COMMAND="$FREERDP_COMMAND $RDP_FLAGS"
-fi
-
-if [ "$1" = "check" ]; then
-    # Open File Explorer
-    dprint "CHECK"
-    COMMAND=(
-        "${FREERDP_COMMAND}"
-        "/d:${RDP_DOMAIN}"
-        "/u:${RDP_USER}"
-        "/p:${RDP_PASS}"
-        "/scale:${RDP_SCALE}"
-        "+auto-reconnect"
-        "+home-drive"
-        "-wallpaper"
-        "+dynamic-resolution"
-        "${MULTI_FLAG}"
-        "/app:program:explorer.exe"
-        "/v:${RDP_IP}"
-    )
-    "${COMMAND[@]}"
-elif [ "$1" = "windows" ]; then
-    # Open Virtual Machine
-    dprint "WINDOWS"
-    COMMAND=(
-        "${FREERDP_COMMAND}"
-        "/d:${RDP_DOMAIN}"
-        "/u:${RDP_USER}"
-        "/p:${RDP_PASS}"
-        "/scale:${RDP_SCALE}"
-        "+dynamic-resolution"
-        "+auto-reconnect"
-        "+home-drive"
-        "/wm-class:\"Microsoft Windows\""
-        "/v:${RDP_IP}"
-    )
-    # Run the command in the background, redirecting both stdout and stderr to /dev/null
-    "${COMMAND[@]}" 1>/dev/null 2>&1 &
-elif [ "$1" = "manual" ]; then
-    # Open Specified Application
-    dprint "MANUAL:${2}"
-    COMMAND=(
-        "${FREERDP_COMMAND}"
-        "/d:${RDP_DOMAIN}"
-        "/u:${RDP_USER}"
-        "/p:${RDP_PASS}"
-        "/scale:${RDP_SCALE}"
-        "+auto-reconnect"
-        "+home-drive"
-        "+dynamic-resolution"
-        "${MULTI_FLAG}"
-        "/app:program:${2}"
-        "/v:${RDP_IP}"
-    )
-    # Run the command in the background, redirecting both stdout and stderr to /dev/null
-    "${COMMAND[@]}" 1>/dev/null 2>&1 &
-elif [ "$1" != "install" ]; then
-    dprint "DIR:${DIR}"
-    if [ -e "${DIR}/../apps/$1/info" ]; then
-        # shellcheck disable=SC1090
-        . "${DIR}/../apps/$1/info"
-        ICON="${DIR}/../apps/$1/icon.svg"
-    elif [ -e "$HOME/.local/share/winapps/apps/$1/info" ]; then
-        # shellcheck disable=SC1090
-        . "$HOME/.local/share/winapps/apps/$1/info"
-        ICON="$HOME/.local/share/winapps/apps/$1/icon.svg"
-    elif [ -e "/usr/local/share/winapps/apps/$1/info" ]; then
-        # shellcheck disable=SC1090
-        . "/usr/local/share/winapps/apps/$1/info"
-        ICON="/usr/local/share/winapps/apps/$1/icon.svg"
-    else
-        echo "You need to run 'installer.sh' first."
-        exit 1
-    fi
-    if [ -n "$2" ]; then
-        dprint "HOME:$HOME"
-        FILE=$(echo "$2" | sed 's|'"$HOME"'|\\\\tsclient\\home|;s|/|\\|g;s|\\|\\\\|g')
-        dprint "FILE:${FILE}"
-        # shellcheck disable=SC2140
-        COMMAND=(
-            "${FREERDP_COMMAND}"
-            "/d:${RDP_DOMAIN}"
-            "/u:${RDP_USER}"
-            "/p:${RDP_PASS}"
-            "/scale:${RDP_SCALE}"
-            "+auto-reconnect"
-            "+clipboard"
-            "+home-drive"
-            "-wallpaper"
-            "+dynamic-resolution"
-            "${MULTI_FLAG}"
-            "/wm-class:${FULL_NAME}"
-            "/app:program:${WIN_EXECUTABLE},icon:${ICON},name:${FULL_NAME},cmd:\"${FILE}\""
-            "/v:${RDP_IP}"
-        )
-        # Run the command in the background, redirecting both stdout and stderr to /dev/null
-        echo "${COMMAND[@]}" #1>/dev/null 2>&1 &
-    else
-        COMMAND=(
-            "${FREERDP_COMMAND}"
-            "/d:${RDP_DOMAIN}"
-            "/u:${RDP_USER}"
-            "/p:${RDP_PASS}"
-            "/scale:${RDP_SCALE}"
-            "+auto-reconnect"
-            "+clipboard"
-            "+home-drive"
-            "-wallpaper"
-            "+dynamic-resolution"
-            "${MULTI_FLAG}"
-            "/wm-class:${FULL_NAME}"
-            "/app:program:${WIN_EXECUTABLE},icon:${ICON},name:${FULL_NAME}"
-            "/v:${RDP_IP}"
-        )
-        # Run the command in the background, redirecting both stdout and stderr to /dev/null
-        "${COMMAND[@]}" 1>/dev/null 2>&1 &
-    fi
-fi
-
+dprint "SCRIPT_DIR: ${SCRIPT_DIR_PATH}"
+dprint "SCRIPT_ARGS: ${*}"
+dprint "HOME_DIR: ${HOME}"
+mkdir -p "$APPDATA_PATH"
+waLastRun
+waLoadConfig
+waGetFreeRDPCommand
+waCheckGroupMembership
+waCheckVMRunning
+waCheckVMContactable
+waRunCommand "$@"
 dprint "END"

@@ -12,7 +12,7 @@ repos:
       - id: remove-crlf
       - id: forbid-tabs
       - id: remove-tabs
-        args: [ --whitespaces-count, "2" ]
+        args: [ --whitespaces-count, "4" ]
 
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.6.0
@@ -43,7 +43,8 @@ repos:
   - repo: https://github.com/scop/pre-commit-shfmt
     rev: v3.8.0-1
     hooks:
-      - id: shfmt 
+      - id: shfmt
+        args: ["-i", "4", "-ci", "-s"]
 
   - repo: https://github.com/shellcheck-py/shellcheck-py
     rev: v0.10.0.1

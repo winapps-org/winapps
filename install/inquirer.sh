@@ -1,835 +1,186 @@
 #!/usr/bin/env bash
 
-#======== Based on (then updated) https://raw.githubusercontent.com/tanhauhau/Inquirer.sh/master/dist/inquirer.sh ========
+### GLOBAL CONSTANTS ###
+declare -r ANSI_LIGHT_BLUE="\033[1;94m" # Light blue text.
+declare -r ANSI_LIGHT_GREEN="\033[92m"  # Light green text.
+declare -r ANSI_CLEAR_TEXT="\033[0m"    # Default text.
+declare -r DIALOG_HEIGHT=14             # Height of dialog window.
+declare -r TEXT_WIDTH_OFFSET=4          # Offset for fitting title text.
+declare -r CHK_OPTION_WIDTH_OFFSET=10   # Offset for fitting options.
+declare -r MNU_OPTION_WIDTH_OFFSET=7    # Offset for fitting options.
 
-# License from: https://github.com/kahkhang/Inquirer.sh/blob/master/LICENSE
+### FUNCTIONS ###
+function inqMenu() {
+    # DECLARE VARIABLES.
+    # Variables created from function arguments:
+    declare DIALOG_TEXT="$1"                      # Dialog heading.
+    declare INPUT_OPTIONS_VAR="$2"                # Input variable name.
+    declare RETURN_STRING_VAR="$3"                # Output variable name.
+    declare -n INPUT_OPTIONS="$INPUT_OPTIONS_VAR" # Input array nameref.
+    declare -n RETURN_STRING="$RETURN_STRING_VAR" # Output string nameref.
+    # Note: namerefs allow changes made through the nameref to affect the
+    # referenced variable, even across different scopes like function calls.
 
-# The MIT License (MIT)
+    # Other variables:
+    declare TRIMMED_OPTIONS=()         # Input array post-trimming.
+    declare PADDED_OPTIONS=()          # Input array with extra white space.
+    declare DIALOG_OPTIONS=()          # Input array for options dialog.
+    declare DIALOG_WIDTH=0             # Width of dialog window.
+    declare OPTION_NUMBER=0            # Number of options in dialog window.
+    declare SELECTED_OPTIONS_STRING="" # Output value from dialog window.
 
-# Copyright (c) 2017
-
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
-
-# shellcheck disable=all
-
-# store the current set options
-OLD_SET=$-
-set -e
-
-arrow="$(echo -e '\xe2\x9d\xaf')"
-checked="$(echo -e '\xe2\x97\x89')"
-unchecked="$(echo -e '\xe2\x97\xaf')"
-down_arrow=$(echo -e '\u23f7')
-up_arrow=$(echo -e '\u23f6')
-
-black="$(tput setaf 0)"
-red="$(tput setaf 1)"
-green="$(tput setaf 2)"
-yellow="$(tput setaf 3)"
-blue="$(tput setaf 4)"
-magenta="$(tput setaf 5)"
-cyan="$(tput setaf 6)"
-white="$(tput setaf 7)"
-bold="$(tput bold)"
-normal="$(tput sgr0)"
-dim=$'\e[2m'
-
-print() {
-    echo "$1"
-    tput el
-}
-
-join() {
-    local IFS=$'\n'
-    local _join_list
-    eval _join_list=( '"${'${1}'[@]}"' )
-    local first=true
-    for item in ${_join_list[@]}; do
-        if [ "$first" = true ]; then
-            printf "%s" "$item"
-            first=false
-        else
-            printf "${2-, }%s" "$item"
-        fi
-    done
-}
-
-function gen_env_from_options() {
-    local IFS=$'\n'
-    local _indices
-    local _env_names
-    local _checkbox_selected
-    eval _indices=( '"${'${1}'[@]}"' )
-    eval _env_names=( '"${'${2}'[@]}"' )
-
-    for i in $(gen_index ${#_env_names[@]}); do
-        _checkbox_selected[$i]=false
+    # MAIN LOGIC.
+    # Trim leading and trailing white space for each option.
+    for OPTION in "${INPUT_OPTIONS[@]}"; do
+        TRIMMED_OPTIONS+=("$(echo "$OPTION" | sed 's/^[ \t]*//;s/[ \t]*$//')")
     done
 
-    for i in ${_indices[@]}; do
-        _checkbox_selected[$i]=true
-    done
-
-    for i in $(gen_index ${#_env_names[@]}); do
-        printf "%s=%s\n" "${_env_names[$i]}" "${_checkbox_selected[$i]}"
-    done
-}
-
-on_default() {
-    true;
-}
-
-on_keypress() {
-    local OLD_IFS
-    local IFS
-    local key
-    OLD_IFS=$IFS
-    local on_up=${1:-on_default}
-    local on_down=${2:-on_default}
-    local on_space=${3:-on_default}
-    local on_enter=${4:-on_default}
-    local on_left=${5:-on_default}
-    local on_right=${6:-on_default}
-    local on_ascii=${7:-on_default}
-    local on_backspace=${8:-on_default}
-    _break_keypress=false
-    while IFS="" read -rsn1 key; do
-        case "$key" in
-            $'\x1b')
-                read -rsn1 key
-                if [[ "$key" == "[" ]]; then
-                    read -rsn1 key
-                    case "$key" in
-                        'A') eval $on_up ;;
-                        'B') eval $on_down ;;
-                        'D') eval $on_left ;;
-                        'C') eval $on_right ;;
-                    esac
-                fi
-                ;;
-            ' ') eval $on_space ' ' ;;
-            [a-z0-9A-Z\!\#\$\&\+\,\-\.\/\;\=\?\@\[\]\^\_\{\}\~]) eval $on_ascii $key ;;
-            $'\x7f') eval $on_backspace $key ;;
-            '') eval $on_enter $key ;;
-        esac
-        if [ $_break_keypress = true ]; then
-            break
-        fi
-    done
-    IFS=$OLD_IFS
-}
-
-gen_index() {
-    local k=$1
-    local l=0
-    if [ $k -gt 0 ]; then
-        for l in $(seq $k)
-        do
-            echo "$l-1" | bc
-        done
-    fi
-}
-
-cleanup() {
-    # Reset character attributes, make cursor visible, and restore
-    # previous screen contents (if possible).
-    tput sgr0
-    tput cnorm
-    stty echo
-
-    # Restore `set e` option to its orignal value
-    if [[ $OLD_SET =~ e ]]
-    then set -e
-    else set +e
-    fi
-}
-
-control_c() {
-    cleanup
-    exit $?
-}
-
-select_indices() {
-    local _select_list
-    local _select_indices
-    local _select_selected=()
-    eval _select_list=( '"${'${1}'[@]}"' )
-    eval _select_indices=( '"${'${2}'[@]}"' )
-    local _select_var_name=$3
-    eval $_select_var_name\=\(\)
-    for i in $(gen_index ${#_select_indices[@]}); do
-        eval $_select_var_name\+\=\(\""${_select_list[${_select_indices[$i]}]}"\"\)
-    done
-}
-
-print_checkbox_line_arrow() {
-    if [ "${_checkbox_selected[$1]}" = true ]; then
-        printf "${cyan}${arrow}${green}${checked}${normal} ${_checkbox_list[$1]} ${normal}"
-    else
-        printf "${cyan}${arrow}${normal}${unchecked} ${_checkbox_list[$1]} ${normal}"
-    fi
-}
-
-print_checkbox_line() {
-    if [ "${_checkbox_selected[$1]}" = true ]; then
-        printf " ${green}${checked}${normal} ${_checkbox_list[$1]} ${normal}"
-    else
-        printf " ${normal}${unchecked} ${_checkbox_list[$1]} ${normal}"
-    fi
-}
-
-# https://www.gnu.org/software/termutils/manual/termutils-2.0/html_chapter/tput_1.html
-# http://linuxcommand.org/lc3_adv_tput.php
-on_checkbox_input_up2() {
-    #remove_checkbox_instructions
-    tput cub "$(tput cols)"
-
-    if [ "${_checkbox_selected[$_current_index]}" = true ]; then
-        printf " ${green}${checked}${normal} ${_checkbox_list[$_current_index]} ${normal}"
-    else
-        printf " ${unchecked} ${_checkbox_list[$_current_index]} ${normal}"
-    fi
-    tput el
-
-    if [ $_current_index = 0 ]; then
-        _current_index=$((${#_checkbox_list[@]}-1))
-        tput cud $((${#_checkbox_list[@]}-1))
-        tput cub "$(tput cols)"
-    else
-        _current_index=$((_current_index-1))
-
-        tput cuu1 # Up one line
-        tput cub "$(tput cols)" # Back to beginning (does this work?)
-        tput el # Clear to end of line
-    fi
-
-    if [ "${_checkbox_selected[$_current_index]}" = true ]; then
-        printf "${cyan}${arrow}${green}${checked}${normal} ${_checkbox_list[$_current_index]} ${normal}"
-    else
-        printf "${cyan}${arrow}${normal}${unchecked} ${_checkbox_list[$_current_index]} ${normal}"
-    fi
-}
-
-on_checkbox_input_up() {
-    #remove_checkbox_instructions
-    tput cub "$(tput cols)"
-    if (( ${_current_row} > 0 )) || (( ${#_checkbox_list[@]} <= 5 )); then
-        print_checkbox_line $_current_index
-        tput el
-        if [ $_current_index = 0 ]; then
-            _current_index=$((${#_checkbox_list[@]}-1))
-            _current_row=4
-            tput cud $((${#_checkbox_list[@]}-1))
-            tput cub "$(tput cols)"
-        else
-            _current_index=$((_current_index-1))
-            _current_row=$((_current_row-1))
-            tput cuu1
-            tput cub "$(tput cols)"
-            tput el
-        fi
-        print_checkbox_line_arrow $_current_index
-    else
-        if [ $_current_index = 0 ]; then
-            _current_index=$((${#_checkbox_list[@]}-1))
-            _current_row=4
-            tput cuu 1
-            tput cub "$(tput cols)"
-            tput el
-            printf "  ${cyan}${up_arrow}${normal}"
-            for I in 4 3 2 1; do
-                tput cud1
-                tput cub "$(tput cols)"
-                tput el
-                print_checkbox_line $((_current_index-I))
-            done
-            tput cud1
-            tput cub "$(tput cols)"
-            tput el
-            print_checkbox_line_arrow $((_current_index))
-            tput cud1
-            tput cub "$(tput cols)"
-            tput el
-            printf "  ${dim}${down_arrow}${normal}"
-            tput cuu 1
-        else
-            _current_index=$((_current_index-1))
-            tput cud 5
-            tput cub "$(tput cols)"
-            tput el
-            printf "  ${cyan}${down_arrow}${normal}"
-            for I in 4 3 2 1; do
-                tput cuu1
-                tput cub "$(tput cols)"
-                tput el
-                print_checkbox_line $((_current_index+I))
-            done
-            tput cuu1
-            tput cub "$(tput cols)"
-            tput el
-            print_checkbox_line_arrow $((_current_index))
-            if [ $_current_index = 0 ]; then
-                tput cuu1
-                tput cub "$(tput cols)"
-                tput el
-                printf "  ${dim}${up_arrow}${normal}"
-                tput cud1
-            fi
-        fi
-    fi
-}
-
-on_checkbox_input_down() {
-    #remove_checkbox_instructions
-    tput cub "$(tput cols)"
-    if (( ${_current_row} < 4 )) || (( ${#_checkbox_list[@]} <= 5 )); then
-        print_checkbox_line $_current_index
-        tput el
-        if [ $_current_index = $((${#_checkbox_list[@]}-1)) ]; then
-            _current_index=0
-            _current_row=0
-            tput cuu $((${#_checkbox_list[@]}-1))
-            tput cub "$(tput cols)"
-        else
-            _current_index=$((_current_index+1))
-            _current_row=$((_current_row+1))
-            tput cud1
-            tput cub "$(tput cols)"
-            tput el
-        fi
-        print_checkbox_line_arrow $_current_index
-    else
-        if [ $_current_index = $((${#_checkbox_list[@]}-1)) ]; then
-            _current_index=0
-            _current_row=0
-            tput cuu 5
-            tput cub "$(tput cols)"
-            tput el
-            printf "  ${dim}${up_arrow}${normal}"
-            tput cud1
-            tput cub "$(tput cols)"
-            tput el
-            print_checkbox_line_arrow $((_current_index))
-            for I in 1 2 3 4; do
-                tput cud1
-                tput cub "$(tput cols)"
-                tput el
-                print_checkbox_line $((_current_index+I))
-            done
-            tput cud1
-            tput cub "$(tput cols)"
-            tput el
-            printf "  ${cyan}${down_arrow}${normal}"
-            tput cuu 5
-        else
-            _current_index=$((_current_index+1))
-            tput cuu 5
-            tput cub "$(tput cols)"
-            tput el
-            printf "  ${cyan}${up_arrow}${normal}"
-            for I in 4 3 2 1; do
-                tput cud1
-                tput cub "$(tput cols)"
-                tput el
-                print_checkbox_line $((_current_index-I))
-            done
-            tput cud1
-            tput cub "$(tput cols)"
-            tput el
-            print_checkbox_line_arrow $((_current_index))
-            if [ $_current_index = $((${#_checkbox_list[@]}-1)) ]; then
-                tput cud1
-                tput cub "$(tput cols)"
-                tput el
-                printf "  ${dim}${down_arrow}${normal}"
-                tput cuu1
-            fi
-        fi
-    fi
-}
-
-on_checkbox_input_enter() {
-    remove_checkbox_instructions
-    local OLD_IFS
-    OLD_IFS=$IFS
-    _checkbox_selected_indices=()
-    _checkbox_selected_options=()
-    IFS=$'\n'
-
-    for i in $(gen_index ${#_checkbox_list[@]}); do
-        if [ "${_checkbox_selected[$i]}" = true ]; then
-            _checkbox_selected_indices+=($i)
-            _checkbox_selected_options+=("${_checkbox_list[$i]}")
+    # Find the length of the longest option to set the dialog width.
+    for OPTION in "${TRIMMED_OPTIONS[@]}"; do
+        if [ "${#OPTION}" -gt "$DIALOG_WIDTH" ]; then
+            DIALOG_WIDTH=${#OPTION}
         fi
     done
 
-    if (( ${#_checkbox_list[@]} <= 5 )); then
-        tput cud $((${#_checkbox_list[@]}-${_current_index}))
-        tput cub "$(tput cols)"
-        for i in $(seq $((${#_checkbox_list[@]}+1))); do
-            tput el1
-            tput el
-            tput cuu1
-        done
-    else
-        tput cud $((6-${_current_row}))
-        tput cub "$(tput cols)"
-        for i in $(seq 8); do
-            tput el1
-            tput el
-            tput cuu1
-        done
-    fi
-    tput cub "$(tput cols)"
+    # Apply the offset value to the dialog width.
+    DIALOG_WIDTH=$((DIALOG_WIDTH + MNU_OPTION_WIDTH_OFFSET))
 
-    tput cuf $((${#prompt}+3))
-    printf "${cyan}$(join _checkbox_selected_options)${normal}"
-    tput el
-
-    tput cud1
-    tput cub "$(tput cols)"
-    tput el
-
-    _break_keypress=true
-    IFS=$OLD_IFS
-}
-
-on_checkbox_input_space() {
-    #remove_checkbox_instructions
-    tput cub "$(tput cols)"
-    tput el
-    if [ "${_checkbox_selected[$_current_index]}" = true ]; then
-        _checkbox_selected[$_current_index]=false
-    else
-        _checkbox_selected[$_current_index]=true
+    # Adjust the dialog width again if the dialog text is longer.
+    if [ "$DIALOG_WIDTH" -lt $((${#DIALOG_TEXT} + TEXT_WIDTH_OFFSET)) ]; then
+        DIALOG_WIDTH="$((${#DIALOG_TEXT} + TEXT_WIDTH_OFFSET))"
     fi
 
-    print_checkbox_line_arrow $_current_index
-}
-
-remove_checkbox_instructions() {
-    if [ $_first_keystroke = true ]; then
-        tput cuu $((${_current_index}+1))
-        tput cub "$(tput cols)"
-        tput cuf $((${#prompt}+3))
-        tput el
-        tput cud $((${_current_index}+1))
-        _first_keystroke=false
-    fi
-}
-
-# for vim movements
-on_checkbox_input_ascii() {
-    local key=$1
-    case $key in
-        "j" ) on_checkbox_input_down ;;
-        "k" ) on_checkbox_input_up ;;
-    esac
-}
-
-_checkbox_input() {
-    local i
-    local j
-    prompt=$1
-    eval _checkbox_list=( '"${'${2}'[@]}"' )
-    _current_index=0
-    _current_row=0
-    _first_keystroke=true
-
-    trap control_c SIGINT EXIT
-
-    stty -echo
-    tput civis
-
-    print "${normal}${green}?${normal} ${bold}${prompt}${normal} ${dim}(Press <space> to select, <enter> to finalize)${normal}"
-
-    for i in $(gen_index ${#_checkbox_list[@]}); do
-        _checkbox_selected[$i]=false
+    # Pad option text with trailing white space to left-align all options.
+    for OPTION in "${TRIMMED_OPTIONS[@]}"; do
+        local PAD_LENGTH=$((DIALOG_WIDTH - MNU_OPTION_WIDTH_OFFSET - ${#OPTION}))
+        # shellcheck disable=SC2155
+        local PADDED_OPTION="${OPTION}$(printf '%*s' $PAD_LENGTH)"
+        PADDED_OPTIONS+=("$PADDED_OPTION")
     done
 
-    if [ -n "$3" ]; then
-        eval _selected_indices=( '"${'${3}'[@]}"' )
-        for i in ${_selected_indices[@]}; do
-            _checkbox_selected[$i]=true
-        done
-    fi
+    # Convert options into the appropriate format for a 'dialog' menu.
+    for PADDED_OPTION in "${PADDED_OPTIONS[@]}"; do
+        DIALOG_OPTIONS+=("$PADDED_OPTION" "")
+    done
 
-    if (( ${#_checkbox_list[@]} > 5 )); then
-        tput cub "$(tput cols)"
-        print "  ${dim}${up_arrow}${normal}"
-    fi
+    # Store the number of options.
+    OPTION_NUMBER="${#INPUT_OPTIONS[@]}"
 
-    for i in $(gen_index ${#_checkbox_list[@]}); do
-        tput cub "$(tput cols)"
-        if [ $i = 0 ]; then
-            print_checkbox_line_arrow $i
-        else
-            print_checkbox_line $i
-        fi
-        print ""
-        tput el
-        if (( $i > 3 )) && (( ${#_checkbox_list[@]} > 5 )); then
-            print "  ${cyan}${down_arrow}${normal}"
-            break
+    # Produce checkbox.
+    # The output string contains options delimited by spaces.
+    # Each option is enclosed in double quotes within the output string.
+    # For example: '"Option 1  " "The  Second Option   " "    Option Number 3 "'
+    SELECTED_OPTIONS_STRING=$(dialog \
+        --keep-tite \
+        --clear \
+        --no-shadow \
+        --menu \
+        "$DIALOG_TEXT" \
+        "$DIALOG_HEIGHT" \
+        "$DIALOG_WIDTH" \
+        "$OPTION_NUMBER" \
+        "${DIALOG_OPTIONS[@]}" \
+        2>&1 >/dev/tty) || exit 0
+
+    # Remove white space added previously.
+    RETURN_STRING=$(echo "$SELECTED_OPTIONS_STRING" |
+        sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
+
+    # Remove escapes (introduced by 'dialog' if options have parentheses).
+    RETURN_STRING="${RETURN_STRING//\\/}" # ${variable//search/replace}
+
+    # Display question and response.
+    echo -e "${ANSI_LIGHT_GREEN}Q) ${ANSI_CLEAR_TEXT}${ANSI_LIGHT_BLUE}${DIALOG_TEXT}${ANSI_CLEAR_TEXT} --> ${ANSI_LIGHT_GREEN}${RETURN_STRING}${ANSI_CLEAR_TEXT}"
+}
+
+function inqChkBx() {
+    # DECLARE VARIABLES.
+    # Variables created from function arguments:
+    declare DIALOG_TEXT="$1"                      # Dialog heading.
+    declare INPUT_OPTIONS_VAR="$2"                # Input variable name.
+    declare RETURN_ARRAY_VAR="$3"                 # Output variable name.
+    declare -n INPUT_OPTIONS="$INPUT_OPTIONS_VAR" # Input array nameref.
+    declare -n RETURN_ARRAY="$RETURN_ARRAY_VAR"   # Output array nameref.
+    # Note: namerefs allow changes made through the nameref to affect the
+    # referenced variable, even across different scopes like function calls.
+
+    # Other variables:
+    declare TRIMMED_OPTIONS=()         # Input array post-trimming.
+    declare PADDED_OPTIONS=()          # Input array with extra white space.
+    declare DIALOG_OPTIONS=()          # Input array for options dialog.
+    declare DIALOG_WIDTH=0             # Width of dialog window.
+    declare OPTION_NUMBER=0            # Number of options in dialog window.
+    declare SELECTED_OPTIONS_STRING="" # Output value from dialog window.
+
+    # MAIN LOGIC.
+    # Trim leading and trailing white space for each option.
+    for OPTION in "${INPUT_OPTIONS[@]}"; do
+        TRIMMED_OPTIONS+=("$(echo "$OPTION" | sed 's/^[ \t]*//;s/[ \t]*$//')")
+    done
+
+    # Find the length of the longest option to set the dialog width.
+    for OPTION in "${TRIMMED_OPTIONS[@]}"; do
+        if [ "${#OPTION}" -gt "$DIALOG_WIDTH" ]; then
+            DIALOG_WIDTH=${#OPTION}
         fi
     done
 
-    for j in $(gen_index ${#_checkbox_list[@]}); do
-        tput cuu1
-        if (( $j > 4 )); then
-            break
-        fi
+    # Apply the offset value to the dialog width.
+    DIALOG_WIDTH=$((DIALOG_WIDTH + CHK_OPTION_WIDTH_OFFSET))
+
+    # Adjust the dialog width again if the dialog text is longer.
+    if [ "$DIALOG_WIDTH" -lt $((${#DIALOG_TEXT} + TEXT_WIDTH_OFFSET)) ]; then
+        DIALOG_WIDTH="$((${#DIALOG_TEXT} + TEXT_WIDTH_OFFSET))"
+    fi
+
+    # Pad option text with trailing white space to left-align all options.
+    for OPTION in "${TRIMMED_OPTIONS[@]}"; do
+        local PAD_LENGTH=$((DIALOG_WIDTH - CHK_OPTION_WIDTH_OFFSET - ${#OPTION}))
+        # shellcheck disable=SC2155
+        local PADDED_OPTION="${OPTION}$(printf '%*s' $PAD_LENGTH)"
+        PADDED_OPTIONS+=("$PADDED_OPTION")
     done
 
-    on_keypress on_checkbox_input_up on_checkbox_input_down on_checkbox_input_space on_checkbox_input_enter on_default on_default on_checkbox_input_ascii
-}
-
-checkbox_input() {
-    _checkbox_input "$1" "$2"
-    _checkbox_input_output_var_name=$3
-    select_indices _checkbox_list _checkbox_selected_indices $_checkbox_input_output_var_name
-
-    unset _checkbox_list
-    unset _break_keypress
-    unset _first_keystroke
-    unset _current_index
-    unset _checkbox_input_output_var_name
-    unset _checkbox_selected_indices
-    unset _checkbox_selected_options
-
-    cleanup
-}
-
-checkbox_input_indices() {
-    _checkbox_input "$1" "$2" "$3"
-    _checkbox_input_output_var_name=$3
-
-    eval $_checkbox_input_output_var_name\=\(\)
-    for i in $(gen_index ${#_checkbox_selected_indices[@]}); do
-        eval $_checkbox_input_output_var_name\+\=\(${_checkbox_selected_indices[$i]}\)
+    # Convert options into the appropriate format for a 'dialog' checkbox.
+    for PADDED_OPTION in "${PADDED_OPTIONS[@]}"; do
+        DIALOG_OPTIONS+=("$PADDED_OPTION" "" off)
     done
 
-    unset _checkbox_list
-    unset _break_keypress
-    unset _first_keystroke
-    unset _current_index
-    unset _checkbox_input_output_var_name
-    unset _checkbox_selected_indices
-    unset _checkbox_selected_options
+    # Store the number of options.
+    OPTION_NUMBER="${#INPUT_OPTIONS[@]}"
 
-    cleanup
-}
+    # Produce checkbox.
+    # The output string contains options delimited by spaces.
+    # Each option is enclosed in double quotes within the output string.
+    # For example: '"Option 1  " "The  Second Option   " "    Option Number 3 "'
+    SELECTED_OPTIONS_STRING=$(dialog \
+        --keep-tite \
+        --clear \
+        --no-shadow \
+        --checklist \
+        "$DIALOG_TEXT" \
+        "$DIALOG_HEIGHT" \
+        "$DIALOG_WIDTH" \
+        "$OPTION_NUMBER" \
+        "${DIALOG_OPTIONS[@]}" \
+        2>&1 >/dev/tty) || exit 0
 
+    # Convert the output string into an array.
+    # shellcheck disable=SC2001
+    while IFS= read -r LINE; do
+        LINE="${LINE/#\"/}"     # Remove leading double quote.
+        LINE="${LINE/%\"/}"     # Remove trailing double quote.
+        RETURN_ARRAY+=("$LINE") # Add to array.
+    done < <(echo "$SELECTED_OPTIONS_STRING" | sed 's/\" \"/\"\n\"/g')
 
+    # Final modifications.
+    for ((i = 0; i < ${#RETURN_ARRAY[@]}; i++)); do
+        # Remove white space added previously.
+        # shellcheck disable=SC2001
+        RETURN_ARRAY[i]=$(echo "${RETURN_ARRAY[i]}" |
+            sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
 
-
-on_list_input_up() {
-    remove_list_instructions
-    tput cub "$(tput cols)"
-
-    printf "  ${_list_options[$_list_selected_index]}"
-    tput el
-
-    if [ $_list_selected_index = 0 ]; then
-        _list_selected_index=$((${#_list_options[@]}-1))
-        tput cud $((${#_list_options[@]}-1))
-        tput cub "$(tput cols)"
-    else
-        _list_selected_index=$((_list_selected_index-1))
-
-        tput cuu1
-        tput cub "$(tput cols)"
-        tput el
-    fi
-
-    printf "${cyan}${arrow} %s ${normal}" "${_list_options[$_list_selected_index]}"
-}
-
-on_list_input_down() {
-    remove_list_instructions
-    tput cub "$(tput cols)"
-
-    printf "  ${_list_options[$_list_selected_index]}"
-    tput el
-
-    if [ $_list_selected_index = $((${#_list_options[@]}-1)) ]; then
-        _list_selected_index=0
-        tput cuu $((${#_list_options[@]}-1))
-        tput cub "$(tput cols)"
-    else
-        _list_selected_index=$((_list_selected_index+1))
-        tput cud1
-        tput cub "$(tput cols)"
-        tput el
-    fi
-    printf "${cyan}${arrow} %s ${normal}" "${_list_options[$_list_selected_index]}"
-}
-
-on_list_input_enter_space() {
-    local OLD_IFS
-    OLD_IFS=$IFS
-    IFS=$'\n'
-
-    tput cud $((${#_list_options[@]}-${_list_selected_index}))
-    tput cub "$(tput cols)"
-
-    for i in $(seq $((${#_list_options[@]}+1))); do
-        tput el1
-        tput el
-        tput cuu1
+        # Remove escapes (introduced by 'dialog' if options have parentheses).
+        RETURN_ARRAY[i]=${RETURN_ARRAY[i]//\\/} # ${variable//search/replace}
     done
-    tput cub "$(tput cols)"
-
-    tput cuf $((${#prompt}+3))
-    printf "${cyan}${_list_options[$_list_selected_index]}${normal}"
-    tput el
-
-    tput cud1
-    tput cub "$(tput cols)"
-    tput el
-
-    _break_keypress=true
-    IFS=$OLD_IFS
-}
-
-remove_list_instructions() {
-    if [ $_first_keystroke = true ]; then
-        tput cuu $((${_list_selected_index}+1))
-        tput cub "$(tput cols)"
-        tput cuf $((${#prompt}+3))
-        tput el
-        tput cud $((${_list_selected_index}+1))
-        _first_keystroke=false
-    fi
-}
-
-_list_input() {
-    local i
-    local j
-    prompt=$1
-    eval _list_options=( '"${'${2}'[@]}"' )
-
-    _list_selected_index=0
-    _first_keystroke=true
-
-    trap control_c SIGINT EXIT
-
-    stty -echo
-    tput civis
-
-    print "${normal}${green}?${normal} ${bold}${prompt}${normal} ${dim}(Use arrow keys)${normal}"
-
-    for i in $(gen_index ${#_list_options[@]}); do
-        tput cub "$(tput cols)"
-        if [ $i = 0 ]; then
-            print "${cyan}${arrow} ${_list_options[$i]} ${normal}"
-        else
-            print "  ${_list_options[$i]}"
-        fi
-        tput el
-    done
-
-    for j in $(gen_index ${#_list_options[@]}); do
-        tput cuu1
-    done
-
-    on_keypress on_list_input_up on_list_input_down on_list_input_enter_space on_list_input_enter_space
-
-}
-
-
-list_input() {
-    _list_input "$1" "$2"
-    local var_name=$3
-    eval $var_name=\'"${_list_options[$_list_selected_index]}"\'
-    unset _list_selected_index
-    unset _list_options
-    unset _break_keypress
-    unset _first_keystroke
-
-    cleanup
-}
-
-list_input_index() {
-    _list_input "$1" "$2"
-    local var_name=$3
-    eval $var_name=\'"$_list_selected_index"\'
-    unset _list_selected_index
-    unset _list_options
-    unset _break_keypress
-    unset _first_keystroke
-
-    cleanup
-}
-
-
-
-
-on_text_input_left() {
-    remove_regex_failed
-    if [ $_current_pos -gt 0 ]; then
-        tput cub1
-        _current_pos=$(($_current_pos-1))
-    fi
-}
-
-on_text_input_right() {
-    remove_regex_failed
-    if [ $_current_pos -lt ${#_text_input} ]; then
-        tput cuf1
-        _current_pos=$(($_current_pos+1))
-    fi
-}
-
-on_text_input_enter() {
-    remove_regex_failed
-
-    if [[ "$_text_input" =~ $_text_input_regex && "$(eval $_text_input_validator "$_text_input")" = true ]]; then
-        tput cub "$(tput cols)"
-        tput cuf $((${#_read_prompt}-19))
-        printf "${cyan}${_text_input}${normal}"
-        tput el
-        tput cud1
-        tput cub "$(tput cols)"
-        tput el
-        eval $var_name=\'"${_text_input}"\'
-        _break_keypress=true
-    else
-        _text_input_regex_failed=true
-        tput civis
-        tput cud1
-        tput cub "$(tput cols)"
-        tput el
-        printf "${red}>>${normal} $_text_input_regex_failed_msg"
-        tput cuu1
-        tput cub "$(tput cols)"
-        tput cuf $((${#_read_prompt}-19))
-        tput el
-        _text_input=""
-        _current_pos=0
-        tput cnorm
-    fi
-}
-
-on_text_input_ascii() {
-    remove_regex_failed
-    local c=$1
-
-    if [ "$c" = '' ]; then
-        c=' '
-    fi
-
-    local rest="${_text_input:$_current_pos}"
-    _text_input="${_text_input:0:$_current_pos}$c$rest"
-    _current_pos=$(($_current_pos+1))
-
-    tput civis
-    printf "$c$rest"
-    tput el
-    if [ ${#rest} -gt 0 ]; then
-        tput cub ${#rest}
-    fi
-    tput cnorm
-}
-
-on_text_input_backspace() {
-    remove_regex_failed
-    if [ $_current_pos -gt 0 ]; then
-        local start="${_text_input:0:$(($_current_pos-1))}"
-        local rest="${_text_input:$_current_pos}"
-        _current_pos=$(($_current_pos-1))
-        tput cub 1
-        tput el
-        tput sc
-        printf "$rest"
-        tput rc
-        _text_input="$start$rest"
-    fi
-}
-
-remove_regex_failed() {
-    if [ $_text_input_regex_failed = true ]; then
-        _text_input_regex_failed=false
-        tput sc
-        tput cud1
-        tput el1
-        tput el
-        tput rc
-    fi
-}
-
-text_input_default_validator() {
-    echo true;
-}
-
-text_input() {
-    local prompt=$1
-    local var_name=$2
-    local _text_input_regex="${3:-"\.+"}"
-    local _text_input_regex_failed_msg=${4:-"Input validation failed"}
-    local _text_input_validator=${5:-text_input_default_validator}
-    local _read_prompt_start=$'\e[32m?\e[39m\e[1m'
-    local _read_prompt_end=$'\e[22m'
-    local _read_prompt="$( echo "$_read_prompt_start ${prompt} $_read_prompt_end")"
-    local _current_pos=0
-    local _text_input_regex_failed=false
-    local _text_input=""
-    printf "$_read_prompt"
-
-
-    trap control_c SIGINT EXIT
-
-    stty -echo
-    tput cnorm
-
-    on_keypress on_default on_default on_text_input_ascii on_text_input_enter on_text_input_left on_text_input_right on_text_input_ascii on_text_input_backspace
-    eval $var_name=\'"${_text_input}"\'
-
-    cleanup
-}
-
-# =============================================================
-
-function menuFromCmd() {
-    local mLOCALRESULT=$1
-    local mRESULT=''
-    read -r -a ARRAY <<< $3
-    list_input "$2" ARRAY mRESULT
-    eval $mLOCALRESULT="'$mRESULT'"
-}
-
-function menuFromArr() {
-    local mLOCALRESULT=$1
-    shift
-    local PROMPT=$1
-    shift
-    local ARRAY=("$@")
-    list_input "$PROMPT" ARRAY mRESULT
-    eval $mLOCALRESULT="'$mRESULT'"
-}
-
-function multiFromArr() {
-    local mLOCALRESULT=$1
-    shift
-    local PROMPT=$1
-    shift
-    local ARRAY=("$@")
-    checkbox_input "$PROMPT" ARRAY mRESULT
-    eval $mLOCALRESULT="'$mRESULT'"
 }
