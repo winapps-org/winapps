@@ -1,14 +1,14 @@
 <svg version="1.2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2048 2048" width="2048" height="2048">
-	<title>POO</title>
-	<defs>
-		<linearGradient id="g1" x2="1" gradientUnits="userSpaceOnUse" gradientTransform="matrix(-2048,-2048,2048,-2048,2048,2048)">
-			<stop offset="0" stop-color="#067cd6"/>
-			<stop offset=".4" stop-color="#0f85da"/>
-			<stop offset="1" stop-color="#7adcff"/>
-		</linearGradient>
-	</defs>
-	<style>
-		.s0 { fill: url(#g1) } 
-	</style>
-	<path id="Windows" fill-rule="evenodd" class="s0" d="m228 0h746v974h-974v-746c0-125.9 102.1-228 228-228zm746 2048h-746c-125.9 0-228-102.1-228-228v-746h974zm846-2048c125.9 0 228 102.1 228 228v746h-974v-974zm228 1820c0 125.9-102.1 228-228 228h-746v-974h974z"/>
+  <title>POO</title>
+  <defs>
+    <linearGradient id="g1" x2="1" gradientUnits="userSpaceOnUse" gradientTransform="matrix(-2048,-2048,2048,-2048,2048,2048)">
+      <stop offset="0" stop-color="#067cd6"/>
+      <stop offset=".4" stop-color="#0f85da"/>
+      <stop offset="1" stop-color="#7adcff"/>
+    </linearGradient>
+  </defs>
+  <style>
+    .s0 { fill: url(#g1) }
+  </style>
+  <path id="Windows" fill-rule="evenodd" class="s0" d="m228 0h746v974h-974v-746c0-125.9 102.1-228 228-228zm746 2048h-746c-125.9 0-228-102.1-228-228v-746h974zm846-2048c125.9 0 228 102.1 228 228v746h-974v-974zm228 1820c0 125.9-102.1 228-228 228h-746v-974h974z"/>
 </svg>
