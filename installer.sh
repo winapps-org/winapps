@@ -464,13 +464,13 @@ function waCheckDependencies() {
 		if command -v xfreerdp &>/dev/null; then
 			# Check FreeRDP major version is 3 or greater.
 			FREERDP_MAJOR_VERSION=$(xfreerdp --version | head -n 1 | grep -o -m 1 '\b[0-9]\S*' | cut -d'.' -f1)
-			if [[ $FREERDP_MAJOR_VERSION =~ ^[0-9]+$ ]] && (( $FREERDP_MAJOR_VERSION >= 3 )); then
+			if [[ $FREERDP_MAJOR_VERSION =~ ^[0-9]+$ ]] && ((FREERDP_MAJOR_VERSION >= 3)); then
 				FREERDP_COMMAND="xfreerdp"
 			fi
 		elif command -v xfreerdp3 &>/dev/null; then
 			# Check FreeRDP major version is 3 or greater.
 			FREERDP_MAJOR_VERSION=$(xfreerdp3 --version | head -n 1 | grep -o -m 1 '\b[0-9]\S*' | cut -d'.' -f1)
-			if [[ $FREERDP_MAJOR_VERSION =~ ^[0-9]+$ ]] && (( $FREERDP_MAJOR_VERSION >= 3 )); then
+			if [[ $FREERDP_MAJOR_VERSION =~ ^[0-9]+$ ]] && ((FREERDP_MAJOR_VERSION >= 3)); then
 				FREERDP_COMMAND="xfreerdp3"
 			fi
 		fi
@@ -481,7 +481,7 @@ function waCheckDependencies() {
 				if flatpak list --columns=application | grep -q "^com.freerdp.FreeRDP$"; then
 					# Check FreeRDP major version is 3 or greater.
 					FREERDP_MAJOR_VERSION=$(flatpak list --columns=application,version | grep "^com.freerdp.FreeRDP" | awk '{print $2}' | cut -d'.' -f1)
-					if [[ $FREERDP_MAJOR_VERSION =~ ^[0-9]+$ ]] && (( $FREERDP_MAJOR_VERSION >= 3 )); then
+					if [[ $FREERDP_MAJOR_VERSION =~ ^[0-9]+$ ]] && ((FREERDP_MAJOR_VERSION >= 3)); then
 						FREERDP_COMMAND="flatpak run --command=xfreerdp com.freerdp.FreeRDP"
 					fi
 				fi
