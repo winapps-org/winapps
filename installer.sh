@@ -215,7 +215,7 @@ function waCheckInput() {
 	else
 		# Install vs. uninstall?
 		OPTIONS=("Install" "Uninstall")
-		inqMenu "Install or uninstall Win#110Apps?" OPTIONS SELECTED_OPTION
+		inqMenu "Install or uninstall WinApps?" OPTIONS SELECTED_OPTION
 
 		# Set flags.
 		if [[ $SELECTED_OPTION == "Uninstall" ]]; then
