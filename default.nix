@@ -11,4 +11,6 @@ in
 
     nativeBuildInputs = [pkgs.pkg-config];
     PKG_CONFIG_PATH = "${pkgs.openssl.dev}/lib/pkgconfig";
+
+    propagatedBuildInputs = with pkgs; [freerdp3];
   }
