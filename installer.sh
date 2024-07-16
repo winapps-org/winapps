@@ -424,6 +424,9 @@ function waLoadConfig() {
 # Name: 'waCheckDependencies'
 # Role: Terminate script if dependencies are missing.
 function waCheckDependencies() {
+	# Declare variables.
+	local FREERDP_MAJOR_VERSION="" # Stores the major version of the installed copy of FreeRDP.
+
 	# Print feedback.
 	echo -n "Checking whether all dependencies are installed... "
 
@@ -457,14 +460,36 @@ function waCheckDependencies() {
 	# 'FreeRDP' (Version 3).
 	# Attempt to set a FreeRDP command if the command variable is empty.
 	if [ -z "$FREERDP_COMMAND" ]; then
+		# Check common commands used to launch FreeRDP.
 		if command -v xfreerdp &>/dev/null; then
-			FREERDP_COMMAND="xfreerdp"
+			# Check FreeRDP major version is 3 or greater.
+			FREERDP_MAJOR_VERSION=$(xfreerdp --version | head -n 1 | grep -o -m 1 '\b[0-9]\S*' | cut -d'.' -f1)
+			if [[ $FREERDP_MAJOR_VERSION =~ ^[0-9]+$ ]] && (( $FREERDP_MAJOR_VERSION >= 3 )); then
+				FREERDP_COMMAND="xfreerdp"
+			fi
 		elif command -v xfreerdp3 &>/dev/null; then
-			FREERDP_COMMAND="xfreerdp3"
+			# Check FreeRDP major version is 3 or greater.
+			FREERDP_MAJOR_VERSION=$(xfreerdp3 --version | head -n 1 | grep -o -m 1 '\b[0-9]\S*' | cut -d'.' -f1)
+			if [[ $FREERDP_MAJOR_VERSION =~ ^[0-9]+$ ]] && (( $FREERDP_MAJOR_VERSION >= 3 )); then
+				FREERDP_COMMAND="xfreerdp3"
+			fi
+		fi
+
+		# Check for FreeRDP flatpak as a fallback option.
+		if [ -z "$FREERDP_COMMAND" ]; then
+			if command -v flatpak &>/dev/null; then
+				if flatpak list --columns=application | grep -q "^com.freerdp.FreeRDP$"; then
+					# Check FreeRDP major version is 3 or greater.
+					FREERDP_MAJOR_VERSION=$(flatpak list --columns=application,version | grep "^com.freerdp.FreeRDP" | awk '{print $2}' | cut -d'.' -f1)
+					if [[ $FREERDP_MAJOR_VERSION =~ ^[0-9]+$ ]] && (( $FREERDP_MAJOR_VERSION >= 3 )); then
+						FREERDP_COMMAND="flatpak run --command=xfreerdp com.freerdp.FreeRDP"
+					fi
+				fi
+			fi
 		fi
 	fi
 
-	if ! command -v "$FREERDP_COMMAND" &>/dev/null; then
+	if ! command -v "$FREERDP_COMMAND" &>/dev/null && [ "$FREERDP_COMMAND" != "flatpak run --command=xfreerdp com.freerdp.FreeRDP" ]; then
 		# Complete the previous line.
 		echo -e "${FAIL_TEXT}Failed!${CLEAR_TEXT}\n"
 
@@ -472,7 +497,7 @@ function waCheckDependencies() {
 		echo -e "${ERROR_TEXT}ERROR:${CLEAR_TEXT} ${BOLD_TEXT}MISSING DEPENDENCIES.${CLEAR_TEXT}"
 
 		# Display the error details.
-		echo -e "${INFO_TEXT}Please install 'FreeRDP' to proceed.${CLEAR_TEXT}"
+		echo -e "${INFO_TEXT}Please install 'FreeRDP' version 3 to proceed.${CLEAR_TEXT}"
 
 		# Display the suggested action(s).
 		echo "--------------------------------------------------------------------------------"
@@ -484,6 +509,11 @@ function waCheckDependencies() {
 		echo -e "  ${COMMAND_TEXT}sudo pacman -S freerdp${CLEAR_TEXT}"
 		echo "Gentoo Linux systems:"
 		echo -e "  ${COMMAND_TEXT}sudo emerge --ask net-misc/freerdp${CLEAR_TEXT}"
+		echo ""
+		echo "You can also install FreeRDP as a Flatpak."
+		echo "Install Flatpak, add the Flathub repository and then install FreeRDP:"
+		echo -e "${COMMAND_TEXT}flatpak install flathub com.freerdp.FreeRDP${CLEAR_TEXT}"
+		echo -e "${COMMAND_TEST}sudo flatpak override --filesystem=home com.freerdp.FreeRDP${CLEAR_TEXT}"
 		echo "--------------------------------------------------------------------------------"
 
 		# Terminate the script.
@@ -712,7 +742,7 @@ function waCheckRDPAccess() {
 	# Note: The following final line is expected within the log, indicating successful execution of the 'tsdiscon' command and termination of the RDP session.
 	# [INFO][com.freerdp.core] - [rdp_print_errinfo]: ERRINFO_LOGOFF_BY_USER (0x0000000C):The disconnection was initiated by the user logging off their session on the server.
 	# shellcheck disable=SC2140,SC2027 # Disable warnings regarding unquoted strings.
-	"$FREERDP_COMMAND" \
+	$FREERDP_COMMAND \
 		/cert:tofu \
 		/d:"$RDP_DOMAIN" \
 		/u:"$RDP_USER" \
@@ -840,7 +870,7 @@ function waFindInstalled() {
 	# Note: The following final line is expected within the log, indicating successful execution of the 'tsdiscon' command and termination of the RDP session.
 	# [INFO][com.freerdp.core] - [rdp_print_errinfo]: ERRINFO_LOGOFF_BY_USER (0x0000000C):The disconnection was initiated by the user logging off their session on the server.
 	# shellcheck disable=SC2140,SC2027 # Disable warnings regarding unquoted strings.
-	"$FREERDP_COMMAND" \
+	$FREERDP_COMMAND \
 		/cert:tofu \
 		/d:"$RDP_DOMAIN" \
 		/u:"$RDP_USER" \
