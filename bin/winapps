@@ -120,7 +120,6 @@ elif [ "$1" = "manual" ]; then
 		"/app:program:${2}"
 		"/v:${RDP_IP}"
 	)
-	echo "${COMMAND[@]}"
 	# Run the command in the background, redirecting both stdout and stderr to /dev/null
 	"${COMMAND[@]}" 1>/dev/null 2>&1 &
 elif [ "$1" != "install" ]; then
