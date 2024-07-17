@@ -24,10 +24,11 @@ readonly EC_NOT_IN_GROUP="7"     # Current user not in group 'libvirt' and/or 'k
 readonly EC_VM_OFF="8"           # Windows VM powered off.
 readonly EC_VM_PAUSED="9"        # Windows VM paused.
 readonly EC_VM_ABSENT="10"       # Windows VM does not exist.
-readonly EC_VM_NO_IP="11"        # Windows VM does not have an IP address.
-readonly EC_VM_BAD_PORT="12"     # Windows VM is unreachable via RDP_PORT.
-readonly EC_RDP_FAIL="13"        # FreeRDP failed to establish a connection with the Windows VM.
-readonly EC_APPQUERY_FAIL="14"   # Failed to query the Windows VM for installed applications.
+readonly EC_CONTAINER_OFF="11"   # Docker container is not running.
+readonly EC_VM_NO_IP="12"        # Windows VM does not have an IP address.
+readonly EC_VM_BAD_PORT="13"     # Windows VM is unreachable via RDP_PORT.
+readonly EC_RDP_FAIL="14"        # FreeRDP failed to establish a connection with the Windows VM.
+readonly EC_APPQUERY_FAIL="15"   # Failed to query the Windows VM for installed applications.
 
 # PATHS
 # 'BIN'
@@ -66,12 +67,14 @@ readonly CONFIG_PATH="${HOME}/.config/winapps/winapps.conf" # UNIX path to the W
 readonly INQUIRER_PATH="./install/inquirer.sh" # UNIX path to the 'inquirer' script, which is used to produce selection menus.
 
 # REMOTE DESKTOP CONFIGURATION
-readonly VM_NAME="RDPWindows" # Name of the Windows VM.
-readonly RDP_PORT=3389        # Port used for RDP on the Windows VM.
+readonly VM_NAME="RDPWindows"  # Name of the Windows VM.
+readonly RDP_PORT=3389         # Port used for RDP on the Windows VM.
+readonly DOCKER_IP="127.0.0.1" # Localhost.
 readonly WINAPPS_CONFIG='RDP_USER="MyWindowsUser"
 RDP_PASS="MyWindowsPassword"
 #RDP_DOMAIN="MYDOMAIN"
 #RDP_IP="192.168.123.111"
+#WAFLAVOR="docker"
 #RDP_SCALE=100
 #RDP_FLAGS=""
 #MULTIMON="true"
@@ -90,6 +93,7 @@ RDP_USER=""        # Imported variable.
 RDP_PASS=""        # Imported variable.
 RDP_DOMAIN=""      # Imported variable.
 RDP_IP=""          # Imported variable.
+WAFLAVOR="docker"  # Imported variable.
 RDP_SCALE=100      # Imported variable.
 RDP_FLAGS=""       # Imported variable.
 MULTIMON="false"   # Imported variable.
@@ -384,6 +388,34 @@ function waCheckExistingInstall() {
     echo -e "${DONE_TEXT}Done!${CLEAR_TEXT}"
 }
 
+# Name: 'waFixScale'
+# Role: Since FreeRDP only supports '/scale' values of 100, 140 or 180, find the closest supported argument to the user's configuration.
+function waFixScale() {
+    # Define variables.
+    local USER_CONFIG_SCALE="$1"
+    local CLOSEST_SCALE=100
+    local VALID_SCALE_1=100
+    local VALID_SCALE_2=140
+    local VALID_SCALE_3=180
+
+    # Calculate the absolute differences.
+    local DIFF_1=$(( USER_CONFIG_SCALE > VALID_SCALE_1 ? USER_CONFIG_SCALE - VALID_SCALE_1 : VALID_SCALE_1 - USER_CONFIG_SCALE ))
+    local DIFF_2=$(( USER_CONFIG_SCALE > VALID_SCALE_2 ? USER_CONFIG_SCALE - VALID_SCALE_2 : VALID_SCALE_2 - USER_CONFIG_SCALE ))
+    local DIFF_3=$(( USER_CONFIG_SCALE > VALID_SCALE_3 ? USER_CONFIG_SCALE - VALID_SCALE_3 : VALID_SCALE_3 - USER_CONFIG_SCALE ))
+
+    # Set the final scale to the valid scale value with the smallest absolute difference.
+    if (( DIFF_1 <= DIFF_2 && DIFF_1 <= DIFF_3 )); then
+        CLOSEST_SCALE="$VALID_SCALE_1"
+    elif (( DIFF_2 <= DIFF_1 && DIFF_2 <= DIFF_3 )); then
+        CLOSEST_SCALE="$VALID_SCALE_2"
+    else
+        CLOSEST_SCALE="$VALID_SCALE_3"
+    fi
+
+    # Return the final scale value.
+    echo "$CLOSEST_SCALE"
+}
+
 # Name: 'waLoadConfig'
 # Role: Loads settings specified within the WinApps configuration file.
 function waLoadConfig() {
@@ -463,13 +495,13 @@ function waCheckDependencies() {
         # Check common commands used to launch FreeRDP.
         if command -v xfreerdp &>/dev/null; then
             # Check FreeRDP major version is 3 or greater.
-            FREERDP_MAJOR_VERSION=$(xfreerdp --version | head -n 1 | grep -o -m 1 '\b[0-9]\S*' | cut -d'.' -f1)
+            FREERDP_MAJOR_VERSION=$(xfreerdp --version | head -n 1 | grep -o -m 1 '\b[0-9]\S*' | head -n 1 | cut -d'.' -f1)
             if [[ $FREERDP_MAJOR_VERSION =~ ^[0-9]+$ ]] && ((FREERDP_MAJOR_VERSION >= 3)); then
                 FREERDP_COMMAND="xfreerdp"
             fi
         elif command -v xfreerdp3 &>/dev/null; then
             # Check FreeRDP major version is 3 or greater.
-            FREERDP_MAJOR_VERSION=$(xfreerdp3 --version | head -n 1 | grep -o -m 1 '\b[0-9]\S*' | cut -d'.' -f1)
+            FREERDP_MAJOR_VERSION=$(xfreerdp3 --version | head -n 1 | grep -o -m 1 '\b[0-9]\S*' | head -n 1 | cut -d'.' -f1)
             if [[ $FREERDP_MAJOR_VERSION =~ ^[0-9]+$ ]] && ((FREERDP_MAJOR_VERSION >= 3)); then
                 FREERDP_COMMAND="xfreerdp3"
             fi
@@ -521,30 +553,51 @@ function waCheckDependencies() {
     fi
 
     # 'libvirt' / 'virt-manager'.
-    if ! command -v virsh &>/dev/null; then
-        # Complete the previous line.
-        echo -e "${FAIL_TEXT}Failed!${CLEAR_TEXT}\n"
+    if [ "$WAFLAVOR" = "libvirt" ]; then
+        if ! command -v virsh &>/dev/null; then
+            # Complete the previous line.
+            echo -e "${FAIL_TEXT}Failed!${CLEAR_TEXT}\n"
 
-        # Display the error type.
-        echo -e "${ERROR_TEXT}ERROR:${CLEAR_TEXT} ${BOLD_TEXT}MISSING DEPENDENCIES.${CLEAR_TEXT}"
+            # Display the error type.
+            echo -e "${ERROR_TEXT}ERROR:${CLEAR_TEXT} ${BOLD_TEXT}MISSING DEPENDENCIES.${CLEAR_TEXT}"
 
-        # Display the error details.
-        echo -e "${INFO_TEXT}Please install 'Virtual Machine Manager' to proceed.${CLEAR_TEXT}"
+            # Display the error details.
+            echo -e "${INFO_TEXT}Please install 'Virtual Machine Manager' to proceed.${CLEAR_TEXT}"
 
-        # Display the suggested action(s).
-        echo "--------------------------------------------------------------------------------"
-        echo "Debian/Ubuntu-based systems:"
-        echo -e "  ${COMMAND_TEXT}sudo apt install virt-manager${CLEAR_TEXT}"
-        echo "Red Hat/Fedora-based systems:"
-        echo -e "  ${COMMAND_TEXT}sudo dnf install virt-manager${CLEAR_TEXT}"
-        echo "Arch Linux systems:"
-        echo -e "  ${COMMAND_TEXT}sudo pacman -S virt-manager${CLEAR_TEXT}"
-        echo "Gentoo Linux systems:"
-        echo -e "  ${COMMAND_TEXT}sudo emerge --ask app-emulation/virt-manager${CLEAR_TEXT}"
-        echo "--------------------------------------------------------------------------------"
+            # Display the suggested action(s).
+            echo "--------------------------------------------------------------------------------"
+            echo "Debian/Ubuntu-based systems:"
+            echo -e "  ${COMMAND_TEXT}sudo apt install virt-manager${CLEAR_TEXT}"
+            echo "Red Hat/Fedora-based systems:"
+            echo -e "  ${COMMAND_TEXT}sudo dnf install virt-manager${CLEAR_TEXT}"
+            echo "Arch Linux systems:"
+            echo -e "  ${COMMAND_TEXT}sudo pacman -S virt-manager${CLEAR_TEXT}"
+            echo "Gentoo Linux systems:"
+            echo -e "  ${COMMAND_TEXT}sudo emerge --ask app-emulation/virt-manager${CLEAR_TEXT}"
+            echo "--------------------------------------------------------------------------------"
 
-        # Terminate the script.
-        return "$EC_MISSING_DEPS"
+            # Terminate the script.
+            return "$EC_MISSING_DEPS"
+        fi
+    elif [ "$WAFLAVOR" = "docker" ]; then
+        if ! command -v docker &>/dev/null; then
+            # Complete the previous line.
+            echo -e "${FAIL_TEXT}Failed!${CLEAR_TEXT}\n"
+
+            # Display the error type.
+            echo -e "${ERROR_TEXT}ERROR:${CLEAR_TEXT} ${BOLD_TEXT}MISSING DEPENDENCIES.${CLEAR_TEXT}"
+
+            # Display the error details.
+            echo -e "${INFO_TEXT}Please install 'Docker Desktop on Linux' to proceed.${CLEAR_TEXT}"
+
+            # Display the suggested action(s).
+            echo "--------------------------------------------------------------------------------"
+            echo "Please visit https://docs.docker.com/desktop/install/linux-install/ for more information."
+            echo "--------------------------------------------------------------------------------"
+
+            # Terminate the script.
+            return "$EC_MISSING_DEPS"
+        fi
     fi
 
     # Print feedback.
@@ -659,6 +712,45 @@ function waCheckVMRunning() {
     echo -e "${DONE_TEXT}Done!${CLEAR_TEXT}"
 }
 
+# Name: 'waCheckContainerRunning'
+# Role: Throw an error if the Docker container is not running.
+function waCheckContainerRunning() {
+    # Print feedback.
+    echo -n "Checking the status of the Windows Docker container/virtual machine... "
+
+    # Declare variables.
+    local CONTAINER_STATE=""
+
+    # Determine container state.
+    CONTAINER_STATE=$(docker ps --filter name="windows" --format '{{.Status}}')
+    CONTAINER_STATE=${CONTAINER_STATE,,} # Convert the string to lowercase.
+    CONTAINER_STATE=${CONTAINER_STATE%% *} # Extract the first word.
+
+    # Check container state.
+    if [[ "$CONTAINER_STATE" != "up" ]]; then
+        # Complete the previous line.
+        echo -e "${FAIL_TEXT}Failed!${CLEAR_TEXT}\n"
+
+        # Display the error type.
+        echo -e "${ERROR_TEXT}ERROR:${CLEAR_TEXT} ${BOLD_TEXT}DOCKER VM NOT RUNNING.${CLEAR_TEXT}"
+
+        # Display the error details.
+        echo -e "${INFO_TEXT}The Windows Docker container/virtual machine is not running.${CLEAR_TEXT}"
+
+        # Display the suggested action(s).
+        echo "--------------------------------------------------------------------------------"
+        echo "Please ensure the Windows Docker container/virtual machine is powered on:"
+        echo -e "${COMMAND_TEXT}docker compose start${CLEAR_TEXT}"
+        echo "--------------------------------------------------------------------------------"
+
+        # Terminate the script.
+        return "$EC_CONTAINER_OFF"
+    fi
+
+    # Print feedback.
+    echo -e "${DONE_TEXT}Done!${CLEAR_TEXT}"
+}
+
 # Name: 'waCheckVMContactable'
 # Role: Assesses whether the Windows VM can be contacted (prior to attempting a remote desktop connection).
 function waCheckVMContactable() {
@@ -721,7 +813,7 @@ function waCheckVMContactable() {
 # Role: Tests if the Windows VM is accessible via remote desktop.
 function waCheckRDPAccess() {
     # Print feedback.
-    echo -n "Establishing a Remote Desktop connection with the Windows VM... "
+    echo -n "Attempting to establish a Remote Desktop connection with the Windows VM... "
 
     # Declare variables.
     local FREERDP_LOG=""  # Stores the path of the FreeRDP log file.
@@ -788,7 +880,7 @@ function waCheckRDPAccess() {
         echo -e "${ERROR_TEXT}ERROR:${CLEAR_TEXT} ${BOLD_TEXT}REMOTE DESKTOP PROTOCOL FAILURE.${CLEAR_TEXT}"
 
         # Display the error details.
-        echo -e "${INFO_TEXT}FreeRDP failed to establish a connection with the Windows VM '${VM_NAME}'.${CLEAR_TEXT}"
+        echo -e "${INFO_TEXT}FreeRDP failed to establish a connection with the Windows VM.${CLEAR_TEXT}"
 
         # Display the suggested action(s).
         echo "--------------------------------------------------------------------------------"
@@ -796,10 +888,10 @@ function waCheckRDPAccess() {
         echo "Troubleshooting Tips:"
         echo "  - Ensure the user is logged out of the Windows VM prior to initiating the WinApps installation."
         echo "  - Ensure the credentials within the WinApps configuration file are correct."
-        echo "  - Ensure the Windows VM is correctly named as specified within the README."
-        echo "  - Ensure 'Remote Desktop' is enabled within the Windows VM."
-        echo "  - Ensure you have merged 'RDPApps.reg' into the Windows VM's registry."
         echo -e "  - Utilise a new certificate by removing relevant certificate(s) in ${COMMAND_TEXT}${HOME}/.config/freerdp/server${CLEAR_TEXT}."
+        echo "  - If using 'libvirt', ensure the Windows VM is correctly named as specified within the README."
+        echo "  - If using 'libvirt', ensure 'Remote Desktop' is enabled within the Windows VM."
+        echo "  - If using 'libvirt', ensure you have merged 'RDPApps.reg' into the Windows VM's registry."
         echo "--------------------------------------------------------------------------------"
 
         # Terminate the script.
@@ -916,7 +1008,7 @@ function waFindInstalled() {
         echo -e "${ERROR_TEXT}ERROR:${CLEAR_TEXT} ${BOLD_TEXT}APPLICATION QUERY FAILURE.${CLEAR_TEXT}"
 
         # Display the error details.
-        echo -e "${INFO_TEXT}Failed to query Windows VM '${VM_NAME}' for installed applications.${CLEAR_TEXT}"
+        echo -e "${INFO_TEXT}Failed to query Windows VM for installed applications.${CLEAR_TEXT}"
 
         # Display the suggested action(s).
         echo "--------------------------------------------------------------------------------"
@@ -1268,19 +1360,32 @@ function waInstall() {
         MULTI_FLAG="+span"
     fi
 
+    # Update $RDP_SCALE.
+    RDP_SCALE=$(waFixScale "$RDP_SCALE")
+
     # Append additional FreeRDP flags if required.
     if [[ -n $RDP_FLAGS ]]; then
         FREERDP_COMMAND="${FREERDP_COMMAND} ${RDP_FLAGS}"
     fi
 
-    # Check the group membership of the current user.
-    waCheckGroupMembership
+    if [ "$WAFLAVOR" = "docker" ]; then
+        # Set RDP_IP to localhost.
+        RDP_IP="$DOCKER_IP"
 
-    # Check if the Windows VM is powered on.
-    waCheckVMRunning
+        # Check if the Windows Docker container/virtual machine is powered on.
+        waCheckContainerRunning
+    elif [ "$WAFLAVOR" = "libvirt" ]; then
+        # Check the group membership of the current user.
+        waCheckGroupMembership
 
-    # Check if the Windows VM is contactable.
-    waCheckVMContactable
+        # Check if the Windows VM is powered on.
+        waCheckVMRunning
+
+        # Check if the Windows VM is contactable.
+        waCheckVMContactable
+    else
+        waThrowExit "$EC_INVALID_FLAVOR"
+    fi
 
     # Test RDP access to the Windows VM.
     waCheckRDPAccess
