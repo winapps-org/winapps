@@ -121,6 +121,7 @@ RDP_USER="MyWindowsUser"
 RDP_PASS="MyWindowsPassword"
 #RDP_DOMAIN="MYDOMAIN"
 #RDP_IP="192.168.123.111"
+#WAFLAVOR="docker"
 #RDP_SCALE=100
 #RDP_FLAGS=""
 #MULTIMON="true"
@@ -128,7 +129,11 @@ RDP_PASS="MyWindowsPassword"
 #FREERDP_COMMAND="xfreerdp"
 ```
 
-`RDP_USER` and `RDP_PASS` must correspond to a complete Windows user account and password, such as those created during Windows setup or for a domain user. User/PIN combinations are not valid for RDP access.
+> [!NOTE]
+> `RDP_USER` and `RDP_PASS` must correspond to a complete Windows user account and password, such as those created during Windows setup or for a domain user. User/PIN combinations are not valid for RDP access.
+
+> [!NOTE]
+> If you wish to use the older (deprecated) `virt-manager` method, uncomment and change `WAFLAVOR="docker"` to `WAFLAVOR="libvirt"`.
 
 #### Configuration Options Explained
 - When using a pre-existing non-KVM RDP server, you must use `RDP_IP` to specify the location of the Windows server.

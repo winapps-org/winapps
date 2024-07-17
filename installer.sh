@@ -24,10 +24,11 @@ readonly EC_NOT_IN_GROUP="7"     # Current user not in group 'libvirt' and/or 'k
 readonly EC_VM_OFF="8"           # Windows VM powered off.
 readonly EC_VM_PAUSED="9"        # Windows VM paused.
 readonly EC_VM_ABSENT="10"       # Windows VM does not exist.
-readonly EC_VM_NO_IP="11"        # Windows VM does not have an IP address.
-readonly EC_VM_BAD_PORT="12"     # Windows VM is unreachable via RDP_PORT.
-readonly EC_RDP_FAIL="13"        # FreeRDP failed to establish a connection with the Windows VM.
-readonly EC_APPQUERY_FAIL="14"   # Failed to query the Windows VM for installed applications.
+readonly EC_CONTAINER_OFF="11"   # Docker container is not running.
+readonly EC_VM_NO_IP="12"        # Windows VM does not have an IP address.
+readonly EC_VM_BAD_PORT="13"     # Windows VM is unreachable via RDP_PORT.
+readonly EC_RDP_FAIL="14"        # FreeRDP failed to establish a connection with the Windows VM.
+readonly EC_APPQUERY_FAIL="15"   # Failed to query the Windows VM for installed applications.
 
 # PATHS
 # 'BIN'
@@ -66,12 +67,14 @@ readonly CONFIG_PATH="${HOME}/.config/winapps/winapps.conf" # UNIX path to the W
 readonly INQUIRER_PATH="./install/inquirer.sh" # UNIX path to the 'inquirer' script, which is used to produce selection menus.
 
 # REMOTE DESKTOP CONFIGURATION
-readonly VM_NAME="RDPWindows" # Name of the Windows VM.
-readonly RDP_PORT=3389        # Port used for RDP on the Windows VM.
+readonly VM_NAME="RDPWindows"  # Name of the Windows VM.
+readonly RDP_PORT=3389         # Port used for RDP on the Windows VM.
+readonly DOCKER_IP="127.0.0.1" # Localhost.
 readonly WINAPPS_CONFIG='RDP_USER="MyWindowsUser"
 RDP_PASS="MyWindowsPassword"
 #RDP_DOMAIN="MYDOMAIN"
 #RDP_IP="192.168.123.111"
+#WAFLAVOR="docker"
 #RDP_SCALE=100
 #RDP_FLAGS=""
 #MULTIMON="true"
@@ -90,6 +93,7 @@ RDP_USER=""        # Imported variable.
 RDP_PASS=""        # Imported variable.
 RDP_DOMAIN=""      # Imported variable.
 RDP_IP=""          # Imported variable.
+WAFLAVOR="docker"  # Imported variable.
 RDP_SCALE=100      # Imported variable.
 RDP_FLAGS=""       # Imported variable.
 MULTIMON="false"   # Imported variable.
@@ -521,30 +525,51 @@ function waCheckDependencies() {
     fi
 
     # 'libvirt' / 'virt-manager'.
-    if ! command -v virsh &>/dev/null; then
-        # Complete the previous line.
-        echo -e "${FAIL_TEXT}Failed!${CLEAR_TEXT}\n"
+    if [ "$WAFLAVOR" = "libvirt" ]; then
+        if ! command -v virsh &>/dev/null; then
+            # Complete the previous line.
+            echo -e "${FAIL_TEXT}Failed!${CLEAR_TEXT}\n"
 
-        # Display the error type.
-        echo -e "${ERROR_TEXT}ERROR:${CLEAR_TEXT} ${BOLD_TEXT}MISSING DEPENDENCIES.${CLEAR_TEXT}"
+            # Display the error type.
+            echo -e "${ERROR_TEXT}ERROR:${CLEAR_TEXT} ${BOLD_TEXT}MISSING DEPENDENCIES.${CLEAR_TEXT}"
 
-        # Display the error details.
-        echo -e "${INFO_TEXT}Please install 'Virtual Machine Manager' to proceed.${CLEAR_TEXT}"
+            # Display the error details.
+            echo -e "${INFO_TEXT}Please install 'Virtual Machine Manager' to proceed.${CLEAR_TEXT}"
 
-        # Display the suggested action(s).
-        echo "--------------------------------------------------------------------------------"
-        echo "Debian/Ubuntu-based systems:"
-        echo -e "  ${COMMAND_TEXT}sudo apt install virt-manager${CLEAR_TEXT}"
-        echo "Red Hat/Fedora-based systems:"
-        echo -e "  ${COMMAND_TEXT}sudo dnf install virt-manager${CLEAR_TEXT}"
-        echo "Arch Linux systems:"
-        echo -e "  ${COMMAND_TEXT}sudo pacman -S virt-manager${CLEAR_TEXT}"
-        echo "Gentoo Linux systems:"
-        echo -e "  ${COMMAND_TEXT}sudo emerge --ask app-emulation/virt-manager${CLEAR_TEXT}"
-        echo "--------------------------------------------------------------------------------"
+            # Display the suggested action(s).
+            echo "--------------------------------------------------------------------------------"
+            echo "Debian/Ubuntu-based systems:"
+            echo -e "  ${COMMAND_TEXT}sudo apt install virt-manager${CLEAR_TEXT}"
+            echo "Red Hat/Fedora-based systems:"
+            echo -e "  ${COMMAND_TEXT}sudo dnf install virt-manager${CLEAR_TEXT}"
+            echo "Arch Linux systems:"
+            echo -e "  ${COMMAND_TEXT}sudo pacman -S virt-manager${CLEAR_TEXT}"
+            echo "Gentoo Linux systems:"
+            echo -e "  ${COMMAND_TEXT}sudo emerge --ask app-emulation/virt-manager${CLEAR_TEXT}"
+            echo "--------------------------------------------------------------------------------"
 
-        # Terminate the script.
-        return "$EC_MISSING_DEPS"
+            # Terminate the script.
+            return "$EC_MISSING_DEPS"
+        fi
+    elif [ "$WAFLAVOR" = "docker" ]; then
+        if ! command -v docker &>/dev/null; then
+            # Complete the previous line.
+            echo -e "${FAIL_TEXT}Failed!${CLEAR_TEXT}\n"
+
+            # Display the error type.
+            echo -e "${ERROR_TEXT}ERROR:${CLEAR_TEXT} ${BOLD_TEXT}MISSING DEPENDENCIES.${CLEAR_TEXT}"
+
+            # Display the error details.
+            echo -e "${INFO_TEXT}Please install 'Docker Desktop on Linux' to proceed.${CLEAR_TEXT}"
+
+            # Display the suggested action(s).
+            echo "--------------------------------------------------------------------------------"
+            echo "Please visit https://docs.docker.com/desktop/install/linux-install/ for more information."
+            echo "--------------------------------------------------------------------------------"
+
+            # Terminate the script.
+            return "$EC_MISSING_DEPS"
+        fi
     fi
 
     # Print feedback.
@@ -653,6 +678,45 @@ function waCheckVMRunning() {
 
         # Terminate the script.
         return "$EC_VM_ABSENT"
+    fi
+
+    # Print feedback.
+    echo -e "${DONE_TEXT}Done!${CLEAR_TEXT}"
+}
+
+# Name: 'waCheckContainerRunning'
+# Role: Throw an error if the Docker container is not running.
+function waCheckContainerRunning() {
+    # Print feedback.
+    echo -n "Checking the status of the Windows Docker container/virtual machine... "
+
+    # Declare variables.
+    local CONTAINER_STATE=""
+
+    # Determine container state.
+    CONTAINER_STATE=$(docker ps --filter name="windows" --format '{{.Status}}')
+    CONTAINER_STATE=${CONTAINER_STATE,,} # Convert the string to lowercase.
+    CONTAINER_STATE=${CONTAINER_STATE%% *} # Extract the first word.
+
+    # Check container state.
+    if [[ "$CONTAINER_STATE" != "up" ]]; then
+        # Complete the previous line.
+        echo -e "${FAIL_TEXT}Failed!${CLEAR_TEXT}\n"
+
+        # Display the error type.
+        echo -e "${ERROR_TEXT}ERROR:${CLEAR_TEXT} ${BOLD_TEXT}DOCKER VM NOT RUNNING.${CLEAR_TEXT}"
+
+        # Display the error details.
+        echo -e "${INFO_TEXT}The Windows Docker container/virtual machine is not running.${CLEAR_TEXT}"
+
+        # Display the suggested action(s).
+        echo "--------------------------------------------------------------------------------"
+        echo "Please ensure the Windows Docker container/virtual machine is powered on:"
+        echo -e "${COMMAND_TEXT}docker compose start${CLEAR_TEXT}"
+        echo "--------------------------------------------------------------------------------"
+
+        # Terminate the script.
+        return "$EC_CONTAINER_OFF"
     fi
 
     # Print feedback.
@@ -1273,14 +1337,24 @@ function waInstall() {
         FREERDP_COMMAND="${FREERDP_COMMAND} ${RDP_FLAGS}"
     fi
 
-    # Check the group membership of the current user.
-    waCheckGroupMembership
+    if [ "$WAFLAVOR" = "docker" ]; then
+        # Set RDP_IP to localhost.
+        RDP_IP="$DOCKER_IP"
 
-    # Check if the Windows VM is powered on.
-    waCheckVMRunning
+        # Check if the Windows Docker container/virtual machine is powered on.
+        waCheckContainerRunning
+    elif [ "$WAFLAVOR" = "libvirt" ]; then
+        # Check the group membership of the current user.
+        waCheckGroupMembership
 
-    # Check if the Windows VM is contactable.
-    waCheckVMContactable
+        # Check if the Windows VM is powered on.
+        waCheckVMRunning
+
+        # Check if the Windows VM is contactable.
+        waCheckVMContactable
+    else
+        waThrowExit "$EC_INVALID_FLAVOR"
+    fi
 
     # Test RDP access to the Windows VM.
     waCheckRDPAccess

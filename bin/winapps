@@ -13,6 +13,7 @@ readonly EC_VM_NOT_RUNNING=4
 readonly EC_VM_NO_IP=5
 readonly EC_VM_BAD_PORT=6
 readonly EC_UNSUPPORTED_APP=7
+readonly EC_INVALID_FLAVOR=8
 
 # PATHS
 readonly APPDATA_PATH="${HOME}/.local/share/winapps"
@@ -26,6 +27,7 @@ readonly SCRIPT_DIR_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && p
 # OTHER
 readonly VM_NAME="RDPWindows"
 readonly RDP_PORT=3389
+readonly DOCKER_IP="127.0.0.1"
 # shellcheck disable=SC2155 # Silence warnings regarding masking return values through simultaneous declaration and assignment.
 readonly RUN="$(date)-${RANDOM}"
 
@@ -35,6 +37,7 @@ RDP_USER=""
 RDP_PASS=""
 RDP_DOMAIN=""
 RDP_IP=""
+WAFLAVOR="docker"
 RDP_FLAGS=""
 FREERDP_COMMAND=""
 RDP_SCALE=100
@@ -71,22 +74,27 @@ function waThrowExit() {
     "$EC_VM_NOT_RUNNING")
         dprint "ERROR: VM NOT RUNNING. EXITING."
         echo -e "${ERROR_TEXT}ERROR: VM NOT RUNNING.${CLEAR_TEXT}"
-        echo "Please ensure the Windows VM is powered on."
+        echo "Please ensure the Windows container/virtual machine is running."
         ;;
     "$EC_VM_NO_IP")
         dprint "ERROR: VM UNREACHABLE. EXITING."
         echo -e "${ERROR_TEXT}ERROR: VM UNREACHABLE.${CLEAR_TEXT}"
-        echo "Please ensure the Windows VM is assigned an IP address."
+        echo "Please ensure the Windows virtual machine is assigned an IP address."
         ;;
     "$EC_VM_BAD_PORT")
         dprint "ERROR: RDP PORT CLOSED. EXITING."
         echo -e "${ERROR_TEXT}ERROR: RDP PORT CLOSED.${CLEAR_TEXT}"
-        echo "Please ensure Remote Desktop is correctly configured on the Windows VM."
+        echo "Please ensure Remote Desktop is correctly configured on the Windows virtual machine."
         ;;
     "$EC_UNSUPPORTED_APP")
         dprint "ERROR: APPLICATION NOT FOUND. EXITING."
         echo -e "${ERROR_TEXT}ERROR: APPLICATION NOT FOUND.${CLEAR_TEXT}"
         echo "Please ensure the program is correctly configured as an officially supported application."
+        ;;
+    "$EC_INVALID_FLAVOR")
+        dprint "ERROR: INVALID FLAVOR. EXITING."
+        echo -e "${ERROR_TEXT}ERROR: INVALID FLAVOR.${CLEAR_TEXT}"
+        echo "Please ensure either 'docker' or 'libvirt' are specified as the flavor in the WinApps configuration file."
         ;;
     esac
 
@@ -197,6 +205,21 @@ function waCheckGroupMembership() {
 # Role: Throw an error if the Windows VM is not running.
 function waCheckVMRunning() {
     ! virsh list --state-running --name | grep -q "^${VM_NAME}$" && waThrowExit "$EC_VM_NOT_RUNNING"
+}
+
+# Name: 'waCheckContainerRunning'
+# Role: Throw an error if the Docker container is not running.
+function waCheckContainerRunning() {
+    # Declare variables.
+    local CONTAINER_STATE=""
+
+    # Determine container state.
+    CONTAINER_STATE=$(docker ps --filter name="windows" --format '{{.Status}}')
+    CONTAINER_STATE=${CONTAINER_STATE,,} # Convert the string to lowercase.
+    CONTAINER_STATE=${CONTAINER_STATE%% *} # Extract the first word.
+
+    # Check container state.
+    [[ "$CONTAINER_STATE" != "up" ]] && waThrowExit "$EC_VM_NOT_RUNNING"
 }
 
 # Name: 'waCheckVMContactable'
@@ -322,8 +345,18 @@ mkdir -p "$APPDATA_PATH"
 waLastRun
 waLoadConfig
 waGetFreeRDPCommand
-waCheckGroupMembership
-waCheckVMRunning
-waCheckVMContactable
+
+if [ "$WAFLAVOR" = "docker" ]; then
+    RDP_IP="$DOCKER_IP"
+    waCheckContainerRunning
+elif [ "$WAFLAVOR" = "libvirt" ]; then
+    waCheckGroupMembership
+    waCheckVMRunning
+    waCheckVMContactable
+else
+    waThrowExit "$EC_INVALID_FLAVOR"
+fi
+
 waRunCommand "$@"
+
 dprint "END"
