@@ -180,20 +180,25 @@ function waLastRun() {
     dprint "THIS_RUN: ${CURR_RUN_UNIX_TIME}"
 }
 
+# Name: 'waGetFreeRDPCommand'
+# Role: Determine the correct FreeRDP command to use.
 function waGetFreeRDPCommand() {
+    # Declare variables.
+    local FREERDP_MAJOR_VERSION="" # Stores the major version of the installed copy of FreeRDP.
+
     # Attempt to set a FreeRDP command if the command variable is empty.
     if [ -z "$FREERDP_COMMAND" ]; then
         # Check for 'xfreerdp'.
         if command -v xfreerdp &>/dev/null; then
             # Check FreeRDP major version is 3 or greater.
-            FREERDP_MAJOR_VERSION=$(xfreerdp --version | head -n 1 | grep -o -m 1 '\b[0-9]\S*' | cut -d'.' -f1)
+            FREERDP_MAJOR_VERSION=$(xfreerdp --version | head -n 1 | grep -o -m 1 '\b[0-9]\S*' | head -n 1 | cut -d'.' -f1)
             if [[ $FREERDP_MAJOR_VERSION =~ ^[0-9]+$ ]] && ((FREERDP_MAJOR_VERSION >= 3)); then
                 FREERDP_COMMAND="xfreerdp"
             fi
         # Check for 'xfreerdp3'.
         elif command -v xfreerdp3 &>/dev/null; then
             # Check FreeRDP major version is 3 or greater.
-            FREERDP_MAJOR_VERSION=$(xfreerdp3 --version | head -n 1 | grep -o -m 1 '\b[0-9]\S*' | cut -d'.' -f1)
+            FREERDP_MAJOR_VERSION=$(xfreerdp3 --version | head -n 1 | grep -o -m 1 '\b[0-9]\S*' | head -n 1 | cut -d'.' -f1)
             if [[ $FREERDP_MAJOR_VERSION =~ ^[0-9]+$ ]] && ((FREERDP_MAJOR_VERSION >= 3)); then
                 FREERDP_COMMAND="xfreerdp3"
             fi
@@ -270,6 +275,8 @@ function waCheckVMContactable() {
     timeout 5 nc -z "$RDP_IP" "$RDP_PORT" &>/dev/null || waThrowExit "$EC_VM_BAD_PORT"
 }
 
+# Name: 'waRunCommand'
+# Role: Run the requested WinApps command.
 function waRunCommand() {
     # Declare variables.
     local ICON=""
