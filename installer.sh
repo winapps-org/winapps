@@ -12,6 +12,7 @@ readonly EXIT_TEXT="\033[1;41;37m"    # Bold + White + Red Background
 readonly FAIL_TEXT="\033[0;91m"       # Bright Red
 readonly INFO_TEXT="\033[0;33m"       # Orange/Yellow
 readonly SUCCESS_TEXT="\033[1;42;37m" # Bold + White + Green Background
+readonly WARNING_TEXT="\033[1;33m"    # Bold + Orange/Yellow
 
 # ERROR CODES
 readonly EC_FAILED_CD="1"        # Failed to change directory to location of script.
@@ -392,28 +393,33 @@ function waCheckExistingInstall() {
 # Role: Since FreeRDP only supports '/scale' values of 100, 140 or 180, find the closest supported argument to the user's configuration.
 function waFixScale() {
     # Define variables.
-    local USER_CONFIG_SCALE="$1"
-    local CLOSEST_SCALE=100
+    local OLD_SCALE=100
     local VALID_SCALE_1=100
     local VALID_SCALE_2=140
     local VALID_SCALE_3=180
 
-    # Calculate the absolute differences.
-    local DIFF_1=$(( USER_CONFIG_SCALE > VALID_SCALE_1 ? USER_CONFIG_SCALE - VALID_SCALE_1 : VALID_SCALE_1 - USER_CONFIG_SCALE ))
-    local DIFF_2=$(( USER_CONFIG_SCALE > VALID_SCALE_2 ? USER_CONFIG_SCALE - VALID_SCALE_2 : VALID_SCALE_2 - USER_CONFIG_SCALE ))
-    local DIFF_3=$(( USER_CONFIG_SCALE > VALID_SCALE_3 ? USER_CONFIG_SCALE - VALID_SCALE_3 : VALID_SCALE_3 - USER_CONFIG_SCALE ))
+    # Check for an unsupported value.
+    if [ "$RDP_SCALE" != "$VALID_SCALE_1" ] && [ "$RDP_SCALE" != "$VALID_SCALE_2" ] && [ "$RDP_SCALE" != "$VALID_SCALE_3" ]; then
+        # Save the unsupported scale.
+        OLD_SCALE="$RDP_SCALE"
 
-    # Set the final scale to the valid scale value with the smallest absolute difference.
-    if (( DIFF_1 <= DIFF_2 && DIFF_1 <= DIFF_3 )); then
-        CLOSEST_SCALE="$VALID_SCALE_1"
-    elif (( DIFF_2 <= DIFF_1 && DIFF_2 <= DIFF_3 )); then
-        CLOSEST_SCALE="$VALID_SCALE_2"
-    else
-        CLOSEST_SCALE="$VALID_SCALE_3"
+        # Calculate the absolute differences.
+        local DIFF_1=$(( RDP_SCALE > VALID_SCALE_1 ? RDP_SCALE - VALID_SCALE_1 : VALID_SCALE_1 - RDP_SCALE ))
+        local DIFF_2=$(( RDP_SCALE > VALID_SCALE_2 ? RDP_SCALE - VALID_SCALE_2 : VALID_SCALE_2 - RDP_SCALE ))
+        local DIFF_3=$(( RDP_SCALE > VALID_SCALE_3 ? RDP_SCALE - VALID_SCALE_3 : VALID_SCALE_3 - RDP_SCALE ))
+
+        # Set the final scale to the valid scale value with the smallest absolute difference.
+        if (( DIFF_1 <= DIFF_2 && DIFF_1 <= DIFF_3 )); then
+            RDP_SCALE="$VALID_SCALE_1"
+        elif (( DIFF_2 <= DIFF_1 && DIFF_2 <= DIFF_3 )); then
+            RDP_SCALE="$VALID_SCALE_2"
+        else
+            RDP_SCALE="$VALID_SCALE_3"
+        fi
+
+        # Print feedback.
+        echo -e "${WARNING_TEXT}[WARNING]${CLEAR_TEXT} Unsupported RDP_SCALE value '${OLD_SCALE}' detected. Defaulting to '${RDP_SCALE}'."
     fi
-
-    # Return the final scale value.
-    echo "$CLOSEST_SCALE"
 }
 
 # Name: 'waLoadConfig'
@@ -892,6 +898,7 @@ function waCheckRDPAccess() {
         echo "  - If using 'libvirt', ensure the Windows VM is correctly named as specified within the README."
         echo "  - If using 'libvirt', ensure 'Remote Desktop' is enabled within the Windows VM."
         echo "  - If using 'libvirt', ensure you have merged 'RDPApps.reg' into the Windows VM's registry."
+        echo "  - If using 'libvirt', try logging into and back out of the Windows VM within 'virt-manager' prior to initiating the WinApps installation."
         echo "--------------------------------------------------------------------------------"
 
         # Terminate the script.
@@ -1361,7 +1368,7 @@ function waInstall() {
     fi
 
     # Update $RDP_SCALE.
-    RDP_SCALE=$(waFixScale "$RDP_SCALE")
+    waFixScale
 
     # Append additional FreeRDP flags if required.
     if [[ -n $RDP_FLAGS ]]; then
