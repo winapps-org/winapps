@@ -388,6 +388,34 @@ function waCheckExistingInstall() {
     echo -e "${DONE_TEXT}Done!${CLEAR_TEXT}"
 }
 
+# Name: 'waFixScale'
+# Role: Since FreeRDP only supports '/scale' values of 100, 140 or 180, find the closest supported argument to the user's configuration.
+function waFixScale() {
+    # Define variables.
+    local USER_CONFIG_SCALE="$1"
+    local CLOSEST_SCALE=100
+    local VALID_SCALE_1=100
+    local VALID_SCALE_2=140
+    local VALID_SCALE_3=180
+
+    # Calculate the absolute differences.
+    local DIFF_1=$(( USER_CONFIG_SCALE > VALID_SCALE_1 ? USER_CONFIG_SCALE - VALID_SCALE_1 : VALID_SCALE_1 - USER_CONFIG_SCALE ))
+    local DIFF_2=$(( USER_CONFIG_SCALE > VALID_SCALE_2 ? USER_CONFIG_SCALE - VALID_SCALE_2 : VALID_SCALE_2 - USER_CONFIG_SCALE ))
+    local DIFF_3=$(( USER_CONFIG_SCALE > VALID_SCALE_3 ? USER_CONFIG_SCALE - VALID_SCALE_3 : VALID_SCALE_3 - USER_CONFIG_SCALE ))
+
+    # Set the final scale to the valid scale value with the smallest absolute difference.
+    if (( DIFF_1 <= DIFF_2 && DIFF_1 <= DIFF_3 )); then
+        CLOSEST_SCALE="$VALID_SCALE_1"
+    elif (( DIFF_2 <= DIFF_1 && DIFF_2 <= DIFF_3 )); then
+        CLOSEST_SCALE="$VALID_SCALE_2"
+    else
+        CLOSEST_SCALE="$VALID_SCALE_3"
+    fi
+
+    # Return the final scale value.
+    echo "$CLOSEST_SCALE"
+}
+
 # Name: 'waLoadConfig'
 # Role: Loads settings specified within the WinApps configuration file.
 function waLoadConfig() {
@@ -785,7 +813,7 @@ function waCheckVMContactable() {
 # Role: Tests if the Windows VM is accessible via remote desktop.
 function waCheckRDPAccess() {
     # Print feedback.
-    echo -n "Establishing a Remote Desktop connection with the Windows VM... "
+    echo -n "Attempting to establish a Remote Desktop connection with the Windows VM... "
 
     # Declare variables.
     local FREERDP_LOG=""  # Stores the path of the FreeRDP log file.
@@ -852,7 +880,7 @@ function waCheckRDPAccess() {
         echo -e "${ERROR_TEXT}ERROR:${CLEAR_TEXT} ${BOLD_TEXT}REMOTE DESKTOP PROTOCOL FAILURE.${CLEAR_TEXT}"
 
         # Display the error details.
-        echo -e "${INFO_TEXT}FreeRDP failed to establish a connection with the Windows VM '${VM_NAME}'.${CLEAR_TEXT}"
+        echo -e "${INFO_TEXT}FreeRDP failed to establish a connection with the Windows VM.${CLEAR_TEXT}"
 
         # Display the suggested action(s).
         echo "--------------------------------------------------------------------------------"
@@ -860,10 +888,10 @@ function waCheckRDPAccess() {
         echo "Troubleshooting Tips:"
         echo "  - Ensure the user is logged out of the Windows VM prior to initiating the WinApps installation."
         echo "  - Ensure the credentials within the WinApps configuration file are correct."
-        echo "  - Ensure the Windows VM is correctly named as specified within the README."
-        echo "  - Ensure 'Remote Desktop' is enabled within the Windows VM."
-        echo "  - Ensure you have merged 'RDPApps.reg' into the Windows VM's registry."
         echo -e "  - Utilise a new certificate by removing relevant certificate(s) in ${COMMAND_TEXT}${HOME}/.config/freerdp/server${CLEAR_TEXT}."
+        echo "  - If using 'libvirt', ensure the Windows VM is correctly named as specified within the README."
+        echo "  - If using 'libvirt', ensure 'Remote Desktop' is enabled within the Windows VM."
+        echo "  - If using 'libvirt', ensure you have merged 'RDPApps.reg' into the Windows VM's registry."
         echo "--------------------------------------------------------------------------------"
 
         # Terminate the script.
@@ -980,7 +1008,7 @@ function waFindInstalled() {
         echo -e "${ERROR_TEXT}ERROR:${CLEAR_TEXT} ${BOLD_TEXT}APPLICATION QUERY FAILURE.${CLEAR_TEXT}"
 
         # Display the error details.
-        echo -e "${INFO_TEXT}Failed to query Windows VM '${VM_NAME}' for installed applications.${CLEAR_TEXT}"
+        echo -e "${INFO_TEXT}Failed to query Windows VM for installed applications.${CLEAR_TEXT}"
 
         # Display the suggested action(s).
         echo "--------------------------------------------------------------------------------"
@@ -1331,6 +1359,9 @@ function waInstall() {
     else
         MULTI_FLAG="+span"
     fi
+
+    # Update $RDP_SCALE.
+    RDP_SCALE=$(waFixScale "$RDP_SCALE")
 
     # Append additional FreeRDP flags if required.
     if [[ -n $RDP_FLAGS ]]; then

@@ -112,6 +112,34 @@ function dprint() {
     [ "$DEBUG" = "true" ] && echo "[$RUN] $1" >>"$LOG_PATH"
 }
 
+# Name: 'waFixScale'
+# Role: Since FreeRDP only supports '/scale' values of 100, 140 or 180, find the closest supported argument to the user's configuration.
+function waFixScale() {
+    # Define variables.
+    local USER_CONFIG_SCALE="$1"
+    local CLOSEST_SCALE=100
+    local VALID_SCALE_1=100
+    local VALID_SCALE_2=140
+    local VALID_SCALE_3=180
+
+    # Calculate the absolute differences.
+    local DIFF_1=$(( USER_CONFIG_SCALE > VALID_SCALE_1 ? USER_CONFIG_SCALE - VALID_SCALE_1 : VALID_SCALE_1 - USER_CONFIG_SCALE ))
+    local DIFF_2=$(( USER_CONFIG_SCALE > VALID_SCALE_2 ? USER_CONFIG_SCALE - VALID_SCALE_2 : VALID_SCALE_2 - USER_CONFIG_SCALE ))
+    local DIFF_3=$(( USER_CONFIG_SCALE > VALID_SCALE_3 ? USER_CONFIG_SCALE - VALID_SCALE_3 : VALID_SCALE_3 - USER_CONFIG_SCALE ))
+
+    # Set the final scale to the valid scale value with the smallest absolute difference.
+    if (( DIFF_1 <= DIFF_2 && DIFF_1 <= DIFF_3 )); then
+        CLOSEST_SCALE="$VALID_SCALE_1"
+    elif (( DIFF_2 <= DIFF_1 && DIFF_2 <= DIFF_3 )); then
+        CLOSEST_SCALE="$VALID_SCALE_2"
+    else
+        CLOSEST_SCALE="$VALID_SCALE_3"
+    fi
+
+    # Return the final scale value.
+    echo "$CLOSEST_SCALE"
+}
+
 # Name: 'waLoadConfig'
 # Role: Load the variables within the WinApps configuration file.
 function waLoadConfig() {
@@ -125,6 +153,9 @@ function waLoadConfig() {
 
     # Update 'MULTI_FLAG' based on 'MULTIMON'.
     MULTI_FLAG=$([[ $MULTIMON == "true" ]] && echo "/multimon" || echo "+span")
+
+    # Update $RDP_SCALE.
+    RDP_SCALE=$(waFixScale "$RDP_SCALE")
 
     # Append additional flags or parameters to FreeRDP.
     [[ -n $RDP_FLAGS ]] && FREERDP_COMMAND="${FREERDP_COMMAND} ${RDP_FLAGS}"
