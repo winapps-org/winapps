@@ -9,9 +9,9 @@ readonly CLEAR_TEXT="\033[0m"       # Clear
 readonly EC_MISSING_CONFIG=1
 readonly EC_MISSING_FREERDP=2
 readonly EC_NOT_IN_GROUP=3
-readonly EC_VM_NOT_RUNNING=4
-readonly EC_VM_NO_IP=5
-readonly EC_VM_BAD_PORT=6
+readonly EC_NOT_RUNNING=4
+readonly EC_NO_IP=5
+readonly EC_BAD_PORT=6
 readonly EC_UNSUPPORTED_APP=7
 readonly EC_INVALID_FLAVOR=8
 
@@ -25,7 +25,7 @@ readonly CONFIG_PATH="${HOME}/.config/winapps/winapps.conf"
 readonly SCRIPT_DIR_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
 
 # OTHER
-readonly VM_NAME="RDPWindows"
+readonly VM_NAME="RDPWindows" # FOR 'libvirt' ONLY
 readonly RDP_PORT=3389
 readonly DOCKER_IP="127.0.0.1"
 # shellcheck disable=SC2155 # Silence warnings regarding masking return values through simultaneous declaration and assignment.
@@ -71,20 +71,20 @@ function waThrowExit() {
         echo "  sudo usermod -a -G libvirt $(whoami)"
         echo "  sudo usermod -a -G kvm $(whoami)"
         ;;
-    "$EC_VM_NOT_RUNNING")
-        dprint "ERROR: VM NOT RUNNING. EXITING."
-        echo -e "${ERROR_TEXT}ERROR: VM NOT RUNNING.${CLEAR_TEXT}"
-        echo "Please ensure the Windows container/virtual machine is running."
+    "$EC_NOT_RUNNING")
+        dprint "ERROR: WINDOWS NOT RUNNING. EXITING."
+        echo -e "${ERROR_TEXT}ERROR: WINDOWS NOT RUNNING.${CLEAR_TEXT}"
+        echo "Please ensure Windows is running."
         ;;
-    "$EC_VM_NO_IP")
-        dprint "ERROR: VM UNREACHABLE. EXITING."
-        echo -e "${ERROR_TEXT}ERROR: VM UNREACHABLE.${CLEAR_TEXT}"
-        echo "Please ensure the Windows virtual machine is assigned an IP address."
+    "$EC_NO_IP")
+        dprint "ERROR: WINDOWS UNREACHABLE. EXITING."
+        echo -e "${ERROR_TEXT}ERROR: WINDOWS UNREACHABLE.${CLEAR_TEXT}"
+        echo "Please ensure Windows is assigned an IP address."
         ;;
-    "$EC_VM_BAD_PORT")
+    "$EC_BAD_PORT")
         dprint "ERROR: RDP PORT CLOSED. EXITING."
         echo -e "${ERROR_TEXT}ERROR: RDP PORT CLOSED.${CLEAR_TEXT}"
-        echo "Please ensure Remote Desktop is correctly configured on the Windows virtual machine."
+        echo "Please ensure Remote Desktop is correctly configured on Windows."
         ;;
     "$EC_UNSUPPORTED_APP")
         dprint "ERROR: APPLICATION NOT FOUND. EXITING."
@@ -244,9 +244,9 @@ function waCheckGroupMembership() {
 }
 
 # Name: 'waCheckVMRunning'
-# Role: Throw an error if the Windows VM is not running.
+# Role: Throw an error if the Windows 'libvirt' VM is not running.
 function waCheckVMRunning() {
-    ! virsh list --state-running --name | grep -q "^${VM_NAME}$" && waThrowExit "$EC_VM_NOT_RUNNING"
+    ! virsh list --state-running --name | grep -q "^${VM_NAME}$" && waThrowExit "$EC_NOT_RUNNING"
 }
 
 # Name: 'waCheckContainerRunning'
@@ -256,29 +256,30 @@ function waCheckContainerRunning() {
     local CONTAINER_STATE=""
 
     # Determine container state.
-    CONTAINER_STATE=$(docker ps --filter name="windows" --format '{{.Status}}')
+    CONTAINER_STATE=$(docker ps --filter name="WinApps" --format '{{.Status}}')
     CONTAINER_STATE=${CONTAINER_STATE,,} # Convert the string to lowercase.
     CONTAINER_STATE=${CONTAINER_STATE%% *} # Extract the first word.
 
     # Check container state.
-    [[ "$CONTAINER_STATE" != "up" ]] && waThrowExit "$EC_VM_NOT_RUNNING"
+    [[ "$CONTAINER_STATE" != "up" ]] && waThrowExit "$EC_NOT_RUNNING"
 }
 
-# Name: 'waCheckVMContactable'
-# Role: Assesses whether the Windows VM can be contacted.
-function waCheckVMContactable() {
+# Name: 'waCheckPortOpen'
+# Role: Assesses whether the RDP port on Windows is open.
+function waCheckPortOpen() {
     # Declare variables.
     local VM_MAC="" # Stores the MAC address of the Windows VM.
 
-    # Obtain Windows VM IP Address
-    if [ -z "$RDP_IP" ]; then
+    # Obtain Windows VM IP Address ('libvirt' ONLY)
+    # Note: 'RDP_IP' should not be empty if 'WAFLAVOR' is 'docker', since it is set to localhost before this function is called.
+    if [ -z "$RDP_IP" ] && [ "$WAFLAVOR" = "libvirt" ]; then
         VM_MAC=$(virsh domiflist "$VM_NAME" | grep -oE "([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})") # VM MAC address.
         RDP_IP=$(arp -n | grep "$VM_MAC" | grep -oE "([0-9]{1,3}\.){3}[0-9]{1,3}")                # VM IP address.
-        [ -z "$RDP_IP" ] && waThrowExit "$EC_VM_NO_IP"
+        [ -z "$RDP_IP" ] && waThrowExit "$EC_NO_IP"
     fi
 
     # Check for an open RDP port.
-    timeout 5 nc -z "$RDP_IP" "$RDP_PORT" &>/dev/null || waThrowExit "$EC_VM_BAD_PORT"
+    timeout 5 nc -z "$RDP_IP" "$RDP_PORT" &>/dev/null || waThrowExit "$EC_BAD_PORT"
 }
 
 # Name: 'waRunCommand'
@@ -290,7 +291,7 @@ function waRunCommand() {
 
     # Run option.
     if [ "$1" = "windows" ]; then
-        # Open Windows VM.
+        # Open Windows RDP session.
         dprint "WINDOWS"
         $FREERDP_COMMAND \
             /d:"$RDP_DOMAIN" \
@@ -396,11 +397,11 @@ if [ "$WAFLAVOR" = "docker" ]; then
 elif [ "$WAFLAVOR" = "libvirt" ]; then
     waCheckGroupMembership
     waCheckVMRunning
-    waCheckVMContactable
 else
     waThrowExit "$EC_INVALID_FLAVOR"
 fi
 
+waCheckPortOpen
 waRunCommand "$@"
 
 dprint "END"

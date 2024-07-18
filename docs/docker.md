@@ -76,9 +76,6 @@ to run the VM in the background.
 
 After this, just open http://127.0.0.1:8006 in your web browser and wait for the Windows installation to finish.
 
-> [!WARNING]
-> Make sure to change the `RDP_IP` in your WinApps config to `127.0.0.1`.
-
 Now you should be ready to go and try to connect to your VM with WinApps.
 
 For stopping the VM, just use:
@@ -93,4 +90,4 @@ For starting again afterward, use:
 docker compose start
 ```
 
-(All compose commands have to be run from the directory where the `compose.yaml` is located.)
+(All compose commands have to be run from the directory where `compose.yaml` is located.)
