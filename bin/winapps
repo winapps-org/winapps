@@ -256,7 +256,11 @@ function waCheckContainerRunning() {
     local CONTAINER_STATE=""
 
     # Determine container state.
-    CONTAINER_STATE=$(docker ps --filter name="WinApps" --format '{{.Status}}')
+    if command -v docker &>/dev/null; then
+        CONTAINER_STATE=$(docker ps --filter name="WinApps" --format '{{.Status}}')
+    else
+        CONTAINER_STATE=$(podman ps --filter name="WinApps" --format '{{.Status}}')
+    fi
     CONTAINER_STATE=${CONTAINER_STATE,,} # Convert the string to lowercase.
     CONTAINER_STATE=${CONTAINER_STATE%% *} # Extract the first word.
 

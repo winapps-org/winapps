@@ -586,7 +586,7 @@ function waCheckDependencies() {
             return "$EC_MISSING_DEPS"
         fi
     elif [ "$WAFLAVOR" = "docker" ]; then
-        if ! command -v docker &>/dev/null; then
+        if ! command -v docker &>/dev/null && ! command -v podman-compose &>/dev/null; then
             # Complete the previous line.
             echo -e "${FAIL_TEXT}Failed!${CLEAR_TEXT}\n"
 
@@ -594,11 +594,13 @@ function waCheckDependencies() {
             echo -e "${ERROR_TEXT}ERROR:${CLEAR_TEXT} ${BOLD_TEXT}MISSING DEPENDENCIES.${CLEAR_TEXT}"
 
             # Display the error details.
-            echo -e "${INFO_TEXT}Please install 'Docker Engine' to proceed.${CLEAR_TEXT}"
+            echo -e "${INFO_TEXT}Please install 'Docker Engine' OR 'podman' and 'podman-compose' to proceed.${CLEAR_TEXT}"
 
             # Display the suggested action(s).
             echo "--------------------------------------------------------------------------------"
             echo "Please visit https://docs.docker.com/engine/install/ for more information."
+            echo "Please visit https://podman.io/docs/installation for more information."
+            echo "Please visit https://github.com/containers/podman-compose for more information."
             echo "--------------------------------------------------------------------------------"
 
             # Terminate the script.
@@ -728,7 +730,11 @@ function waCheckContainerRunning() {
     local CONTAINER_STATE=""
 
     # Determine container state.
-    CONTAINER_STATE=$(docker ps --filter name="WinApps" --format '{{.Status}}')
+    if command -v docker &>/dev/null; then
+        CONTAINER_STATE=$(docker ps --filter name="WinApps" --format '{{.Status}}')
+    else
+        CONTAINER_STATE=$(podman ps --filter name="WinApps" --format '{{.Status}}')
+    fi
     CONTAINER_STATE=${CONTAINER_STATE,,} # Convert the string to lowercase.
     CONTAINER_STATE=${CONTAINER_STATE%% *} # Extract the first word.
 
