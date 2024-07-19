@@ -30,6 +30,7 @@ readonly EC_NO_IP="12"           # Windows does not have an IP address.
 readonly EC_BAD_PORT="13"        # Windows is unreachable via RDP_PORT.
 readonly EC_RDP_FAIL="14"        # FreeRDP failed to establish a connection with Windows.
 readonly EC_APPQUERY_FAIL="15"   # Failed to query Windows for installed applications.
+readonly EC_INVALID_FLAVOR="16"  # Backend specified is not 'libvirt', 'docker' or 'podman'.
 
 # PATHS
 # 'BIN'
@@ -586,7 +587,7 @@ function waCheckDependencies() {
             return "$EC_MISSING_DEPS"
         fi
     elif [ "$WAFLAVOR" = "docker" ]; then
-        if ! command -v docker &>/dev/null && ! command -v podman-compose &>/dev/null; then
+        if ! command -v docker &>/dev/null; then
             # Complete the previous line.
             echo -e "${FAIL_TEXT}Failed!${CLEAR_TEXT}\n"
 
@@ -594,11 +595,29 @@ function waCheckDependencies() {
             echo -e "${ERROR_TEXT}ERROR:${CLEAR_TEXT} ${BOLD_TEXT}MISSING DEPENDENCIES.${CLEAR_TEXT}"
 
             # Display the error details.
-            echo -e "${INFO_TEXT}Please install 'Docker Engine' OR 'podman' and 'podman-compose' to proceed.${CLEAR_TEXT}"
+            echo -e "${INFO_TEXT}Please install 'Docker Engine' to proceed.${CLEAR_TEXT}"
 
             # Display the suggested action(s).
             echo "--------------------------------------------------------------------------------"
             echo "Please visit https://docs.docker.com/engine/install/ for more information."
+            echo "--------------------------------------------------------------------------------"
+
+            # Terminate the script.
+            return "$EC_MISSING_DEPS"
+        fi
+    elif [ "$WAFLAVOR" = "podman" ]; then
+        if ! command -v podman-compose &>/dev/null || ! command -v podman &>/dev/null; then
+            # Complete the previous line.
+            echo -e "${FAIL_TEXT}Failed!${CLEAR_TEXT}\n"
+
+            # Display the error type.
+            echo -e "${ERROR_TEXT}ERROR:${CLEAR_TEXT} ${BOLD_TEXT}MISSING DEPENDENCIES.${CLEAR_TEXT}"
+
+            # Display the error details.
+            echo -e "${INFO_TEXT}Please install 'podman' and 'podman-compose' to proceed.${CLEAR_TEXT}"
+
+            # Display the suggested action(s).
+            echo "--------------------------------------------------------------------------------"
             echo "Please visit https://podman.io/docs/installation for more information."
             echo "Please visit https://github.com/containers/podman-compose for more information."
             echo "--------------------------------------------------------------------------------"
@@ -729,12 +748,16 @@ function waCheckContainerRunning() {
     # Declare variables.
     local CONTAINER_STATE=""
 
-    # Determine container state.
+    # Determine container state (docker).
     if command -v docker &>/dev/null; then
         CONTAINER_STATE=$(docker ps --filter name="WinApps" --format '{{.Status}}')
-    else
+    fi
+
+    # Determine container state (podman).
+    if [ -z "$CONTAINER_STATE" ]; then
         CONTAINER_STATE=$(podman ps --filter name="WinApps" --format '{{.Status}}')
     fi
+
     CONTAINER_STATE=${CONTAINER_STATE,,} # Convert the string to lowercase.
     CONTAINER_STATE=${CONTAINER_STATE%% *} # Extract the first word.
 
@@ -881,7 +904,7 @@ function waCheckRDPAccess() {
     # Check if FreeRDP process is not complete.
     if ps -p "$FREERDP_PROC" &>/dev/null; then
         # SIGKILL FreeRDP.
-        kill -9 "$FREERDP_PROC"
+        kill -9 "$FREERDP_PROC" &>/dev/null
     fi
 
     # Check if test file does not exist.
@@ -1010,7 +1033,7 @@ function waFindInstalled() {
     # Check if the FreeRDP process is not complete.
     if ps -p "$FREERDP_PROC" &>/dev/null; then
         # SIGKILL FreeRDP.
-        kill -9 "$FREERDP_PROC"
+        kill -9 "$FREERDP_PROC" &>/dev/null
     fi
 
     # Check if test file does not exist.
@@ -1299,7 +1322,9 @@ function waConfigureDetectedApps() {
         if [[ $APP_INSTALL == "Select which applications to set up" ]]; then
             inqChkBx "Which other applications would you like to set up?" APPS SELECTED_APPS
         elif [[ $APP_INSTALL == "Set up all detected applications" ]]; then
-            readarray -t SELECTED_APPS <<<"${APPS[@]}"
+            for APP in "${APPS[@]}"; do
+                SELECTED_APPS+=("$APP")
+            done
         fi
 
         for SELECTED_APP in "${SELECTED_APPS[@]}"; do
@@ -1382,20 +1407,39 @@ function waInstall() {
         FREERDP_COMMAND="${FREERDP_COMMAND} ${RDP_FLAGS}"
     fi
 
-    if [ "$WAFLAVOR" = "docker" ]; then
-        # Set RDP_IP to localhost.
+    # If using 'docker' or 'podman', set RDP_IP to localhost.
+    if [ "$WAFLAVOR" = "docker" ] || [ "$WAFLAVOR" = "podman" ]; then
         RDP_IP="$DOCKER_IP"
+    fi
 
+    # If using podman backend, modify the FreeRDP command to enter a new namespace.
+    if [ "$WAFLAVOR" = "podman" ]; then
+        FREERDP_COMMAND="podman unshare --rootless-netns ${FREERDP_COMMAND}"
+    fi
+
+    if [ "$WAFLAVOR" = "docker" ] || [ "$WAFLAVOR" = "podman" ]; then
         # Check if Windows is powered on.
         waCheckContainerRunning
     elif [ "$WAFLAVOR" = "libvirt" ]; then
-        # Check the group membership of the current user.
-        waCheckGroupMembership
+        # Verify the current user's group membership.
+        waCheckGroupMembership # Check membership
 
         # Check if the Windows VM is powered on.
         waCheckVMRunning
     else
-        waThrowExit "$EC_INVALID_FLAVOR"
+        # Display the error type.
+        echo -e "${ERROR_TEXT}ERROR:${CLEAR_TEXT} ${BOLD_TEXT}INVALID WINAPPS BACKEND.${CLEAR_TEXT}"
+
+        # Display the error details.
+        echo -e "${INFO_TEXT}An invalid WinApps backend '${WAFLAVOR}' was specified.${CLEAR_TEXT}"
+
+        # Display the suggested action(s).
+        echo "--------------------------------------------------------------------------------"
+        echo -e "Please ensure 'WAFLAVOR' is set to 'docker', 'podman' or 'libvirt' in ${COMMAND_TEXT}${CONFIG_PATH}${CLEAR_TEXT}."
+        echo "--------------------------------------------------------------------------------"
+
+        # Terminate the script.
+        return "$EC_INVALID_FLAVOR"
     fi
 
     # Check if the RDP port on Windows is open.

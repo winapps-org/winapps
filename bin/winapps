@@ -94,7 +94,7 @@ function waThrowExit() {
     "$EC_INVALID_FLAVOR")
         dprint "ERROR: INVALID FLAVOR. EXITING."
         echo -e "${ERROR_TEXT}ERROR: INVALID FLAVOR.${CLEAR_TEXT}"
-        echo "Please ensure either 'docker' or 'libvirt' are specified as the flavor in the WinApps configuration file."
+        echo "Please ensure 'docker', 'podman' or 'libvirt' are specified as the flavor in the WinApps configuration file."
         ;;
     esac
 
@@ -255,12 +255,16 @@ function waCheckContainerRunning() {
     # Declare variables.
     local CONTAINER_STATE=""
 
-    # Determine container state.
+    # Determine container state (docker).
     if command -v docker &>/dev/null; then
         CONTAINER_STATE=$(docker ps --filter name="WinApps" --format '{{.Status}}')
-    else
+    fi
+
+    # Determine container state (podman).
+    if [ -z "$CONTAINER_STATE" ]; then
         CONTAINER_STATE=$(podman ps --filter name="WinApps" --format '{{.Status}}')
     fi
+
     CONTAINER_STATE=${CONTAINER_STATE,,} # Convert the string to lowercase.
     CONTAINER_STATE=${CONTAINER_STATE%% *} # Extract the first word.
 
@@ -395,7 +399,12 @@ waLastRun
 waLoadConfig
 waGetFreeRDPCommand
 
-if [ "$WAFLAVOR" = "docker" ]; then
+# If using podman backend, modify the FreeRDP command to enter a new namespace.
+if [ "$WAFLAVOR" = "podman" ]; then
+    FREERDP_COMMAND="podman unshare --rootless-netns ${FREERDP_COMMAND}"
+fi
+
+if [ "$WAFLAVOR" = "docker" ] || [ "$WAFLAVOR" = "podman" ]; then
     RDP_IP="$DOCKER_IP"
     waCheckContainerRunning
 elif [ "$WAFLAVOR" = "libvirt" ]; then

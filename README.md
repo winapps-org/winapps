@@ -1,7 +1,7 @@
 # WinApps
 *The WinApps project, forked from Fmstrat's [original repository](https://github.com/Fmstrat/winapps).*
 
-Run Windows applications (including [Microsoft 365](https://www.microsoft365.com/) and [Adobe Creative Cloud](https://www.adobe.com/creativecloud.html)) on GNU+Linux with `KDE` or `GNOME`, integrated seamlessly as if they were native to the OS.
+Run Windows applications (including [Microsoft 365](https://www.microsoft365.com/) and [Adobe Creative Cloud](https://www.adobe.com/creativecloud.html)) on GNU+Linux with `KDE`, `GNOME` or `XFCE`, integrated seamlessly as if they were native to the OS.
 
 <img src="demo/demo.gif" width=1000 alt="WinApps Demonstration Animation.">
 
@@ -75,10 +75,10 @@ Contributing to the list of supported applications is encouraged through submiss
 
 ## Installation
 ### Step 1: Configure a Windows VM
-The optimal choice for running a Windows VM as a subsystem for WinApps is `Docker`. `Docker` facilitates automated installation processes while leveraging a `KVM/QEMU` backend. Despite continuing to provide documentation for configuring a Windows VM using `libvirt` and `virt-manager`, this method is now considered deprecated.
+The optimal choice for running a Windows VM as a subsystem for WinApps is `Docker`. `Docker` facilitates automated installation processes while leveraging a `KVM/QEMU` backend. Despite continuing to provide documentation for configuring a Windows VM using `virt-manager`, this method is now considered deprecated.
 
 The following guides are available:
-- [Creating a Windows VM with `Docker`](docs/docker.md)
+- [Creating a Windows VM with `Docker` or `Podman`](docs/docker.md)
 - [Creating a Windows VM with `virt-manager`](docs/KVM.md) (Deprecated)
 
 If you already have a Windows VM or server you wish to use with WinApps, you will need to merge `install/RDPApps.reg` into the Windows Registry.
@@ -107,7 +107,8 @@ If you already have a Windows VM or server you wish to use with WinApps, you wil
         sudo emerge --ask=n sys-libs/dialog net-misc/freerdp:3
         ```
 
-Please note that WinApps requires `FreeRDP` version 3 or later. If not available for your distribution through your package manager, you can install the [Flatpak](https://flathub.org/apps/com.freerdp.FreeRDP).
+> [!NOTE]
+> WinApps requires `FreeRDP` version 3 or later. If not available for your distribution through your package manager, you can install the [Flatpak](https://flathub.org/apps/com.freerdp.FreeRDP).
 
 ```bash
 flatpak install flathub com.freerdp.FreeRDP
@@ -121,8 +122,8 @@ RDP_USER="MyWindowsUser"
 RDP_PASS="MyWindowsPassword"
 #RDP_DOMAIN="MYDOMAIN"
 #RDP_IP="192.168.123.111"
-#WAFLAVOR="docker"
-#RDP_SCALE=100
+#WAFLAVOR="docker" # Acceptable values are 'docker', 'podman' and 'libvirt'.
+#RDP_SCALE=100 # Acceptable values are 100, 140, and 180.
 #RDP_FLAGS=""
 #MULTIMON="true"
 #DEBUG="true"
@@ -133,7 +134,7 @@ RDP_PASS="MyWindowsPassword"
 > `RDP_USER` and `RDP_PASS` must correspond to a complete Windows user account and password, such as those created during Windows setup or for a domain user. User/PIN combinations are not valid for RDP access.
 
 > [!NOTE]
-> If you wish to use the older (deprecated) `virt-manager` method, uncomment and change `WAFLAVOR="docker"` to `WAFLAVOR="libvirt"`.
+> If you wish to use an alternative WinApps backend (other than `Docker`), uncomment and change `WAFLAVOR="docker"` to `WAFLAVOR="podman"` or `WAFLAVOR="libvirt"`.
 
 #### Configuration Options Explained
 - When using a pre-existing non-KVM RDP server, you must use `RDP_IP` to specify the location of the Windows server.

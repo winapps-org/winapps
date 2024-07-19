@@ -59,6 +59,9 @@ docker compose kill # Force shut down the Windows VM
 ### Setup `Podman` Container
 Please follow the [`docker` instructions](#setup-docker-container).
 
+> [!NOTE]
+> Ensure `WAFLAVOR` is set to `"podman"` in `~/.config/winapps/winapps.conf`.
+
 ### Installing Windows
 After navigating into the cloned WinApps repository, you can initiate the Windows installation using `podman-compose`.
 ```bash
