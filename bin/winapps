@@ -162,9 +162,6 @@ function waLoadConfig() {
 
     # Update $RDP_SCALE.
     waFixScale
-
-    # Append additional flags or parameters to FreeRDP.
-    [[ -n $RDP_FLAGS ]] && FREERDP_COMMAND="${FREERDP_COMMAND} ${RDP_FLAGS}"
 }
 
 # Name: 'waLastRun'
@@ -226,6 +223,10 @@ function waGetFreeRDPCommand() {
 
     if command -v "$FREERDP_COMMAND" &>/dev/null || [ "$FREERDP_COMMAND" = "flatpak run --command=xfreerdp com.freerdp.FreeRDP" ]; then
         dprint "Using FreeRDP command '${FREERDP_COMMAND}'."
+
+        # Append additional flags or parameters to FreeRDP.
+        # These additional flags are loaded prior in 'waLoadConfig'.
+        [[ -n $RDP_FLAGS ]] && FREERDP_COMMAND="${FREERDP_COMMAND} ${RDP_FLAGS}"
     else
         waThrowExit "$EC_MISSING_FREERDP"
     fi
