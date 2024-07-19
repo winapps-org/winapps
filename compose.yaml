@@ -2,7 +2,10 @@
 
 name: "winapps" # Docker Compose Project Name.
 volumes:
-  data: # Create Volume 'data' @ '/var/lib/docker/volumes/winapps_data/_data'.
+  # Create Volume 'data'.
+  # Located @ '/var/lib/docker/volumes/winapps_data/_data' (Docker).
+  # Located @ '/var/lib/containers/storage/volumes/winapps_data/_data' or '~/.local/share/containers/storage/volumes/winapps_data/_data' (Podman).
+  data:
 services:
   windows:
     image: dockurr/windows # https://hub.docker.com/r/dockurr/windows
