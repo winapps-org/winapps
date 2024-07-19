@@ -310,6 +310,7 @@ function waRunCommand() {
             +dynamic-resolution \
             +auto-reconnect \
             +home-drive \
+            /audio-mode:1 \
             /wm-class:"Microsoft Windows" \
             /v:"$RDP_IP" &>/dev/null &
     elif [ "$1" = "manual" ]; then
@@ -324,6 +325,7 @@ function waRunCommand() {
             +auto-reconnect \
             +clipboard \
             +home-drive \
+            /audio-mode:1 \
             -wallpaper \
             +dynamic-resolution \
             "$MULTI_FLAG" \
@@ -358,6 +360,7 @@ function waRunCommand() {
                 +auto-reconnect \
                 +clipboard \
                 +home-drive \
+                /audio-mode:1 \
                 -wallpaper \
                 +dynamic-resolution \
                 "$MULTI_FLAG" \
@@ -379,6 +382,7 @@ function waRunCommand() {
                 +auto-reconnect \
                 +clipboard \
                 +home-drive \
+                /audio-mode:1 \
                 -wallpaper \
                 +dynamic-resolution \
                 "$MULTI_FLAG" \
