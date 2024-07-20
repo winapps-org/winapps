@@ -1,0 +1,180 @@
+<svg version="1.2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 586 384" width="586" height="384">
+    <title>Open-source-virtualization-stack</title>
+    <style>
+        tspan { white-space:pre }
+        .s0 { fill: #c8c8c8 }
+        .t1 { font-size: 16px;fill: #000000;font-weight: 700;font-family: "Unageo-Bold", "Unageo" }
+        .s2 { fill: #f99b0f }
+        .t3 { font-size: 16px;fill: #ffffff;font-weight: 700;font-family: "Unageo-Bold", "Unageo" }
+        .s4 { fill: #e95420 }
+        .s5 { fill: #ffffff;stroke: #666666;stroke-miterlimit:100;stroke-width: 5 }
+        .s6 { fill: #e5e5e5 }
+        .s7 { fill: #772953 }
+        .s8 { fill: #ffffff }
+    </style>
+    <g id="Hardware">
+        <path id="Hardware_Layer" class="s0" d="m20 332h546c11 0 20 9 20 20v12c0 11-9 20-20 20h-546c-11 0-20-9-20-20v-12c0-11 9-20 20-20z"/>
+        <text id="Hardware_Layer_Text" style="transform: matrix(1,0,0,1,27,364)" >
+            <tspan x="0" y="0" class="t1">H</tspan><tspan  y="0" class="t1">a</tspan><tspan  y="0" class="t1">r</tspan><tspan  y="0" class="t1">d</tspan><tspan  y="0" class="t1">w</tspan><tspan  y="0" class="t1">a</tspan><tspan  y="0" class="t1">r</tspan><tspan  y="0" class="t1">e
+</tspan>
+        </text>
+        <g id="Hardware_Layer_Children">
+            <g id="CPU">
+                <path id="CPU_Box" class="s2" d="m227 348v21h-55v-21z"/>
+                <text id="CPU_Text" style="transform: matrix(1,0,0,1,172,351)" >
+                    <tspan x="11.7" y="12.1" class="t3">C</tspan><tspan  y="12.1" class="t3">P</tspan><tspan  y="12.1" class="t3">U</tspan><tspan  y="12.1" class="t3">
+</tspan>
+                </text>
+            </g>
+            <g id="RAM">
+                <path id="RAM_Box" class="s2" d="m382 348v21h-55v-21z"/>
+                <text id="RAM_Text" style="transform: matrix(1,0,0,1,327,351)" >
+                    <tspan x="10.7" y="13" class="t3">R</tspan><tspan  y="13" class="t3">A</tspan><tspan  y="13" class="t3">M
+</tspan>
+                </text>
+            </g>
+            <g id="Devices">
+                <g id="Device_3">
+                    <path id="Device_Box" class="s2" d="m551 341v21h-55v-21z"/>
+                    <text id="Device_Text" style="transform: matrix(1,0,0,1,496,344)" >
+                        <tspan x="2.5" y="13" class="t3">D</tspan><tspan  y="13" class="t3">e</tspan><tspan  y="13" class="t3">v</tspan><tspan  y="13" class="t3">i</tspan><tspan  y="13" class="t3">c</tspan><tspan  y="13" class="t3">e
+</tspan>
+                    </text>
+                </g>
+                <g id="Device_2">
+                    <path id="Device_Box" class="s2" d="m544 348v21h-55v-21z"/>
+                    <text id="Device_Text" style="transform: matrix(1,0,0,1,489,351)" >
+                        <tspan x="2.5" y="13" class="t3">D</tspan><tspan  y="13" class="t3">e</tspan><tspan  y="13" class="t3">v</tspan><tspan  y="13" class="t3">i</tspan><tspan  y="13" class="t3">c</tspan><tspan  y="13" class="t3">e
+</tspan>
+                    </text>
+                </g>
+                <g id="Device_1">
+                    <path id="Device_Box" class="s2" d="m537 355v21h-55v-21z"/>
+                    <text id="Device_Text" style="transform: matrix(1,0,0,1,482,358)" >
+                        <tspan x="2.5" y="13" class="t3">D</tspan><tspan  y="13" class="t3">e</tspan><tspan  y="13" class="t3">v</tspan><tspan  y="13" class="t3">i</tspan><tspan  y="13" class="t3">c</tspan><tspan  y="13" class="t3">e
+</tspan>
+                    </text>
+                </g>
+            </g>
+        </g>
+    </g>
+    <g id="Linux_Kernel">
+        <path id="Kernel_Layer" class="s0" d="m20 242h546c11 0 20 9 20 20v20c0 11-9 20-20 20h-546c-11 0-20-9-20-20v-20c0-11 9-20 20-20z"/>
+        <text id="Kernel_Layer_Text" style="transform: matrix(1,0,0,1,65,268)" >
+            <tspan x="-19.9" y="0" class="t1">L</tspan><tspan  y="0" class="t1">i</tspan><tspan  y="0" class="t1">n</tspan><tspan  y="0" class="t1">u</tspan><tspan  y="0" class="t1">x</tspan><tspan  y="0" class="t1">
+</tspan>
+            <tspan x="-23.6" y="19.2" class="t1">K</tspan><tspan  y="19.2" class="t1">e</tspan><tspan  y="19.2" class="t1">r</tspan><tspan  y="19.2" class="t1">n</tspan><tspan  y="19.2" class="t1">e</tspan><tspan  y="19.2" class="t1">l
+</tspan>
+        </text>
+        <g id="KVM">
+            <path id="KVM_Layer" class="s4" d="m578 249v45h-403v-45z"/>
+            <text id="KVM_Text" style="transform: matrix(1,0,0,1,175,254)" >
+                <tspan x="184.3" y="24.1" class="t3">K</tspan><tspan  y="24.1" class="t3">V</tspan><tspan  y="24.1" class="t3">M
+</tspan>
+            </text>
+        </g>
+    </g>
+    <g id="QEMU">
+        <path id="QEMU_Layer" class="s0" d="m189 0h376c11 0 20 9 20 20v170c0 11-9 20-20 20h-376c-11 0-20-9-20-20v-170c0-11 9-20 20-20z"/>
+        <g id="VM_1">
+            <path id="VM_Box" class="s5" d="m305 43v160h-122v-160z"/>
+            <g id="VM_Kernel">
+                <path id="VM_Kernel_Box" class="s6" d="m294 147v45h-100v-45z"/>
+                <text id="VM_Kernel_text" style="transform: matrix(1,0,0,1,194,150)" >
+                    <tspan x="12.6" y="24.1" class="t1">V</tspan><tspan  y="24.1" class="t1">M</tspan><tspan  y="24.1" class="t1"> </tspan><tspan  y="24.1" class="t1">K</tspan><tspan  y="24.1" class="t1">e</tspan><tspan  y="24.1" class="t1">r</tspan><tspan  y="24.1" class="t1">n</tspan><tspan  y="24.1" class="t1">e</tspan><tspan  y="24.1" class="t1">l
+</tspan>
+                </text>
+            </g>
+            <g id="VM_Applications">
+                <path id="VM_Applications_Box" class="s7" d="m294 91v45h-100v-45z"/>
+                <text id="VM_Applications_Text" style="transform: matrix(1,0,0,1,194,94)" >
+                    <tspan x="17.5" y="24.1" class="t3">V</tspan><tspan  y="24.1" class="t3">M</tspan><tspan  y="24.1" class="t3"> </tspan><tspan  y="24.1" class="t3">A</tspan><tspan  y="24.1" class="t3">p</tspan><tspan  y="24.1" class="t3">p</tspan><tspan  y="24.1" class="t3">s
+</tspan>
+                </text>
+            </g>
+            <text id="VM_Box_Text" style="transform: matrix(1,0,0,1,244,73)" >
+                <tspan x="-41.4" y="0" class="t1">G</tspan><tspan  y="0" class="t1">u</tspan><tspan  y="0" class="t1">e</tspan><tspan  y="0" class="t1">s</tspan><tspan  y="0" class="t1">t</tspan><tspan  y="0" class="t1"> </tspan><tspan  y="0" class="t1">(</tspan><tspan  y="0" class="t1">V</tspan><tspan  y="0" class="t1">M</tspan><tspan  y="0" class="t1">)
+</tspan>
+            </text>
+        </g>
+        <g id="VM_2">
+            <path id="VM_Box" class="s5" d="m438 43v160h-122v-160z"/>
+            <g id="VM_Kernel">
+                <path id="VM_Kernel_Box" class="s6" d="m427 147v45h-100v-45z"/>
+                <text id="VM_Kernel_text" style="transform: matrix(1,0,0,1,327,150)" >
+                    <tspan x="12.6" y="24.1" class="t1">V</tspan><tspan  y="24.1" class="t1">M</tspan><tspan  y="24.1" class="t1"> </tspan><tspan  y="24.1" class="t1">K</tspan><tspan  y="24.1" class="t1">e</tspan><tspan  y="24.1" class="t1">r</tspan><tspan  y="24.1" class="t1">n</tspan><tspan  y="24.1" class="t1">e</tspan><tspan  y="24.1" class="t1">l
+</tspan>
+                </text>
+            </g>
+            <g id="VM_Applications">
+                <path id="VM_Applications_Box" class="s7" d="m427 91v45h-100v-45z"/>
+                <text id="VM_Applications_Text" style="transform: matrix(1,0,0,1,327,94)" >
+                    <tspan x="17.5" y="24.1" class="t3">V</tspan><tspan  y="24.1" class="t3">M</tspan><tspan  y="24.1" class="t3"> </tspan><tspan  y="24.1" class="t3">A</tspan><tspan  y="24.1" class="t3">p</tspan><tspan  y="24.1" class="t3">p</tspan><tspan  y="24.1" class="t3">s
+</tspan>
+                </text>
+            </g>
+            <text id="VM_Box_Text" style="transform: matrix(1,0,0,1,377,73)" >
+                <tspan x="-41.4" y="0" class="t1">G</tspan><tspan  y="0" class="t1">u</tspan><tspan  y="0" class="t1">e</tspan><tspan  y="0" class="t1">s</tspan><tspan  y="0" class="t1">t</tspan><tspan  y="0" class="t1"> </tspan><tspan  y="0" class="t1">(</tspan><tspan  y="0" class="t1">V</tspan><tspan  y="0" class="t1">M</tspan><tspan  y="0" class="t1">)
+</tspan>
+            </text>
+        </g>
+        <g id="VM_3">
+            <path id="VM_Box" class="s5" d="m571 43v160h-122v-160z"/>
+            <g id="VM_Kernel">
+                <path id="VM_Kernel_Box" class="s6" d="m560 147v45h-100v-45z"/>
+                <text id="VM_Kernel_text" style="transform: matrix(1,0,0,1,460,150)" >
+                    <tspan x="12.6" y="24.1" class="t1">V</tspan><tspan  y="24.1" class="t1">M</tspan><tspan  y="24.1" class="t1"> </tspan><tspan  y="24.1" class="t1">K</tspan><tspan  y="24.1" class="t1">e</tspan><tspan  y="24.1" class="t1">r</tspan><tspan  y="24.1" class="t1">n</tspan><tspan  y="24.1" class="t1">e</tspan><tspan  y="24.1" class="t1">l
+</tspan>
+                </text>
+            </g>
+            <g id="VM_Applications">
+                <path id="VM_Applications_Box" class="s7" d="m560 91v45h-100v-45z"/>
+                <text id="VM_Applications_Text" style="transform: matrix(1,0,0,1,460,94)" >
+                    <tspan x="17.5" y="24.1" class="t3">V</tspan><tspan  y="24.1" class="t3">M</tspan><tspan  y="24.1" class="t3"> </tspan><tspan  y="24.1" class="t3">A</tspan><tspan  y="24.1" class="t3">p</tspan><tspan  y="24.1" class="t3">p</tspan><tspan  y="24.1" class="t3">s
+</tspan>
+                </text>
+            </g>
+            <text id="VM_Box_Text" style="transform: matrix(1,0,0,1,510,73)" >
+                <tspan x="-41.4" y="0" class="t1">G</tspan><tspan  y="0" class="t1">u</tspan><tspan  y="0" class="t1">e</tspan><tspan  y="0" class="t1">s</tspan><tspan  y="0" class="t1">t</tspan><tspan  y="0" class="t1"> </tspan><tspan  y="0" class="t1">(</tspan><tspan  y="0" class="t1">V</tspan><tspan  y="0" class="t1">M</tspan><tspan  y="0" class="t1">)
+</tspan>
+            </text>
+        </g>
+        <text id="QEMU_Layer_Text" style="transform: matrix(1,0,0,1,377,27)" >
+            <tspan x="-23.2" y="0" class="t1">Q</tspan><tspan  y="0" class="t1">E</tspan><tspan  y="0" class="t1">M</tspan><tspan  y="0" class="t1">U
+</tspan>
+        </text>
+    </g>
+    <g id="GNU/Linux_Applications">
+        <path id="GNU/Linux_Applications_Box" class="s0" d="m20 0h90c11 0 20 9 20 20v170c0 11-9 20-20 20h-90c-11 0-20-9-20-20v-170c0-11 9-20 20-20z"/>
+        <g id="libvirt">
+            <path id="libvirt_Box" class="s7" d="m116 142v50h-102v-50z"/>
+            <text id="libvirt" style="transform: matrix(1,0,0,1,14,145)" >
+                <tspan x="29.4" y="26.6" class="t3">l</tspan><tspan  y="26.6" class="t3">i</tspan><tspan  y="26.6" class="t3">b</tspan><tspan  y="26.6" class="t3">v</tspan><tspan  y="26.6" class="t3">i</tspan><tspan  y="26.6" class="t3">r</tspan><tspan  y="26.6" class="t3">t
+</tspan>
+            </text>
+        </g>
+        <g id="virt-manager">
+            <path id="virt-manager_Box" class="s7" d="m117 67v46h-104v-46z"/>
+            <text id="virt-manager" style="transform: matrix(1,0,0,1,13,70)" >
+                <tspan x="1.8" y="24.6" class="t3">v</tspan><tspan  y="24.6" class="t3">i</tspan><tspan  y="24.6" class="t3">r</tspan><tspan  y="24.6" class="t3">t</tspan><tspan  y="24.6" class="t3">-</tspan><tspan  y="24.6" class="t3">m</tspan><tspan  y="24.6" class="t3">a</tspan><tspan  y="24.6" class="t3">n</tspan><tspan  y="24.6" class="t3">a</tspan><tspan  y="24.6" class="t3">g</tspan><tspan  y="24.6" class="t3">e</tspan><tspan  y="24.6" class="t3">r
+</tspan>
+            </text>
+        </g>
+        <text id="GNU/Linux_Applications_Text" style="transform: matrix(1,0,0,1,65,26)" >
+            <tspan x="-40.9" y="0" class="t1">G</tspan><tspan  y="0" class="t1">N</tspan><tspan  y="0" class="t1">U</tspan><tspan  y="0" class="t1">/</tspan><tspan  y="0" class="t1">L</tspan><tspan  y="0" class="t1">i</tspan><tspan  y="0" class="t1">n</tspan><tspan  y="0" class="t1">u</tspan><tspan  y="0" class="t1">x</tspan><tspan  y="0" class="t1">
+</tspan>
+            <tspan x="-46" y="19.2" class="t1">A</tspan><tspan  y="19.2" class="t1">p</tspan><tspan  y="19.2" class="t1">p</tspan><tspan  y="19.2" class="t1">l</tspan><tspan  y="19.2" class="t1">i</tspan><tspan  y="19.2" class="t1">c</tspan><tspan  y="19.2" class="t1">a</tspan><tspan  y="19.2" class="t1">t</tspan><tspan  y="19.2" class="t1">i</tspan><tspan  y="19.2" class="t1">o</tspan><tspan  y="19.2" class="t1">n</tspan><tspan  y="19.2" class="t1">s
+</tspan>
+        </text>
+    </g>
+    <g id="Arrows">
+        <path id="Arrow_0" fill-rule="evenodd" class="s8" d="m75.7 115c-0.6-0.7-1.6-0.7-2.2 0l-6.2 6.2c-0.6 0.6-0.6 1.6 0 2.2 0.6 0.6 1.6 0.6 2.2 0l3.5-3.6v18c0 0.9 0.7 1.5 1.6 1.5 0.8 0 1.5-0.6 1.5-1.5v-18l3.6 3.6c0.6 0.6 1.6 0.6 2.2 0 0.6-0.6 0.6-1.6 0-2.2 0 0-6.2-6.2-6.2-6.2z"/>
+        <path id="Arrow_1" fill-rule="evenodd" class="s8" d="m53.5 138.9c0.6 0.6 1.6 0.6 2.2 0l6.2-6.2c0.6-0.6 0.6-1.6 0-2.2-0.6-0.6-1.6-0.6-2.2 0l-3.6 3.5v-17.9c0-0.9-0.7-1.6-1.5-1.6-0.9 0-1.6 0.7-1.6 1.6v17.9l-3.5-3.5c-0.6-0.6-1.6-0.6-2.2 0-0.6 0.6-0.6 1.6 0 2.2 0 0 6.2 6.2 6.2 6.2z"/>
+        <path id="Arrow_2" fill-rule="evenodd" class="s8" d="m159.5 158c0.7-0.6 0.7-1.6 0-2.2l-6.2-6.2c-0.6-0.6-1.6-0.6-2.2 0-0.6 0.6-0.6 1.6 0 2.2l3.6 3.6h-18c-0.9 0-1.5 0.7-1.5 1.5 0 0.9 0.6 1.6 1.5 1.6h18l-3.6 3.5c-0.6 0.6-0.6 1.6 0 2.2 0.6 0.6 1.6 0.6 2.2 0 0 0 6.2-6.2 6.2-6.2z"/>
+        <path id="Arrow_3" fill-rule="evenodd" class="s8" d="m135.6 175.8c-0.6 0.6-0.6 1.6 0 2.2l6.2 6.2c0.6 0.6 1.6 0.6 2.2 0 0.6-0.6 0.6-1.6 0-2.2l-3.5-3.5h17.9c0.9 0 1.6-0.7 1.6-1.6 0-0.8-0.7-1.5-1.6-1.5h-17.9l3.5-3.6c0.6-0.6 0.6-1.6 0-2.2-0.6-0.6-1.6-0.6-2.2 0 0 0-6.2 6.2-6.2 6.2z"/>
+        <path id="Arrow_4" fill-rule="evenodd" class="s8" d="m281.5 238.9c0.6 0.6 1.6 0.6 2.2 0l6.2-6.2c0.6-0.6 0.6-1.6 0-2.2-0.6-0.6-1.6-0.6-2.2 0l-3.6 3.5v-17.9c0-0.9-0.7-1.6-1.5-1.6-0.9 0-1.6 0.7-1.6 1.6v17.9l-3.5-3.5c-0.6-0.6-1.6-0.6-2.2 0-0.6 0.6-0.6 1.6 0 2.2 0 0 6.2 6.2 6.2 6.2z"/>
+        <path id="Arrow_5" fill-rule="evenodd" class="s8" d="m303.7 215c-0.6-0.7-1.6-0.7-2.2 0l-6.2 6.2c-0.6 0.6-0.6 1.6 0 2.2 0.6 0.6 1.6 0.6 2.2 0l3.5-3.6v18c0 0.9 0.7 1.5 1.6 1.5 0.8 0 1.5-0.6 1.5-1.5v-18l3.6 3.6c0.6 0.6 1.6 0.6 2.2 0 0.6-0.6 0.6-1.6 0-2.2 0 0-6.2-6.2-6.2-6.2z"/>
+        <path id="Arrow_6" fill-rule="evenodd" class="s8" d="m281.5 328.9c0.6 0.6 1.6 0.6 2.2 0l6.2-6.2c0.6-0.6 0.6-1.6 0-2.2-0.6-0.6-1.6-0.6-2.2 0l-3.6 3.5v-17.9c0-0.9-0.7-1.6-1.5-1.6-0.9 0-1.6 0.7-1.6 1.6v17.9l-3.5-3.5c-0.6-0.6-1.6-0.6-2.2 0-0.6 0.6-0.6 1.6 0 2.2 0 0 6.2 6.2 6.2 6.2z"/>
+        <path id="Arrow_7" fill-rule="evenodd" class="s8" d="m303.7 305c-0.6-0.7-1.6-0.7-2.2 0l-6.2 6.2c-0.6 0.6-0.6 1.6 0 2.2 0.6 0.6 1.6 0.6 2.2 0l3.5-3.6v18c0 0.9 0.7 1.5 1.6 1.5 0.8 0 1.5-0.6 1.5-1.5v-18l3.6 3.6c0.6 0.6 1.6 0.6 2.2 0 0.6-0.6 0.6-1.6 0-2.2 0 0-6.2-6.2-6.2-6.2z"/>
+    </g>
+</svg>
