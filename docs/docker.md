@@ -1,96 +1,87 @@
-# Creating a Virtual Machine in Docker
+# Creating a Windows VM in `Docker` or `Podman`
+Although WinApps supports using `QEMU+KVM+libvirt` as a backend for running Windows virtual machines, it is recommended to use `Docker` or `Podman`. These backends automate the setup process, eliminating the need for manual configuration and optimisation of the Windows virtual machine.
 
-## Why Docker?
+> [!IMPORTANT]
+Running a Windows virtual machine using `Docker` or `Podman` as a backend is only possible on GNU/Linux systems. This is due to the necessity of kernel interfaces, such as the KVM hypervisor, for achieving acceptable performance. The performance of the virtual machine can vary based on the version of the Linux kernel, with newer releases generally offering better performance.
 
-While working with `virsh` is completely fine for WinApps, you have to set up and optimize your VM manually.
-Docker, on the other hand, sets up most of the stuff automatically and makes the VM highly portable between Linux distros.
+> [!IMPORTANT]
+> WinApps does NOT officially support versions of Windows prior to Windows 10. Despite this, it may be possible to achieve a successful installation with some additional experimentation. If you find a way to achieve this, please share your solution through a pull request for the benefit of other users.
 
-# Requirements
+## `Docker`
+### Installation
+You can find a guide for installing `Docker Engine` [here](https://docs.docker.com/engine/install/).
 
-Since Docker manages the dependencies of the container automatically, you only need to install Docker itself.
+### Setup `Docker` Container
+WinApps utilises `docker compose` to configure Windows VMs. A suitable [`compose.yaml`](https://github.com/winapps-org/winapps/blob/main/compose.yaml) file is included in the root directory of the WinApps repository.
 
-You can try using Podman too because of their faster container startup times,
-but note that Podman and Docker aren't always fully interchangeable. In case you want to follow this guide using Podman,
-you will have to install the `docker` CLI to be able to run `docker compose` commands.
-You will also have to enable the Podman socket. Refer to the Podman docs for how to do that.
+Prior to initiating the installation, you can modify the RAM and number of CPU cores available to the Windows VM by changing `RAM_SIZE` and `CPU_CORES` within `compose.yaml`.
 
-See:
-
-- [Podman installation docs](https://podman.io/docs/installation)
-- [Docker installation docs](https://docs.docker.com/engine/install)
-- [Using `docker compose` with Podman](https://www.redhat.com/sysadmin/podman-docker-compose) (slightly outdated)
+It is also possible to specify the version of Windows you wish to install within `compose.yaml` by modifying `VERSION`.
 
 > [!NOTE]
-> This will only work on Linux systems since the VM needs some kernel interfaces (like KVM). Because of this,
-> performance can vary depending on kernel version (newer will likely perform better).
+> WinApps uses a stripped-down Windows installation by default. Although this is recommended, you can request a stock Windows installation by changing `VERSION` to one of the versions listed in the README of the [original GitHub repository](https://github.com/dockur/windows).
 
-# Setup Docker Container
+Please refer to the [original GitHub repository](https://github.com/dockur/windows) for more information on additional configuration options.
 
-The easiest way to set up a Windows VM is by using docker compose. A compose file that looks like this is already shipped with WinApps:
-
-```yaml
-name: "winapps"
-
-volumes:
-  data:
-
-services:
-  windows:
-    image: dockurr/windows
-    container_name: windows
-    environment:
-      VERSION: "tiny11"
-      RAM_SIZE: "4G"
-      CPU_CORES: "4"
-    privileged: true
-    ports:
-      - 8006:8006
-      - 3389:3389/tcp
-      - 3389:3389/udp
-    stop_grace_period: 2m
-    restart: on-failure
-    volumes:
-      - data:/storage
+### Installing Windows
+After navigating into the cloned WinApps repository, you can initiate the Windows installation using `docker compose`.
+```bash
+docker compose up
 ```
 
-Now you can tune the RAM/usage by changing `RAM_SIZE` & `CPU_CORES`. You can also specify
-the Windows versions you want to use. You might also want to take a look at the [repo of the Docker image](https://github.com/dockur/windows) for further information.
+You can then access the Windows virtual machine via a VNC connection to complete the Windows setup by navigating to http://127.0.0.1:8006 in your web browser.
 
-This compose file uses Windows 11 by default. You can use Windows 10 by changing the `VERSION` to `tiny10`.
+### Installing WinApps
+`Docker` simplifies the WinApps installation process by eliminating the need for any additional configuration of the Windows virtual machine. Once the Windows virtual machine is up and running, you can directly launch the WinApps installer, which should automatically detect and interface with Windows.
+
+```bash
+./installer.sh
+```
+
+### Subsequent Use
+```bash
+docker compose start # Power on the Windows VM
+docker compose pause # Pause the Windows VM
+docker compose unpause # Resume the Windows VM
+docker compose restart # Restart the Windows VM
+docker compose stop # Gracefully shut down the Windows VM
+docker compose kill # Force shut down the Windows VM
+```
 
 > [!NOTE]
-> We use a stripped-down Windows installation by default. This is recommended,
-> but you can still opt for stock Windows by changing the version to one of the versions listed in
-> the README of the images repository linked above.
+> The above `docker compose` commands must be run within the same directory containing `compose.yaml`.
+
+## `Podman`
+### Installation
+1. Install `Podman` using [this guide](https://podman.io/docs/installation).
+2. Install `podman-compose` using [this guide](https://github.com/containers/podman-compose?tab=readme-ov-file#installation).
+
+### Setup `Podman` Container
+Please follow the [`docker` instructions](#setup-docker-container).
 
 > [!NOTE]
-> We don't officially support older versions than Windows 10. However, they might still work with some additional tuning.
+> Ensure `WAFLAVOR` is set to `"podman"` in `~/.config/winapps/winapps.conf`.
 
-You can now just run:
-
-```shell
-docker compose up -d
+### Installing Windows
+After navigating into the cloned WinApps repository, you can initiate the Windows installation using `podman-compose`.
+```bash
+podman-compose up
 ```
 
-to run the VM in the background.
+You can then access the Windows virtual machine via a VNC connection to complete the Windows setup by navigating to http://127.0.0.1:8006 in your web browser.
 
-After this, just open http://127.0.0.1:8006 in your web browser and wait for the Windows installation to finish.
+### Installing WinApps
+Please follow the [`docker` instructions](#installing-winapps).
 
-> [!WARNING]
-> Make sure to change the `RDP_IP` in your WinApps config to `127.0.0.1`.
-
-Now you should be ready to go and try to connect to your VM with WinApps.
-
-For stopping the VM, just use:
-
-```shell
-docker compose stop
+### Subsequent Use
+```bash
+podman-compose start # Power on the Windows VM
+podman-compose pause # Pause the Windows VM
+podman-compose unpause # Resume the Windows VM
+podman-compose restart # Restart the Windows VM
+podman-compose stop # Gracefully shut down the Windows VM
+podman-compose kill # Force shut down the Windows VM
 ```
 
-For starting again afterward, use:
-
-```shell
-docker compose start
-```
-
-(All compose commands have to be run from the directory where the `compose.yaml` is located.)
+> [!NOTE]
+> The above `podman-compose` commands must be run within the same directory containing `compose.yaml`.

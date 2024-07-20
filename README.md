@@ -2,13 +2,13 @@
 <p align="center"><img align="center" width="700" src="./icons/banner_dark.svg#gh-light-mode-only"/></p>
 <hr>
 
-Run Windows applications (including [Microsoft 365](https://www.microsoft365.com/) and [Adobe Creative Cloud](https://www.adobe.com/creativecloud.html)) on GNU/Linux with `KDE` or `GNOME`, integrated seamlessly as if they were native to the OS.
+Run Windows applications (including [Microsoft 365](https://www.microsoft365.com/) and [Adobe Creative Cloud](https://www.adobe.com/creativecloud.html)) on GNU+Linux with `KDE`, `GNOME` or `XFCE`, integrated seamlessly as if they were native to the OS.
 
 <img src="demo/demo.gif" width=1000 alt="WinApps Demonstration Animation.">
 
 ## Underlying Mechanism
 WinApps works by:
-1. Running Windows in a `Docker` or `libvirt + KVM/QEMU` virtual machine (deprecated).
+1. Running Windows in a `Docker`, `Podman` or `libvirt` virtual machine.
 2. Querying Windows for all installed applications.
 3. Creating shortcuts to selected Windows applications on the host GNU/Linux OS.
 4. Using [`FreeRDP`](https://www.freerdp.com/) as a backend to seamlessly render Windows applications alongside GNU/Linux applications.
@@ -249,13 +249,13 @@ Contributing to the list of supported applications is encouraged through submiss
 
 ## Installation
 ### Step 1: Configure a Windows VM
-The optimal choice for running a Windows VM as a subsystem for WinApps is `Docker`. `Docker` facilitates automated installation processes while leveraging a `KVM/QEMU` backend. Despite continuing to provide documentation for configuring a Windows VM using `libvirt` and `virt-manager`, this method is now considered deprecated.
+Both `Docker` and `Podman` are recommended backends for running the Windows virtual machine, as they facilitate an automated Windows installation process. WinApps is also compatible with `libvirt`. While this method requires considerably more manual configuration, it also provides greater virtual machine customisation options. All three methods leverage the `KVM` hypervisor, ensuring excellent virtual machine performance. Ultimately, the choice of backend depends on your specific use case.
 
 The following guides are available:
-- [Creating a Windows VM with `Docker`](docs/docker.md)
-- [Creating a Windows VM with `virt-manager`](docs/KVM.md) (Deprecated)
+- [Creating a Windows VM with `Docker` or `Podman`](docs/docker.md)
+- [Creating a Windows VM with `libvirt`](docs/libvirt.md)
 
-If you already have a Windows VM or server you wish to use with WinApps, you will need to merge `install/RDPApps.reg` into the Windows Registry.
+If you already have a Windows VM or server you wish to use with WinApps, you will need to merge `install/RDPApps.reg` into the Windows Registry manually.
 
 ### Step 2: Clone WinApps Repository and Dependencies
 1. Clone the WinApps GitHub repository.
@@ -281,7 +281,8 @@ If you already have a Windows VM or server you wish to use with WinApps, you wil
         sudo emerge --ask=n sys-libs/dialog net-misc/freerdp:3
         ```
 
-Please note that WinApps requires `FreeRDP` version 3 or later. If not available for your distribution through your package manager, you can install the [Flatpak](https://flathub.org/apps/com.freerdp.FreeRDP).
+> [!NOTE]
+> WinApps requires `FreeRDP` version 3 or later. If not available for your distribution through your package manager, you can install the [Flatpak](https://flathub.org/apps/com.freerdp.FreeRDP).
 
 ```bash
 flatpak install flathub com.freerdp.FreeRDP
@@ -295,24 +296,29 @@ RDP_USER="MyWindowsUser"
 RDP_PASS="MyWindowsPassword"
 #RDP_DOMAIN="MYDOMAIN"
 #RDP_IP="192.168.123.111"
-#RDP_SCALE=100
+#WAFLAVOR="docker" # Acceptable values are 'docker', 'podman' and 'libvirt'.
+#RDP_SCALE=100 # Acceptable values are 100, 140, and 180.
 #RDP_FLAGS=""
 #MULTIMON="true"
 #DEBUG="true"
 #FREERDP_COMMAND="xfreerdp"
 ```
 
-`RDP_USER` and `RDP_PASS` must correspond to a complete Windows user account and password, such as those created during Windows setup or for a domain user. User/PIN combinations are not valid for RDP access.
+> [!NOTE]
+> `RDP_USER` and `RDP_PASS` must correspond to a complete Windows user account and password, such as those created during Windows setup or for a domain user. User/PIN combinations are not valid for RDP access.
+
+> [!NOTE]
+> If you wish to use an alternative WinApps backend (other than `Docker`), uncomment and change `WAFLAVOR="docker"` to `WAFLAVOR="podman"` or `WAFLAVOR="libvirt"`.
 
 #### Configuration Options Explained
-- When using a pre-existing non-KVM RDP server, you must use `RDP_IP` to specify the location of the Windows server.
-- If running a Windows VM in KVM with NAT enabled, leave `RDP_IP` commented out and WinApps will auto-detect the local IP address for the VM.
+- If using a pre-existing Windows RDP server on your LAN, you must use `RDP_IP` to specify the location of the Windows server. You may also wish to configure a static IP address for this server.
+- If running a Windows VM using `libvirt` with NAT enabled, leave `RDP_IP` commented out and WinApps will auto-detect the local IP address for the VM.
 - For domain users, you can uncomment and change `RDP_DOMAIN`.
-- On high-resolution (UHD) displays, you can set `RDP_SCALE` to the scale you would like to use [100|140|160|180].
-- To add flags to the FreeRDP call, such as `/audio-mode:1` to pass in a microphone, uncomment and use the `RDP_FLAGS` configuration option.
+- On high-resolution (UHD) displays, you can set `RDP_SCALE` to the scale you would like to use (100, 140 or 180).
+- To add additional flags to the FreeRDP call (e.g. `/prevent-session-lock 120`), uncomment and use the `RDP_FLAGS` configuration option.
 - For multi-monitor setups, you can try enabling `MULTIMON`. A FreeRDP bug may result in a black screen however, in which case you should revert this change.
-- If you enable `DEBUG`, a log will be created on each application start in `~/.local/share/winapps/winapps.log`
-- If using a system on which the FreeRDP command is not `xfreerdp`, the correct command can be specified using `FREERDP_COMMAND`.
+- If you enable `DEBUG`, a log will be created on each application start in `~/.local/share/winapps/winapps.log`.
+- If using a system on which the FreeRDP command is not `xfreerdp` or `xfreerdp3`, the correct command can be specified using `FREERDP_COMMAND`.
 
 ### Step 4: Run the WinApps Installer
 Run the WinApps installer.
@@ -329,7 +335,7 @@ Adding your own applications with custom icons and MIME types to the installer i
 1. Modify the name and variables to reflect the appropriate/desired values for your application.
 2. Replace `icon.svg` with an SVG for your application (ensuring the icon is appropriately licensed).
 3. Remove and reinstall WinApps.
-4. (Optional, but strongly encouraged) Submit a pull request to add your application to WinApps as an officially supported application once you have tested your configuration files to verify functionality.
+4. Submit a pull request to add your application to WinApps as an officially supported application once you have tested and verified your configuration (optional, but encouraged).
 
 ## Running Applications Manually
 WinApps offers a manual mode for running applications that were not configured by the WinApps installer. This is completed with the `manual` flag. Executables that are in the Windows PATH do not require full path definition.

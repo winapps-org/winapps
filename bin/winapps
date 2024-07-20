@@ -9,10 +9,11 @@ readonly CLEAR_TEXT="\033[0m"       # Clear
 readonly EC_MISSING_CONFIG=1
 readonly EC_MISSING_FREERDP=2
 readonly EC_NOT_IN_GROUP=3
-readonly EC_VM_NOT_RUNNING=4
-readonly EC_VM_NO_IP=5
-readonly EC_VM_BAD_PORT=6
+readonly EC_NOT_RUNNING=4
+readonly EC_NO_IP=5
+readonly EC_BAD_PORT=6
 readonly EC_UNSUPPORTED_APP=7
+readonly EC_INVALID_FLAVOR=8
 
 # PATHS
 readonly APPDATA_PATH="${HOME}/.local/share/winapps"
@@ -24,8 +25,9 @@ readonly CONFIG_PATH="${HOME}/.config/winapps/winapps.conf"
 readonly SCRIPT_DIR_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
 
 # OTHER
-readonly VM_NAME="RDPWindows"
+readonly VM_NAME="RDPWindows" # FOR 'libvirt' ONLY
 readonly RDP_PORT=3389
+readonly DOCKER_IP="127.0.0.1"
 # shellcheck disable=SC2155 # Silence warnings regarding masking return values through simultaneous declaration and assignment.
 readonly RUN="$(date)-${RANDOM}"
 
@@ -35,6 +37,7 @@ RDP_USER=""
 RDP_PASS=""
 RDP_DOMAIN=""
 RDP_IP=""
+WAFLAVOR="docker"
 RDP_FLAGS=""
 FREERDP_COMMAND=""
 RDP_SCALE=100
@@ -68,25 +71,30 @@ function waThrowExit() {
         echo "  sudo usermod -a -G libvirt $(whoami)"
         echo "  sudo usermod -a -G kvm $(whoami)"
         ;;
-    "$EC_VM_NOT_RUNNING")
-        dprint "ERROR: VM NOT RUNNING. EXITING."
-        echo -e "${ERROR_TEXT}ERROR: VM NOT RUNNING.${CLEAR_TEXT}"
-        echo "Please ensure the Windows VM is powered on."
+    "$EC_NOT_RUNNING")
+        dprint "ERROR: WINDOWS NOT RUNNING. EXITING."
+        echo -e "${ERROR_TEXT}ERROR: WINDOWS NOT RUNNING.${CLEAR_TEXT}"
+        echo "Please ensure Windows is running."
         ;;
-    "$EC_VM_NO_IP")
-        dprint "ERROR: VM UNREACHABLE. EXITING."
-        echo -e "${ERROR_TEXT}ERROR: VM UNREACHABLE.${CLEAR_TEXT}"
-        echo "Please ensure the Windows VM is assigned an IP address."
+    "$EC_NO_IP")
+        dprint "ERROR: WINDOWS UNREACHABLE. EXITING."
+        echo -e "${ERROR_TEXT}ERROR: WINDOWS UNREACHABLE.${CLEAR_TEXT}"
+        echo "Please ensure Windows is assigned an IP address."
         ;;
-    "$EC_VM_BAD_PORT")
+    "$EC_BAD_PORT")
         dprint "ERROR: RDP PORT CLOSED. EXITING."
         echo -e "${ERROR_TEXT}ERROR: RDP PORT CLOSED.${CLEAR_TEXT}"
-        echo "Please ensure Remote Desktop is correctly configured on the Windows VM."
+        echo "Please ensure Remote Desktop is correctly configured on Windows."
         ;;
     "$EC_UNSUPPORTED_APP")
         dprint "ERROR: APPLICATION NOT FOUND. EXITING."
         echo -e "${ERROR_TEXT}ERROR: APPLICATION NOT FOUND.${CLEAR_TEXT}"
         echo "Please ensure the program is correctly configured as an officially supported application."
+        ;;
+    "$EC_INVALID_FLAVOR")
+        dprint "ERROR: INVALID FLAVOR. EXITING."
+        echo -e "${ERROR_TEXT}ERROR: INVALID FLAVOR.${CLEAR_TEXT}"
+        echo "Please ensure 'docker', 'podman' or 'libvirt' are specified as the flavor in the WinApps configuration file."
         ;;
     esac
 
@@ -104,6 +112,40 @@ function dprint() {
     [ "$DEBUG" = "true" ] && echo "[$RUN] $1" >>"$LOG_PATH"
 }
 
+# Name: 'waFixScale'
+# Role: Since FreeRDP only supports '/scale' values of 100, 140 or 180, find the closest supported argument to the user's configuration.
+function waFixScale() {
+    # Define variables.
+    local OLD_SCALE=100
+    local VALID_SCALE_1=100
+    local VALID_SCALE_2=140
+    local VALID_SCALE_3=180
+
+    # Check for an unsupported value.
+    if [ "$RDP_SCALE" != "$VALID_SCALE_1" ] && [ "$RDP_SCALE" != "$VALID_SCALE_2" ] && [ "$RDP_SCALE" != "$VALID_SCALE_3" ]; then
+        # Save the unsupported scale.
+        OLD_SCALE="$RDP_SCALE"
+
+        # Calculate the absolute differences.
+        local DIFF_1=$(( RDP_SCALE > VALID_SCALE_1 ? RDP_SCALE - VALID_SCALE_1 : VALID_SCALE_1 - RDP_SCALE ))
+        local DIFF_2=$(( RDP_SCALE > VALID_SCALE_2 ? RDP_SCALE - VALID_SCALE_2 : VALID_SCALE_2 - RDP_SCALE ))
+        local DIFF_3=$(( RDP_SCALE > VALID_SCALE_3 ? RDP_SCALE - VALID_SCALE_3 : VALID_SCALE_3 - RDP_SCALE ))
+
+        # Set the final scale to the valid scale value with the smallest absolute difference.
+        if (( DIFF_1 <= DIFF_2 && DIFF_1 <= DIFF_3 )); then
+            RDP_SCALE="$VALID_SCALE_1"
+        elif (( DIFF_2 <= DIFF_1 && DIFF_2 <= DIFF_3 )); then
+            RDP_SCALE="$VALID_SCALE_2"
+        else
+            RDP_SCALE="$VALID_SCALE_3"
+        fi
+
+        # Print feedback.
+        dprint "WARNING: Unsupported RDP_SCALE value '${OLD_SCALE}'. Defaulting to '${RDP_SCALE}'."
+        echo "WARNING: Unsupported RDP_SCALE value '${OLD_SCALE}' detected. Defaulting to '${RDP_SCALE}'."
+    fi
+}
+
 # Name: 'waLoadConfig'
 # Role: Load the variables within the WinApps configuration file.
 function waLoadConfig() {
@@ -118,8 +160,8 @@ function waLoadConfig() {
     # Update 'MULTI_FLAG' based on 'MULTIMON'.
     MULTI_FLAG=$([[ $MULTIMON == "true" ]] && echo "/multimon" || echo "+span")
 
-    # Append additional flags or parameters to FreeRDP.
-    [[ -n $RDP_FLAGS ]] && FREERDP_COMMAND="${FREERDP_COMMAND} ${RDP_FLAGS}"
+    # Update $RDP_SCALE.
+    waFixScale
 }
 
 # Name: 'waLastRun'
@@ -141,20 +183,25 @@ function waLastRun() {
     dprint "THIS_RUN: ${CURR_RUN_UNIX_TIME}"
 }
 
+# Name: 'waGetFreeRDPCommand'
+# Role: Determine the correct FreeRDP command to use.
 function waGetFreeRDPCommand() {
+    # Declare variables.
+    local FREERDP_MAJOR_VERSION="" # Stores the major version of the installed copy of FreeRDP.
+
     # Attempt to set a FreeRDP command if the command variable is empty.
     if [ -z "$FREERDP_COMMAND" ]; then
         # Check for 'xfreerdp'.
         if command -v xfreerdp &>/dev/null; then
             # Check FreeRDP major version is 3 or greater.
-            FREERDP_MAJOR_VERSION=$(xfreerdp --version | head -n 1 | grep -o -m 1 '\b[0-9]\S*' | cut -d'.' -f1)
+            FREERDP_MAJOR_VERSION=$(xfreerdp --version | head -n 1 | grep -o -m 1 '\b[0-9]\S*' | head -n 1 | cut -d'.' -f1)
             if [[ $FREERDP_MAJOR_VERSION =~ ^[0-9]+$ ]] && ((FREERDP_MAJOR_VERSION >= 3)); then
                 FREERDP_COMMAND="xfreerdp"
             fi
         # Check for 'xfreerdp3'.
         elif command -v xfreerdp3 &>/dev/null; then
             # Check FreeRDP major version is 3 or greater.
-            FREERDP_MAJOR_VERSION=$(xfreerdp3 --version | head -n 1 | grep -o -m 1 '\b[0-9]\S*' | cut -d'.' -f1)
+            FREERDP_MAJOR_VERSION=$(xfreerdp3 --version | head -n 1 | grep -o -m 1 '\b[0-9]\S*' | head -n 1 | cut -d'.' -f1)
             if [[ $FREERDP_MAJOR_VERSION =~ ^[0-9]+$ ]] && ((FREERDP_MAJOR_VERSION >= 3)); then
                 FREERDP_COMMAND="xfreerdp3"
             fi
@@ -176,6 +223,10 @@ function waGetFreeRDPCommand() {
 
     if command -v "$FREERDP_COMMAND" &>/dev/null || [ "$FREERDP_COMMAND" = "flatpak run --command=xfreerdp com.freerdp.FreeRDP" ]; then
         dprint "Using FreeRDP command '${FREERDP_COMMAND}'."
+
+        # Append additional flags or parameters to FreeRDP.
+        # These additional flags are loaded prior in 'waLoadConfig'.
+        [[ -n $RDP_FLAGS ]] && FREERDP_COMMAND="${FREERDP_COMMAND} ${RDP_FLAGS}"
     else
         waThrowExit "$EC_MISSING_FREERDP"
     fi
@@ -194,28 +245,54 @@ function waCheckGroupMembership() {
 }
 
 # Name: 'waCheckVMRunning'
-# Role: Throw an error if the Windows VM is not running.
+# Role: Throw an error if the Windows 'libvirt' VM is not running.
 function waCheckVMRunning() {
-    ! virsh list --state-running --name | grep -q "^${VM_NAME}$" && waThrowExit "$EC_VM_NOT_RUNNING"
+    ! virsh list --state-running --name | grep -q "^${VM_NAME}$" && waThrowExit "$EC_NOT_RUNNING"
 }
 
-# Name: 'waCheckVMContactable'
-# Role: Assesses whether the Windows VM can be contacted.
-function waCheckVMContactable() {
+# Name: 'waCheckContainerRunning'
+# Role: Throw an error if the Docker container is not running.
+function waCheckContainerRunning() {
+    # Declare variables.
+    local CONTAINER_STATE=""
+
+    # Determine container state (docker).
+    if command -v docker &>/dev/null; then
+        CONTAINER_STATE=$(docker ps --filter name="WinApps" --format '{{.Status}}')
+    fi
+
+    # Determine container state (podman).
+    if [ -z "$CONTAINER_STATE" ]; then
+        CONTAINER_STATE=$(podman ps --filter name="WinApps" --format '{{.Status}}')
+    fi
+
+    CONTAINER_STATE=${CONTAINER_STATE,,} # Convert the string to lowercase.
+    CONTAINER_STATE=${CONTAINER_STATE%% *} # Extract the first word.
+
+    # Check container state.
+    [[ "$CONTAINER_STATE" != "up" ]] && waThrowExit "$EC_NOT_RUNNING"
+}
+
+# Name: 'waCheckPortOpen'
+# Role: Assesses whether the RDP port on Windows is open.
+function waCheckPortOpen() {
     # Declare variables.
     local VM_MAC="" # Stores the MAC address of the Windows VM.
 
-    # Obtain Windows VM IP Address
-    if [ -z "$RDP_IP" ]; then
+    # Obtain Windows VM IP Address ('libvirt' ONLY)
+    # Note: 'RDP_IP' should not be empty if 'WAFLAVOR' is 'docker', since it is set to localhost before this function is called.
+    if [ -z "$RDP_IP" ] && [ "$WAFLAVOR" = "libvirt" ]; then
         VM_MAC=$(virsh domiflist "$VM_NAME" | grep -oE "([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})") # VM MAC address.
         RDP_IP=$(arp -n | grep "$VM_MAC" | grep -oE "([0-9]{1,3}\.){3}[0-9]{1,3}")                # VM IP address.
-        [ -z "$RDP_IP" ] && waThrowExit "$EC_VM_NO_IP"
+        [ -z "$RDP_IP" ] && waThrowExit "$EC_NO_IP"
     fi
 
     # Check for an open RDP port.
-    timeout 5 nc -z "$RDP_IP" "$RDP_PORT" &>/dev/null || waThrowExit "$EC_VM_BAD_PORT"
+    timeout 5 nc -z "$RDP_IP" "$RDP_PORT" &>/dev/null || waThrowExit "$EC_BAD_PORT"
 }
 
+# Name: 'waRunCommand'
+# Role: Run the requested WinApps command.
 function waRunCommand() {
     # Declare variables.
     local ICON=""
@@ -223,7 +300,7 @@ function waRunCommand() {
 
     # Run option.
     if [ "$1" = "windows" ]; then
-        # Open Windows VM.
+        # Open Windows RDP session.
         dprint "WINDOWS"
         $FREERDP_COMMAND \
             /d:"$RDP_DOMAIN" \
@@ -233,6 +310,7 @@ function waRunCommand() {
             +dynamic-resolution \
             +auto-reconnect \
             +home-drive \
+            /audio-mode:1 \
             /wm-class:"Microsoft Windows" \
             /v:"$RDP_IP" &>/dev/null &
     elif [ "$1" = "manual" ]; then
@@ -247,6 +325,7 @@ function waRunCommand() {
             +auto-reconnect \
             +clipboard \
             +home-drive \
+            /audio-mode:1 \
             -wallpaper \
             +dynamic-resolution \
             "$MULTI_FLAG" \
@@ -281,6 +360,7 @@ function waRunCommand() {
                 +auto-reconnect \
                 +clipboard \
                 +home-drive \
+                /audio-mode:1 \
                 -wallpaper \
                 +dynamic-resolution \
                 "$MULTI_FLAG" \
@@ -302,6 +382,7 @@ function waRunCommand() {
                 +auto-reconnect \
                 +clipboard \
                 +home-drive \
+                /audio-mode:1 \
                 -wallpaper \
                 +dynamic-resolution \
                 "$MULTI_FLAG" \
@@ -322,8 +403,23 @@ mkdir -p "$APPDATA_PATH"
 waLastRun
 waLoadConfig
 waGetFreeRDPCommand
-waCheckGroupMembership
-waCheckVMRunning
-waCheckVMContactable
+
+# If using podman backend, modify the FreeRDP command to enter a new namespace.
+if [ "$WAFLAVOR" = "podman" ]; then
+    FREERDP_COMMAND="podman unshare --rootless-netns ${FREERDP_COMMAND}"
+fi
+
+if [ "$WAFLAVOR" = "docker" ] || [ "$WAFLAVOR" = "podman" ]; then
+    RDP_IP="$DOCKER_IP"
+    waCheckContainerRunning
+elif [ "$WAFLAVOR" = "libvirt" ]; then
+    waCheckGroupMembership
+    waCheckVMRunning
+else
+    waThrowExit "$EC_INVALID_FLAVOR"
+fi
+
+waCheckPortOpen
 waRunCommand "$@"
+
 dprint "END"
