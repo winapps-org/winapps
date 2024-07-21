@@ -1,7 +1,8 @@
-# WinApps
-*The WinApps project, forked from Fmstrat's [original repository](https://github.com/Fmstrat/winapps).*
+<p align="center"><img align="center" width="700" src="./icons/banner_dark.svg#gh-dark-mode-only"/></p>
+<p align="center"><img align="center" width="700" src="./icons/banner_dark.svg#gh-light-mode-only"/></p>
+<hr>
 
-Run Windows applications (including [Microsoft 365](https://www.microsoft365.com/) and [Adobe Creative Cloud](https://www.adobe.com/creativecloud.html)) on GNU+Linux with `KDE`, `GNOME` or `XFCE`, integrated seamlessly as if they were native to the OS.
+Run Windows applications (including [Microsoft 365](https://www.microsoft365.com/) and [Adobe Creative Cloud](https://www.adobe.com/creativecloud.html)) on GNU/Linux with `KDE`, `GNOME` or `XFCE`, integrated seamlessly as if they were native to the OS.
 
 <img src="demo/demo.gif" width=1000 alt="WinApps Demonstration Animation.">
 
@@ -32,44 +33,217 @@ Contributing to the list of supported applications is encouraged through submiss
 ### Officially Supported Applications
 <table cellpadding="10" cellspacing="0" border="0">
     <tr>
-        <td><img src="apps/acrobat-x-pro/icon.svg" width="100"></td><td>Adobe Acrobat Pro<br>(X)</td>
-        <td><img src="apps/aftereffects-cc/icon.svg" width="100"></td><td>Adobe After Effects<br>(CC)</td>
+        <!-- Adobe Acrobat Pro -->
+        <td>
+            <img src="apps/acrobat-x-pro/icon.svg" width="100">
+        </td>
+        <td>
+            <b>Adobe Acrobat Pro</b><br>
+            (X)<br>
+            <i><a href="https://commons.wikimedia.org/wiki/File:Adobe_Acrobat_DC_logo_2020.svg">Icon</a> in the Public Domain.</i>
+        </td>
+        <!-- Adobe After Effects -->
+        <td>
+            <img src="apps/aftereffects-cc/icon.svg" width="100">
+        </td>
+        <td>
+            <b>Adobe After Effects</b><br>
+            (CC)<br>
+            <i><a href="https://commons.wikimedia.org/wiki/File:Adobe_After_Effects_CC_icon.svg">Icon</a> in the Public Domain.</i>
+        </td>
     </tr>
     <tr>
-        <td><img src="apps/audition-cc/icon.svg" width="100"></td><td>Adobe Audition<br>(CC)</td>
-        <td><img src="apps/bridge-cs6/icon.svg" width="100"></td><td>Adobe Bridge<br>(CS6, CC)</td>
+        <!-- Adobe Audition -->
+        <td>
+            <img src="apps/audition-cc/icon.svg" width="100">
+        </td>
+        <td>
+            <b>Adobe Audition</b><br>
+            (CC)<br>
+            <i><a href="https://en.m.wikipedia.org/wiki/File:Adobe_Audition_CC_icon_%282020%29.svg">Icon</a> in the Public Domain.</i>
+        </td>
+        <!-- Adobe Bridge -->
+        <td>
+            <img src="apps/bridge-cs6/icon.svg" width="100">
+        </td>
+        <td>
+            <b>Adobe Bridge</b><br>
+            (CS6, CC)<br>
+            <i><a href="https://en.m.wikipedia.org/wiki/File:Adobe_Bridge_CC_icon.svg">Icon</a> in the Public Domain.</i>
+        </td>
     </tr>
     <tr>
-        <td><img src="apps/adobe-cc/icon.svg" width="100"></td><td>Adobe Creative Cloud<br>(CC)</td>
-        <td><img src="apps/illustrator-cc/icon.svg" width="100"></td><td>Adobe Illustrator<br>(CC)</td>
+        <!-- Adobe Creative Cloud -->
+        <td>
+            <img src="apps/adobe-cc/icon.svg" width="100">
+        </td>
+        <td>
+            <b>Adobe Creative Cloud</b><br>
+            (CC)<br>
+            <i><a href="https://iconduck.com/icons/240218/adobe-creative-cloud">Icon</a> under <a href="https://iconduck.com/licenses/mit">MIT license</a>.</i>
+        </td>
+        <!-- Adobe Illustrator -->
+        <td>
+            <img src="apps/illustrator-cc/icon.svg" width="100">
+        </td>
+        <td>
+            <b>Adobe Illustrator</b><br>
+            (CC)<br>
+            <i><a href="https://commons.wikimedia.org/wiki/File:Adobe_Illustrator_CC_icon.svg">Icon</a> in the Public Domain.</i>
+        </td>
     </tr>
     <tr>
-        <td><img src="apps/indesign-cc/icon.svg" width="100"></td><td>Adobe InDesign<br>(CC)</td>
-        <td><img src="apps/lightroom-cc/icon.svg" width="100"></td><td>Adobe Lightroom<br>(CC)</td>
+        <!-- Adobe InDesign -->
+        <td>
+            <img src="apps/indesign-cc/icon.svg" width="100">
+        </td>
+        <td>
+            <b>Adobe InDesign</b><br>
+            (CC)<br>
+            <i><a href="https://commons.wikimedia.org/wiki/File:Adobe_InDesign_CC_icon.svg">Icon</a> in the Public Domain.</i>
+        </td>
+        <!-- Adobe Lightroom -->
+        <td>
+            <img src="apps/lightroom-cc/icon.svg" width="100">
+        </td>
+        <td>
+            <b>Adobe Lightroom</b><br>
+            (CC)<br>
+            <i><a href="https://commons.wikimedia.org/wiki/File:Adobe_Photoshop_Lightroom_CC_logo.svg">Icon</a> in the Public Domain.</i>
+        </td>
     </tr>
     <tr>
-        <td><img src="apps/cmd/icon.svg" width="100"></td><td>Command Prompt<br>(cmd.exe)</td>
-        <td><img src="apps/explorer/icon.svg" width="100"></td><td>Explorer<br>(File Manager)</td>
+        <!-- Adobe Photoshop -->
+        <td>
+            <img src="apps/photoshop-cc/icon.svg" width="100">
+        </td>
+        <td>
+            <b>Adobe Photoshop</b><br>
+            (CS6, CC)<br>
+            <i><a href="https://commons.wikimedia.org/wiki/File:Adobe_Photoshop_CC_icon.svg">Icon</a> in the Public Domain.</i>
+        </td>
+        <!-- Command Prompt -->
+        <td>
+            <img src="apps/cmd/icon.svg" width="100">
+        </td>
+        <td>
+            <b>Command Prompt</b><br>
+            (cmd.exe)<br>
+            <i><a href="https://github.com/microsoft/terminal/blob/main/res/terminal/Terminal.svg">Icon</a> under <a href="https://github.com/microsoft/terminal/blob/main/LICENSE">MIT license</a>.</i>
+        </td>
     </tr>
     <tr>
-        <td><img src="apps/iexplorer/icon.svg" width="100"></td><td>Internet Explorer<br>(11)</td>
-        <td><img src="apps/access/icon.svg" width="100"></td><td>Microsoft Access<br>(2016, 2019, o365)</td>
+        <!-- File Explorer -->
+        <td>
+            <img src="apps/explorer/icon.svg" width="100">
+        </td>
+        <td>
+            <b>File Explorer</b><br>
+            (Windows Explorer)<br>
+            <i><a href="https://commons.wikimedia.org/wiki/File:Windows_Explorer.svg">Icon</a> in the Public Domain.</i>
+        </td>
+        <!-- Internet Explorer -->
+        <td>
+            <img src="apps/iexplorer/icon.svg" width="100">
+        </td>
+        <td>
+            <b>Internet Explorer</b><br>
+            (11)<br>
+            <i><a href="https://commons.wikimedia.org/wiki/File:Internet_Explorer_10%2B11_logo.svg">Icon</a> in the Public Domain.</i>
+        </td>
     </tr>
     <tr>
-        <td><img src="apps/excel/icon.svg" width="100"></td><td>Microsoft Excel<br>(2016, 2019, o365)</td>
-        <td><img src="apps/word/icon.svg" width="100"></td><td>Microsoft Word<br>(2016, 2019, o365)</td>
+         <!-- Microsoft Access -->
+        <td>
+            <img src="apps/access/icon.svg" width="100">
+        </td>
+        <td>
+            <b>Microsoft Access</b><br>
+            (2016, 2019, o365)<br>
+            <i><a href="https://commons.wikimedia.org/wiki/File:Microsoft_Office_Access_(2019-present).svg">Icon</a> in the Public Domain.</i>
+        </td>
+        <!-- Microsoft Excel -->
+        <td>
+            <img src="apps/excel/icon.svg" width="100">
+        </td>
+        <td>
+            <b>Microsoft Excel</b><br>
+            (2016, 2019, o365)<br>
+            <i><a href="https://en.m.wikipedia.org/wiki/File:Microsoft_Office_Excel_(2019%E2%80%93present).svg">Icon</a> in the Public Domain.</i>
+        </td>
     </tr>
     <tr>
-        <td><img src="apps/onenote/icon.svg" width="100"></td><td>Microsoft OneNote<br>(2016, 2019, o365)</td>
-        <td><img src="apps/outlook/icon.svg" width="100"></td><td>Microsoft Outlook<br>(2016, 2019, o365)</td>
+        <!-- Microsoft Word -->
+        <td>
+            <img src="apps/word/icon.svg" width="100">
+        </td>
+        <td>
+            <b>Microsoft Word</b><br>
+            (2016, 2019, o365)<br>
+            <i><a href="https://en.m.wikipedia.org/wiki/File:Microsoft_Office_Word_(2019%E2%80%93present).svg">Icon</a> in the Public Domain.</i>
+        </td>
+        <!-- Microsoft OneNote -->
+        <td>
+            <img src="apps/onenote/icon.svg" width="100">
+        </td>
+        <td>
+            <b>Microsoft OneNote</b><br>
+            (2016, 2019, o365)<br>
+            <i><a href="https://en.m.wikipedia.org/wiki/File:Microsoft_Office_OneNote_(2019%E2%80%93present).svg">Icon</a> in the Public Domain.</i>
+        </td>
     </tr>
     <tr>
-        <td><img src="apps/powerpoint/icon.svg" width="100"></td><td>Microsoft PowerPoint<br>(2016, 2019, o365)</td>
-        <td><img src="apps/publisher/icon.svg" width="100"></td><td>Microsoft Publisher<br>(2016, 2019, o365)</td>
+        <!-- Microsoft Outlook -->
+        <td>
+            <img src="apps/outlook/icon.svg" width="100">
+        </td>
+        <td>
+            <b>Microsoft Outlook</b><br>
+            (2016, 2019, o365)<br>
+            <i><a href="https://en.m.wikipedia.org/wiki/File:Microsoft_Office_Outlook_(2018%E2%80%93present).svg">Icon</a> in the Public Domain.</i>
+        </td>
+        <!-- Microsoft PowerPoint -->
+        <td>
+            <img src="apps/powerpoint/icon.svg" width="100">
+        </td>
+        <td>
+            <b>Microsoft PowerPoint</b><br>
+            (2016, 2019, o365)<br>
+            <i><a href="https://en.m.wikipedia.org/wiki/File:Microsoft_Office_PowerPoint_(2019%E2%80%93present).svg">Icon</a> in the Public Domain.</i>
+            </td>
     </tr>
     <tr>
-        <td><img src="apps/powershell/icon.svg" width="100"></td><td>PowerShell</td>
-        <td><img src="icons/windows.svg" width="100"></td><td>Windows<br>(Full RDP session)</td>
+        <!-- Microsoft Publisher -->
+        <td>
+            <img src="apps/publisher/icon.svg" width="100">
+        </td>
+        <td>
+            <b>Microsoft Publisher</b><br>
+            (2016, 2019, o365)<br>
+            <i><a href="https://en.m.wikipedia.org/wiki/File:Microsoft_Office_Publisher_(2019-present).svg">Icon</a> in the Public Domain.</i>
+        </td>
+        <!-- PowerShell -->
+        <td>
+            <img src="apps/powershell/icon.svg" width="100">
+        </td>
+        <td>
+            <b>PowerShell</b><br>
+            <i><a href="https://iconduck.com/icons/102322/file-type-powershell">Icon</a> under <a href="https://iconduck.com/licenses/mit">MIT license</a>.</i>
+        </td>
+    </tr>
+    <tr>
+        <!-- Windows -->
+        <td>
+            <img src="icons/windows.svg" width="100">
+        </td>
+        <td>
+            <b>Windows</b><br>
+            (Full RDP Session)<br>
+            <i><a href="url">Icon</a> in the Public Domain.</i>
+        </td>
+        <!-- Empty -->
+        <td></td>
+        <td></td>
     </tr>
 </table>
 
@@ -154,7 +328,7 @@ Run the WinApps installer.
 
 A list of supported additional arguments can be accessed by running `./installer.sh --help`.
 
-<img src="demo/installer.gif" width=1000>
+<img src="demo/installer.gif" width=1000 alt="WinApps Installer Animation.">
 
 ## Adding Additional Pre-defined Applications
 Adding your own applications with custom icons and MIME types to the installer is easy. Simply copy one of the application configurations in the `apps` folder located within the WinApps repository, and:
@@ -176,10 +350,3 @@ The installer can be run multiple times. To update your installation of WinApps:
 1. Run the WinApps installer to remove WinApps from your system.
 2. Pull the latest changes from the WinApps GitHub repository.
 3. Re-install WinApps using the WinApps installer.
-
-## Shout-outs
-Some icons used for the officially supported applications were sourced from:
-- Fluent UI React - Icons under [MIT License](https://github.com/Fmstrat/fluent-ui-react/blob/master/LICENSE.md)
-- Fluent UI - Icons under [MIT License](https://github.com/Fmstrat/fluentui/blob/master/LICENSE) with [restricted use](https://static2.sharepointonline.com/files/fabric/assets/microsoft_fabric_assets_license_agreement_nov_2019.pdf)
-- PKief's VSCode Material Icon Theme - Icons under [MIT License](https://github.com/Fmstrat/vscode-material-icon-theme/blob/master/LICENSE.md)
-- DiemenDesign's LibreICONS - Icons under [MIT License](https://github.com/Fmstrat/LibreICONS/blob/master/LICENSE)
