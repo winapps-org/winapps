@@ -38,8 +38,8 @@ Together, these components form a powerful and flexible virtualization stack, wi
 > You can read more about `VirtIO` [here](https://wiki.libvirt.org/Virtio.html).
 
 ## Creating a Windows VM
-
-> [!NOTE] If you are an expert user, you may wish to:
+> [!NOTE]
+> If you are an expert user, you may wish to:
 > - [Define a Windows virtual machine from an existing `.XML` file](#defining-windows-vm-from-xml)
 > - [Configure Rootless `libvirt`](#configuring-rootless-libvirt)
 
