@@ -38,6 +38,7 @@ Together, these components form a powerful and flexible virtualization stack, wi
 > You can read more about `VirtIO` [here](https://wiki.libvirt.org/Virtio.html).
 
 ## Creating a Windows VM
+
 > [!NOTE] If you are an expert user, you may wish to:
 > - [Define a Windows virtual machine from an existing `.XML` file](#defining-windows-vm-from-xml)
 > - [Configure Rootless `libvirt`](#configuring-rootless-libvirt)
@@ -76,25 +77,25 @@ Together, these components form a powerful and flexible virtualization stack, wi
     <img src="./libvirt_images/04_2.png" width="700px"/>
 </p>
 
-5. Configure the RAM and CPU cores allocated to the Windows virtual machine. We recommend `2` CPUs and `4096MB` of RAM. We will use the `VirtIO` Memory Ballooning service, which means the virtual machine can use up to `4096MB` of memory, but it will only consume this amount if necessary.
+6. Configure the RAM and CPU cores allocated to the Windows virtual machine. We recommend `2` CPUs and `4096MB` of RAM. We will use the `VirtIO` Memory Ballooning service, which means the virtual machine can use up to `4096MB` of memory, but it will only consume this amount if necessary.
 
 <p align="center">
     <img src="./libvirt_images/05.png" width="500px"/>
 </p>
 
-6. Configure the virtual disk by setting its maximum size. While this size represents the largest it can grow to, the disk will only use this space as needed.
+7. Configure the virtual disk by setting its maximum size. While this size represents the largest it can grow to, the disk will only use this space as needed.
 
 <p align="center">
     <img src="./libvirt_images/06.png" width="500px"/>
 </p>
 
-7. Name your virtual machine `RDPWindows` to ensure it is recognized by WinApps, and select the option to `Customize configuration before installation`.
+8. Name your virtual machine `RDPWindows` to ensure it is recognized by WinApps, and select the option to `Customize configuration before installation`.
 
 <p align="center">
     <img src="./libvirt_images/07.png" width="500px"/>
 </p>
 
-8. After clicking `Finish`, select `Copy host CPU configuration` under 'CPUs', and then click `Apply`.
+9. After clicking `Finish`, select `Copy host CPU configuration` under 'CPUs', and then click `Apply`.
 
 > [!NOTE]
 > Sometimes this feature gets disabled after installing Windows. Make sure to check and re-enable this option after the installation is complete.
@@ -103,12 +104,12 @@ Together, these components form a powerful and flexible virtualization stack, wi
     <img src="./libvirt_images/08.png" width="700px"/>
 </p>
 
-9. (Optional) Configure 'CPU pinning' by following [this excellent guide](https://wiki.archlinux.org/title/PCI_passthrough_via_OVMF#CPU_pinning).
+10. (Optional) Configure 'CPU pinning' by following [this excellent guide](https://wiki.archlinux.org/title/PCI_passthrough_via_OVMF#CPU_pinning).
 
 > [!NOTE]
 > CPU pinning involves assigning specific physical CPU cores to a virtual machine. This can improve performance by reducing context switching and ensuring that the VM's workload consistently uses the same cores, leading to better CPU cache utilisation.
 
-5. Navigate to the `XML` tab, and edit the `<clock>` section to disable all timers except for the hypervclock, thereby drastically reducing idle CPU usage. Once changed, click `Apply`.
+11. Navigate to the `XML` tab, and edit the `<clock>` section to disable all timers except for the hypervclock, thereby drastically reducing idle CPU usage. Once changed, click `Apply`.
     ```xml
     <clock offset='localtime'>
       <timer name='rtc' present='no' tickpolicy='catchup'/>
@@ -123,7 +124,7 @@ Together, these components form a powerful and flexible virtualization stack, wi
     <img src="./libvirt_images/09.png" width="700px"/>
 </p>
 
-6. Enable Hyper-V enlightenments by adding the following to the `<hyperv>` section. Once changed, click `Apply`.
+12. Enable Hyper-V enlightenments by adding the following to the `<hyperv>` section. Once changed, click `Apply`.
 
     ```xml
     <hyperv>
@@ -146,31 +147,31 @@ Together, these components form a powerful and flexible virtualization stack, wi
 > [!NOTE]
 > Hyper-V enlightenments make Windows (and other Hyper-V guests) think they are running on top of a Hyper-V compatible hypervisor. This enables use of Hyper-V specific features, allowing `KVM` to implement paravirtualised interfaces for improved virtual machine performance.
 
-7. In the 'Memory' section, set the `Current allocation` to the minimum amount of memory you want the virtual machine to use, with a recommended value of `1024MB`.
+13. In the 'Memory' section, set the `Current allocation` to the minimum amount of memory you want the virtual machine to use, with a recommended value of `1024MB`.
 
 <p align="center">
     <img src="./libvirt_images/10.png" width="500px"/>
 </p>
 
-8. (Optional) Under `Boot Options`, enable `Start virtual machine on host boot up`.
+14. (Optional) Under `Boot Options`, enable `Start virtual machine on host boot up`.
 
 <p align="center">
     <img src="./libvirt_images/11.png" width="500px"/>
 </p>
 
-9. Navigate to 'SATA Disk 1' and set the `Disk bus` type to `VirtIO`. This allows disk access to be paravirtualised, improving virtual machine performance.
+15. Navigate to 'SATA Disk 1' and set the `Disk bus` type to `VirtIO`. This allows disk access to be paravirtualised, improving virtual machine performance.
 
 <p align="center">
     <img src="./libvirt_images/12.png" width="500px"/>
 </p>
 
-10. Navigate to 'NIC' and set the `Device model` type to `virtio` to enable paravirtualised networking.
+16. Navigate to 'NIC' and set the `Device model` type to `virtio` to enable paravirtualised networking.
 
 <p align="center">
     <img src="./libvirt_images/13.png" width="500px"/>
 </p>
 
-11. Click the `Add Hardware` button in the lower left, and choose `Storage`. For `Device type`, select `CDROM device` and choose the VirtIO driver `.ISO` you downloaded earlier. Click `Finish` to add the new CD-ROM device.
+17. Click the `Add Hardware` button in the lower left, and choose `Storage`. For `Device type`, select `CDROM device` and choose the VirtIO driver `.ISO` you downloaded earlier. Click `Finish` to add the new CD-ROM device.
 
 > [!IMPORTANT]
 > If you skip this step, the Windows installer will fail to recognise and list the virtual hard drive you created earlier.
@@ -179,7 +180,7 @@ Together, these components form a powerful and flexible virtualization stack, wi
     <img src="./libvirt_images/14.png" width="500px"/>
 </p>
 
-12. Click `Begin Installation` in the top left.
+18. Click `Begin Installation` in the top left.
 
 <p align="center">
     <img src="./libvirt_images/15.png" width="700px"/>
