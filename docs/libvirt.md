@@ -26,7 +26,12 @@ Together, these components form a powerful and flexible virtualization stack, wi
     sudo emerge app-emulation/virt-manager # Gentoo Linux
     ```
 
-3. Install `QEMU Guest Agent`.
+3. Configure `libvirt` to use the 'system' URI by adding the line `LIBVIRT_DEFAULT_URI="qemu:///system"` to your preferred shell profile file.
+    ```bash
+    echo "export LIBVIRT_DEFAULT_URI=\"qemu:///system\"" >> ~/.bashrc
+    ```
+
+4. Install `QEMU Guest Agent`.
     ```bash
     sudo apt install qemu-guest-agent # Debian/Ubuntu
     sudo dnf install qemu-guest-agent # Fedora/RHEL
@@ -36,12 +41,12 @@ Together, these components form a powerful and flexible virtualization stack, wi
     sudo systemctl start qemu-guest-agent
     ```
 
-4. Download a [Windows 10](https://www.microsoft.com/software-download/windows10ISO) or [Windows 11](https://www.microsoft.com/software-download/windows11) installation `.ISO` image.
+5. Download a [Windows 10](https://www.microsoft.com/software-download/windows10ISO) or [Windows 11](https://www.microsoft.com/software-download/windows11) installation `.ISO` image.
 
 > [!IMPORTANT]
 > 'Professional', 'Enterprise' or 'Server' editions of Windows are required to run RDP applications. Windows 'Home' will NOT suffice.
 
-5. Download [VirtIO drivers](https://fedorapeople.org/groups/virt/virtio-win/direct-downloads/latest-virtio/virtio-win.iso) for the Windows virtual machine.
+6. Download [VirtIO drivers](https://fedorapeople.org/groups/virt/virtio-win/direct-downloads/latest-virtio/virtio-win.iso) for the Windows virtual machine.
 
 > [!NOTE]
 > VirtIO drivers enhance system performance and minimize overhead by enabling the Windows virtual machine to use specialised network and disk device drivers. These drivers are aware that they are operating inside a virtual machine, and cooperate with the hypervisor. This approach eliminates the need for the hypervisor to emulate physical hardware devices, which is a computationally expensive process. This setup allows guests to achieve high-performance network and disk operations, leveraging the benefits of paravirtualisation.
