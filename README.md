@@ -16,6 +16,7 @@ WinApps works by:
 ## Additional Features
 - The GNU/Linux `/home` directory is accessible within Windows via the `\\tsclient\home` mount.
 - Integration with `Nautilus`, allowing you to right-click files to open them with specific Windows applications based on the file MIME type.
+- The [official taskbar widget](https://github.com/winapps-org/WinApps-Launcher) enables seamless administration of the Windows subsystem and offers an easy way to launch Windows applications.
 
 ## Supported Applications
 **WinApps supports <u>*ALL*</u> Windows applications.**
