@@ -26,20 +26,40 @@ Together, these components form a powerful and flexible virtualization stack, wi
     sudo emerge app-emulation/virt-manager # Gentoo Linux
     ```
 
-3. Download a [Windows 10](https://www.microsoft.com/software-download/windows10ISO) or [Windows 11](https://www.microsoft.com/software-download/windows11) installation `.ISO` image.
+3. Configure `libvirt` to use the 'system' URI by adding the line `LIBVIRT_DEFAULT_URI="qemu:///system"` to your preferred shell profile file.
+    ```bash
+    echo "export LIBVIRT_DEFAULT_URI=\"qemu:///system\"" >> ~/.bashrc
+    ```
+
+4. Install `QEMU Guest Agent`.
+    ```bash
+    sudo apt install qemu-guest-agent # Debian/Ubuntu
+    sudo dnf install qemu-guest-agent # Fedora/RHEL
+    sudo pacman -S qemu-guest-agent # Arch Linux
+    sudo emerge app-emulation/qemu-guest-agent # Gentoo Linux
+    sudo systemctl enable qemu-guest-agent
+    sudo systemctl start qemu-guest-agent
+    ```
+
+> [!NOTE]
+> `QEMU Guest Agent` is a helper daemon used to exchange information and commands between host and guest operating systems.
+> You can read more about `QEMU Guest Agent` [here](https://pve.proxmox.com/wiki/Qemu-guest-agent).
+
+5. Download a [Windows 10](https://www.microsoft.com/software-download/windows10ISO) or [Windows 11](https://www.microsoft.com/software-download/windows11) installation `.ISO` image.
 
 > [!IMPORTANT]
 > 'Professional', 'Enterprise' or 'Server' editions of Windows are required to run RDP applications. Windows 'Home' will NOT suffice.
 
-4. Download [VirtIO drivers](https://fedorapeople.org/groups/virt/virtio-win/direct-downloads/stable-virtio/virtio-win.iso) for the Windows virtual machine.
+6. Download [VirtIO drivers](https://fedorapeople.org/groups/virt/virtio-win/direct-downloads/latest-virtio/virtio-win.iso) for the Windows virtual machine.
 
 > [!NOTE]
 > VirtIO drivers enhance system performance and minimize overhead by enabling the Windows virtual machine to use specialised network and disk device drivers. These drivers are aware that they are operating inside a virtual machine, and cooperate with the hypervisor. This approach eliminates the need for the hypervisor to emulate physical hardware devices, which is a computationally expensive process. This setup allows guests to achieve high-performance network and disk operations, leveraging the benefits of paravirtualisation.
-> You can read more about `VirtIO` [here](https://wiki.libvirt.org/Virtio.html).
+> The above link contains the latest release of the `VirtIO` drivers for Windows, compiled and signed by Red Hat. Older versions of the `VirtIO` drivers can be downloaded [here](https://fedorapeople.org/groups/virt/virtio-win/direct-downloads/archive-virtio/?C=M;O=D).
+> You can read more about `VirtIO` [here](https://wiki.libvirt.org/Virtio.html) and [here](https://developer.ibm.com/articles/l-virtio/).
 
 ## Creating a Windows VM
-
-> [!NOTE] If you are an expert user, you may wish to:
+> [!NOTE]
+> If you are an expert user, you may wish to:
 > - [Define a Windows virtual machine from an existing `.XML` file](#defining-windows-vm-from-xml)
 > - [Configure Rootless `libvirt`](#configuring-rootless-libvirt)
 
@@ -104,10 +124,111 @@ Together, these components form a powerful and flexible virtualization stack, wi
     <img src="./libvirt_images/08.png" width="700px"/>
 </p>
 
-10. (Optional) Configure 'CPU pinning' by following [this excellent guide](https://wiki.archlinux.org/title/PCI_passthrough_via_OVMF#CPU_pinning).
+10. (Optional) Assign specific physical CPU cores to the virtual machine. This can improve performance by reducing context switching and ensuring that the virtual machine's workload consistently uses the same cores, leading to better CPU cache utilisation.
+    1. Run `lscpu -e` to determine which L1, L2 and L3 caches are associated with which CPU cores.
+
+        Example 1 (Intel 11th Gen Core i7-1185G7):
+        ```
+        CPU NODE SOCKET CORE L1d:L1i:L2:L3 ONLINE    MAXMHZ   MINMHZ
+          0    0      0    0 0:0:0:0          yes 4800.0000 400.0000
+          1    0      0    1 1:1:1:0          yes 4800.0000 400.0000
+          2    0      0    2 2:2:2:0          yes 4800.0000 400.0000
+          3    0      0    3 3:3:3:0          yes 4800.0000 400.0000
+          4    0      0    0 0:0:0:0          yes 4800.0000 400.0000
+          5    0      0    1 1:1:1:0          yes 4800.0000 400.0000
+          6    0      0    2 2:2:2:0          yes 4800.0000 400.0000
+          7    0      0    3 3:3:3:0          yes 4800.0000 400.0000
+        ```
+
+        - C<sub>0</sub> = T<sub>0</sub>+T<sub>4</sub> &rarr; L1<sub>0</sub>+L2<sub>0</sub>+L3<sub>0</sub>
+        - C<sub>1</sub> = T<sub>1</sub>+T<sub>5</sub> &rarr; L1<sub>1</sub>+L2<sub>1</sub>+L3<sub>0</sub>
+        - C<sub>2</sub> = T<sub>2</sub>+T<sub>6</sub> &rarr; L1<sub>2</sub>+L2<sub>2</sub>+L3<sub>0</sub>
+        - C<sub>3</sub> = T<sub>3</sub>+T<sub>7</sub> &rarr; L1<sub>3</sub>+L2<sub>3</sub>+L3<sub>0</sub>
+
+        Example 2 (AMD Ryzen 5 1600):
+        ```
+        CPU NODE SOCKET CORE L1d:L1i:L2:L3 ONLINE MAXMHZ    MINMHZ
+        0   0    0      0    0:0:0:0       yes    3800.0000 1550.0000
+        1   0    0      0    0:0:0:0       yes    3800.0000 1550.0000
+        2   0    0      1    1:1:1:0       yes    3800.0000 1550.0000
+        3   0    0      1    1:1:1:0       yes    3800.0000 1550.0000
+        4   0    0      2    2:2:2:0       yes    3800.0000 1550.0000
+        5   0    0      2    2:2:2:0       yes    3800.0000 1550.0000
+        6   0    0      3    3:3:3:1       yes    3800.0000 1550.0000
+        7   0    0      3    3:3:3:1       yes    3800.0000 1550.0000
+        8   0    0      4    4:4:4:1       yes    3800.0000 1550.0000
+        9   0    0      4    4:4:4:1       yes    3800.0000 1550.0000
+        10  0    0      5    5:5:5:1       yes    3800.0000 1550.0000
+        11  0    0      5    5:5:5:1       yes    3800.0000 1550.0000
+        ```
+
+        - C<sub>0</sub> = T<sub>0</sub>+T<sub>1</sub> &rarr; L1<sub>0</sub>+L2<sub>0</sub>+L3<sub>0</sub>
+        - C<sub>1</sub> = T<sub>2</sub>+T<sub>3</sub> &rarr; L1<sub>1</sub>+L2<sub>1</sub>+L3<sub>0</sub>
+        - C<sub>2</sub> = T<sub>4</sub>+T<sub>5</sub> &rarr; L1<sub>2</sub>+L2<sub>2</sub>+L3<sub>0</sub>
+        - C<sub>3</sub> = T<sub>6</sub>+T<sub>7</sub> &rarr; L1<sub>3</sub>+L2<sub>3</sub>+L3<sub>1</sub>
+        - C<sub>4</sub> = T<sub>8</sub>+T<sub>9</sub> &rarr; L1<sub>4</sub>+L2<sub>4</sub>+L3<sub>1</sub>
+        - C<sub>5</sub> = T<sub>10</sub>+T<sub>11</sub> &rarr; L1<sub>5</sub>+L2<sub>5</sub>+L3<sub>1</sub>
+
+    2. Select which CPU cores to 'pin'. You should aim to select a combination of CPU cores that minimises sharing of caches between Windows and GNU/Linux.
+
+        Example 1:
+        - CPU cores share the same singular L3 cache, so this cannot be optimised.
+        - CPU cores utilise different L1 and L2 caches, so isolatng corresponding thread pairs will help improve performance.
+        - Thus, if limiting the virtual machine to a maximum of 4 threads, there are 10 possible optimal configurations:
+            - T<sub>0</sub>+T<sub>4</sub>
+            - T<sub>1</sub>+T<sub>5</sub>
+            - T<sub>2</sub>+T<sub>6</sub>
+            - T<sub>3</sub>+T<sub>7</sub>
+            - T<sub>0</sub>+T<sub>4</sub>+T<sub>1</sub>+T<sub>5</sub>
+            - T<sub>0</sub>+T<sub>4</sub>+T<sub>2</sub>+T<sub>6</sub>
+            - T<sub>0</sub>+T<sub>4</sub>+T<sub>3</sub>+T<sub>7</sub>
+            - T<sub>1</sub>+T<sub>5</sub>+T<sub>2</sub>+T<sub>6</sub>
+            - T<sub>1</sub>+T<sub>5</sub>+T<sub>3</sub>+T<sub>7</sub>
+            - T<sub>2</sub>+T<sub>6</sub>+T<sub>3</sub>+T<sub>7</sub>
+
+        Example 2:
+        - Threads 0-5 utilise one L3 cache whereas threads 6-11 utilise a different L3 cache. Thus, one of these two sets of threads should be pinned to the virtual machine.
+        - Pinning and isolating fewer than these (e.g. threads 8-11) would result in the host system making use of the L3 cache in threads 6 and 7, resulting in cache evictions and therefore bad performance.
+        - Thus, there are only two possible optimal configurations:
+            - T<sub>0</sub>+T<sub>1</sub>+T<sub>2</sub>+T<sub>3</sub>+T<sub>4</sub>+T<sub>5</sub>
+            - T<sub>6</sub>+T<sub>7</sub>+T<sub>8</sub>+T<sub>9</sub>+T<sub>10</sub>+T<sub>11</sub>
+
+    3. Prepare and add/modify the following to the `<vcpu>`, `<cputune>` and `<cpu>` sections, adjusting the values to match your selected threads.
+
+        Example 1: The following selects 'T<sub>2</sub>+T<sub>6</sub>+T<sub>3</sub>+T<sub>7</sub>'.
+
+        ```xml
+        <vcpu placement="static">4</vcpu>
+        <cputune>
+            <vcpupin vcpu="0" cpuset="2"/>
+            <vcpupin vcpu="1" cpuset="6"/>
+            <vcpupin vcpu="2" cpuset="3"/>
+            <vcpupin vcpu="3" cpuset="7"/>
+        </cputune>
+        <cpu mode="host-passthrough" check="none" migratable="on">
+            <topology sockets="1" dies="1" clusters="1" cores="2" threads="2"/>
+        </cpu>
+        ```
+
+        Example 2: The following selects 'T<sub>6</sub>+T<sub>7</sub>+T<sub>8</sub>+T<sub>9</sub>+T<sub>10</sub>+T<sub>11</sub>'.
+
+        ```xml
+        <vcpu placement="static">6</vcpu>
+        <cputune>
+            <vcpupin vcpu="0" cpuset="6"/>
+            <vcpupin vcpu="1" cpuset="7"/>
+            <vcpupin vcpu="2" cpuset="8"/>
+            <vcpupin vcpu="3" cpuset="9"/>
+            <vcpupin vcpu="4" cpuset="10"/>
+            <vcpupin vcpu="5" cpuset="11"/>
+        </cputune>
+        <cpu mode="host-passthrough" check="none" migratable="on">
+            <topology sockets="1" dies="1" clusters="1" cores="3" threads="2"/>
+        </cpu>
+        ```
 
 > [!NOTE]
-> CPU pinning involves assigning specific physical CPU cores to a virtual machine. This can improve performance by reducing context switching and ensuring that the VM's workload consistently uses the same cores, leading to better CPU cache utilisation.
+> More information on configuring CPU pinning can be found in [this excellent guide](https://wiki.archlinux.org/title/PCI_passthrough_via_OVMF#CPU_pinning).
 
 11. Navigate to the `XML` tab, and edit the `<clock>` section to disable all timers except for the hypervclock, thereby drastically reducing idle CPU usage. Once changed, click `Apply`.
     ```xml
@@ -147,31 +268,41 @@ Together, these components form a powerful and flexible virtualization stack, wi
 > [!NOTE]
 > Hyper-V enlightenments make Windows (and other Hyper-V guests) think they are running on top of a Hyper-V compatible hypervisor. This enables use of Hyper-V specific features, allowing `KVM` to implement paravirtualised interfaces for improved virtual machine performance.
 
-13. In the 'Memory' section, set the `Current allocation` to the minimum amount of memory you want the virtual machine to use, with a recommended value of `1024MB`.
+13. Add the following XML snippet within the `<devices>` section to enable the GNU/Linux host to communicate with Windows using `QEMU Guest Agent`.
+
+    ```xml
+    <channel type='unix'>
+      <source mode='bind'/>
+      <target type='virtio' name='org.qemu.guest_agent.0'/>
+      <address type='virtio-serial' controller='0' bus='0' port='2'/>
+    </channel>
+    ```
+
+14. In the 'Memory' section, set the `Current allocation` to the minimum amount of memory you want the virtual machine to use, with a recommended value of `1024MB`.
 
 <p align="center">
     <img src="./libvirt_images/10.png" width="500px"/>
 </p>
 
-14. (Optional) Under `Boot Options`, enable `Start virtual machine on host boot up`.
+15. (Optional) Under `Boot Options`, enable `Start virtual machine on host boot up`.
 
 <p align="center">
     <img src="./libvirt_images/11.png" width="500px"/>
 </p>
 
-15. Navigate to 'SATA Disk 1' and set the `Disk bus` type to `VirtIO`. This allows disk access to be paravirtualised, improving virtual machine performance.
+16. Navigate to 'SATA Disk 1' and set the `Disk bus` type to `VirtIO`. This allows disk access to be paravirtualised, improving virtual machine performance.
 
 <p align="center">
     <img src="./libvirt_images/12.png" width="500px"/>
 </p>
 
-16. Navigate to 'NIC' and set the `Device model` type to `virtio` to enable paravirtualised networking.
+17. Navigate to 'NIC' and set the `Device model` type to `virtio` to enable paravirtualised networking.
 
 <p align="center">
     <img src="./libvirt_images/13.png" width="500px"/>
 </p>
 
-17. Click the `Add Hardware` button in the lower left, and choose `Storage`. For `Device type`, select `CDROM device` and choose the VirtIO driver `.ISO` you downloaded earlier. Click `Finish` to add the new CD-ROM device.
+18. Click the `Add Hardware` button in the lower left, and choose `Storage`. For `Device type`, select `CDROM device` and choose the VirtIO driver `.ISO` you downloaded earlier. Click `Finish` to add the new CD-ROM device.
 
 > [!IMPORTANT]
 > If you skip this step, the Windows installer will fail to recognise and list the virtual hard drive you created earlier.
@@ -180,7 +311,7 @@ Together, these components form a powerful and flexible virtualization stack, wi
     <img src="./libvirt_images/14.png" width="500px"/>
 </p>
 
-18. Click `Begin Installation` in the top left.
+19. Click `Begin Installation` in the top left.
 
 <p align="center">
     <img src="./libvirt_images/15.png" width="700px"/>
@@ -367,6 +498,11 @@ Below is an example `.XML` file that describes a Windows 11 virtual machine.
       <target type="virtio" name="com.redhat.spice.0"/>
       <address type="virtio-serial" controller="0" bus="0" port="1"/>
     </channel>
+    <channel type='unix'>
+      <source mode='bind'/>
+      <target type='virtio' name='org.qemu.guest_agent.0'/>
+      <address type='virtio-serial' controller='0' bus='0' port='2'/>
+    </channel>
     <input type="tablet" bus="usb">
       <address type="usb" bus="0" port="1"/>
     </input>
@@ -458,7 +594,7 @@ Following the above, choose to `Continue with limited setup`.
 </p>
 
 ## Final Configuration Steps
-Open `File Explorer` and navigate to the drive where the `VirtIO` driver `.ISO` is mounted. Run `virt-win-gt-64.exe` to launch the `VirtIO` driver installer.
+Open `File Explorer` and navigate to the drive where the `VirtIO` driver `.ISO` is mounted. Run `virtio-win-gt-x64.exe` to launch the `VirtIO` driver installer.
 
 <p align="center">
     <img src="./libvirt_images/24.png" width="700px"/>
@@ -470,7 +606,21 @@ Leave everything as default and click `Next` through the installer. This will in
     <img src="./libvirt_images/25.png" width="700px"/>
 </p>
 
-Once you finish the `VirtIO` driver installation, you will need to make some registry changes to enable RDP Applications to run on the system. Start by downloading the [RDPApps.reg](/install/RDPApps.reg) file, right-clicking on the `Raw` button, and clicking on `Save target as`.
+Next, install the `QEMU Guest Agent` within Windows. This agent allows the GNU/Linux host to request a graceful shutdown of the Windows system. To do this, either run `virtio-win-guest-tools.exe` or `guest-agent\qemu-ga-x86_64.msi`. You can confirm the guest agent was successfully installed by running `Get-Service QEMU-GA` within a PowerShell window. The output should resemble:
+
+```
+Status   Name               DisplayName
+------   ----               -----------
+Running  QEMU-GA            QEMU Guest Agent
+```
+
+You can then test whether the host GNU/Linux system can communicate with Windows via `QEMU Guest Agent` by running `virsh qemu-agent-command RDPWindows '{"execute":"guest-info"}'`. The output should resemble:
+
+```
+{"return":{"version":"107.0.1","supported_commands":[{"enabled":true,"name":"guest-get-cpustats","success-response":true},{"enabled":true,"name":"guest-get-diskstats","success-response":true},{"enabled":true,"name":"guest-get-devices","success-response":true},{"enabled":true,"name":"guest-get-osinfo","success-response":true},{"enabled":true,"name":"guest-get-timezone","success-response":true},{"enabled":true,"name":"guest-get-users","success-response":true},{"enabled":true,"name":"guest-get-host-name","success-response":true},{"enabled":true,"name":"guest-exec","success-response":true},{"enabled":true,"name":"guest-exec-status","success-response":true},{"enabled":false,"name":"guest-get-memory-block-info","success-response":true},{"enabled":false,"name":"guest-set-memory-blocks","success-response":true},{"enabled":false,"name":"guest-get-memory-blocks","success-response":true},{"enabled":true,"name":"guest-set-user-password","success-response":true},{"enabled":true,"name":"guest-get-fsinfo","success-response":true},{"enabled":true,"name":"guest-get-disks","success-response":true},{"enabled":false,"name":"guest-set-vcpus","success-response":true},{"enabled":true,"name":"guest-get-vcpus","success-response":true},{"enabled":true,"name":"guest-network-get-interfaces","success-response":true},{"enabled":false,"name":"guest-suspend-hybrid","success-response":false},{"enabled":true,"name":"guest-suspend-ram","success-response":false},{"enabled":true,"name":"guest-suspend-disk","success-response":false},{"enabled":true,"name":"guest-fstrim","success-response":true},{"enabled":true,"name":"guest-fsfreeze-thaw","success-response":true},{"enabled":true,"name":"guest-fsfreeze-freeze-list","success-response":true},{"enabled":true,"name":"guest-fsfreeze-freeze","success-response":true},{"enabled":true,"name":"guest-fsfreeze-status","success-response":true},{"enabled":true,"name":"guest-file-flush","success-response":true},{"enabled":true,"name":"guest-file-seek","success-response":true},{"enabled":true,"name":"guest-file-write","success-response":true},{"enabled":true,"name":"guest-file-read","success-response":true},{"enabled":true,"name":"guest-file-close","success-response":true},{"enabled":true,"name":"guest-file-open","success-response":true},{"enabled":true,"name":"guest-shutdown","success-response":false},{"enabled":true,"name":"guest-info","success-response":true},{"enabled":true,"name":"guest-set-time","success-response":true},{"enabled":true,"name":"guest-get-time","success-response":true},{"enabled":true,"name":"guest-ping","success-response":true},{"enabled":true,"name":"guest-sync","success-response":true},{"enabled":true,"name":"guest-sync-delimited","success-response":true}]}}
+```
+
+Next, you will need to make some registry changes to enable RDP Applications to run on the system. Start by downloading the [RDPApps.reg](/install/RDPApps.reg) file, right-clicking on the `Raw` button, and clicking on `Save target as`.
 
 <p align="center">
     <img src="./libvirt_images/26.png" width="700px"/>

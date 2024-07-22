@@ -1543,9 +1543,9 @@ function waUninstall() {
     done
 
     # Print caveats.
-    echo -e "\n${INFO_TEXT}Please note your WinApps configuration file was not removed.${CLEAR_TEXT}"
+    echo -e "\n${INFO_TEXT}Please note your WinApps configuration folder was not removed.${CLEAR_TEXT}"
     echo -e "${INFO_TEXT}You can remove this manually by running:${CLEAR_TEXT}"
-    echo -e "${COMMAND_TEXT}rm ${CONFIG_PATH}${CLEAR_TEXT}\n"
+    echo -e "${COMMAND_TEXT}rm $(dirname "$CONFIG_PATH")${CLEAR_TEXT}\n"
 
     # Print feedback.
     echo -e "${SUCCESS_TEXT}UNINSTALLATION COMPLETE.${CLEAR_TEXT}"
