@@ -12,10 +12,7 @@ Although WinApps supports using `QEMU+KVM+libvirt` as a backend for running Wind
 You can find a guide for installing `Docker Engine` [here](https://docs.docker.com/engine/install/).
 
 ### Setup `Docker` Container
-WinApps utilises `docker compose` to configure Windows VMs.
-
-> [!IMPORTANT]
-> The [`compose.yaml`](https://github.com/winapps-org/winapps/blob/main/compose.yaml) file located within the root directory of the WinApps repository must be manually copied to `~/.config/winapps/compose.yaml`.
+WinApps utilises `docker compose` to configure Windows VMs. A template [`compose.yaml`](https://github.com/winapps-org/winapps/blob/main/compose.yaml) is provided.
 
 Prior to installing Windows, you can modify the RAM and number of CPU cores available to the Windows VM by changing `RAM_SIZE` and `CPU_CORES` within `compose.yaml`.
 
@@ -29,10 +26,28 @@ Please refer to the [original GitHub repository](https://github.com/dockur/windo
 ### Installing Windows
 You can initiate the Windows installation using `docker compose`.
 ```bash
-docker compose --file ~/.config/winapps/compose.yaml up
+cd winapps
+docker compose --file ./compose.yaml up
 ```
 
 You can then access the Windows virtual machine via a VNC connection to complete the Windows setup by navigating to http://127.0.0.1:8006 in your web browser.
+
+After installing Windows, comment out the following lines in the `compose.yaml` file by prepending a '#':
+- `- ./oem:/oem`
+- `- /path/to/windows/install/media.iso:/custom.iso` (if relevant)
+
+Then, copy this modified `compose.yaml` file to `~/.config/winapps/compose.yaml`.
+
+```bash
+cp ./compose.yaml ~/.config/winapps/compose.yaml
+```
+
+Finally, ensure the new configuration is applied by running the following:
+
+```bash
+docker compose --file ./compose.yaml down
+docker compose --file ~/.config/winapps/compose.yaml up
+```
 
 ### Installing WinApps
 `Docker` simplifies the WinApps installation process by eliminating the need for any additional configuration of the Windows virtual machine. Once the Windows virtual machine is up and running, you can directly launch the WinApps installer, which should automatically detect and interface with Windows.
@@ -45,12 +60,18 @@ You can then access the Windows virtual machine via a VNC connection to complete
 ```
 
 ### Changing `compose.yaml`
-Changes require the Windows virtual machine to be removed and re-created using the updated `compose.yaml`. This should __NOT__ affect your data.
+Changes to `compose.yaml` require the Windows virtual machine to be removed and re-created. This should __NOT__ affect your data.
 
 ```bash
-docker compose --file ~/.config/winapps/compose.yaml down # Stop and remove the existing Windows virtual machine.
-rm ~/.config/freerdp/server/127.0.0.1_3389.pem # Remove the existing FreeRDP certificate (a new certificate will be created automatically when connecting to the new virtual machine for the first time).
-docker compose --file ~/.config/winapps/compose.yaml up # Re-create the virtual machine with the updated configuration.
+# Stop and remove the existing Windows virtual machine.
+docker compose --file ~/.config/winapps/compose.yaml down
+
+# Remove the existing FreeRDP certificate (if required).
+# Note: A new certificate will be created when connecting via RDP for the first time.
+rm ~/.config/freerdp/server/127.0.0.1_3389.pem
+
+# Re-create the virtual machine with the updated configuration.
+docker compose --file ~/.config/winapps/compose.yaml up
 ```
 
 ### Subsequent Use
@@ -71,22 +92,52 @@ docker compose --file ~/.config/winapps/compose.yaml kill # Force shut down the 
 ### Setup `Podman` Container
 Please follow the [`docker` instructions](#setup-docker-container).
 
-> [!NOTE]
+> [!IMPORTANT]
 > Ensure `WAFLAVOR` is set to `"podman"` in `~/.config/winapps/winapps.conf`.
 
 ### Installing Windows
 You can initiate the Windows installation using `podman-compose`.
 ```bash
-podman-compose --file ~/.config/winapps/compose.yaml up
+cd winapps
+podman-compose --file ./compose.yaml up
 ```
 
 You can then access the Windows virtual machine via a VNC connection to complete the Windows setup by navigating to http://127.0.0.1:8006 in your web browser.
+
+After installing Windows, comment out the following lines in the `compose.yaml` file by prepending a '#':
+- `- ./oem:/oem`
+- `- /path/to/windows/install/media.iso:/custom.iso` (if relevant)
+
+Then, copy this modified `compose.yaml` file to `~/.config/winapps/compose.yaml`.
+
+```bash
+cp ./compose.yaml ~/.config/winapps/compose.yaml
+```
+
+Finally, ensure the new configuration is applied by running the following:
+
+```bash
+podman-compose --file ./compose.yaml down
+podman-compose --file ~/.config/winapps/compose.yaml up
+```
 
 ### Installing WinApps
 Please follow the [`docker` instructions](#installing-winapps).
 
 ### Changing `compose.yaml`
-Please follow the [`docker` instructions](#changing-composeyaml).
+Changes to `compose.yaml` require the Windows virtual machine to be removed and re-created. This should __NOT__ affect your data.
+
+```bash
+# Stop and remove the existing Windows virtual machine.
+podman-compose --file ~/.config/winapps/compose.yaml down
+
+# Remove the existing FreeRDP certificate (if required).
+# Note: A new certificate will be created when connecting via RDP for the first time.
+rm ~/.config/freerdp/server/127.0.0.1_3389.pem
+
+# Re-create the virtual machine with the updated configuration.
+podman-compose --file ~/.config/winapps/compose.yaml up
+```
 
 ### Subsequent Use
 ```bash
