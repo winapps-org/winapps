@@ -496,6 +496,60 @@ function waCheckDependencies() {
         return "$EC_MISSING_DEPS"
     fi
 
+    # 'Address Resolution Protocol'
+    if ! command -v arp &>/dev/null; then
+        # Complete the previous line.
+        echo -e "${FAIL_TEXT}Failed!${CLEAR_TEXT}\n"
+
+        # Display the error type.
+        echo -e "${ERROR_TEXT}ERROR:${CLEAR_TEXT} ${BOLD_TEXT}MISSING DEPENDENCIES.${CLEAR_TEXT}"
+
+        # Display the error details.
+        echo -e "${INFO_TEXT}Please install 'net-tools' to proceed.${CLEAR_TEXT}"
+
+        # Display the suggested action(s).
+        echo "--------------------------------------------------------------------------------"
+        echo "Debian/Ubuntu-based systems:"
+        echo -e "  ${COMMAND_TEXT}sudo apt install net-tools${CLEAR_TEXT}"
+        echo "Red Hat/Fedora-based systems:"
+        echo -e "  ${COMMAND_TEXT}sudo dnf install net-tools${CLEAR_TEXT}"
+        echo "Arch Linux systems:"
+        echo -e "  ${COMMAND_TEXT}sudo pacman -S net-tools${CLEAR_TEXT}"
+        echo "Gentoo Linux systems:"
+        echo -e "  ${COMMAND_TEXT}sudo emerge --ask sys-apps/net-tools${CLEAR_TEXT}"
+        echo "--------------------------------------------------------------------------------"
+
+        # Terminate the script.
+        return "$EC_MISSING_DEPS"
+    fi
+
+    # 'Netcat'
+    if ! command -v nc &>/dev/null; then
+        # Complete the previous line.
+        echo -e "${FAIL_TEXT}Failed!${CLEAR_TEXT}\n"
+
+        # Display the error type.
+        echo -e "${ERROR_TEXT}ERROR:${CLEAR_TEXT} ${BOLD_TEXT}MISSING DEPENDENCIES.${CLEAR_TEXT}"
+
+        # Display the error details.
+        echo -e "${INFO_TEXT}Please install 'netcat' to proceed.${CLEAR_TEXT}"
+
+        # Display the suggested action(s).
+        echo "--------------------------------------------------------------------------------"
+        echo "Debian/Ubuntu-based systems:"
+        echo -e "  ${COMMAND_TEXT}sudo apt install netcat${CLEAR_TEXT}"
+        echo "Red Hat/Fedora-based systems:"
+        echo -e "  ${COMMAND_TEXT}sudo dnf install nmap-ncat${CLEAR_TEXT}"
+        echo "Arch Linux systems:"
+        echo -e "  ${COMMAND_TEXT}sudo pacman -S gnu-netcat${CLEAR_TEXT}"
+        echo "Gentoo Linux systems:"
+        echo -e "  ${COMMAND_TEXT}sudo emerge --ask net-analyzer/netcat${CLEAR_TEXT}"
+        echo "--------------------------------------------------------------------------------"
+
+        # Terminate the script.
+        return "$EC_MISSING_DEPS"
+    fi
+
     # 'FreeRDP' (Version 3).
     # Attempt to set a FreeRDP command if the command variable is empty.
     if [ -z "$FREERDP_COMMAND" ]; then
