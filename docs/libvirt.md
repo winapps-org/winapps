@@ -124,10 +124,111 @@ Together, these components form a powerful and flexible virtualization stack, wi
     <img src="./libvirt_images/08.png" width="700px"/>
 </p>
 
-10. (Optional) Configure 'CPU pinning' by following [this excellent guide](https://wiki.archlinux.org/title/PCI_passthrough_via_OVMF#CPU_pinning).
+10. (Optional) Assign specific physical CPU cores to the virtual machine. This can improve performance by reducing context switching and ensuring that the virtual machine's workload consistently uses the same cores, leading to better CPU cache utilisation.
+    1. Run `lscpu -e` to determine which L1, L2 and L3 caches are associated with which CPU cores.
+
+        Example 1 (Intel 11th Gen Core i7-1185G7):
+        ```
+        CPU NODE SOCKET CORE L1d:L1i:L2:L3 ONLINE    MAXMHZ   MINMHZ
+          0    0      0    0 0:0:0:0          yes 4800.0000 400.0000
+          1    0      0    1 1:1:1:0          yes 4800.0000 400.0000
+          2    0      0    2 2:2:2:0          yes 4800.0000 400.0000
+          3    0      0    3 3:3:3:0          yes 4800.0000 400.0000
+          4    0      0    0 0:0:0:0          yes 4800.0000 400.0000
+          5    0      0    1 1:1:1:0          yes 4800.0000 400.0000
+          6    0      0    2 2:2:2:0          yes 4800.0000 400.0000
+          7    0      0    3 3:3:3:0          yes 4800.0000 400.0000
+        ```
+
+        - C<sub>0</sub> = T<sub>0</sub>+T<sub>4</sub> &rarr; L1<sub>0</sub>+L2<sub>0</sub>+L3<sub>0</sub>
+        - C<sub>1</sub> = T<sub>1</sub>+T<sub>5</sub> &rarr; L1<sub>1</sub>+L2<sub>1</sub>+L3<sub>0</sub>
+        - C<sub>2</sub> = T<sub>2</sub>+T<sub>6</sub> &rarr; L1<sub>2</sub>+L2<sub>2</sub>+L3<sub>0</sub>
+        - C<sub>3</sub> = T<sub>3</sub>+T<sub>7</sub> &rarr; L1<sub>3</sub>+L2<sub>3</sub>+L3<sub>0</sub>
+
+        Example 2 (AMD Ryzen 5 1600):
+        ```
+        CPU NODE SOCKET CORE L1d:L1i:L2:L3 ONLINE MAXMHZ    MINMHZ
+        0   0    0      0    0:0:0:0       yes    3800.0000 1550.0000
+        1   0    0      0    0:0:0:0       yes    3800.0000 1550.0000
+        2   0    0      1    1:1:1:0       yes    3800.0000 1550.0000
+        3   0    0      1    1:1:1:0       yes    3800.0000 1550.0000
+        4   0    0      2    2:2:2:0       yes    3800.0000 1550.0000
+        5   0    0      2    2:2:2:0       yes    3800.0000 1550.0000
+        6   0    0      3    3:3:3:1       yes    3800.0000 1550.0000
+        7   0    0      3    3:3:3:1       yes    3800.0000 1550.0000
+        8   0    0      4    4:4:4:1       yes    3800.0000 1550.0000
+        9   0    0      4    4:4:4:1       yes    3800.0000 1550.0000
+        10  0    0      5    5:5:5:1       yes    3800.0000 1550.0000
+        11  0    0      5    5:5:5:1       yes    3800.0000 1550.0000
+        ```
+
+        - C<sub>0</sub> = T<sub>0</sub>+T<sub>1</sub> &rarr; L1<sub>0</sub>+L2<sub>0</sub>+L3<sub>0</sub>
+        - C<sub>1</sub> = T<sub>2</sub>+T<sub>3</sub> &rarr; L1<sub>1</sub>+L2<sub>1</sub>+L3<sub>0</sub>
+        - C<sub>2</sub> = T<sub>4</sub>+T<sub>5</sub> &rarr; L1<sub>2</sub>+L2<sub>2</sub>+L3<sub>0</sub>
+        - C<sub>3</sub> = T<sub>6</sub>+T<sub>7</sub> &rarr; L1<sub>3</sub>+L2<sub>3</sub>+L3<sub>1</sub>
+        - C<sub>4</sub> = T<sub>8</sub>+T<sub>9</sub> &rarr; L1<sub>4</sub>+L2<sub>4</sub>+L3<sub>1</sub>
+        - C<sub>5</sub> = T<sub>10</sub>+T<sub>11</sub> &rarr; L1<sub>5</sub>+L2<sub>5</sub>+L3<sub>1</sub>
+
+    2. Select which CPU cores to 'pin'. You should aim to select a combination of CPU cores that minimises sharing of caches between Windows and GNU/Linux.
+
+        Example 1:
+        - CPU cores share the same singular L3 cache, so this cannot be optimised.
+        - CPU cores utilise different L1 and L2 caches, so isolatng corresponding thread pairs will help improve performance.
+        - Thus, if limiting the virtual machine to a maximum of 4 threads, there are 10 possible optimal configurations:
+            - T<sub>0</sub>+T<sub>4</sub>
+            - T<sub>1</sub>+T<sub>5</sub>
+            - T<sub>2</sub>+T<sub>6</sub>
+            - T<sub>3</sub>+T<sub>7</sub>
+            - T<sub>0</sub>+T<sub>4</sub>+T<sub>1</sub>+T<sub>5</sub>
+            - T<sub>0</sub>+T<sub>4</sub>+T<sub>2</sub>+T<sub>6</sub>
+            - T<sub>0</sub>+T<sub>4</sub>+T<sub>3</sub>+T<sub>7</sub>
+            - T<sub>1</sub>+T<sub>5</sub>+T<sub>2</sub>+T<sub>6</sub>
+            - T<sub>1</sub>+T<sub>5</sub>+T<sub>3</sub>+T<sub>7</sub>
+            - T<sub>2</sub>+T<sub>6</sub>+T<sub>3</sub>+T<sub>7</sub>
+
+        Example 2:
+        - Threads 0-5 utilise one L3 cache whereas threads 6-11 utilise a different L3 cache. Thus, one of these two sets of threads should be pinned to the virtual machine.
+        - Pinning and isolating fewer than these (e.g. threads 8-11) would result in the host system making use of the L3 cache in threads 6 and 7, resulting in cache evictions and therefore bad performance.
+        - Thus, there are only two possible optimal configurations:
+            - T<sub>0</sub>+T<sub>1</sub>+T<sub>2</sub>+T<sub>3</sub>+T<sub>4</sub>+T<sub>5</sub>
+            - T<sub>6</sub>+T<sub>7</sub>+T<sub>8</sub>+T<sub>9</sub>+T<sub>10</sub>+T<sub>11</sub>
+
+    3. Prepare and add/modify the following to the `<vcpu>`, `<cputune>` and `<cpu>` sections, adjusting the values to match your selected threads.
+
+        Example 1: The following selects 'T<sub>2</sub>+T<sub>6</sub>+T<sub>3</sub>+T<sub>7</sub>'.
+
+        ```xml
+        <vcpu placement="static">4</vcpu>
+        <cputune>
+            <vcpupin vcpu="0" cpuset="2"/>
+            <vcpupin vcpu="1" cpuset="6"/>
+            <vcpupin vcpu="2" cpuset="3"/>
+            <vcpupin vcpu="3" cpuset="7"/>
+        </cputune>
+        <cpu mode="host-passthrough" check="none" migratable="on">
+            <topology sockets="1" dies="1" clusters="1" cores="2" threads="2"/>
+        </cpu>
+        ```
+
+        Example 2: The following selects 'T<sub>6</sub>+T<sub>7</sub>+T<sub>8</sub>+T<sub>9</sub>+T<sub>10</sub>+T<sub>11</sub>'.
+
+        ```xml
+        <vcpu placement="static">6</vcpu>
+        <cputune>
+            <vcpupin vcpu="0" cpuset="6"/>
+            <vcpupin vcpu="1" cpuset="7"/>
+            <vcpupin vcpu="2" cpuset="8"/>
+            <vcpupin vcpu="3" cpuset="9"/>
+            <vcpupin vcpu="4" cpuset="10"/>
+            <vcpupin vcpu="5" cpuset="11"/>
+        </cputune>
+        <cpu mode="host-passthrough" check="none" migratable="on">
+            <topology sockets="1" dies="1" clusters="1" cores="3" threads="2"/>
+        </cpu>
+        ```
 
 > [!NOTE]
-> CPU pinning involves assigning specific physical CPU cores to a virtual machine. This can improve performance by reducing context switching and ensuring that the VM's workload consistently uses the same cores, leading to better CPU cache utilisation.
+> More information on configuring CPU pinning can be found in [this excellent guide](https://wiki.archlinux.org/title/PCI_passthrough_via_OVMF#CPU_pinning).
 
 11. Navigate to the `XML` tab, and edit the `<clock>` section to disable all timers except for the hypervclock, thereby drastically reducing idle CPU usage. Once changed, click `Apply`.
     ```xml
