@@ -36,12 +36,12 @@ Together, these components form a powerful and flexible virtualization stack, wi
     sudo systemctl start qemu-guest-agent
     ```
 
-3. Download a [Windows 10](https://www.microsoft.com/software-download/windows10ISO) or [Windows 11](https://www.microsoft.com/software-download/windows11) installation `.ISO` image.
+4. Download a [Windows 10](https://www.microsoft.com/software-download/windows10ISO) or [Windows 11](https://www.microsoft.com/software-download/windows11) installation `.ISO` image.
 
 > [!IMPORTANT]
 > 'Professional', 'Enterprise' or 'Server' editions of Windows are required to run RDP applications. Windows 'Home' will NOT suffice.
 
-4. Download [VirtIO drivers](https://fedorapeople.org/groups/virt/virtio-win/direct-downloads/latest-virtio/virtio-win.iso) for the Windows virtual machine.
+5. Download [VirtIO drivers](https://fedorapeople.org/groups/virt/virtio-win/direct-downloads/latest-virtio/virtio-win.iso) for the Windows virtual machine.
 
 > [!NOTE]
 > VirtIO drivers enhance system performance and minimize overhead by enabling the Windows virtual machine to use specialised network and disk device drivers. These drivers are aware that they are operating inside a virtual machine, and cooperate with the hypervisor. This approach eliminates the need for the hypervisor to emulate physical hardware devices, which is a computationally expensive process. This setup allows guests to achieve high-performance network and disk operations, leveraging the benefits of paravirtualisation.
