@@ -41,6 +41,10 @@ Together, these components form a powerful and flexible virtualization stack, wi
     sudo systemctl start qemu-guest-agent
     ```
 
+> [!NOTE]
+> `QEMU Guest Agent` is a helper daemon used to exchange information and commands between host and guest operating systems.
+> You can read more about `QEMU Guest Agent` [here](https://pve.proxmox.com/wiki/Qemu-guest-agent).
+
 5. Download a [Windows 10](https://www.microsoft.com/software-download/windows10ISO) or [Windows 11](https://www.microsoft.com/software-download/windows11) installation `.ISO` image.
 
 > [!IMPORTANT]
