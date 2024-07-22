@@ -212,7 +212,12 @@ Get-ItemProperty "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\*" |
     Where-Object {$_."(default)" -ne $null} |
     ForEach-Object {
         $Exe = $_."(default)".Trim('"')
-        $Name = (Get-Item $Exe).VersionInfo.FileDescription.Trim() -replace "  "," "
+        $Item = Get-Item $Exe
+        if ($Item.VersionInfo.FileDescription) {
+            $Name = $Item.VersionInfo.FileDescription.Trim() -replace "  ", " "
+        } else {
+            $Name = [System.IO.Path]::GetFileNameWithoutExtension($Exe)
+        }
         $Icon = Get-Icon -Path $Exe -ToBase64
         #Get-ItemProperty $Exe -Name VersionInfo
         "NAMES+=(""$Name"")"
