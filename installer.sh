@@ -460,14 +460,11 @@ function waLoadConfig() {
     echo -e "${DONE_TEXT}Done!${CLEAR_TEXT}"
 }
 
-# Name: 'waCheckDependencies'
+# Name: 'waCheckScriptDependencies'
 # Role: Terminate script if dependencies are missing.
-function waCheckDependencies() {
-    # Declare variables.
-    local FREERDP_MAJOR_VERSION="" # Stores the major version of the installed copy of FreeRDP.
-
+function waCheckScriptDependencies() {
     # Print feedback.
-    echo -n "Checking whether all dependencies are installed... "
+    echo -n "Checking whether installation script dependencies are installed... "
 
     # 'Dialog'.
     if ! command -v dialog &>/dev/null; then
@@ -495,33 +492,16 @@ function waCheckDependencies() {
         # Terminate the script.
         return "$EC_MISSING_DEPS"
     fi
+}
 
-    # 'Address Resolution Protocol'
-    if ! command -v arp &>/dev/null; then
-        # Complete the previous line.
-        echo -e "${FAIL_TEXT}Failed!${CLEAR_TEXT}\n"
+# Name: 'waCheckInstallDependencies'
+# Role: Terminate script if dependencies required to install WinApps are missing.
+function waCheckInstallDependencies() {
+    # Declare variables.
+    local FREERDP_MAJOR_VERSION="" # Stores the major version of the installed copy of FreeRDP.
 
-        # Display the error type.
-        echo -e "${ERROR_TEXT}ERROR:${CLEAR_TEXT} ${BOLD_TEXT}MISSING DEPENDENCIES.${CLEAR_TEXT}"
-
-        # Display the error details.
-        echo -e "${INFO_TEXT}Please install 'net-tools' to proceed.${CLEAR_TEXT}"
-
-        # Display the suggested action(s).
-        echo "--------------------------------------------------------------------------------"
-        echo "Debian/Ubuntu-based systems:"
-        echo -e "  ${COMMAND_TEXT}sudo apt install net-tools${CLEAR_TEXT}"
-        echo "Red Hat/Fedora-based systems:"
-        echo -e "  ${COMMAND_TEXT}sudo dnf install net-tools${CLEAR_TEXT}"
-        echo "Arch Linux systems:"
-        echo -e "  ${COMMAND_TEXT}sudo pacman -S net-tools${CLEAR_TEXT}"
-        echo "Gentoo Linux systems:"
-        echo -e "  ${COMMAND_TEXT}sudo emerge --ask sys-apps/net-tools${CLEAR_TEXT}"
-        echo "--------------------------------------------------------------------------------"
-
-        # Terminate the script.
-        return "$EC_MISSING_DEPS"
-    fi
+    # Print feedback.
+    echo -n "Checking whether dependencies are installed... "
 
     # 'Netcat'
     if ! command -v nc &>/dev/null; then
@@ -613,7 +593,7 @@ function waCheckDependencies() {
         return "$EC_MISSING_DEPS"
     fi
 
-    # 'libvirt' / 'virt-manager'.
+    # 'libvirt'/'virt-manager' + 'Address Resolution Protocol'.
     if [ "$WAFLAVOR" = "libvirt" ]; then
         if ! command -v virsh &>/dev/null; then
             # Complete the previous line.
@@ -635,6 +615,32 @@ function waCheckDependencies() {
             echo -e "  ${COMMAND_TEXT}sudo pacman -S virt-manager${CLEAR_TEXT}"
             echo "Gentoo Linux systems:"
             echo -e "  ${COMMAND_TEXT}sudo emerge --ask app-emulation/virt-manager${CLEAR_TEXT}"
+            echo "--------------------------------------------------------------------------------"
+
+            # Terminate the script.
+            return "$EC_MISSING_DEPS"
+        fi
+
+        if ! command -v arp &>/dev/null; then
+            # Complete the previous line.
+            echo -e "${FAIL_TEXT}Failed!${CLEAR_TEXT}\n"
+
+            # Display the error type.
+            echo -e "${ERROR_TEXT}ERROR:${CLEAR_TEXT} ${BOLD_TEXT}MISSING DEPENDENCIES.${CLEAR_TEXT}"
+
+            # Display the error details.
+            echo -e "${INFO_TEXT}Please install 'net-tools' to proceed.${CLEAR_TEXT}"
+
+            # Display the suggested action(s).
+            echo "--------------------------------------------------------------------------------"
+            echo "Debian/Ubuntu-based systems:"
+            echo -e "  ${COMMAND_TEXT}sudo apt install net-tools${CLEAR_TEXT}"
+            echo "Red Hat/Fedora-based systems:"
+            echo -e "  ${COMMAND_TEXT}sudo dnf install net-tools${CLEAR_TEXT}"
+            echo "Arch Linux systems:"
+            echo -e "  ${COMMAND_TEXT}sudo pacman -S net-tools${CLEAR_TEXT}"
+            echo "Gentoo Linux systems:"
+            echo -e "  ${COMMAND_TEXT}sudo emerge --ask sys-apps/net-tools${CLEAR_TEXT}"
             echo "--------------------------------------------------------------------------------"
 
             # Terminate the script.
@@ -1444,7 +1450,7 @@ function waInstall() {
     waLoadConfig
 
     # Check for missing dependencies.
-    waCheckDependencies
+    waCheckInstallDependencies
 
     # Update $MULTI_FLAG.
     if [[ $MULTIMON == "true" ]]; then
@@ -1476,7 +1482,7 @@ function waInstall() {
         waCheckContainerRunning
     elif [ "$WAFLAVOR" = "libvirt" ]; then
         # Verify the current user's group membership.
-        waCheckGroupMembership # Check membership
+        waCheckGroupMembership
 
         # Check if the Windows VM is powered on.
         waCheckVMRunning
@@ -1614,6 +1620,9 @@ echo -e "${BOLD_TEXT}\
 #                                                                              #
 ################################################################################
 ${CLEAR_TEXT}"
+
+# Check dependencies for the script.
+waCheckScriptDependencies
 
 # Source the contents of 'inquirer.sh'.
 # shellcheck source=/dev/null # Exclude this file from being checked by ShellCheck.
