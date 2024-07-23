@@ -800,7 +800,7 @@ function waCheckVMRunning() {
 }
 
 # Name: 'waCheckContainerRunning'
-# Role: Throw an error if the Docker container is not running.
+# Role: Throw an error if the Docker/Podman container is not running.
 function waCheckContainerRunning() {
     # Print feedback.
     echo -n "Checking container status... "
@@ -808,13 +808,9 @@ function waCheckContainerRunning() {
     # Declare variables.
     local CONTAINER_STATE=""
 
-    # Determine container state (docker).
-    if command -v docker &>/dev/null; then
+    if [[ "$WAFLAVOR" == "docker" ]]; then
         CONTAINER_STATE=$(docker ps --filter name="WinApps" --format '{{.Status}}')
-    fi
-
-    # Determine container state (podman).
-    if [ -z "$CONTAINER_STATE" ]; then
+    elif [[ "$WAFLAVOR" == "podman" ]]; then
         CONTAINER_STATE=$(podman ps --filter name="WinApps" --format '{{.Status}}')
     fi
 
@@ -827,7 +823,7 @@ function waCheckContainerRunning() {
         echo -e "${FAIL_TEXT}Failed!${CLEAR_TEXT}\n"
 
         # Display the error type.
-        echo -e "${ERROR_TEXT}ERROR:${CLEAR_TEXT} ${BOLD_TEXT}DOCKER CONTAINER NOT RUNNING.${CLEAR_TEXT}"
+        echo -e "${ERROR_TEXT}ERROR:${CLEAR_TEXT} ${BOLD_TEXT}CONTAINER NOT RUNNING.${CLEAR_TEXT}"
 
         # Display the error details.
         echo -e "${INFO_TEXT}Windows is not running.${CLEAR_TEXT}"
@@ -835,7 +831,8 @@ function waCheckContainerRunning() {
         # Display the suggested action(s).
         echo "--------------------------------------------------------------------------------"
         echo "Please ensure Windows is powered on:"
-        echo -e "${COMMAND_TEXT}docker compose start${CLEAR_TEXT}"
+        echo -e "${COMMAND_TEXT}docker compose --file ~/.config/winapps/winapps.conf start${CLEAR_TEXT} # Docker"
+        echo -e "${COMMAND_TEXT}podman-compose --file ~/.config/winapps/winapps.conf start${CLEAR_TEXT} # Podman"
         echo "--------------------------------------------------------------------------------"
 
         # Terminate the script.
