@@ -4,7 +4,7 @@
 
 Run Windows applications (including [Microsoft 365](https://www.microsoft365.com/) and [Adobe Creative Cloud](https://www.adobe.com/creativecloud.html)) on GNU/Linux with `KDE`, `GNOME` or `XFCE`, integrated seamlessly as if they were native to the OS.
 
-<img src="demo/demo.gif" width=1000 alt="WinApps Demonstration Animation.">
+<p align="center"><img src="./demo/demo.png" width=1000 alt="WinApps Demonstration."></p>
 
 ## Underlying Mechanism
 WinApps works by:
@@ -16,6 +16,7 @@ WinApps works by:
 ## Additional Features
 - The GNU/Linux `/home` directory is accessible within Windows via the `\\tsclient\home` mount.
 - Integration with `Nautilus`, allowing you to right-click files to open them with specific Windows applications based on the file MIME type.
+- The [official taskbar widget](https://github.com/winapps-org/WinApps-Launcher) enables seamless administration of the Windows subsystem and offers an easy way to launch Windows applications.
 
 ## Supported Applications
 **WinApps supports <u>*ALL*</u> Windows applications.**
@@ -328,7 +329,7 @@ Run the WinApps installer.
 
 A list of supported additional arguments can be accessed by running `./installer.sh --help`.
 
-<img src="demo/installer.gif" width=1000 alt="WinApps Installer Animation.">
+<img src="./demo/installer.gif" width=1000 alt="WinApps Installer Animation.">
 
 ## Adding Additional Pre-defined Applications
 Adding your own applications with custom icons and MIME types to the installer is easy. Simply copy one of the application configurations in the `apps` folder located within the WinApps repository, and:

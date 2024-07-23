@@ -312,6 +312,7 @@ function waRunCommand() {
             +home-drive \
             /audio-mode:1 \
             /wm-class:"Microsoft Windows" \
+            /t:"Windows RDP Session [$RDP_IP]" \
             /v:"$RDP_IP" &>/dev/null &
     elif [ "$1" = "manual" ]; then
         # Open specified application.
