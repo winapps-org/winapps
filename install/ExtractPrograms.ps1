@@ -1,153 +1,161 @@
+<#
+'Get-Icon' Source:
+https://github.com/proxb/PowerShell_Scripts/blob/master/Get-Icon.ps1
+
+'Get-Icon' License:
+The MIT License (MIT)
+Copyright (c)
+Permission is hereby granted, free of charge, to any person obtaining a copy of
+this software and associated documentation files (the "Software"), to deal in
+the Software without restriction, including without limitation the rights to
+use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+the Software, and to permit persons to whom the Software is furnished to do so,
+subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+#>
 
 Function Get-Icon {
     <#
-        Get-Icon License:
+    .SYNOPSIS
+        Gets the icon from a file
 
-        License
+    .DESCRIPTION
+        Gets the icon from a file and displays it in a variety formats.
 
-        The MIT License (MIT)
+    .PARAMETER Path
+        The path to a file to get the icon
 
-        Copyright (c)
+    .PARAMETER ToBytes
+        Displays outputs as a byte array
 
-        Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+    .PARAMETER ToBitmap
+        Display the icon as a bitmap object
 
-        The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+    .PARAMETER ToBase64
+        Displays the icon in Base64 encoded format
 
-        THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-    #>
-    <#
-        .SYNOPSIS
-            Gets the icon from a file
+    .NOTES
+        Name: Get-Icon
+        Author: Boe Prox
+        Version History:
+            1.0 //Boe Prox - 11JAN2016
+                - Initial version
 
-        .DESCRIPTION
-            Gets the icon from a file and displays it in a variety formats.
+    .OUTPUT
+        System.Drawing.Icon
+        System.Drawing.Bitmap
+        System.String
+        System.Byte[]
 
-        .PARAMETER Path
-            The path to a file to get the icon
+    .EXAMPLE
+        Get-Icon -Path 'C:\windows\system32\WindowsPowerShell\v1.0\PowerShell.exe'
 
-        .PARAMETER ToBytes
-            Displays outputs as a byte array
+        FullName : C:\windows\system32\WindowsPowerShell\v1.0\PowerShell.exe
+        Handle   : 164169893
+        Height   : 32
+        Size     : {Width=32, Height=32}
+        Width    : 32
 
-        .PARAMETER ToBitmap
-            Display the icon as a bitmap object
+        Description
+        -----------
+        Returns the System.Drawing.Icon representation of the icon
 
-        .PARAMETER ToBase64
-            Displays the icon in Base64 encoded format
+    .EXAMPLE
+        Get-Icon -Path 'C:\windows\system32\WindowsPowerShell\v1.0\PowerShell.exe' -ToBitmap
 
-        .NOTES
-            Name: Get-Icon
-            Author: Boe Prox
-            Version History:
-                1.0 //Boe Prox - 11JAN2016
-                    - Initial version
+        Tag                  :
+        PhysicalDimension    : {Width=32, Height=32}
+        Size                 : {Width=32, Height=32}
+        Width                : 32
+        Height               : 32
+        HorizontalResolution : 96
+        VerticalResolution   : 96
+        Flags                : 2
+        RawFormat            : [ImageFormat: b96b3caa-0728-11d3-9d7b-0000f81ef32e]
+        PixelFormat          : Format32bppArgb
+        Palette              : System.Drawing.Imaging.ColorPalette
+        FrameDimensionsList  : {7462dc86-6180-4c7e-8e3f-ee7333a7a483}
+        PropertyIdList       : {}
+        PropertyItems        : {}
 
-        .OUTPUT
-            System.Drawing.Icon
-            System.Drawing.Bitmap
-            System.String
-            System.Byte[]
+        Description
+        -----------
+        Returns the System.Drawing.Bitmap representation of the icon
 
-        .EXAMPLE
-            Get-Icon -Path 'C:\windows\system32\WindowsPowerShell\v1.0\PowerShell.exe'
+    .EXAMPLE
+        $FileName = 'C:\Temp\PowerShellIcon.png'
+        $Format = [System.Drawing.Imaging.ImageFormat]::Png
+        (Get-Icon -Path 'C:\windows\system32\WindowsPowerShell\v1.0\PowerShell.exe' -ToBitmap).Save($FileName,$Format)
 
-            FullName : C:\windows\system32\WindowsPowerShell\v1.0\PowerShell.exe
-            Handle   : 164169893
-            Height   : 32
-            Size     : {Width=32, Height=32}
-            Width    : 32
+        Description
+        -----------
+        Saves the icon as a file.
 
-            Description
-            -----------
-            Returns the System.Drawing.Icon representation of the icon
+    .EXAMPLE
+        Get-Icon -Path 'C:\windows\system32\WindowsPowerShell\v1.0\PowerShell.exe' -ToBase64
 
-        .EXAMPLE
-            Get-Icon -Path 'C:\windows\system32\WindowsPowerShell\v1.0\PowerShell.exe' -ToBitmap
+        AAABAAEAICAQHQAAAADoAgAAFgAAACgAAAAgAAAAQAAAAAEABAAAAAAAgAIAAAAAAAAAAAAAAAAAAAA
+        AAAAAAAAAAACAAACAAAAAgIAAgAAAAIAAgACAgAAAgICAAMDAwAAAAP8AAP8AAAD//wD/AAAA/wD/AP
+        //AAD///8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+        AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABmZmZmZmZmZmZmZgAAAAAAaId3d3d3d4iIiIdgAA
+        AHdmhmZmZmZmZmZmZoZAAAB2ZnZmZmZmZmZmZmZ3YAAAdmZ3ZmiHZniIiHZmaGAAAHZmd2Zv/4eIiIi
+        GZmhgAAB2ZmdmZ4/4eIh3ZmZnYAAAd2ZnZmZo//h2ZmZmZ3YAAHZmaGZmZo//h2ZmZmd2AAB3Zmd2Zm
+        Znj/h2ZmZmhgAAd3dndmZmZuj/+GZmZoYAAHd3dod3dmZuj/9mZmZ2AACHd3aHd3eIiP/4ZmZmd2AAi
+        Hd2iIiIiI//iId2ZndgAIiIhoiIiIj//4iIiIiIYACIiId4iIiP//iIiIiIiGAAiIiIaIiI//+IiIiI
+        iIhkAIiIiGiIiP/4iIiIiIiIdgCIiIhoiIj/iIiIiIiIiIYAiIiIeIiIiIiIiIiIiIiGAAiIiIaP///
+        ////////4hgAAAAAGZmZmZmZmZmZmZmYAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+        AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD////////////////gA
+        AAf4AAAD+AAAAfgAAAHAAAABwAAAAcAAAAHAAAAAwAAAAMAAAADAAAAAwAAAAMAAAABAAAAAQAAAAEA
+        AAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgAAAAP4AAAH//////////////////////////w==
 
-            Tag                  :
-            PhysicalDimension    : {Width=32, Height=32}
-            Size                 : {Width=32, Height=32}
-            Width                : 32
-            Height               : 32
-            HorizontalResolution : 96
-            VerticalResolution   : 96
-            Flags                : 2
-            RawFormat            : [ImageFormat: b96b3caa-0728-11d3-9d7b-0000f81ef32e]
-            PixelFormat          : Format32bppArgb
-            Palette              : System.Drawing.Imaging.ColorPalette
-            FrameDimensionsList  : {7462dc86-6180-4c7e-8e3f-ee7333a7a483}
-            PropertyIdList       : {}
-            PropertyItems        : {}
+        Description
+        -----------
+        Returns the Base64 encoded representation of the icon
 
-            Description
-            -----------
-            Returns the System.Drawing.Bitmap representation of the icon
+    .EXAMPLE
+        Get-Icon -Path 'C:\windows\system32\WindowsPowerShell\v1.0\PowerShell.exe' -ToBase64 | Clip
 
-        .EXAMPLE
-            $FileName = 'C:\Temp\PowerShellIcon.png'
-            $Format = [System.Drawing.Imaging.ImageFormat]::Png
-            (Get-Icon -Path 'C:\windows\system32\WindowsPowerShell\v1.0\PowerShell.exe' -ToBitmap).Save($FileName,$Format)
+        Description
+        -----------
+        Returns the Base64 encoded representation of the icon and saves it to the clipboard.
 
-            Description
-            -----------
-            Saves the icon as a file.
+    .EXAMPLE
+        (Get-Icon -Path 'C:\windows\system32\WindowsPowerShell\v1.0\PowerShell.exe' -ToBytes) -Join ''
 
-        .EXAMPLE
-            Get-Icon -Path 'C:\windows\system32\WindowsPowerShell\v1.0\PowerShell.exe' -ToBase64
+        0010103232162900002322002200040000320006400010400000128200000000000000000000000
+        0128001280001281280128000128012801281280012812812801921921920002550025500025525
+        5025500025502550255255002552552550000000000000000000000000000000000000000000000
+        0000000000000000000000000000000000006102102102102102102102102102102960000613611
+        9119119119119120136136136118000119102134102102102102102102102102102134640011810
+        2118102102102102102102102102102119960011810211910210413510212013613611810210496
+        0011810211910211125513513613613613410210496001181021031021031432481201361191021
+        0210396001191021031021021042552481181021021021031180011810210410210210214325513
+        5102102102103118001191021031181021021031432481181021021021340011911910311810210
+        2102232255248102102102134001191191181351191181021101432551021021021180013511911
+        8135119119136136255248102102102119960136119118136136136136143255136135118102119
+        9601361361341361361361362552551361361361361369601361361351201361361432552481361
+        3613613613696013613613610413613625525513613613613613613610001361361361041361362
+        5524813613613613613613611801361361361041361362551361361361361361361361340136136
+        1361201361361361361361361361361361361340813613613414325525525525525525525525524
+        8134000061021021021021021021021021021021020000000000000000000000000000000000000
+        0000000000000000000000000000000000000000000025525525525525525525525525525525525
+        5224003122400152240072240070007000700070003000300030003000300010001000100010000
+        0000000000000000000012800025400125525525525525525525525525525525525525525525525
+        5255255255255
 
-            AAABAAEAICAQHQAAAADoAgAAFgAAACgAAAAgAAAAQAAAAAEABAAAAAAAgAIAAAAAAAAAAAAAAAAAAAA
-            AAAAAAAAAAACAAACAAAAAgIAAgAAAAIAAgACAgAAAgICAAMDAwAAAAP8AAP8AAAD//wD/AAAA/wD/AP
-            //AAD///8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-            AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABmZmZmZmZmZmZmZgAAAAAAaId3d3d3d4iIiIdgAA
-            AHdmhmZmZmZmZmZmZoZAAAB2ZnZmZmZmZmZmZmZ3YAAAdmZ3ZmiHZniIiHZmaGAAAHZmd2Zv/4eIiIi
-            GZmhgAAB2ZmdmZ4/4eIh3ZmZnYAAAd2ZnZmZo//h2ZmZmZ3YAAHZmaGZmZo//h2ZmZmd2AAB3Zmd2Zm
-            Znj/h2ZmZmhgAAd3dndmZmZuj/+GZmZoYAAHd3dod3dmZuj/9mZmZ2AACHd3aHd3eIiP/4ZmZmd2AAi
-            Hd2iIiIiI//iId2ZndgAIiIhoiIiIj//4iIiIiIYACIiId4iIiP//iIiIiIiGAAiIiIaIiI//+IiIiI
-            iIhkAIiIiGiIiP/4iIiIiIiIdgCIiIhoiIj/iIiIiIiIiIYAiIiIeIiIiIiIiIiIiIiGAAiIiIaP///
-            ////////4hgAAAAAGZmZmZmZmZmZmZmYAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-            AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD////////////////gA
-            AAf4AAAD+AAAAfgAAAHAAAABwAAAAcAAAAHAAAAAwAAAAMAAAADAAAAAwAAAAMAAAABAAAAAQAAAAEA
-            AAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgAAAAP4AAAH//////////////////////////w==
-
-            Description
-            -----------
-            Returns the Base64 encoded representation of the icon
-
-        .EXAMPLE
-            Get-Icon -Path 'C:\windows\system32\WindowsPowerShell\v1.0\PowerShell.exe' -ToBase64 | Clip
-
-            Description
-            -----------
-            Returns the Base64 encoded representation of the icon and saves it to the clipboard.
-
-        .EXAMPLE
-            (Get-Icon -Path 'C:\windows\system32\WindowsPowerShell\v1.0\PowerShell.exe' -ToBytes) -Join ''
-
-            0010103232162900002322002200040000320006400010400000128200000000000000000000000
-            0128001280001281280128000128012801281280012812812801921921920002550025500025525
-            5025500025502550255255002552552550000000000000000000000000000000000000000000000
-            0000000000000000000000000000000000006102102102102102102102102102102960000613611
-            9119119119119120136136136118000119102134102102102102102102102102102134640011810
-            2118102102102102102102102102102119960011810211910210413510212013613611810210496
-            0011810211910211125513513613613613410210496001181021031021031432481201361191021
-            0210396001191021031021021042552481181021021021031180011810210410210210214325513
-            5102102102103118001191021031181021021031432481181021021021340011911910311810210
-            2102232255248102102102134001191191181351191181021101432551021021021180013511911
-            8135119119136136255248102102102119960136119118136136136136143255136135118102119
-            9601361361341361361361362552551361361361361369601361361351201361361432552481361
-            3613613613696013613613610413613625525513613613613613613610001361361361041361362
-            5524813613613613613613611801361361361041361362551361361361361361361361340136136
-            1361201361361361361361361361361361361340813613613414325525525525525525525525524
-            8134000061021021021021021021021021021021020000000000000000000000000000000000000
-            0000000000000000000000000000000000000000000025525525525525525525525525525525525
-            5224003122400152240072240070007000700070003000300030003000300010001000100010000
-            0000000000000000000012800025400125525525525525525525525525525525525525525525525
-            5255255255255
-
-            Description
-            -----------
-            Returns the bytes representation of the icon. -Join was used in this for the sake
-            of displaying all of the data.
-
+        Description
+        -----------
+        Returns the bytes representation of the icon. -Join was used in this for the sake
+        of displaying all of the data.
     #>
     [cmdletbinding(
         DefaultParameterSetName = '__DefaultParameterSetName'
@@ -204,23 +212,98 @@ Function Get-Icon {
     }
 }
 
+### SEQUENTIAL LOGIC ###
+# Print bash commands to define three new arrays.
 "NAMES=()"
 "ICONS=()"
 "EXES=()"
+
+# Search for installed applications.
+# WINDOWS REGISTRY.
 Get-ItemProperty "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\*" |
     Select-Object -Property "(default)" -Unique |
     Where-Object {$_."(default)" -ne $null} |
     ForEach-Object {
-        $Exe = $_."(default)".Trim('"')
-        $Item = Get-Item $Exe
-        if ($Item.VersionInfo.FileDescription) {
-            $Name = $Item.VersionInfo.FileDescription.Trim() -replace "  ", " "
+        # Remove leading and trailing double quotation marks from the path.
+        $exePath = $_."(default)".Trim('"')
+
+        # Get the application name.
+        if ((Get-Item $exePath).VersionInfo.FileDescription) {
+            # Remove leading/trailing whitespace and replace multiple spaces with a single space.
+            $exeName = (Get-Item $exePath).VersionInfo.FileDescription.Trim() -replace '\s+', ' '
         } else {
-            $Name = [System.IO.Path]::GetFileNameWithoutExtension($Exe)
+            # Get the executable file name without the file extension.
+            $exeName = [System.IO.Path]::GetFileNameWithoutExtension($exePath)
         }
-        $Icon = Get-Icon -Path $Exe -ToBase64
-        #Get-ItemProperty $Exe -Name VersionInfo
-        "NAMES+=(""$Name"")"
-        "EXES+=(""$Exe"")"
-        "ICONS+=(""$Icon"")"
+
+        # Store the application icon as a base-64 string.
+        $exeIcon = Get-Icon -Path $exePath -ToBase64
+
+        # Output the results as bash commands that append the results to several bash arrays.
+        "NAMES+=(""$exeName"")"
+        "EXES+=(""$exePath"")"
+        "ICONS+=(""$exeIcon"")"
     }
+
+# SCOOP PACKAGE MANAGER
+# Specify the 'scoop' shims directory.
+$scoopDir = "$HOME\scoop\shims"
+
+# Check if the 'scoop' shims directory exists.
+if (Test-Path -Path $scoopDir -PathType Container) {
+    # Initialise an empty array to store executable paths.
+    $exePaths = @()
+
+    # Get all '.shim' files.
+    $shimFiles = Get-ChildItem -Path $scoopDir -Filter *.shim
+
+    # Loop through each '.shim' file to extract the executable path.
+    foreach ($shimFile in $shimFiles) {
+        # Read the content of the '.shim' file.
+        $shimFileContent = Get-Content -Path $shimFile.FullName
+
+        # Extract the path using regex, exiting the loop after the first match is found.
+        $exePath = ""
+
+        foreach ($line in $shimFileContent) {
+            # '^\s*path\s*=\s*"([^"]+)"'
+            # ^       --> Asserts the start of the line.
+            # \s*     --> Matches any whitespace characters (zero or more times).
+            # path    --> Matches the literal string "path".
+            # \s*=\s* --> Matches an equal sign = surrounded by optional whitespace characters.
+            # "       --> Matches an initial double quote.
+            # ([^"]+) --> Captures one or more characters that are not ", representing the path inside the double quotes.
+            # "       --> Matches a final double quote.
+            if ($line -match '^\s*path\s*=\s*"([^"]+)"') {
+                $exePath = $matches[1]
+                break
+            }
+        }
+
+        # Add extracted path to the array
+        $exePaths += $exePath
+    }
+
+    # Loop through the extracted executable file paths.
+    foreach ($exePath in $exePaths) {
+        # Get the application name.
+        if ((Get-Item $exePath).VersionInfo.FileDescription) {
+            # Remove leading/trailing whitespace and replace multiple spaces with a single space.
+            $exeName = (Get-Item $exePath).VersionInfo.FileDescription.Trim() -replace '\s+', ' '
+        } else {
+            # Get the executable file name without the file extension.
+            $exeName = [System.IO.Path]::GetFileNameWithoutExtension($exePath)
+        }
+
+        # Add the 'scoop' tag to the application name.
+        $exeName = "[Scoop] " + $exeName
+
+        # Store the application icon as a base-64 string.
+        $exeIcon = Get-Icon -Path $exePath -ToBase64
+
+        # Output the results as bash commands that append the results to several bash arrays.
+        "NAMES+=(""$exeName"")"
+        "EXES+=(""$exePath"")"
+        "ICONS+=(""$exeIcon"")"
+    }
+}
