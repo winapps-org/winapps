@@ -72,16 +72,17 @@ readonly INQUIRER_PATH="./install/inquirer.sh" # UNIX path to the 'inquirer' scr
 readonly VM_NAME="RDPWindows"  # Name of the Windows VM (FOR 'libvirt' ONLY).
 readonly RDP_PORT=3389         # Port used for RDP on Windows.
 readonly DOCKER_IP="127.0.0.1" # Localhost.
-RDP_USER=""
-RDP_PASS=""
-#RDP_DOMAIN="MYDOMAIN"
-#RDP_IP="192.168.123.111"
-#WAFLAVOR="docker" # Acceptable values are 'docker', 'podman' and 'libvirt'.
+readonly WINAPPS_CONFIG="\
+RDP_USER=\"MyWindowsUser\"
+RDP_PASS=\"MyWindowsPassword\"
+#RDP_DOMAIN=\"MYDOMAIN\"
+#RDP_IP=\"192.168.123.111\"
+#WAFLAVOR=\"docker\" # Acceptable values are 'docker', 'podman' and 'libvirt'.
 #RDP_SCALE=100 # Acceptable values are 100, 140, and 180.
-#RDP_FLAGS=""
-#MULTIMON="true"
-#DEBUG="true"
-#FREERDP_COMMAND="xfreerdp"' # Default WinApps configuration file content.
+#RDP_FLAGS=\"\"
+#MULTIMON=\"true\"
+#DEBUG=\"true\"
+#FREERDP_COMMAND=\"xfreerdp\""
 
 ### GLOBAL VARIABLES ###
 # USER INPUT
@@ -800,26 +801,25 @@ function waCheckVMRunning() {
 }
 
 # Name: 'waCheckContainerRunning'
-# Role: Throw an error if the Docker container is not running.
+# Role: Throw an error if the Docker/Podman container is not running.
 function waCheckContainerRunning() {
     # Print feedback.
     echo -n "Checking container status... "
 
     # Declare variables.
     local CONTAINER_STATE=""
+    local COMPOSE_COMMAND=""
 
-    # Determine container state (docker).
-    if command -v docker &>/dev/null; then
-        CONTAINER_STATE=$(docker ps --filter name="WinApps" --format '{{.Status}}')
-    fi
-
-    # Determine container state (podman).
-    if [ -z "$CONTAINER_STATE" ]; then
-        CONTAINER_STATE=$(podman ps --filter name="WinApps" --format '{{.Status}}')
-    fi
-
+    # Determine the state of the container.
+    CONTAINER_STATE=$("$WAFLAVOR" ps --all --filter name="WinApps" --format '{{.Status}}')
     CONTAINER_STATE=${CONTAINER_STATE,,} # Convert the string to lowercase.
     CONTAINER_STATE=${CONTAINER_STATE%% *} # Extract the first word.
+
+    # Determine the compose command.
+    case "$WAFLAVOR" in
+        "docker") COMPOSE_COMMAND="docker compose" ;;
+        "podman") COMPOSE_COMMAND="podman-compose" ;;
+    esac
 
     # Check container state.
     if [[ "$CONTAINER_STATE" != "up" ]]; then
@@ -827,7 +827,7 @@ function waCheckContainerRunning() {
         echo -e "${FAIL_TEXT}Failed!${CLEAR_TEXT}\n"
 
         # Display the error type.
-        echo -e "${ERROR_TEXT}ERROR:${CLEAR_TEXT} ${BOLD_TEXT}DOCKER CONTAINER NOT RUNNING.${CLEAR_TEXT}"
+        echo -e "${ERROR_TEXT}ERROR:${CLEAR_TEXT} ${BOLD_TEXT}CONTAINER NOT RUNNING.${CLEAR_TEXT}"
 
         # Display the error details.
         echo -e "${INFO_TEXT}Windows is not running.${CLEAR_TEXT}"
@@ -835,7 +835,7 @@ function waCheckContainerRunning() {
         # Display the suggested action(s).
         echo "--------------------------------------------------------------------------------"
         echo "Please ensure Windows is powered on:"
-        echo -e "${COMMAND_TEXT}docker compose start${CLEAR_TEXT}"
+        echo -e "${COMMAND_TEXT}${COMPOSE_COMMAND} --file ~/.config/winapps/winapps.conf start${CLEAR_TEXT}"
         echo "--------------------------------------------------------------------------------"
 
         # Terminate the script.
