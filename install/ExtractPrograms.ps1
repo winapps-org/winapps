@@ -212,80 +212,23 @@ Function Get-Icon {
     }
 }
 
-### SEQUENTIAL LOGIC ###
-# Print bash commands to define three new arrays.
-"NAMES=()"
-"ICONS=()"
-"EXES=()"
+function PrintArrayData {
+    param (
+        [string[]]$Paths,
+        [string]$Source
+    )
 
-# Search for installed applications.
-# WINDOWS REGISTRY.
-Get-ItemProperty "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\*" |
-    Select-Object -Property "(default)" -Unique |
-    Where-Object {$_."(default)" -ne $null} |
-    ForEach-Object {
-        # Remove leading and trailing double quotation marks from the path.
-        $exePath = $_."(default)".Trim('"')
+    # Remove leading and trailing double quotes from all paths.
+    $Paths = $Paths -replace '^"*|"*$'
 
-        # Get the application name.
-        if ((Get-Item $exePath).VersionInfo.FileDescription) {
-            # Remove leading/trailing whitespace and replace multiple spaces with a single space.
-            $exeName = (Get-Item $exePath).VersionInfo.FileDescription.Trim() -replace '\s+', ' '
-        } else {
-            # Get the executable file name without the file extension.
-            $exeName = [System.IO.Path]::GetFileNameWithoutExtension($exePath)
-        }
-
-        # Store the application icon as a base-64 string.
-        $exeIcon = Get-Icon -Path $exePath -ToBase64
-
-        # Output the results as bash commands that append the results to several bash arrays.
-        "NAMES+=(""$exeName"")"
-        "EXES+=(""$exePath"")"
-        "ICONS+=(""$exeIcon"")"
-    }
-
-# SCOOP PACKAGE MANAGER
-# Specify the 'scoop' shims directory.
-$scoopDir = "$HOME\scoop\shims"
-
-# Check if the 'scoop' shims directory exists.
-if (Test-Path -Path $scoopDir -PathType Container) {
-    # Initialise an empty array to store executable paths.
-    $exePaths = @()
-
-    # Get all '.shim' files.
-    $shimFiles = Get-ChildItem -Path $scoopDir -Filter *.shim
-
-    # Loop through each '.shim' file to extract the executable path.
-    foreach ($shimFile in $shimFiles) {
-        # Read the content of the '.shim' file.
-        $shimFileContent = Get-Content -Path $shimFile.FullName
-
-        # Extract the path using regex, exiting the loop after the first match is found.
-        $exePath = ""
-
-        foreach ($line in $shimFileContent) {
-            # '^\s*path\s*=\s*"([^"]+)"'
-            # ^       --> Asserts the start of the line.
-            # \s*     --> Matches any whitespace characters (zero or more times).
-            # path    --> Matches the literal string "path".
-            # \s*=\s* --> Matches an equal sign = surrounded by optional whitespace characters.
-            # "       --> Matches an initial double quote.
-            # ([^"]+) --> Captures one or more characters that are not ", representing the path inside the double quotes.
-            # "       --> Matches a final double quote.
-            if ($line -match '^\s*path\s*=\s*"([^"]+)"') {
-                $exePath = $matches[1]
-                break
-            }
-        }
-
-        # Add extracted path to the array
-        $exePaths += $exePath
+    # Sort the array of paths based on the filename at the end of each path.
+    $Paths = $Paths | Sort-Object {
+        # Extract the filename from the path
+        [System.IO.Path]::GetFileName($_)
     }
 
     # Loop through the extracted executable file paths.
-    foreach ($exePath in $exePaths) {
+    foreach ($exePath in $Paths) {
         # Get the application name.
         if ((Get-Item $exePath).VersionInfo.FileDescription) {
             # Remove leading/trailing whitespace and replace multiple spaces with a single space.
@@ -295,8 +238,17 @@ if (Test-Path -Path $scoopDir -PathType Container) {
             $exeName = [System.IO.Path]::GetFileNameWithoutExtension($exePath)
         }
 
-        # Add the 'scoop' tag to the application name.
-        $exeName = "[Scoop] " + $exeName
+        # Remove undesirable suffix for chocolatey shims.
+        if ($Source -eq "choco") {
+            if ($exeName.EndsWith(" - Chocolatey Shim")) {
+                $exeName = $exeName.Substring(0, $exeName.Length - " - Chocolatey Shim".Length)
+            }
+        }
+
+        # Add the appropriate tag to the application name.
+        if ($Source -ne "winreg") {
+            $exeName = $exeName + " [" + $Source + "]"
+        }
 
         # Store the application icon as a base-64 string.
         $exeIcon = Get-Icon -Path $exePath -ToBase64
@@ -307,3 +259,99 @@ if (Test-Path -Path $scoopDir -PathType Container) {
         "ICONS+=(""$exeIcon"")"
     }
 }
+
+function AppSearchWinReg {
+    # Initialise an empty array to store executable paths.
+    $exePaths = @()
+
+    # Query windows registry for unique installed executable files.
+    $exePaths = Get-ItemProperty "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\*" |
+        ForEach-Object { $_."(default)" } |  # Extract the value of the (default) property
+        Where-Object { $_ -ne $null } |  # Filter out null values
+        Sort-Object -Unique  # Ensure uniqueness
+
+    # Process extracted executable file paths.
+    PrintArrayData -Paths $exePaths -Source "winreg"
+}
+
+function AppSearchChocolatey {
+    # Note: This will only look for chocolatey shims!
+    # Initialise an empty array to store executable paths.
+    $exePaths = @()
+
+    # Specify the 'chocolatey' shims directory.
+    $chocoDir = "C:\ProgramData\chocolatey\bin"
+
+    # Check if the 'chocolatey' shims directory exists.
+    if (Test-Path -Path $chocoDir -PathType Container) {
+        # Get all shim '.exe' files.
+        $shimExeFiles = Get-ChildItem -Path $chocoDir -Filter *.exe
+
+        # Loop through each '.shim' file to extract the executable path.
+        foreach ($shimExeFile in $shimExeFiles) {
+            # Resolve the shim to the actual executable path.
+            $exePath = (Get-Command $shimExeFile).Source
+
+            # Add the extracted path to the array.
+            $exePaths += $exePath
+        }
+
+        # Process extracted executable file paths.
+        PrintArrayData -Paths $exePaths -Source "choco"
+    }
+}
+
+function AppSearchScoop {
+    # Initialise an empty array to store executable paths.
+    $exePaths = @()
+
+    # Specify the 'scoop' shims directory.
+    $scoopDir = "$HOME\scoop\shims"
+
+    # Check if the 'scoop' shims directory exists.
+    if (Test-Path -Path $scoopDir -PathType Container) {
+        # Get all '.shim' files.
+        $shimFiles = Get-ChildItem -Path $scoopDir -Filter *.shim
+
+        # Loop through each '.shim' file to extract the executable path.
+        foreach ($shimFile in $shimFiles) {
+            # Read the content of the '.shim' file.
+            $shimFileContent = Get-Content -Path $shimFile.FullName
+
+            # Extract the path using regex, exiting the loop after the first match is found.
+            $exePath = ""
+
+            foreach ($line in $shimFileContent) {
+                # '^\s*path\s*=\s*"([^"]+)"'
+                # ^       --> Asserts the start of the line.
+                # \s*     --> Matches any whitespace characters (zero or more times).
+                # path    --> Matches the literal string "path".
+                # \s*=\s* --> Matches an equal sign = surrounded by optional whitespace characters.
+                # "       --> Matches an initial double quote.
+                # ([^"]+) --> Captures one or more characters that are not ", representing the path inside the double quotes.
+                # "       --> Matches a final double quote.
+                if ($line -match '^\s*path\s*=\s*"([^"]+)"') {
+                    $exePath = $matches[1]
+                    break
+                }
+            }
+
+            # Add the extracted path to the array.
+            $exePaths += $exePath
+        }
+
+        # Process extracted executable file paths.
+        PrintArrayData -Paths $exePaths -Source "scoop"
+    }
+}
+
+### SEQUENTIAL LOGIC ###
+# Print bash commands to define three new arrays.
+"NAMES=()"
+"ICONS=()"
+"EXES=()"
+
+# Search for installed applications.
+AppSearchWinReg
+AppSearchChocolatey
+AppSearchScoop
