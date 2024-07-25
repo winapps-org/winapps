@@ -1,0 +1,14 @@
+# GNOME shortcut name
+NAME="Visio"
+
+# Used for descriptions and window class
+FULL_NAME="Microsoft Visio"
+
+# The executable inside windows
+WIN_EXECUTABLE="C:\Program Files (x86)\Microsoft Office\root\Office16\VISIO.EXE"
+
+# GNOME categories
+CATEGORIES="WinApps;Office"
+
+# GNOME mimetypes
+MIME_TYPES="application/vnd.ms-visio.drawing.main+xml;"

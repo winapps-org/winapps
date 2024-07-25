@@ -223,6 +223,17 @@ Contributing to the list of supported applications is encouraged through submiss
             (2016, 2019, o365)<br>
             <i><a href="https://en.m.wikipedia.org/wiki/File:Microsoft_Office_Publisher_(2019-present).svg">Icon</a> in the Public Domain.</i>
         </td>
+        <!-- Microsoft Visio -->
+        <td>
+            <img src="apps/visio/icon.svg" width="100">
+        </td>
+        <td>
+            <b>Microsoft Visio</b><br>
+            (Standard/Pro 2021, Plan 2)<br>
+            <i><a href="https://en.m.wikipedia.org/wiki/File:Microsoft_Office_Visio_(2019).svg">Icon</a> in the Public Domain.</i>
+        </td>
+    </tr>
+    <tr>
         <!-- PowerShell -->
         <td>
             <img src="apps/powershell/icon.svg" width="100">
@@ -231,8 +242,6 @@ Contributing to the list of supported applications is encouraged through submiss
             <b>PowerShell</b><br>
             <i><a href="https://iconduck.com/icons/102322/file-type-powershell">Icon</a> under <a href="https://iconduck.com/licenses/mit">MIT license</a>.</i>
         </td>
-    </tr>
-    <tr>
         <!-- Windows -->
         <td>
             <img src="icons/windows.svg" width="100">
@@ -242,9 +251,6 @@ Contributing to the list of supported applications is encouraged through submiss
             (Full RDP Session)<br>
             <i><a href="url">Icon</a> in the Public Domain.</i>
         </td>
-        <!-- Empty -->
-        <td></td>
-        <td></td>
     </tr>
 </table>
 
