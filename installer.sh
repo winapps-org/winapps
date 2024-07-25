@@ -594,7 +594,7 @@ function waCheckInstallDependencies() {
         return "$EC_MISSING_DEPS"
     fi
 
-    # 'libvirt'/'virt-manager' + 'Address Resolution Protocol'.
+    # 'libvirt'/'virt-manager' + 'iproute2'.
     if [ "$WAFLAVOR" = "libvirt" ]; then
         if ! command -v virsh &>/dev/null; then
             # Complete the previous line.
@@ -622,7 +622,7 @@ function waCheckInstallDependencies() {
             return "$EC_MISSING_DEPS"
         fi
 
-        if ! command -v arp &>/dev/null; then
+        if ! command -v ip &>/dev/null; then
             # Complete the previous line.
             echo -e "${FAIL_TEXT}Failed!${CLEAR_TEXT}\n"
 
@@ -630,18 +630,18 @@ function waCheckInstallDependencies() {
             echo -e "${ERROR_TEXT}ERROR:${CLEAR_TEXT} ${BOLD_TEXT}MISSING DEPENDENCIES.${CLEAR_TEXT}"
 
             # Display the error details.
-            echo -e "${INFO_TEXT}Please install 'net-tools' to proceed.${CLEAR_TEXT}"
+            echo -e "${INFO_TEXT}Please install 'iproute2' to proceed.${CLEAR_TEXT}"
 
             # Display the suggested action(s).
             echo "--------------------------------------------------------------------------------"
             echo "Debian/Ubuntu-based systems:"
-            echo -e "  ${COMMAND_TEXT}sudo apt install net-tools${CLEAR_TEXT}"
+            echo -e "  ${COMMAND_TEXT}sudo apt install iproute2${CLEAR_TEXT}"
             echo "Red Hat/Fedora-based systems:"
-            echo -e "  ${COMMAND_TEXT}sudo dnf install net-tools${CLEAR_TEXT}"
+            echo -e "  ${COMMAND_TEXT}sudo dnf install iproute${CLEAR_TEXT}"
             echo "Arch Linux systems:"
-            echo -e "  ${COMMAND_TEXT}sudo pacman -S net-tools${CLEAR_TEXT}"
+            echo -e "  ${COMMAND_TEXT}sudo pacman -S iproute2${CLEAR_TEXT}"
             echo "Gentoo Linux systems:"
-            echo -e "  ${COMMAND_TEXT}sudo emerge --ask sys-apps/net-tools${CLEAR_TEXT}"
+            echo -e "  ${COMMAND_TEXT}sudo emerge --ask net-misc/iproute2${CLEAR_TEXT}"
             echo "--------------------------------------------------------------------------------"
 
             # Terminate the script.
@@ -859,7 +859,7 @@ function waCheckPortOpen() {
     # Note: 'RDP_IP' should not be empty if 'WAFLAVOR' is 'docker', since it is set to localhost before this function is called.
     if [ -z "$RDP_IP" ] && [ "$WAFLAVOR" = "libvirt" ]; then
         VM_MAC=$(virsh domiflist "$VM_NAME" | grep -oE "([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})") # VM MAC address.
-        RDP_IP=$(arp -n | grep "$VM_MAC" | grep -oE "([0-9]{1,3}\.){3}[0-9]{1,3}")                # VM IP address.
+        RDP_IP=$(ip neigh show | grep "$VM_MAC" | grep -oE "([0-9]{1,3}\.){3}[0-9]{1,3}")         # VM IP address.
 
         if [ -z "$RDP_IP" ]; then
             # Complete the previous line.
