@@ -11,4 +11,4 @@ WIN_EXECUTABLE="C:\Program Files (x86)\Microsoft Office\root\Office16\VISIO.EXE"
 CATEGORIES="WinApps;Office"
 
 # GNOME mimetypes
-MIME_TYPES="application/x-visio;"
+MIME_TYPES="application/vnd.ms-visio.drawing.main+xml;"
