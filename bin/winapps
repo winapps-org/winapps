@@ -370,7 +370,9 @@ function waRunCommand() {
                 /v:"$RDP_IP" &>/dev/null &
         else
             # Convert path from UNIX to Windows style.
-            FILE_PATH=$(echo "$2" | sed 's|'"${HOME}"'|\\\\tsclient\\home|;s|/|\\|g;s|\\|\\\\|g')
+            FILE_PATH=$(echo "$2" | sed \
+                -e 's|'"${HOME}"'|\\\\tsclient\\home|' \
+                -e 's|/|\\|g')
             dprint "UNIX_FILE_PATH: ${2}"
             dprint "WINDOWS_FILE_PATH: ${FILE_PATH}"
 
