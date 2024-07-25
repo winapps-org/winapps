@@ -223,9 +223,9 @@ Contributing to the list of supported applications is encouraged through submiss
             (2016, 2019, o365)<br>
             <i><a href="https://en.m.wikipedia.org/wiki/File:Microsoft_Office_Publisher_(2019-present).svg">Icon</a> in the Public Domain.</i>
         </td>
-        <!-- Microsoft Publisher -->
+        <!-- Microsoft Visio -->
         <td>
-            <img src="apps/Visio/icon.svg" width="100">
+            <img src="apps/visio/icon.svg" width="100">
         </td>
         <td>
             <b>Microsoft Visio</b><br>
