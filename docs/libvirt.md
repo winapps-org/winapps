@@ -45,12 +45,27 @@ Together, these components form a powerful and flexible virtualization stack, wi
 > `QEMU Guest Agent` is a helper daemon used to exchange information and commands between host and guest operating systems.
 > You can read more about `QEMU Guest Agent` [here](https://pve.proxmox.com/wiki/Qemu-guest-agent).
 
-5. Download a [Windows 10](https://www.microsoft.com/software-download/windows10ISO) or [Windows 11](https://www.microsoft.com/software-download/windows11) installation `.ISO` image.
+5. Configure rootless `libvirt` and `kvm` by adding your user to groups of the same name.
+    ``` bash
+    sudo usermod -a -G kvm $(id -un) # Add the user to the 'kvm' group.
+    sudo usermod -a -G libvirt $(id -un) # Add the user to the 'libvirt' group.
+    sudo reboot # Reboot the system to ensure the user is added to the relevant groups.
+    ```
+
+6. If relevant to your distribution, disable `AppArmor` for the `libvirt` daemon.
+    ``` bash
+    sudo ln -s /etc/apparmor.d/usr.sbin.libvirtd /etc/apparmor.d/disable/ # Disable AppArmor for the libvirt daemon by creating a symbolic link.
+    ```
+
+> [!NOTE]
+> Systems with `SELinux` may also require security policy adjustments if virtual machine images are stored outside the default `/var/lib/libvirt/images` directory. Read [this guide](https://docs.redhat.com/en/documentation/red_hat_enterprise_linux/5/html/virtualization/sect-virtualization-security_for_virtualization-selinux_and_virtualization#sect-Virtualization-Security_for_virtualization-SELinux_and_virtualization) for more information.
+
+7. Download a [Windows 10](https://www.microsoft.com/software-download/windows10ISO) or [Windows 11](https://www.microsoft.com/software-download/windows11) installation `.ISO` image.
 
 > [!IMPORTANT]
 > 'Professional', 'Enterprise' or 'Server' editions of Windows are required to run RDP applications. Windows 'Home' will NOT suffice.
 
-6. Download [VirtIO drivers](https://fedorapeople.org/groups/virt/virtio-win/direct-downloads/latest-virtio/virtio-win.iso) for the Windows virtual machine.
+8. Download [VirtIO drivers](https://fedorapeople.org/groups/virt/virtio-win/direct-downloads/latest-virtio/virtio-win.iso) for the Windows virtual machine.
 
 > [!NOTE]
 > VirtIO drivers enhance system performance and minimize overhead by enabling the Windows virtual machine to use specialised network and disk device drivers. These drivers are aware that they are operating inside a virtual machine, and cooperate with the hypervisor. This approach eliminates the need for the hypervisor to emulate physical hardware devices, which is a computationally expensive process. This setup allows guests to achieve high-performance network and disk operations, leveraging the benefits of paravirtualisation.
@@ -58,11 +73,6 @@ Together, these components form a powerful and flexible virtualization stack, wi
 > You can read more about `VirtIO` [here](https://wiki.libvirt.org/Virtio.html) and [here](https://developer.ibm.com/articles/l-virtio/).
 
 ## Creating a Windows VM
-> [!NOTE]
-> If you are an expert user, you may wish to:
-> - [Define a Windows virtual machine from an existing `.XML` file](#defining-windows-vm-from-xml)
-> - [Configure Rootless `libvirt`](#configuring-rootless-libvirt)
-
 1. Open `virt-manager`.
 
 > [!NOTE]
@@ -671,36 +681,3 @@ Finally, restart the virtual machine, but **DO NOT** log in. Close the virtual m
 ```bash
 ./installer.sh
 ```
-
-## Expert Installations
-### Defining Windows VM from `.XML`
-This expert guide for `.XML` imports is specific to Ubuntu 20.04 and may not work on all hardware platforms. Please read this guide in conjunction with the steps outlined above.
-
-1. Copy your Windows `.ISO` and `VirtIO` drivers `.ISO` files into the desired folder, updating the relevant paths in `kvm/RDPWindows.xml`.
-
-2. Define a virtual machine called 'RDPWindows' from the sample XML file.
-    ``` bash
-    virsh define kvm/RDPWindows.xml
-    virsh autostart RDPWindows # Configure the VM to start automatically when the host machine boots
-    ```
-
-3. Open the virtual machine's properties in `virt-manager` and ensure that `Copy host CPU configuration` is enabled.
-
-4. Boot the virtual machine, install Windows and complete the final configuration steps as outlined in the main guide above.
-
-### Configuring Rootless `libvirt`
-By default, `libvirt` requires sudo to run virtual machines. To enable your user to access `libvirt` and `kvm` without sudo, your user must be added to groups of the same name. Furthermore, modifications need to be made to `AppArmor` (if relevant to your distribution).
-
-``` bash
-sudo sed -i "s/#user = "root"/user = "$(id -un)"/g" /etc/libvirt/qemu.conf # Uncomment the user = "root" line and replace root with the current username.
-sudo sed -i "s/#group = "root"/group = "$(id -gn)"/g" /etc/libvirt/qemu.conf # Uncomment the group = "root" line and replace root with the current user's primary group.
-sudo usermod -a -G kvm $(id -un) # Add the user to the 'kvm' group.
-sudo usermod -a -G libvirt $(id -un) # Add the user to the 'libvirt' group.
-sudo systemctl restart libvirtd # Restart the libvirt daemon.
-sudo ln -s /etc/apparmor.d/usr.sbin.libvirtd /etc/apparmor.d/disable/ # Disable AppArmor for the libvirt daemon by creating a symbolic link.
-```
-
-You will need to reboot your system to ensure your user is added to the relevant groups.
-
-> [!NOTE]
-> Systems with `SELinux` may also require security policy adjustments to enable correct functioning of the `libvirt` daemon.
