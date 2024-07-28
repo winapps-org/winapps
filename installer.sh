@@ -504,6 +504,33 @@ function waCheckInstallDependencies() {
     # Print feedback.
     echo -n "Checking whether dependencies are installed... "
 
+    # 'libnotify'
+    if ! command -v notify-send &>/dev/null; then
+        # Complete the previous line.
+        echo -e "${FAIL_TEXT}Failed!${CLEAR_TEXT}\n"
+
+        # Display the error type.
+        echo -e "${ERROR_TEXT}ERROR:${CLEAR_TEXT} ${BOLD_TEXT}MISSING DEPENDENCIES.${CLEAR_TEXT}"
+
+        # Display the error details.
+        echo -e "${INFO_TEXT}Please install 'libnotify' to proceed.${CLEAR_TEXT}"
+
+        # Display the suggested action(s).
+        echo "--------------------------------------------------------------------------------"
+        echo "Debian/Ubuntu-based systems:"
+        echo -e "  ${COMMAND_TEXT}sudo apt install libnotify-bin${CLEAR_TEXT}"
+        echo "Red Hat/Fedora-based systems:"
+        echo -e "  ${COMMAND_TEXT}sudo dnf install libnotify${CLEAR_TEXT}"
+        echo "Arch Linux systems:"
+        echo -e "  ${COMMAND_TEXT}sudo pacman -S libnotify${CLEAR_TEXT}"
+        echo "Gentoo Linux systems:"
+        echo -e "  ${COMMAND_TEXT}sudo emerge --ask x11-libs/libnotify${CLEAR_TEXT}"
+        echo "--------------------------------------------------------------------------------"
+
+        # Terminate the script.
+        return "$EC_MISSING_DEPS"
+    fi
+
     # 'Netcat'
     if ! command -v nc &>/dev/null; then
         # Complete the previous line.
