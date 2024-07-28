@@ -606,7 +606,7 @@ function waRunCommand() {
         wait $FREERDP_PID
 
         # Remove the file with the process ID.
-        rm "${APPDATA_PATH}/FreeRDP_Process_${FREERDP_PID}.cproc"  &>/dev/null
+        rm "${APPDATA_PATH}/FreeRDP_Process_${FREERDP_PID}.cproc" &>/dev/null
     fi
 }
 
