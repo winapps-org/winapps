@@ -302,6 +302,8 @@ RDP_PASS="MyWindowsPassword"
 #RDP_FLAGS=""
 #MULTIMON="true"
 #DEBUG="true"
+#AUTOPAUSE="on" # Acceptable values are 'on' and 'off'.
+#AUTOPAUSE_TIME="300" # Seconds before pausing Windows due to inactivity. Ignored if AUTOPAUSE 'off'.
 #FREERDP_COMMAND="xfreerdp"
 ```
 

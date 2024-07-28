@@ -46,11 +46,33 @@ WAFLAVOR="docker"
 RDP_FLAGS=""
 FREERDP_COMMAND=""
 RDP_SCALE=100
+AUTOPAUSE="on"
+AUTOPAUSE_TIME="300"
 MULTIMON="false"
 DEBUG="true"
 MULTI_FLAG=""
 
+# OTHER
+FREERDP_PID=-1
+
+### TRAPS ###
+# Catch SIGINT (CTRL+C) to call 'waCleanUp'.
+trap waCleanUp SIGINT
+
 ### FUNCTIONS ###
+# Name: 'waCleanUp'
+# Role: Clean up remains prior to exit.
+waCleanUp() {
+    # Kill FreeRDP.
+    [ "$FREERDP_PID" -gt 0 ] && kill -9 "$FREERDP_PID" &>/dev/null
+
+    # Remove '.cproc' file.
+    [ -f "${APPDATA_PATH}/FreeRDP_Process_${FREERDP_PID}.cproc" ] && rm "${APPDATA_PATH}/FreeRDP_Process_${FREERDP_PID}.cproc" &>/dev/null
+
+    # Terminate script.
+    exit 1
+}
+
 # Name: 'waThrowExit'
 # Role: Throw an error message and exit the script.
 function waThrowExit() {
@@ -285,6 +307,11 @@ function waCheckVMRunning() {
             dprint "WINDOWS SHUT OFF. BOOTING WINDOWS."
             notify-send --expire-time=4000 --icon="dialog-info" --app-name="WinApps" --urgency="low" "WinApps" "Booting Windows."
             virsh start "$VM_NAME" &>/dev/null || EXIT_STATUS=$EC_FAIL_START
+            if (virsh list --state-paused --name | xargs | grep -wq "$VM_NAME"); then
+                dprint "WINDOWS PAUSED. RESUMING WINDOWS."
+                notify-send --expire-time=4000 --icon="dialog-info" --app-name="WinApps" --urgency="low" "WinApps" "Resuming Windows."
+                virsh resume "$VM_NAME" &>/dev/null || EXIT_STATUS=$EC_FAIL_RESUME
+            fi
         elif (virsh list --state-paused --name | xargs | grep -wq "$VM_NAME"); then
             dprint "WINDOWS PAUSED. RESUMING WINDOWS."
             notify-send --expire-time=4000 --icon="dialog-info" --app-name="WinApps" --urgency="low" "WinApps" "Resuming Windows."
@@ -476,6 +503,9 @@ function waRunCommand() {
             /wm-class:"Microsoft Windows" \
             /t:"Windows RDP Session [$RDP_IP]" \
             /v:"$RDP_IP" &>/dev/null &
+
+        # Capture the process ID.
+        FREERDP_PID=$!
     elif [ "$1" = "manual" ]; then
         # Open specified application.
         dprint "MANUAL: ${2}"
@@ -494,6 +524,9 @@ function waRunCommand() {
             "$MULTI_FLAG" \
             /app:program:"$2" \
             /v:"$RDP_IP" &>/dev/null &
+
+        # Capture the process ID.
+        FREERDP_PID=$!
     else
         # Script summoned from right-click menu with officially supported application name plus/minus a file path.
         if [ -e "${SCRIPT_DIR_PATH}/../apps/${1}/info" ]; then
@@ -530,6 +563,9 @@ function waRunCommand() {
                 /wm-class:"$FULL_NAME" \
                 /app:program:"$WIN_EXECUTABLE",icon:"$ICON",name:"$FULL_NAME" \
                 /v:"$RDP_IP" &>/dev/null &
+
+            # Capture the process ID.
+            FREERDP_PID=$!
         else
             # Convert path from UNIX to Windows style.
             FILE_PATH=$(echo "$2" | sed \
@@ -554,6 +590,57 @@ function waRunCommand() {
                 /wm-class:"$FULL_NAME" \
                 /app:program:"$WIN_EXECUTABLE",icon:"$ICON",name:$"FULL_NAME",cmd:\""$FILE_PATH"\" \
                 /v:"$RDP_IP" &>/dev/null &
+
+            # Capture the process ID.
+            FREERDP_PID=$!
+        fi
+    fi
+
+    if [ "$FREERDP_PID" -ne -1 ]; then
+        # Create a file with the process ID.
+        touch "${APPDATA_PATH}/FreeRDP_Process_${FREERDP_PID}.cproc"
+
+        # Wait for the process to terminate.
+        # Note: RemoteApp sessions take, at minimum, 20 seconds to be terminated by the Windows server.
+        # Source: https://techcommunity.microsoft.com/t5/security-compliance-and-identity/terminal-services-remoteapp-8482-session-termination-logic/ba-p/246566
+        wait $FREERDP_PID
+
+        # Remove the file with the process ID.
+        rm "${APPDATA_PATH}/FreeRDP_Process_${FREERDP_PID}.cproc"  &>/dev/null
+    fi
+}
+
+# Name: 'waCheckIdle'
+# Role: Suspend Windows if idle.
+function waCheckIdle() {
+    # Declare variables
+    local TIME_INTERVAL=10
+    local TIME_ELAPSED=0
+    local SUSPEND_WINDOWS=0
+
+    # Check if there are no WinApps-related FreeRDP processes running.
+    if ! ls "$APPDATA_PATH"/FreeRDP_Process_*.cproc &>/dev/null; then
+        SUSPEND_WINDOWS=1
+        while (( TIME_ELAPSED < AUTOPAUSE_TIME )); do
+            if ls "$APPDATA_PATH"/FreeRDP_Process_*.cproc &>/dev/null; then
+                SUSPEND_WINDOWS=0
+                break
+            fi
+            sleep $TIME_INTERVAL
+            TIME_ELAPSED=$((TIME_ELAPSED + TIME_INTERVAL))
+        done
+    fi
+
+    # Hibernate/Pause Windows.
+    if [ "$SUSPEND_WINDOWS" -eq 1 ]; then
+        dprint "IDLE FOR ${AUTOPAUSE_TIME} SECONDS. SUSPENDING WINDOWS."
+        notify-send --expire-time=8000 --icon="info" --app-name="WinApps" --urgency="low" "WinApps" "Pausing Windows due to inactivity."
+        if [ "$WAFLAVOR" = "docker" ]; then
+            docker compose --file "$COMPOSE_PATH" pause &>/dev/null
+        elif [ "$WAFLAVOR" = "podman" ]; then
+            podman-compose --file "$COMPOSE_PATH" pause &>/dev/null
+        elif [ "$WAFLAVOR" = "libvirt" ]; then
+            virsh suspend "$VM_NAME" &>/dev/null
         fi
     fi
 }
@@ -586,5 +673,9 @@ fi
 
 waCheckPortOpen
 waRunCommand "$@"
+
+if [[ "$AUTOPAUSE" == "on" ]]; then
+    waCheckIdle
+fi
 
 dprint "END"
