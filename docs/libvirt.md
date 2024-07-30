@@ -26,7 +26,7 @@ Together, these components form a powerful and flexible virtualization stack, wi
     sudo emerge app-emulation/virt-manager # Gentoo Linux
     ```
 
-3. Configure `libvirt` to use the 'system' URI by adding the line `LIBVIRT_DEFAULT_URI="qemu:///system"` to your preferred shell profile file.
+3. Configure `libvirt` to use the 'system' URI by adding the line `LIBVIRT_DEFAULT_URI="qemu:///system"` to your preferred shell profile file (e.g., `.bashrc`, `.zshrc`, etc.).
     ```bash
     echo "export LIBVIRT_DEFAULT_URI=\"qemu:///system\"" >> ~/.bashrc
     ```
