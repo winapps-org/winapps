@@ -207,6 +207,13 @@ function waLoadConfig() {
 
     # Update $RDP_SCALE.
     waFixScale
+
+    # Update $AUTOPAUSE_TIME.
+    # RemoteApp RDP sessions take, at minimum, 20 seconds to be terminated by the Windows server.
+    # Hence, subtract 20 from the timeout specified by the user, as a 'built in' timeout of 20 seconds will occur.
+    # Source: https://techcommunity.microsoft.com/t5/security-compliance-and-identity/terminal-services-remoteapp-8482-session-termination-logic/ba-p/246566
+    AUTOPAUSE_TIME=$((AUTOPAUSE_TIME - 20))
+    AUTOPAUSE_TIME=$((AUTOPAUSE_TIME < 0 ? 0 : AUTOPAUSE_TIME))
 }
 
 # Name: 'waLastRun'
@@ -489,6 +496,9 @@ function waRunCommand() {
 
     # Run option.
     if [ "$1" = "windows" ]; then
+        # Update timeout (since there is no 'in-built' 20 second delay for full RDP sessions post-logout).
+        AUTOPAUSE_TIME=$((AUTOPAUSE_TIME + 20))
+
         # Open Windows RDP session.
         dprint "WINDOWS"
         $FREERDP_COMMAND \
@@ -601,8 +611,6 @@ function waRunCommand() {
         touch "${APPDATA_PATH}/FreeRDP_Process_${FREERDP_PID}.cproc"
 
         # Wait for the process to terminate.
-        # Note: RemoteApp sessions take, at minimum, 20 seconds to be terminated by the Windows server.
-        # Source: https://techcommunity.microsoft.com/t5/security-compliance-and-identity/terminal-services-remoteapp-8482-session-termination-logic/ba-p/246566
         wait $FREERDP_PID
 
         # Remove the file with the process ID.

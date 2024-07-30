@@ -72,19 +72,6 @@ readonly INQUIRER_PATH="./install/inquirer.sh" # UNIX path to the 'inquirer' scr
 readonly VM_NAME="RDPWindows"  # Name of the Windows VM (FOR 'libvirt' ONLY).
 readonly RDP_PORT=3389         # Port used for RDP on Windows.
 readonly DOCKER_IP="127.0.0.1" # Localhost.
-readonly WINAPPS_CONFIG="\
-RDP_USER=\"MyWindowsUser\"
-RDP_PASS=\"MyWindowsPassword\"
-#RDP_DOMAIN=\"MYDOMAIN\"
-#RDP_IP=\"192.168.123.111\"
-#WAFLAVOR=\"docker\" # Acceptable values are 'docker', 'podman' and 'libvirt'.
-#RDP_SCALE=100 # Acceptable values are 100, 140, and 180.
-#RDP_FLAGS=\"\"
-#MULTIMON=\"true\"
-#DEBUG=\"true\"
-#AUTOPAUSE=\"on\" # Acceptable values are 'on' and 'off'.
-#AUTOPAUSE_TIME=\"300\" # Seconds before pausing Windows due to inactivity. Ignored if AUTOPAUSE 'off'.
-#FREERDP_COMMAND=\"xfreerdp\""
 
 ### GLOBAL VARIABLES ###
 # USER INPUT
@@ -102,7 +89,7 @@ WAFLAVOR="docker"  # Imported variable.
 RDP_SCALE=100      # Imported variable.
 RDP_FLAGS=""       # Imported variable.
 MULTIMON="false"   # Imported variable.
-DEBUG="false"      # Imported variable.
+DEBUG="true"       # Imported variable.
 FREERDP_COMMAND="" # Imported variable.
 MULTI_FLAG=""      # Set based on value of $MULTIMON.
 
@@ -445,10 +432,7 @@ function waLoadConfig() {
         # Display the suggested action(s).
         echo "--------------------------------------------------------------------------------"
         echo -e "Please create a configuration file at ${COMMAND_TEXT}${CONFIG_PATH}${CLEAR_TEXT}."
-        echo -e "\nThe configuration file should contain the following:"
-        echo -e "\n${COMMAND_TEXT}${WINAPPS_CONFIG}${CLEAR_TEXT}"
-        echo -e "\nThe ${COMMAND_TEXT}RDP_USER${CLEAR_TEXT} and ${COMMAND_TEXT}RDP_PASS${CLEAR_TEXT} fields should contain the Windows user's account name and password."
-        echo -e "Note that the Windows user's PIN combination CANNOT be used to populate ${COMMAND_TEXT}RDP_PASS${CLEAR_TEXT}."
+        echo -e "See https://github.com/winapps-org/winapps?tab=readme-ov-file#step-3-create-a-winapps-configuration-file"
         echo "--------------------------------------------------------------------------------"
 
         # Terminate the script.
