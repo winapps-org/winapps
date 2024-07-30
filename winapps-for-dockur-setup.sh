@@ -5,7 +5,7 @@
 # July 2024
 #
 # Automated Docker environment builder for WinApps (https://github.com/winapps-org/winapps)
-# on Docker/Windows from https://github.com/dockur/windows.
+# on Docker/Windows from https://github.com/dockur/windows
 #
 # This script offers two automatic Docker deployment options with WinApps:
 #
@@ -618,7 +618,6 @@ if [[ ${NET_CONFIG_OPTION} == "default" ]]; then
     echo -e " You can observe the build at http://127.0.0.1:8006 or http://$LOCAL_IP:8006"
     echo -e " Please wait for the Windows build to finish before testing RDP with:"
     echo -e " ${CYAN}$HOMEDIR/winapps/test-rdp.sh${NC}"
-    echo -e " ${YELLOW}Please reboot Linux after the Windows install is complete.${NC}"
     echo
     docker compose -f "$HOMEDIR"/winapps/default-net.yaml up
 else
@@ -636,7 +635,6 @@ else
     echo -e " You can observe the build at http://$container_ip:8006"
     echo -e " Please wait for the Windows build to finish before testing RDP with:"
     echo -e " ${CYAN}$HOMEDIR/winapps/test-rdp.sh${NC}"
-    echo -e " ${YELLOW}Please reboot Linux after the Windows install is complete.${NC}"
     echo
     docker compose -f "$HOMEDIR"/winapps/macvlan-net.yaml up
 fi
