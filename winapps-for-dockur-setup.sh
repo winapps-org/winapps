@@ -16,7 +16,7 @@
 #
 # 2. Option 2: Use a macvlan [Advanced]
 #   - Macvlans allow a container to act as a full LAN client with a separate DHCP IP & MAC address.
-#      - Script walks the user through required CIDR input & will automatically build the virtual routing schema
+#      - Script walks the user through required CIDR input & will automatically build the virtual routing schema    
 #   - Pros:
 #     - Allows 3-way sharing between the container, local host, and LAN
 #     - Provides direct communication between the container and NIC, (no NAT or port forwarding)
@@ -25,7 +25,7 @@
 #     - Optionally restrict incoming RDP & VNC access to 127.0.0.1
 #     - Automates creation of a complex build into a repeatable task
 #   - Cons:
-#     - As only macvlans are supported: (Dockur does not currently support L2 IPvlan bridging):
+#     - As only macvlans are supported: (Dockur does not currently support L2 IPvlan bridging): 
 #        - As macvlans use multiple MAC addresses per interface
 #            - This option is available only for ethernet-connected systems
 #            - Macvlans are incompatible with WiFi topology (which requires a single MAC for session & encryption management)
@@ -90,51 +90,51 @@ printf "${LGREEN}### WinApps for Dockur/Windows v1.0 ###########################
 
 # First lets make sure the user is NOT running the script as root
 if [[ $EUID -eq 0 ]]; then
-    echo
-    echo -e "${LRED}This script must NOT be run as root, it will prompt for sudo when needed." 1>&2
-    echo -e "${NC}"
-    exit 1
+	echo
+	echo -e "${LRED}This script must NOT be run as root, it will prompt for sudo when needed." 1>&2
+	echo -e "${NC}"
+	exit 1
 fi
 
 # Prompt for a custom OS install source
 echo
 while true; do
-    echo " Select an option for the OS install ISO:"
-    echo "    1) Use default ISO: ${DEF_INSTALL_ISO}"
-    echo "    2) Provide a new ISO path"
-    echo "    3) No ISO (script will download Windows)"
-    read -p "    Enter your choice (1, 2, or 3): " iso_choice
+	echo " Select an option for the OS install ISO:"
+	echo "    1) Use default ISO: ${DEF_INSTALL_ISO}"
+	echo "    2) Provide a new ISO path"
+	echo "    3) No ISO (script will download Windows)"
+	read -p "    Enter your choice (1, 2, or 3): " iso_choice
 
-    case $iso_choice in
-    1)
-        INSTALL_ISO="${DEF_INSTALL_ISO}"
-        break
-        ;;
-    2)
-        read -p "    Enter the path to the custom OS install ISO: " custom_iso
-        INSTALL_ISO="${custom_iso}"
-        break
-        ;;
-    3)
-        INSTALL_ISO=""
-        break
-        ;;
-    *)
-        echo " Invalid choice. Please enter 1, 2, or 3."
-        ;;
-    esac
+	case $iso_choice in
+	1)
+		INSTALL_ISO="${DEF_INSTALL_ISO}"
+		break
+		;;
+	2)
+		read -p "    Enter the path to the custom OS install ISO: " custom_iso
+		INSTALL_ISO="${custom_iso}"
+		break
+		;;
+	3)
+		INSTALL_ISO=""
+		break
+		;;
+	*)
+		echo " Invalid choice. Please enter 1, 2, or 3."
+		;;
+	esac
 done
 
 # If no custom OS install ISO is provided, prompt for a Windows version to download
 echo
 if [ -z "${INSTALL_ISO}" ]; then
-    echo -e "    ${CYAN}For Windows download options see https://github.com/dockur/windows${NC}"
-    read -p "    Enter a Windows version to download (default: ${DEF_VERSION}): " version
-    VERSION=${version:-$DEF_VERSION}
-    VERSION_MSG="VERSION: $VERSION"
+	echo -e "    ${CYAN}For Windows download options see https://github.com/dockur/windows${NC}"
+	read -p "    Enter a Windows version to download (default: ${DEF_VERSION}): " version
+	VERSION=${version:-$DEF_VERSION}
+	VERSION_MSG="VERSION: $VERSION"
 else
-    VERSION="${DEF_VERSION}"
-    VERSION_MSG="VERSION: "${VERSION}" (ignored if ISO is provided)"
+	VERSION="${DEF_VERSION}"
+	VERSION_MSG="VERSION: ${VERSION} (ignored if ISO is provided)"
 fi
 
 # Prompt for Windows hostname
@@ -147,16 +147,16 @@ USERNAME=${username:-$DEF_USERNAME}
 
 # Secure prompt for password with confirmation
 while true; do
-    read -s -p "    Enter Windows user password: " password
-    echo
-    read -s -p "    Confirm the password: " password_confirm
-    echo
-    if [ "${password}" == "${password_confirm}" ]; then
-        PASSWORD=${password:-$DEF_PASSWORD}
-        break
-    else
-        echo "    Passwords do not match. Please try again."
-    fi
+	read -s -p "    Enter Windows user password: " password
+	echo
+	read -s -p "    Confirm the password: " password_confirm
+	echo
+	if [ "${password}" == "${password_confirm}" ]; then
+		PASSWORD=${password:-$DEF_PASSWORD}
+		break
+	else
+		echo "    Passwords do not match. Please try again."
+	fi
 done
 
 # Prompt for RAM size
@@ -233,76 +233,76 @@ echo "    3. Exit"
 
 # Function to validate CIDR format
 validate_cidr() {
-    local cidr=$1
-    if [[ $cidr =~ ^([0-9]{1,3}\.){3}[0-9]{1,3}/[0-9]+$ ]]; then
-        IFS='/' read -r subnet mask <<<"$cidr"
-        IFS='.' read -r i1 i2 i3 i4 <<<"$subnet"
-        if [[ $i1 -ge 0 && $i1 -le 255 && $i2 -ge 0 && $i2 -le 255 && $i3 -ge 0 && $i3 -le 255 && $i4 -ge 0 && $i4 -le 255 && $mask -ge 0 && $mask -le 32 ]]; then
-            return 0
-        fi
-    fi
-    return 1
+	local cidr=$1
+	if [[ $cidr =~ ^([0-9]{1,3}\.){3}[0-9]{1,3}/[0-9]+$ ]]; then
+		IFS='/' read -r subnet mask <<<"$cidr"
+		IFS='.' read -r i1 i2 i3 i4 <<<"$subnet"
+		if [[ $i1 -ge 0 && $i1 -le 255 && $i2 -ge 0 && $i2 -le 255 && $i3 -ge 0 && $i3 -le 255 && $i4 -ge 0 && $i4 -le 255 && $mask -ge 0 && $mask -le 32 ]]; then
+			return 0
+		fi
+	fi
+	return 1
 }
 
 while true; do
-    read -p "    Enter your choice [1-3]: " choice
+	read -p "    Enter your choice [1-3]: " choice
 
-    case $choice in
-    1)
-        NET_CONFIG_OPTION="default"
-        break
-        ;;
-    2)
-        NET_CONFIG_OPTION="macvlan"
-        echo
-        echo -e "    ${YELLOW}Warning: For ethernet only as WiFi cannot support multiple MAC addresses required by macvlans${NC}"
-        echo
-        echo "    A minimum /30 range of free static IP addresses from your $SUBNET subnet is required (2 usable addresses)."
-        echo "    This static subnet can be larger than /30, but must not overlap with your local DHCP scope."
+	case $choice in
+	1)
+		NET_CONFIG_OPTION="default"
+		break
+		;;
+	2)
+		NET_CONFIG_OPTION="macvlan"
+		echo
+		echo -e "    ${YELLOW}Warning: For ethernet only as WiFi cannot support multiple MAC addresses required by macvlans${NC}"
+		echo
+		echo "    A minimum /30 range of free static IP addresses from your $SUBNET subnet is required (2 usable addresses)."
+		echo "    This static subnet can be larger than /30, but must not overlap with your local DHCP scope."
 
-        while true; do
-            read -p "    Enter an available static IP subnet eg. 192.168.1.252/30 : " CIDR
+		while true; do
+			read -p "    Enter an available static IP subnet eg. 192.168.1.252/30 : " CIDR
 
-            if validate_cidr "$CIDR"; then
-                echo "    CIDR format is valid."
+			if validate_cidr "$CIDR"; then
+				echo "    CIDR format is valid."
 
-                # Get the lowest and highest usable IP addresses based on the CIDR provided
-                IFS='/' read -r subnet mask <<<"$CIDR"
-                num_addresses=$((2 ** (32 - mask)))
-                IFS='.' read -r i1 i2 i3 i4 <<<"$subnet"
-                subnet_decimal=$(((i1 << 24) + (i2 << 16) + (i3 << 8) + i4))
-                broadcast_decimal=$((subnet_decimal + num_addresses - 1))
-                first_usable_decimal=$((subnet_decimal + 1))
-                last_usable_decimal=$((broadcast_decimal - 1))
+				# Get the lowest and highest usable IP addresses based on the CIDR provided
+				IFS='/' read -r subnet mask <<<"$CIDR"
+				num_addresses=$((2 ** (32 - mask)))
+				IFS='.' read -r i1 i2 i3 i4 <<<"$subnet"
+				subnet_decimal=$(((i1 << 24) + (i2 << 16) + (i3 << 8) + i4))
+				broadcast_decimal=$((subnet_decimal + num_addresses - 1))
+				first_usable_decimal=$((subnet_decimal + 1))
+				last_usable_decimal=$((broadcast_decimal - 1))
 
-                convert_decimal_to_ip() {
-                    local ip_decimal=$1
-                    printf "%d.%d.%d.%d" $(((ip_decimal >> 24) & 0xFF)) $(((ip_decimal >> 16) & 0xFF)) $(((ip_decimal >> 8) & 0xFF)) $((ip_decimal & 0xFF))
-                }
+				convert_decimal_to_ip() {
+					local ip_decimal=$1
+					printf "%d.%d.%d.%d" $(((ip_decimal >> 24) & 0xFF)) $(((ip_decimal >> 16) & 0xFF)) $(((ip_decimal >> 8) & 0xFF)) $((ip_decimal & 0xFF))
+				}
 
-                subnet_prefix=$(convert_decimal_to_ip "$subnet_decimal")
-                lowest_ip=$(convert_decimal_to_ip "$first_usable_decimal") # Reserved for container's DATA volume IP address & http VNC access
-                highest_ip=$(convert_decimal_to_ip "$last_usable_decimal") # Reserved for macvlan routing
-                subnet_mask=$mask
+				subnet_prefix=$(convert_decimal_to_ip "$subnet_decimal")
+				lowest_ip=$(convert_decimal_to_ip "$first_usable_decimal") # Reserved for container's DATA volume IP address & http VNC access
+				highest_ip=$(convert_decimal_to_ip "$last_usable_decimal") # Reserved for macvlan routing
+				subnet_mask=$mask
 
-                # Manually override macvlan addressing scheme here:
-                container_ip=$lowest_ip
-                vlan_ip=$highest_ip
-                break
-            else
-                echo "Invalid CIDR format. Please enter a valid CIDR (e.g., 192.168.1.252/30)."
-            fi
-        done
-        break
-        ;;
-    3)
-        echo " Exiting..."
-        exit 0
-        ;;
-    *)
-        echo " Invalid option, please try again."
-        ;;
-    esac
+				# Manually override macvlan addressing scheme here:
+				container_ip=$lowest_ip
+				vlan_ip=$highest_ip
+				break
+			else
+				echo "Invalid CIDR format. Please enter a valid CIDR (e.g., 192.168.1.252/30)."
+			fi
+		done
+		break
+		;;
+	3)
+		echo " Exiting..."
+		exit 0
+		;;
+	*)
+		echo " Invalid option, please try again."
+		;;
+	esac
 done
 
 echo
@@ -312,25 +312,25 @@ echo "    2. Remotely accessible over LAN"
 echo "    3. Exit"
 
 while true; do
-    read -p "    Enter your choice [1-3]: " choice
+	read -p "    Enter your choice [1-3]: " choice
 
-    case $choice in
-    1)
-        NET_ACCESS_OPTION="127.0.0.1:"
-        break
-        ;;
-    2)
-        NET_ACCESS_OPTION=""
-        break
-        ;;
-    3)
-        echo " Exiting..."
-        exit 0
-        ;;
-    *)
-        echo " Invalid option, please try again."
-        ;;
-    esac
+	case $choice in
+	1)
+		NET_ACCESS_OPTION="127.0.0.1:"
+		break
+		;;
+	2)
+		NET_ACCESS_OPTION=""
+		break
+		;;
+	3)
+		echo " Exiting..."
+		exit 0
+		;;
+	*)
+		echo " Invalid option, please try again."
+		;;
+	esac
 done
 
 echo
@@ -339,64 +339,64 @@ echo -e "${CYAN} ### WinApps dependenices ###${NC}"
 # Check if specific FreeRDP packages are installed
 PACKAGE_INSTALLED=$(dpkg -l | grep $PGK_FREERDP | awk '{print $2}')
 if ! command -v flatpak &>/dev/null; then
-    FLATPAK_INSTALLED=""
+	FLATPAK_INSTALLED=""
 else
-    FLATPAK_INSTALLED=$(flatpak list --app | grep $FLAT_FREERDP | awk '{print $3}')
+	FLATPAK_INSTALLED=$(flatpak list --app | grep $FLAT_FREERDP | awk '{print $3}')
 fi
 
 if [ -n "$PACKAGE_INSTALLED" ] || [ -n "$FLATPAK_INSTALLED" ]; then
-    echo " These FreeRDP packages are already installed: $PACKAGE_INSTALLED$FLATPAK_INSTALLED"
+	echo " These FreeRDP packages are already installed: $PACKAGE_INSTALLED$FLATPAK_INSTALLED"
 else
-    # If no FreeRDP packages are installed, choose one
-    while true; do
-        echo " FreeRDP installation source:"
-        echo "    1) Install via Distro Repository"
-        echo "    2) Install via Flatpak"
-        echo "    3) Exit"
+	# If no FreeRDP packages are installed, choose one
+	while true; do
+		echo " FreeRDP installation source:"
+		echo "    1) Install via Distro Repository"
+		echo "    2) Install via Flatpak"
+		echo "    3) Exit"
 
-        read -p "    Enter your choice [1-3]: " choice
+		read -p "    Enter your choice [1-3]: " choice
 
-        case $choice in
-        1)
-            # Install via Distro Repository
-            echo
-            echo "    Installing FreeRDP via distro repository along with all other dependencies..."
-            FREERDP_PACKAGES=$(apt-cache search $PGK_FREERDP)
-            if [ -n "$FREERDP_PACKAGES" ]; then
-                echo
-                sudo apt-get install -y -qq $PGK_FREERDP
-            else
-                echo
-                echo " No FreeRDP packages were found in the distro repository."
-                echo
-                exit 0
-            fi
-            break
-            ;;
-        2)
-            # Install via Flatpak
-            echo
-            echo " Installing FreeRDP via Flatpak along with all other dependencies...."
-            echo
-            sudo apt install -y -qq flatpak
-            flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
-            flatpak install -y flathub com.freerdp.FreeRDP
-            sudo flatpak override --filesystem=home com.freerdp.FreeRDP # To use `+home-drive`
-            break
-            ;;
-        3)
-            # Exit
-            echo
-            echo " Exiting the script."1
-            echo
-            exit 0
-            ;;
-        *)
-            echo " Invalid choice. Please select a valid option."
-            echo
-            ;;
-        esac
-    done
+		case $choice in
+		1)
+			# Install via Distro Repository
+			echo
+			echo "    Installing FreeRDP via distro repository along with all other dependencies..."
+			FREERDP_PACKAGES=$(apt-cache search $PGK_FREERDP)
+			if [ -n "$FREERDP_PACKAGES" ]; then
+				echo
+				sudo apt-get install -y -qq $PGK_FREERDP
+			else
+				echo
+				echo " No FreeRDP packages were found in the distro repository."
+				echo
+				exit 0
+			fi
+			break
+			;;
+		2)
+			# Install via Flatpak
+			echo
+			echo " Installing FreeRDP via Flatpak along with all other dependencies...."
+			echo
+			sudo apt install -y -qq flatpak
+			flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
+			flatpak install -y flathub com.freerdp.FreeRDP
+			sudo flatpak override --filesystem=home com.freerdp.FreeRDP # To use `+home-drive`
+			break
+			;;
+		3)
+			# Exit
+			echo
+			echo " Exiting the script."1
+			echo
+			exit 0
+			;;
+		*)
+			echo " Invalid choice. Please select a valid option."
+			echo
+			;;
+		esac
+	done
 fi
 
 sudo apt-get -y -qq install dialog git
@@ -414,9 +414,9 @@ sudo chmod a+r /etc/apt/keyrings/docker.asc
 
 # Add the repository to Apt sources:
 echo \
-    "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/debian \
+	"deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/debian \
       $(. /etc/os-release && echo "bookworm") stable" |
-    sudo tee /etc/apt/sources.list.d/docker.list >/dev/null
+	sudo tee /etc/apt/sources.list.d/docker.list >/dev/null
 sudo apt-get update
 
 # Install Docker
@@ -426,27 +426,27 @@ sudo usermod -aG docker "$USER"
 # Create macvlan routing config for simultaneous LAN and host access, and make this all persistent after reboot
 if [[ ${NET_CONFIG_OPTION} == "macvlan" ]]; then
 
-    # Systemd method is the most compatible & simplest to comprehend / manually update
-    sudo bash -c "cat <<EOF > /etc/systemd/system/${VLAN_DEV}.service
+	# Systemd method is the most compatible & simplest to comprehend / manually update
+	sudo bash -c "cat <<EOF > /etc/systemd/system/${VLAN_DEV}.service
 [Unit]
 Description=macvlan bridge setup
 After=network.target
 
 [Service]
 Type=oneshot
-ExecStart=/sbin/ip link add "${VLAN_DEV}" link "${NIC}" type macvlan mode bridge
-ExecStart=/sbin/ip addr add "${vlan_ip}"/32 dev "${VLAN_DEV}"
-ExecStart=/sbin/ip link set "${VLAN_DEV}" up
-ExecStart=/sbin/ip route add "${subnet_prefix}"/"${subnet_mask}" dev "${VLAN_DEV}"
+ExecStart=/sbin/ip link add ${VLAN_DEV} link ${NIC} type macvlan mode bridge
+ExecStart=/sbin/ip addr add ${vlan_ip}/32 dev ${VLAN_DEV}
+ExecStart=/sbin/ip link set ${VLAN_DEV} up
+ExecStart=/sbin/ip route add ${subnet_prefix}/${subnet_mask} dev ${VLAN_DEV}
 RemainAfterExit=yes
 
 [Install]
 WantedBy=multi-user.target
 EOF"
 
-    sudo systemctl daemon-reload
-    sudo systemctl enable "${VLAN_DEV}".service
-    sudo systemctl start "${VLAN_DEV}".service
+	sudo systemctl daemon-reload
+	sudo systemctl enable "${VLAN_DEV}".service
+	sudo systemctl start "${VLAN_DEV}".service
 fi
 
 # Clone WinApps
@@ -463,8 +463,8 @@ git clone "$GITREPO"
 
     # A simple hack to obtain the new container's DHCP address and populate the RDP test script with the correct address
     if [[ ${NET_CONFIG_OPTION} == "macvlan" ]]; then
-        LINE=$(printf "ipconfig > \\\\\\\\${container_ip}\\Data\\CONTAINER_IP.txt")
-        echo "$LINE" >>winapps/oem/install.bat
+	    LINE=$(printf "ipconfig > \\\\\\\\${container_ip}\\Data\\CONTAINER_IP.txt")
+	    echo "$LINE" >>winapps/oem/install.bat
     fi
 
 # Create a simple script for testing RDP connections to the new container
@@ -552,8 +552,8 @@ EOF
 
 # Build this file only if macvlan option is selected
 if [[ ${NET_CONFIG_OPTION} == "macvlan" ]]; then
-    rm -f "$HOMEDIR"/winapps/macvlan-net.yaml # remove any old version first
-    cat <<EOF >"$HOMEDIR"/winapps/macvlan-net.yaml
+	rm -f "$HOMEDIR"/winapps/macvlan-net.yaml # remove any old version first
+	cat <<EOF >"$HOMEDIR"/winapps/macvlan-net.yaml
 name: "winapps"
 volumes:
   data:
