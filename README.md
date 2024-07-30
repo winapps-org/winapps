@@ -365,11 +365,14 @@ MULTIMON="false"
 DEBUG="true"
 
 # [AUTOMATICALLY PAUSE WINDOWS]
-# DEFAULT VALUE: 'on'
+# NOTES:
+# - This is currently INCOMPATIBLE with 'docker'.
+# - See https://github.com/dockur/windows/issues/674
+# DEFAULT VALUE: 'off'
 # VALID VALUES:
 # - 'on'
 # - 'off'
-AUTOPAUSE="on"
+AUTOPAUSE="off"
 
 # [AUTOMATICALLY PAUSE WINDOWS TIMEOUT]
 # NOTES:
