@@ -445,3 +445,12 @@ The installer can be run multiple times. To update your installation of WinApps:
 1. Run the WinApps installer to remove WinApps from your system.
 2. Pull the latest changes from the WinApps GitHub repository.
 3. Re-install WinApps using the WinApps installer.
+
+## Star History
+<a href="https://star-history.com/#winapps-org/winapps&Date">
+ <picture>
+   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=winapps-org/winapps&type=Date&theme=dark"/>
+   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=winapps-org/winapps&type=Date"/>
+   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=winapps-org/winapps&type=Date"/>
+ </picture>
+</a>
