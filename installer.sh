@@ -40,7 +40,7 @@ readonly USER_BIN_PATH_WIN='\\tsclient\home\.local\bin' # WINDOWS path to 'bin' 
 # 'APP'
 readonly SYS_APP_PATH="/usr/share/applications"                        # UNIX path to 'applications' directory for a '--system' WinApps installation.
 readonly USER_APP_PATH="${HOME}/.local/share/applications"             # UNIX path to 'applications' directory for a '--user' WinApps installation.
-readonly USER_APP_PATH_WIN='\\tsclient\home\.local\share\applications' # WINDOWS oath to 'applications' directory for a '--user' WinApps installation.
+readonly USER_APP_PATH_WIN='\\tsclient\home\.local\share\applications' # WINDOWS path to 'applications' directory for a '--user' WinApps installation.
 # 'APPDATA'
 readonly SYS_APPDATA_PATH="/usr/local/share/winapps"                  # UNIX path to 'application data' directory for a '--system' WinApps installation.
 readonly USER_APPDATA_PATH="${HOME}/.local/share/winapps"             # UNIX path to 'application data' directory for a '--user' WinApps installation.

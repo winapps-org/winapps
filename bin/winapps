@@ -538,7 +538,7 @@ function waRunCommand() {
         # Capture the process ID.
         FREERDP_PID=$!
     else
-        # Script summoned from right-click menu with officially supported application name plus/minus a file path.
+        # Script summoned from right-click menu or application icon (plus/minus a file path).
         if [ -e "${SCRIPT_DIR_PATH}/../apps/${1}/info" ]; then
             # shellcheck source=/dev/null # Exclude this file from being checked by ShellCheck.
             source "${SCRIPT_DIR_PATH}/../apps/${1}/info"
