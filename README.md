@@ -234,6 +234,15 @@ Contributing to the list of supported applications is encouraged through submiss
         </td>
     </tr>
     <tr>
+        <!-- Microsoft Project -->
+        <td>
+            <img src="apps/project/icon.svg" width="100">
+        </td>
+        <td>
+            <b>Microsoft Project</b><br>
+            (Standard/Pro 2021, Plan 3/5)<br>
+            <i><a href="https://en.m.wikipedia.org/wiki/File:Microsoft_Project_(2019–present).svg">Icon</a> in the Public Domain.</i>
+        </td>
         <!-- PowerShell -->
         <td>
             <img src="apps/powershell/icon.svg" width="100">
@@ -242,6 +251,7 @@ Contributing to the list of supported applications is encouraged through submiss
             <b>PowerShell</b><br>
             <i><a href="https://iconduck.com/icons/102322/file-type-powershell">Icon</a> under <a href="https://iconduck.com/licenses/mit">MIT license</a>.</i>
         </td>
+        <tr>
         <!-- Windows -->
         <td>
             <img src="icons/windows.svg" width="100">
