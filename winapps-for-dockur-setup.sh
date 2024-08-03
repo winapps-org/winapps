@@ -76,25 +76,23 @@ VLAN_DEV_NAME="macvlan-br"
 MAC_VLAN_NAME="winapps_macvlan"
 
 # Text colours
-CYAN='\033[1;36m'
-GREY='\033[0;37m'
-LGREEN='\033[0;92m'
-LRED='\033[0;91m'
+BLUE='\033[38;5;33m'
+GREEN='\033[38;5;34m'
+LRED='\033[38;5;196m'
 ORANGE='\033[38;5;208m'
-WHITE='\033[1;97m'
+WHITE='\033[38;5;15m'
 NC='\033[0m'
 
 clear
 set -e
 
 echo
-printf "%b\n" "${LGREEN}### WinApps for Dockur/Windows v1.0 #####################################################"
-printf "%b\n" "${GREY}${CYAN} 1.${GREY} Answer script prompts to suit your build"
-printf "%b\n" "${CYAN} 2.${GREY} Follow the Windows install via VNC ${CYAN}http://127.0.0.1:8006 or http://x.x.x.x:8006"
-printf "%b\n" "${CYAN} 3.${ORANGE} IMPORTANT: Restart Linux when the Windows installation is complete"
-printf "%b\n" "${CYAN} 4.${GREY} Test RDP from Linux by running ${CYAN}~/test-rdp.sh"
-printf "%b\n" "${CYAN} 5.${GREY} Install your preferred Windows applications via RDP or VNC${NC}"
-printf "%b\n" "${CYAN} 6.${GREY} Run ${CYAN}~/winapps/installer.sh${GREY} to install WinApps${NC}"
+printf "%b\n" "${GREEN}## WinApps for Dockur/Windows v1.0 ################################################"
+printf "%b\n" "${BLUE} 1. ${NC}Answer script prompts to suit your build"
+printf "%b\n" "${BLUE} 2. ${NC}Follow the Windows install via VNC ${BLUE}http://127.0.0.1:8006 or http://x.x.x.x:8006"
+printf "%b\n" "${BLUE} 3. ${NC}IMPORTANT! Restart Linux when the Windows installation is complete"
+printf "%b\n" "${BLUE} 4. ${NC}Install your preferred Windows applications via RDP or VNC"
+printf "%b\n" "${BLUE} 5. ${NC}Run ${BLUE}~/winapps/installer.sh${NC} to install WinApps"
 
 # Make sure the script is NOT being run as root
 if [[ $EUID -eq 0 ]]; then
@@ -109,9 +107,9 @@ if [ -f /etc/os-release ]; then
     # shellcheck disable=SC1091
     source /etc/os-release
     echo
-    echo -e "${LGREEN} ${PRETTY_NAME^^} $(echo "detected, OK to proceed..." | tr '[:lower:]' '[:upper:]')${NC}"
+    echo -e " ${GREEN}${PRETTY_NAME^^} $(echo "detected, OK to proceed..." | tr '[:lower:]' '[:upper:]')${NC}"
 else
-    echo " ${LRED} Error: /etc/os-release file not found,  exiting...${NC}"
+    echo -e " ${LRED}Error: /etc/os-release file not found & distro not identified, exiting...${NC}"
     echo
     exit 1
 fi
@@ -152,11 +150,11 @@ else
     default_iso_message="${DEFAULT_INSTALL_ISO}"
     default_option_set=true
 fi
-
+echo -e "${BLUE} ## Windows container setup ##"
 while true; do
-    echo "    Select a Windows installer source:"
-    echo -e "    1) Use the default ISO: ${WHITE}${default_iso_message}${NC}"
-    echo "    2) Provide a new Windows ISO path"
+    echo -e "    ${ORANGE}Windows install source:${NC}"
+    echo -e "    1) Use default ISO ${WHITE}${default_iso_message}${NC}"
+    echo "    2) Enter ISO path"
     echo "    3) Install Windows from download"
     read -r -p "    Enter your choice (1, 2, or 3): " iso_choice
 
@@ -169,7 +167,7 @@ while true; do
                 else
                     echo "    Error: The default ISO file does not exist at ${DEFAULT_INSTALL_ISO}"
                     echo "    Please check the path and try again."
-                    echo
+					echo
                 fi
             else
                 echo "    No default ISO is set. Please enter 2 or 3."
@@ -178,24 +176,30 @@ while true; do
             ;;
     2)
         read -r -p "    Enter the path to your Windows install ISO: " custom_iso
-        INSTALL_ISO="${custom_iso}"
-        break
+		if [ -e "$custom_iso" ]; then
+                    INSTALL_ISO="${custom_iso}"
+                    break
+                else
+                    echo "    Error: The ISO file does not exist at ${custom_iso}"
+                    echo "    Please check the path and try again."
+					echo
+                fi
         ;;
     3)
         INSTALL_ISO=""
         break
         ;;
     *)
-        echo "   Invalid choice. Please enter 1, 2, or 3."
-        echo
+        echo "    Invalid choice. Please enter 1, 2, or 3."
+		echo
         ;;
     esac
 done
 
 # If no custom OS install ISO is provided, prompt for a Windows version to download
-echo
 if [ -z "${INSTALL_ISO}" ]; then
-    echo -e "    ${CYAN}For Windows download options see https://github.com/dockur/windows${NC}"
+    echo
+    echo -e "    ${BLUE}For Windows download options see https://github.com/dockur/windows${NC}"
     read -r -p "    Enter a Windows version to download (default: ${DEFAULT_VERSION}): " version
     VERSION=${version:-$DEFAULT_VERSION}
     VERSION_MSG="download $VERSION"
@@ -205,6 +209,8 @@ else
 fi
 
 # Prompt for Windows hostname
+echo
+echo -e "    ${ORANGE}Windows virtual machine configuration:${NC}"
 read -r -p "    Enter Windows hostname (default: ${DEFAULT_HOSTNAME}): " windows_hostname
 WINDOWS_HOSTNAME=${windows_hostname:-$DEFAULT_HOSTNAME}
 
@@ -223,7 +229,7 @@ while true; do
         break
     else
         echo "    Passwords do not match. Please try again."
-        echo
+		echo
     fi
 done
 
@@ -253,9 +259,9 @@ disable_sound() {
 }
 
 while true; do
-    read -r -p "    Enable sound with RDP client? (yes/no) [default: ${DEFAULT_ENABLE_SOUND}]: " choice
-    choice="${choice:-${DEFAULT_ENABLE_SOUND}}"
-
+    read -r -p "    Enable sound? (yes/no) [default: ${DEFAULT_ENABLE_SOUND}]: " choice
+	choice="${choice:-${DEFAULT_ENABLE_SOUND}}"
+	
     case "$choice" in
     yes | YES | y | Y)
         enable_sound
@@ -267,14 +273,14 @@ while true; do
         ;;
     *)
         echo "    Invalid choice. Please enter 'yes' or 'no'."
-        echo
+		echo
         ;;
     esac
 done
 
 # Display the selected custom settings before continuing
 echo
-echo -e "    ${CYAN}New container configuration:${NC}"
+echo -e "    ${BLUE}Configuration summary:${NC}"
 echo -e "    Install ISO.......${WHITE}${INSTALL_ISO:-skip}${NC}"
 echo -e "    Windows version...${WHITE}${VERSION_MSG}${NC}"
 echo -e "    Windows hostname..${WHITE}${WINDOWS_HOSTNAME}${NC}"
@@ -286,25 +292,25 @@ echo -e "    Disk size.........${WHITE}${DISK_SIZE}${NC}"
 echo -e  "    Sound.............${WHITE}${SOUND}${NC}"
 
 # Pause and wait for user input before continuing
-echo -e "${CYAN}"
-read -r -p "    You will now be prompted for your sudo password... [Enter to continue or ctrl+x to exit]"
-echo -e "${NC}"
+echo
+read -r -p "$(echo -e "${BLUE}    You will now be prompted for your sudo password... [Enter to continue or ctrl+z to exit]${NC}")"
+echo
 
 clear
 
 echo
-printf "%b\n" "${LGREEN}### WinApps for Dockur/Windows v1.0 #####################################################"
-printf "%b\n" "${GREY}${CYAN} 1.${GREY} Answer script prompts to suit your build"
-printf "%b\n" "${CYAN} 2.${GREY} Follow the Windows install via VNC ${CYAN}http://127.0.0.1:8006 or http://x.x.x.x:8006"
-printf "%b\n" "${CYAN} 3.${ORANGE} IMPORTANT: Restart Linux when the Windows installation is complete"
-printf "%b\n" "${CYAN} 4.${GREY} Test RDP from Linux by running ${CYAN}~/test-rdp.sh"
-printf "%b\n" "${CYAN} 5.${GREY} Install your preferred Windows applications via RDP or VNC${NC}"
-printf "%b\n" "${CYAN} 6.${GREY} Run ${CYAN}~/winapps/installer.sh${GREY} to install WinApps${NC}"
+printf "%b\n" "${GREEN}## WinApps for Dockur/Windows v1.0 ################################################"
+printf "%b\n" "${BLUE} 1. ${NC}Answer script prompts to suit your build"
+printf "%b\n" "${BLUE} 2. ${NC}Follow the Windows install via VNC ${BLUE}http://127.0.0.1:8006 or http://x.x.x.x:8006"
+printf "%b\n" "${BLUE} 3. ${NC}IMPORTANT! Restart Linux when the Windows installation is complete"
+printf "%b\n" "${BLUE} 4. ${NC}Install your preferred Windows applications via RDP or VNC"
+printf "%b\n" "${BLUE} 5. ${NC}Run ${BLUE}~/winapps/installer.sh${NC} to install WinApps"
 
 # Now trigger the sudo prompt, this way we can apply sudo only as needed for certain commands
 echo
 sudo apt-get update -qq
-echo -e "${CYAN} ### Docker network & accessibility options ###${NC}"
+echo
+echo -e "${BLUE} ## Docker configuration options ##${NC}"
 
 # Get network default NIC IP address and current subnet details for Docker macvlan networking setup
 # shellcheck disable=SC2034
@@ -323,8 +329,8 @@ GATEWAY=$(ip route | grep default | awk '{print $3}')
 CIDR="" # initialised for config menu
 
 # Network selection menus
-echo " Select container network configuration:"
-echo "    1. Default network [Easy]   (Shared IP with host)"
+echo -e "    ${ORANGE}Network configuration:${NC}"
+echo "    1. Default network [Easy]     (Shared IP with host)"
 echo -e "    2. Macvlan network [Advanced] (Separate DHCP IP & MAC address, full LAN client, ${ORANGE}ethernet only${NC})"
 echo "    3. Exit"
 
@@ -393,18 +399,19 @@ while true; do
         break
         ;;
     3)
-        echo " Exiting..."
+        echo "    Exiting..."
+		echo
         exit 0
         ;;
     *)
         echo " Invalid option, please try again."
-        echo
+		echo
         ;;
     esac
 done
 
 echo
-echo " Select container INBOUND network access:"
+echo -e "    ${ORANGE}Container INBOUND network access:${NC}"
 echo "    1. Allow localhost only"
 echo "    2. Remotely accessible over LAN"
 echo "    3. Exit"
@@ -422,18 +429,19 @@ while true; do
         break
         ;;
     3)
-        echo " Exiting..."
+        echo "    Exiting..."
+		echo
         exit 0
         ;;
     *)
         echo " Invalid option, please try again."
-        echo
-        ;;
+		echo
+		;;
     esac
 done
 
 echo
-echo -e "${CYAN} ### WinApps dependencies ###${NC}"
+echo -e "${BLUE} ## WinApps dependencies ##${NC}"
 
 # Check if specific FreeRDP packages are installed
 PACKAGE_INSTALLED=$(dpkg -l | grep $PGK_FREERDP | awk '{print $2}')
@@ -444,11 +452,11 @@ else
 fi
 
 if [ -n "$PACKAGE_INSTALLED" ] || [ -n "$FLATPAK_INSTALLED" ]; then
-    echo " FreeRDP packages already installed: $PACKAGE_INSTALLED$FLATPAK_INSTALLED"
+    echo "    FreeRDP packages already installed: $PACKAGE_INSTALLED$FLATPAK_INSTALLED"
 else
     # If no FreeRDP packages are installed, choose one
     while true; do
-        echo " FreeRDP installation source:"
+	    echo -e "    ${ORANGE}FreeRDP installation source:${NC}"   
         echo "    1) Install via Distro Repository"
         echo "    2) Install via Flatpak"
         echo "    3) Exit"
@@ -543,7 +551,7 @@ fi
 sudo apt-get -y -qq install dialog git
 
 echo
-echo -e "${CYAN} ### Adding Docker source repo & installing Docker engine ###${NC}"
+echo -e "${BLUE} ## Adding Docker source repo & installing Docker engine ##${NC}"
 
 # Dependencies for adding the Docker repo
 sudo apt-get -y -qq install gnome-terminal ca-certificates curl
@@ -562,7 +570,8 @@ sudo apt-get update
 # Install Docker
 echo "Selecting $VERSION_CODENAME Docker repository..."
 sudo apt-get -y -qq install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin || {
-    echo " ${LRED}Docker installation failed, check if the distro VERSION_CODENAME is supported by Docker. Exiting..."
+    echo -e " ${LRED}Docker installation failed, check if the distro VERSION_CODENAME is supported by Docker. Exiting...${NC}"
+	echo
     exit 1
 }
 sudo usermod -aG docker "$USER"
@@ -595,28 +604,28 @@ fi
 
 # Clone WinApps
 echo
-echo -e "${CYAN} ### Cloning WinApps-org repository from GitHub ###${NC}"
+echo -e "${BLUE} ## Cloning WinApps-org repository from GitHub ##${NC}"
 
 rm -rf "$HOMEDIR/winapps"
-cd "${HOMEDIR}" || exit
+cd "${HOMEDIR}" || exit 1
 git clone "$GITREPO"
 
 # install.bat and  RDPApps.reg customizations:
-    # Update WinApps unattended OEM setup script to set the Windows hostname during install
-    sed -i "/echo off/a wmic computersystem where caption='%COMPUTERNAME%' rename $HOSTNAME\ntimeout /t 3 /nobreak" winapps/oem/install.bat
+	# Update WinApps unattended OEM setup script to set the Windows hostname during install
+	sed -i "/echo off/a wmic computersystem where caption='%COMPUTERNAME%' rename $HOSTNAME\ntimeout /t 3 /nobreak" winapps/oem/install.bat
 
-    # Hack to obtain the new container's DHCP address and populate the RDP test script with the correct address
-    if [[ ${NET_CONFIG_OPTION} == "macvlan" ]]; then
-        LINE=$(printf "ipconfig > \\\\\\\\%s\\Data\\CONTAINER_DHCP_IP.txt" "${container_ip}")
-        echo "$LINE" >>winapps/oem/install.bat
-    fi
+	# Hack to obtain the new container's DHCP address and populate the RDP test script with the correct address
+	if [[ ${NET_CONFIG_OPTION} == "macvlan" ]]; then
+		LINE=$(printf "ipconfig > \\\\\\\\%s\\Data\\CONTAINER_DHCP_IP.txt" "${container_ip}")
+		echo "$LINE" >>winapps/oem/install.bat
+	fi
 
-    # Workaround to enable or disable sound - this will be overwritten with any subsequent git update
-    if [[ ${SOUND} == "on" ]]; then
-        sed -i 's/audio-mode:1/audio-mode:0/g' "${HOMEDIR}"/winapps/bin/winapps
-    elif [[ ${SOUND} == "off" ]]; then
-        sed -i 's/audio-mode:0/audio-mode:1/g' "${HOMEDIR}"/winapps/bin/winapps
-    fi
+	# Workaround to enable or disable sound - this will be overwritten with any subsequent git update
+	if [[ ${SOUND} == "on" ]]; then
+		sed -i 's/audio-mode:1/audio-mode:0/g' "${HOMEDIR}"/winapps/bin/winapps
+	elif [[ ${SOUND} == "off" ]]; then
+		sed -i 's/audio-mode:0/audio-mode:1/g' "${HOMEDIR}"/winapps/bin/winapps
+	fi
 
 # Create a simple script for testing RDP connections to the new container
 cat <<EOF >"${HOMEDIR}"/winapps/test-rdp.sh
@@ -648,7 +657,7 @@ EOF
 chmod +x "${HOMEDIR}"/winapps/test-rdp.sh
 
 echo
-echo -e "${CYAN} ### Creating the WinApps configuration file ###${NC}"
+echo -e "${BLUE} ## Creating the WinApps configuration file ##${NC}"
 
 mkdir -p "${HOMEDIR}"/.config/winapps
 cat <<EOF >"${HOMEDIR}"/.config/winapps/winapps.conf
@@ -666,7 +675,7 @@ EOF
 echo " Done"
 
 echo
-echo -e "${CYAN} ### Creating the Docker compose file ###${NC}"
+echo -e "${BLUE} ## Creating the Docker compose file ##${NC}"
 
 # Always build the default yaml file as a fallback from macvlan version
 cat <<EOF >"${HOMEDIR}"/.config/winapps/default-net.yaml
@@ -767,7 +776,7 @@ fi
 echo " Done"
 
 echo
-echo -e "${CYAN} ### Starting automated Docker Windows container build ###${NC}"
+echo -e "${BLUE} ## Starting automated Docker Windows container build ##${NC}"
 
 # To perform everything in one script we need to start a new shell to refresh group membership (avoids using sudo)
 LOCAL_IP=$(ip -4 addr show "$(ip route show default | awk '/default/ { print $5 }')" | awk '/inet / {print $2}' | cut -d/ -f1)
@@ -787,9 +796,9 @@ if [[ ${NET_CONFIG_OPTION} == "default" ]]; then
     # Build with the default networking
     echo
     echo -e " ${ORANGE}WINDOWS CONTAINER BUILD IS NOW UNDERWAY...${NC}"
-    echo -e " ${LGREEN}You can observe the build at http://127.0.0.1:8006 or http://$LOCAL_IP:8006${NC}"
-    echo -e " Please wait for Windows to finish installing before testing RDP with the below command:"
-    echo -e " ${CYAN}$HOMEDIR/winapps/test-rdp.sh${NC}"
+    echo -e " ${GREEN}You can observe the build at http://127.0.0.1:8006 or http://$LOCAL_IP:8006${NC}"
+    echo " Please wait for Windows to finish installing before testing RDP with the below command:"
+    echo -e " ${BLUE}$HOMEDIR/winapps/test-rdp.sh${NC}"
     echo
     docker compose -f "${HOMEDIR}"/.config/winapps/default-net.yaml up
 
@@ -806,9 +815,9 @@ elif [[ ${NET_CONFIG_OPTION} == "macvlan" ]]; then
     # Build with macvlan networking
     echo
     echo -e " ${ORANGE}WINDOWS CONTAINER BUILD IS NOW UNDERWAY...${NC}"
-    echo -e " ${LGREEN}You can observe the build at http://$container_ip:8006${NC}"
-    echo -e " Please wait for Windows to finish installing before testing RDP with the below command:"
-    echo -e " ${CYAN}$HOMEDIR/winapps/test-rdp.sh${NC}"
+    echo -e " ${GREEN}You can observe the build at http://$container_ip:8006${NC}"
+    echo " Please wait for Windows to finish installing before testing RDP with the below command:"
+    echo -e " ${BLUE}$HOMEDIR/winapps/test-rdp.sh${NC}"
     echo
     docker compose -f "${HOMEDIR}"/.config/winapps/macvlan-net.yaml up
 fi
