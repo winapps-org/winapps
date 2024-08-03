@@ -1437,10 +1437,10 @@ MIME_TYPES=\"\""
                     echo "$APP_DESKTOP_FILE" | $SUDO tee "${APPDATA_PATH}/apps/${EXE_FILENAME_NOEXT}/info" &>/dev/null
 
                     # Write application icon to file.
-                    echo "${ICONS[$INDEX]}" | base64 -d | $SUDO tee "${APPDATA_PATH}/apps/${EXE_FILENAME_NOEXT}/icon.ico" &>/dev/null
+                    echo "${ICONS[$INDEX]}" | base64 -d | $SUDO tee "${APPDATA_PATH}/apps/${EXE_FILENAME_NOEXT}/icon.png" &>/dev/null
 
                     # Configure the application.
-                    waConfigureApp "$EXE_FILENAME_NOEXT" ico
+                    waConfigureApp "$EXE_FILENAME_NOEXT" png
 
                     # Print feedback.
                     echo -e "${DONE_TEXT}Done!${CLEAR_TEXT}"
