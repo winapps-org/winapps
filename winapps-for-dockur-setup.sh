@@ -6,30 +6,30 @@
 #
 # Automated Docker environment builder for Windows containers on Linux with WinApps
 # See these great repos for more:
-#  - Dockur/Windows https://github.com/dockur/windows#
+#  - Dockur/Windows https://github.com/dockur/windows
 #  - WinApps-org  https://github.com/winapps-org/winapps
 #
 # This script offers two automatic Docker deployment options with WinApps:
 #
 # Option 1. Uses Dockur's default network [Easy]
-#  - A fully automated Docker/Windows build in a single script from just a few simple prompts
+#  - A fully automated Docker/Windows build with in a single script from just a few simple prompts
 #  - Windows container shares an IP with the host
-#     - (Optionally) restricts incoming RDP & VNC access to 127.0.0.1
+#     - (Optionally) restricts incoming RDP and VNC access to 127.0.0.1
 #
 # 2. Option 2: Uses macvlan networking [Advanced]
-#   - Macvlans allow a container to act as a full LAN client with a separate DHCP IP & MAC address
-#      - Script walks the user through required CIDR inputs & automatically builds all routing schema
+#   - Macvlans allow a container to act as a full LAN client with a separate DHCP IP and MAC address
+#      - This script walks the user through required CIDR inputs and automatically builds the required routing schema
 #   - Pros:
 #     - Allows 3-way sharing between the container, local host, and LAN
-#     - Provides direct communication between the container and NIC, (no NAT or port forwarding)
-#     - DHCP makes IP management consistent, aiding firewall rules and network policy
-#     - Some applications may require unique IP/MAC addresses for licensing
-#     - (Optionally) restricts incoming RDP & VNC access to 127.0.0.1
-#     - Automates a complex build into a repeatable task with potential for rapid & low cost DR virtual desktop infrastructure
+#     - Provides direct communication between the container and NIC, which means no NAT or port forwarding is necessary
+#     - Use of DHCP helps keep IP management consistent, aiding in firewall rule and network policy continuity
+#     - Useful for applications that require a unique IP or MAC addresses for licensing
+#     - (Optionally) restrict incoming RDP and VNC access to 127.0.0.1
+#     - Turns a complex build into a repeatable task, with potential for creating a low cost virtual desktop infrastructure
 #   - Cons:
-#    - As macvlans use multiple MAC addresses per interface:
-#       - This option is available only for ethernet-connected systems
-#       - Macvlans are NOT compatible with WiFi NICs
+#    - Because macvlans create multiple MAC addresses per interface:
+#       - This option is available only for ETHERNET connected systems because Wi-Fi architecture
+#         relies on a single and consistent MAC, macvlan links cannot be added to a Wi-Fi  NIC
 #
 # Script instructions
 # 1. Run the script (without root permissions) & answer the script prompts to customize your build
@@ -50,7 +50,7 @@
 # Start/stop/enable/disable the container
 #    docker compose -f file.yaml up -d # start container
 #    docker stop <container-name>      # stop  container
-#    docker update --restart=no <container-name> # diasble container auto start at boot
+#    docker update --restart=no <container-name> # disable container auto start at boot
 #    docker update --restart=on-failure <container-name> # enable container auto start at boot
 #    sudo systemctl start|stop|disable macvlan-br.service # toggle macvlan routing config
 ############################################################################################################
@@ -66,7 +66,7 @@ DEFAULT_CPU_CORES="4"
 DEFAULT_DISK_SIZE="64G"
 #DEFAULT_CONTAINER_NAME="WinApps" # Changing container name breaks WinApps, kept for other use cases
 
-# Script defaults (expert use onlny)
+# Script defaults (expert use only)
 HOMEDIR=$(eval echo ~"${SUDO_USER}")
 GITREPO="https://github.com/winapps-org/winapps.git"
 PGK_FREERDP="freerdp3-x11"
@@ -114,7 +114,7 @@ else
     exit 1
 fi
 
-# Corrleate distro codenames to their Debian codebase to match with Docker repo version names
+# Correlate distro codenames to their Debian codebase to match with Docker repo version names
 # To include additional Docker distro support in future, adjust the below
 # Debian 12 Bookworm (Jammy)     |  Debian 11 Bullseye (Focal) |   Debian 13 "Trixie"
 #--------------------------------|-----------------------------|--- -------------------------
@@ -143,9 +143,9 @@ esac
 echo
 while true; do
     echo " Select a Windows installer source:"
-    echo "    1) Use your own ISO: ${DEFAULT_INSTALL_ISO}"
-    echo "    2) Provide a new ISO path"
-    echo "    3) No ISO (script will download Windows)"
+    echo "    1) Use the default ISO: ${DEFAULT_INSTALL_ISO}"
+    echo "    2) Provide a new Windows ISO path"
+    echo "    3) Install Windows from download"
     read -r -p "    Enter your choice (1, 2, or 3): " iso_choice
 
     case $iso_choice in
@@ -154,7 +154,7 @@ while true; do
         break
         ;;
     2)
-        read -r -p "    Enter the path to the custom OS install ISO: " custom_iso
+        read -r -p "    Enter the path to your Windows install ISO: " custom_iso
         INSTALL_ISO="${custom_iso}"
         break
         ;;
@@ -177,11 +177,11 @@ if [ -z "${INSTALL_ISO}" ]; then
     VERSION_MSG="VERSION: $VERSION"
 else
     VERSION="${DEFAULT_VERSION}"
-    VERSION_MSG="VERSION: ${VERSION} (ignored if an ISO is configured and present)"
+    VERSION_MSG="VERSION: ${VERSION} (ignored if a ISO path is configured & that ISO exists)"
 fi
 
 # Prompt for Windows hostname
-read -r -p "    Enter a Windows hostname (default: ${DEFAULT_HOSTNAME}): " windows_hostname
+read -r -p "    Enter Windows hostname (default: ${DEFAULT_HOSTNAME}): " windows_hostname
 WINDOWS_HOSTNAME=${windows_hostname:-$DEFAULT_HOSTNAME}
 
 # Prompt for username
@@ -192,7 +192,7 @@ USERNAME=${username:-$DEFAULT_USERNAME}
 while true; do
     read -r -s -p "    Enter Windows user password: " password
     echo
-    read -r -s -p "    Confirm the password: " password_confirm
+    read -r -s -p "    Confirm user password: " password_confirm
     echo
     if [ "${password}" == "${password_confirm}" ]; then
         PASSWORD=${password:-$DEFAULT_PASSWORD}
@@ -214,7 +214,7 @@ CPU_CORES=${cpu_cores:-$DEFAULT_CPU_CORES}
 read -r -p "    Enter VM disk size (default: $DEFAULT_DISK_SIZE): " disk_size
 DISK_SIZE=${disk_size:-$DEFAULT_DISK_SIZE}
 
-# Prompt for container name - # Changing container name breaks WinApps, kept for other use cases
+# Prompt for container name - # Container name must remain as "WinApps", this function is kept for other use cases
 #read -r -p "    Enter container name (default: $DEFAULT_CONTAINER_NAME): " container_name
 #CONTAINER_NAME=${container_name:-$DEFAULT_CONTAINER_NAME}
 
@@ -244,7 +244,7 @@ while true; do
     esac
 done
 
-# Display the chosen settings
+# Display the selected custom settings before continuing
 echo
 echo -e " ${CYAN}Your new container configuration:${NC}"
 echo " INSTALL_ISO: ${INSTALL_ISO:-None}"
@@ -276,16 +276,15 @@ printf "%b\n" "${CYAN} 6.${GREY} Run ${CYAN}~/winapps/installer.sh${GREY} to ins
 # Now trigger the sudo prompt, this way we can apply sudo only as needed for certain commands
 echo
 sudo apt-get update -qq
-echo -e "${CYAN} ### Docker network & accessibilty options ###${NC}"
+echo -e "${CYAN} ### Docker network & accessibility options ###${NC}"
 
-# Get network device & address info for Docker networking setup
+# Get network default NIC IP address and current subnet details for Docker macvlan networking setup
 # shellcheck disable=SC2034
 read -r gateway interface <<<"$(ip route | awk '/default/ {print $3, $5}')"
 ip_info=$(ip -o -f inet addr show "$interface" | awk '{print $4}')
 ip_address=$(echo "$ip_info" | cut -d/ -f1)
 cidr_prefix=$(echo "$ip_info" | cut -d/ -f2)
 IFS=. read -r i1 i2 i3 i4 <<<"$(for i in $(seq 1 4); do printf "%d." "$((cidr_prefix >= (i * 8) ? 255 : (255 << (8 - (cidr_prefix % 8)) & 255)))"; done | sed 's/.$//')"
-
 IFS=. read -r a b c d <<<"$ip_address"
 IFS=. read -r m1 m2 m3 m4 <<<"$i1.$i2.$i3.$i4"
 network_address=$(printf "%d.%d.%d.%d\n" "$((a & m1))" "$((b & m2))" "$((c & m3))" "$((d & m4))")
@@ -297,8 +296,8 @@ CIDR="" # initialised for config menu
 
 # Network selection menus
 echo " Select container network configuration:"
-echo "    1. Default network [Easy]   (Shared IP with host, no LAN browsing from Windows)"
-echo -e "    2. DHCP LAN client [Advanced] (Separate IP, LAN access from Windows, ${YELLOW}ethernet only${NC})"
+echo "    1. Default network [Easy]   (Shared IP with host)"
+echo -e "    2. Macvlan network [Advanced] (Separate DHCP IP & MAC address, full LAN client, ${YELLOW}ethernet only${NC})"
 echo "    3. Exit"
 
 # Function to validate CIDR format
@@ -325,7 +324,7 @@ while true; do
     2)
         NET_CONFIG_OPTION="macvlan"
         echo
-        echo -e "    ${YELLOW}Warning: For ethernet only as WiFi cannot support multiple MAC addresses required by macvlans${NC}"
+        echo -e "    ${YELLOW}Warning: For ethernet only as Wi-Fi cannot support multiple MAC addresses required by macvlans${NC}"
         echo
         echo "    A minimum /30 range of free static IP addresses from your $SUBNET subnet is required (2 usable addresses)."
         echo "    This static subnet can be larger than /30, but must not overlap with your local DHCP scope."
@@ -377,7 +376,7 @@ done
 
 echo
 echo " Select container INBOUND network access:"
-echo "    1. Allow only localhost"
+echo "    1. Allow localhost only"
 echo "    2. Remotely accessible over LAN"
 echo "    3. Exit"
 
@@ -404,7 +403,7 @@ while true; do
 done
 
 echo
-echo -e "${CYAN} ### WinApps dependenices ###${NC}"
+echo -e "${CYAN} ### WinApps dependencies ###${NC}"
 
 # Check if specific FreeRDP packages are installed
 PACKAGE_INSTALLED=$(dpkg -l | grep $PGK_FREERDP | awk '{print $2}')
@@ -415,7 +414,7 @@ else
 fi
 
 if [ -n "$PACKAGE_INSTALLED" ] || [ -n "$FLATPAK_INSTALLED" ]; then
-    echo " These FreeRDP packages are already installed: $PACKAGE_INSTALLED$FLATPAK_INSTALLED"
+    echo " FreeRDP packages already installed: $PACKAGE_INSTALLED$FLATPAK_INSTALLED"
 else
     # If no FreeRDP packages are installed, choose one
     while true; do
@@ -533,7 +532,7 @@ sudo apt-get update
 # Install Docker
 echo "Selecting $VERSION_CODENAME Docker repository..."
 sudo apt-get -y -qq install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin || {
-    echo " ${LRED}Docker installation failed, perhaps your the distro VERSION_CODENAME is not supported or correct. Exiting..."
+    echo " ${LRED}Docker installation failed, check if the distro VERSION_CODENAME is supported by Docker. Exiting..."
     exit 1
 }
 sudo usermod -aG docker "$USER"
@@ -541,7 +540,7 @@ sudo usermod -aG docker "$USER"
 # Create macvlan routing config for simultaneous LAN and host access, and make this all persistent after reboot
 if [[ ${NET_CONFIG_OPTION} == "macvlan" ]]; then
 
-    # Systemd method is the most compatible & simplest to comprehend / manually update
+    # Systemd method is used to create persistent routes as it is most compatible and easy to manually update
     sudo bash -c "cat <<EOF > /etc/systemd/system/${VLAN_DEV_NAME}.service
 [Unit]
 Description=macvlan bridge setup
@@ -572,28 +571,27 @@ rm -rf "$HOMEDIR/winapps"
 cd "${HOMEDIR}" || exit
 git clone "$GITREPO"
 
-# Add install.bat or RDPApps.reg customizations below
+# install.bat and  RDPApps.reg customizations:
+	# Update WinApps unattended OEM setup script to set the Windows hostname during install
+	sed -i "/echo off/a wmic computersystem where caption='%COMPUTERNAME%' rename $HOSTNAME\ntimeout /t 3 /nobreak" winapps/oem/install.bat
 
-# Update WinApps unattended OEM setup script to set the Windows hostname during install
-sed -i "/echo off/a wmic computersystem where caption='%COMPUTERNAME%' rename $HOSTNAME\ntimeout /t 3 /nobreak" winapps/oem/install.bat
+	# Hack to obtain the new container's DHCP address and populate the RDP test script with the correct address
+	if [[ ${NET_CONFIG_OPTION} == "macvlan" ]]; then
+		LINE=$(printf "ipconfig > \\\\\\\\%s\\Data\\CONTAINER_DHCP_IP.txt" "${container_ip}")
+		echo "$LINE" >>winapps/oem/install.bat
+	fi
 
-# Hack to obtain the new container's DHCP address and populate the RDP test script with the correct address
-if [[ ${NET_CONFIG_OPTION} == "macvlan" ]]; then
-    LINE=$(printf "ipconfig > \\\\\\\\%s\\Data\\CONTAINER_DHCP_IP.txt" "${container_ip}")
-    echo "$LINE" >>winapps/oem/install.bat
-fi
-
-# Workaround to enable or disable sound - this will be overwritten with any subsequent git update
-if [[ ${SOUND} == "on" ]]; then
-    sed -i 's/audio-mode:1/audio-mode:0/g' "${HOMEDIR}"/winapps/bin/winapps
-elif [[ ${SOUND} == "off" ]]; then
-    sed -i 's/audio-mode:0/audio-mode:1/g' "${HOMEDIR}"/winapps/bin/winapps
-fi
+	# Workaround to enable or disable sound - this will be overwritten with any subsequent git update
+	if [[ ${SOUND} == "on" ]]; then
+		sed -i 's/audio-mode:1/audio-mode:0/g' "${HOMEDIR}"/winapps/bin/winapps
+	elif [[ ${SOUND} == "off" ]]; then
+		sed -i 's/audio-mode:0/audio-mode:1/g' "${HOMEDIR}"/winapps/bin/winapps
+	fi
 
 # Create a simple script for testing RDP connections to the new container
 cat <<EOF >"${HOMEDIR}"/winapps/test-rdp.sh
 #!/bin/bash
-# WinApps pre-insallation RDP test script
+# WinApps pre-installation RDP test script
 
 # Initial Docker parameters used by install script
   USERNAME="${USERNAME}"
@@ -601,7 +599,7 @@ cat <<EOF >"${HOMEDIR}"/winapps/test-rdp.sh
   NET_CONFIG_OPTION="${NET_CONFIG_OPTION}"
   RDP_CHOICE="${RDP_CHOICE}"
 
-# Determine the RDP connection address based on the initial network installation
+# Determine the RDP connection IP address based on the network selection at installation
 if [ "\${NET_CONFIG_OPTION}" == "default" ]; then
    CONTAINER_IP="127.0.0.1"
    elif [ "\${NET_CONFIG_OPTION}" == "macvlan" ]; then
@@ -690,7 +688,7 @@ volumes:
 services:
   windows:
     image: dockurr/windows
-    container_name: WinApps # Dont change $CONTAINER_NAME
+    container_name: WinApps # Don't change $CONTAINER_NAME
     environment:
       DHCP: "Y"
       VERSION: "$VERSION"
@@ -753,7 +751,7 @@ if [[ ${NET_CONFIG_OPTION} == "default" ]]; then
     echo
     echo -e " ${YELLOW}WINDOWS CONTAINER BUILD IS NOW UNDERWAY...${NC}"
     echo -e " ${LGREEN}You can observe the build at http://127.0.0.1:8006 or http://$LOCAL_IP:8006${NC}"
-    echo -e " Please wait for Windows to finish installing before testing RDP with the below commmand:"
+    echo -e " Please wait for Windows to finish installing before testing RDP with the below command:"
     echo -e " ${CYAN}$HOMEDIR/winapps/test-rdp.sh${NC}"
     echo
     docker compose -f "${HOMEDIR}"/winapps/default-net.yaml up
@@ -771,7 +769,7 @@ elif [[ ${NET_CONFIG_OPTION} == "macvlan" ]]; then
     echo
     echo -e " ${YELLOW}WINDOWS CONTAINER BUILD IS NOW UNDERWAY...${NC}"
     echo -e " ${LGREEN}You can observe the build at http://$container_ip:8006${NC}"
-    echo -e " Please wait for Windows to finish installing before testing RDP with the below commmand:"
+    echo -e " Please wait for Windows to finish installing before testing RDP with the below command:"
     echo -e " ${CYAN}$HOMEDIR/winapps/test-rdp.sh${NC}"
     echo
     docker compose -f "${HOMEDIR}"/winapps/macvlan-net.yaml up
