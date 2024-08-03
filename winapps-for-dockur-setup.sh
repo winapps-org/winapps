@@ -645,7 +645,7 @@ if [ -z "${INSTALL_ISO}" ]; then
 fi
 
 # Always build the default yaml file as a fallback from macvlan version
-cat <<EOF >"${HOMEDIR}"/winapps/default-net.yaml
+cat <<EOF >"${HOMEDIR}"/.config/winapps/default-net.yaml
 name: "WinApps"
 volumes:
   data:
@@ -681,7 +681,7 @@ EOF
 
 # Build this file only if macvlan option is selected
 if [[ ${NET_CONFIG_OPTION} == "macvlan" ]]; then
-    cat <<EOF >"${HOMEDIR}"/winapps/macvlan-net.yaml
+    cat <<EOF >"${HOMEDIR}"/.config/winapps/macvlan-net.yaml
 name: "WinApps"
 volumes:
   data:
@@ -754,7 +754,7 @@ if [[ ${NET_CONFIG_OPTION} == "default" ]]; then
     echo -e " Please wait for Windows to finish installing before testing RDP with the below command:"
     echo -e " ${CYAN}$HOMEDIR/winapps/test-rdp.sh${NC}"
     echo
-    docker compose -f "${HOMEDIR}"/winapps/default-net.yaml up
+    docker compose -f "${HOMEDIR}"/.config/winapps/default-net.yaml up
 
 elif [[ ${NET_CONFIG_OPTION} == "macvlan" ]]; then
     docker network create -d macvlan \
@@ -772,7 +772,7 @@ elif [[ ${NET_CONFIG_OPTION} == "macvlan" ]]; then
     echo -e " Please wait for Windows to finish installing before testing RDP with the below command:"
     echo -e " ${CYAN}$HOMEDIR/winapps/test-rdp.sh${NC}"
     echo
-    docker compose -f "${HOMEDIR}"/winapps/macvlan-net.yaml up
+    docker compose -f "${HOMEDIR}"/.config/winapps/macvlan-net.yaml up
 fi
 
 END
