@@ -57,9 +57,6 @@ function PrintArrayData {
         [string]$Source
     )
 
-    # Remove leading and trailing double quotes from all paths.
-    $Paths = $Paths -replace '^"*|"*$'
-
     # Combine the arrays into an array of objects
     $NamesandPaths = @()
     for ($i = 0; $i -lt $Names.Length; $i++) {
@@ -177,6 +174,8 @@ function GetUWPExecutablePath {
     return $null
 }
 
+# Name: 'AppSearchWinReg'
+# Role: Search the Windows Registry for installed applications.
 function AppSearchWinReg {
     # Initialise empty arrays.
     $exeNames = @()
@@ -242,8 +241,9 @@ function AppSearchUWP {
     PrintArrayData -Names $exeNames -Paths $exePaths -Source "uwp"
 }
 
+# Name: 'AppSearchWinReg'
+# Role: Search for chocolatey shims.
 function AppSearchChocolatey {
-    # Note: This will only look for chocolatey shims!
     # Initialise empty arrays.
     $exeNames = @()
     $exePaths = @()
@@ -273,6 +273,8 @@ function AppSearchChocolatey {
     }
 }
 
+# Name: 'AppSearchWinReg'
+# Role: Search for scoop shims.
 function AppSearchScoop {
     # Initialise empty arrays.
     $exeNames = @()
@@ -322,12 +324,12 @@ function AppSearchScoop {
 
 ### SEQUENTIAL LOGIC ###
 # Print bash commands to define three new arrays.
-"NAMES=()"
-"ICONS=()"
-"EXES=()"
+Write-Output 'NAMES=()'
+Write-Output 'EXES=()'
+Write-Output 'ICONS=()'
 
 # Search for installed applications.
-AppSearchWinReg
-AppSearchUWP
-AppSearchChocolatey
-AppSearchScoop
+AppSearchWinReg     # Windows Registry
+AppSearchUWP        # Universal Windows Platform
+AppSearchChocolatey # Chocolatey Package Manager
+AppSearchScoop      # Scoop Package Manager
