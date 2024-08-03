@@ -572,21 +572,21 @@ cd "${HOMEDIR}" || exit
 git clone "$GITREPO"
 
 # install.bat and  RDPApps.reg customizations:
-	# Update WinApps unattended OEM setup script to set the Windows hostname during install
-	sed -i "/echo off/a wmic computersystem where caption='%COMPUTERNAME%' rename $HOSTNAME\ntimeout /t 3 /nobreak" winapps/oem/install.bat
+    # Update WinApps unattended OEM setup script to set the Windows hostname during install
+    sed -i "/echo off/a wmic computersystem where caption='%COMPUTERNAME%' rename $HOSTNAME\ntimeout /t 3 /nobreak" winapps/oem/install.bat
 
-	# Hack to obtain the new container's DHCP address and populate the RDP test script with the correct address
-	if [[ ${NET_CONFIG_OPTION} == "macvlan" ]]; then
-		LINE=$(printf "ipconfig > \\\\\\\\%s\\Data\\CONTAINER_DHCP_IP.txt" "${container_ip}")
-		echo "$LINE" >>winapps/oem/install.bat
-	fi
+    # Hack to obtain the new container's DHCP address and populate the RDP test script with the correct address
+    if [[ ${NET_CONFIG_OPTION} == "macvlan" ]]; then
+        LINE=$(printf "ipconfig > \\\\\\\\%s\\Data\\CONTAINER_DHCP_IP.txt" "${container_ip}")
+        echo "$LINE" >>winapps/oem/install.bat
+    fi
 
-	# Workaround to enable or disable sound - this will be overwritten with any subsequent git update
-	if [[ ${SOUND} == "on" ]]; then
-		sed -i 's/audio-mode:1/audio-mode:0/g' "${HOMEDIR}"/winapps/bin/winapps
-	elif [[ ${SOUND} == "off" ]]; then
-		sed -i 's/audio-mode:0/audio-mode:1/g' "${HOMEDIR}"/winapps/bin/winapps
-	fi
+    # Workaround to enable or disable sound - this will be overwritten with any subsequent git update
+    if [[ ${SOUND} == "on" ]]; then
+        sed -i 's/audio-mode:1/audio-mode:0/g' "${HOMEDIR}"/winapps/bin/winapps
+    elif [[ ${SOUND} == "off" ]]; then
+        sed -i 's/audio-mode:0/audio-mode:1/g' "${HOMEDIR}"/winapps/bin/winapps
+    fi
 
 # Create a simple script for testing RDP connections to the new container
 cat <<EOF >"${HOMEDIR}"/winapps/test-rdp.sh
