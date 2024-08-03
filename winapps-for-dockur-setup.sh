@@ -169,7 +169,7 @@ while true; do
                 else
                     echo "    Error: The default ISO file does not exist at ${DEFAULT_INSTALL_ISO}"
                     echo "    Please check the path and try again."
-                    echo
+					echo
                 fi
             else
                 echo "    No default ISO is set. Please enter 2 or 3."
@@ -178,13 +178,13 @@ while true; do
             ;;
     2)
         read -r -p "    Enter the path to your Windows install ISO: " custom_iso
-        if [ -e "$custom_iso" ]; then
+		if [ -e "$custom_iso" ]; then
                     INSTALL_ISO="${custom_iso}"
                     break
                 else
                     echo "    Error: The ISO file does not exist at ${custom_iso}"
                     echo "    Please check the path and try again."
-                    echo
+					echo
                 fi
         ;;
     3)
@@ -193,7 +193,7 @@ while true; do
         ;;
     *)
         echo "    Invalid choice. Please enter 1, 2, or 3."
-        echo
+		echo
         ;;
     esac
 done
@@ -231,7 +231,7 @@ while true; do
         break
     else
         echo "    Passwords do not match. Please try again."
-        echo
+		echo
     fi
 done
 
@@ -262,7 +262,7 @@ disable_sound() {
 
 while true; do
     read -r -p "    Enable sound? (yes/no) [default: ${DEFAULT_ENABLE_SOUND}]: " choice
-    choice="${choice:-${DEFAULT_ENABLE_SOUND}}"
+	choice="${choice:-${DEFAULT_ENABLE_SOUND}}"
 
     case "$choice" in
     yes | YES | y | Y)
@@ -275,7 +275,7 @@ while true; do
         ;;
     *)
         echo "    Invalid choice. Please enter 'yes' or 'no'."
-        echo
+		echo
         ;;
     esac
 done
@@ -392,17 +392,17 @@ while true; do
                 subnet_mask=$mask
 
                 # Choose between auto macvlan addressing or manually prescribed IP addresses:
-                if [ -z "${CONTAINER_IP}" ]; then
-                  container_ip=${lowest_ip}
-                   else
-                  container_ip=${CONTAINER_IP}
-                fi
+				if [ -z "${CONTAINER_IP}" ]; then
+				  container_ip=${lowest_ip}
+				   else
+				  container_ip=${CONTAINER_IP}
+				fi
 
-                if [ -z "${VLAN_IP}" ]; then
-                  vlan_ip=$highest_ip
-                   else
-                  vlan_ip=${VLAN_IP}
-                fi
+				if [ -z "${VLAN_IP}" ]; then
+				  vlan_ip=$highest_ip
+				   else
+				  vlan_ip=${VLAN_IP}
+				fi
 
                 break
             else
@@ -413,12 +413,12 @@ while true; do
         ;;
     3)
         echo "    Exiting..."
-        echo
+		echo
         exit 0
         ;;
     *)
         echo " Invalid option, please try again."
-        echo
+		echo
         ;;
     esac
 done
@@ -443,13 +443,13 @@ while true; do
         ;;
     3)
         echo "    Exiting..."
-        echo
+		echo
         exit 0
         ;;
     *)
         echo " Invalid option, please try again."
-        echo
-        ;;
+		echo
+		;;
     esac
 done
 
@@ -469,7 +469,7 @@ if [ -n "$PACKAGE_INSTALLED" ] || [ -n "$FLATPAK_INSTALLED" ]; then
 else
     # If no FreeRDP packages are installed, choose one
     while true; do
-        echo -e "    ${ORANGE}FreeRDP installation source:${NC}"
+	    echo -e "    ${ORANGE}FreeRDP installation source:${NC}"
         echo "    1) Install via Distro Repository"
         echo "    2) Install via Flatpak"
         echo "    3) Exit"
@@ -584,7 +584,7 @@ sudo apt-get update
 echo "Selecting $VERSION_CODENAME Docker repository..."
 sudo apt-get -y -qq install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin || {
     echo -e " ${LRED}Docker installation failed, check if the distro VERSION_CODENAME is supported by Docker. Exiting...${NC}"
-    echo
+	echo
     exit 1
 }
 sudo usermod -aG docker "$USER"
@@ -624,21 +624,21 @@ cd "${HOMEDIR}" || exit 1
 git clone "$GITREPO"
 
 # install.bat and  RDPApps.reg customizations:
-    # Update WinApps unattended OEM setup script to set the Windows hostname during install
-    sed -i "/echo off/a wmic computersystem where caption='%COMPUTERNAME%' rename $HOSTNAME\ntimeout /t 3 /nobreak" winapps/oem/install.bat
+	# Update WinApps unattended OEM setup script to set the Windows hostname during install
+	sed -i "/echo off/a wmic computersystem where caption='%COMPUTERNAME%' rename $HOSTNAME\ntimeout /t 3 /nobreak" winapps/oem/install.bat
 
-    # Hack to obtain the new container's DHCP address and populate the RDP test script with the correct address
-    if [[ ${NET_CONFIG_OPTION} == "macvlan" ]]; then
-        LINE=$(printf "ipconfig > \\\\\\\\%s\\Data\\CONTAINER_DHCP_IP.txt" "${container_ip}")
-        echo "$LINE" >>winapps/oem/install.bat
-    fi
+	# Hack to obtain the new container's DHCP address and populate the RDP test script with the correct address
+	if [[ ${NET_CONFIG_OPTION} == "macvlan" ]]; then
+		LINE=$(printf "ipconfig > \\\\\\\\%s\\Data\\CONTAINER_DHCP_IP.txt" "${container_ip}")
+		echo "$LINE" >>winapps/oem/install.bat
+	fi
 
-    # Workaround to enable or disable sound - this will be overwritten with any subsequent git update
-    if [[ ${SOUND} == "on" ]]; then
-        sed -i 's/audio-mode:1/audio-mode:0/g' "${HOMEDIR}"/winapps/bin/winapps
-    elif [[ ${SOUND} == "off" ]]; then
-        sed -i 's/audio-mode:0/audio-mode:1/g' "${HOMEDIR}"/winapps/bin/winapps
-    fi
+	# Workaround to enable or disable sound - this will be overwritten with any subsequent git update
+	if [[ ${SOUND} == "on" ]]; then
+		sed -i 's/audio-mode:1/audio-mode:0/g' "${HOMEDIR}"/winapps/bin/winapps
+	elif [[ ${SOUND} == "off" ]]; then
+		sed -i 's/audio-mode:0/audio-mode:1/g' "${HOMEDIR}"/winapps/bin/winapps
+	fi
 
 # Create a simple script for testing RDP connections to the new container
 cat <<EOF >"${HOMEDIR}"/winapps/test-rdp.sh
@@ -692,36 +692,45 @@ echo -e "${BLUE} ## Creating the Docker compose file ##${NC}"
 
 # Always build the default yaml file as a fallback from macvlan version
 cat <<EOF >"${HOMEDIR}"/.config/winapps/default-net.yaml
-name: "WinApps"
+name: "winapps" # Docker Compose Project Name.
 volumes:
+  # Create Volume 'data'.
+  # Located @ '/var/lib/docker/volumes/winapps_data/_data' (Docker).
+  # Located @ '/var/lib/containers/storage/volumes/winapps_data/_data' or '~/.local/share/containers/storage/volumes/winapps_data/_data' (Podman).
   data:
 services:
   windows:
-    image: dockurr/windows
-    container_name: WinApps # Dont change $CONTAINER_NAME
+    image: dockurr/windows # https://hub.docker.com/r/dockurr/windows
+    container_name: WinApps # Created Docker VM Name.
     environment:
+      # Version of Windows to configure. For valid options, visit:
+      # https://github.com/dockur/windows?tab=readme-ov-file#how-do-i-select-the-windows-version
+      # https://github.com/dockur/windows?tab=readme-ov-file#how-do-i-install-a-custom-image
       VERSION: "$VERSION"
-      RAM_SIZE: "$RAM_SIZE"
-      CPU_CORES: "$CPU_CORES"
-      DISK_SIZE: "$DISK_SIZE"
-      USERNAME: "$USERNAME"
-      PASSWORD: "$PASSWORD"
-      HOME: "${HOME}"
-    privileged: true
-    cap_add:
-      - NET_ADMIN
+      RAM_SIZE: "$RAM_SIZE" # RAM allocated to the Windows VM.
+      CPU_CORES: "$CPU_CORES" # CPU cores allocated to the Windows VM.
+      DISK_SIZE: "$DISK_SIZE" # Size of the primary hard disk.
+      #DISK2_SIZE: "32G" # Uncomment to add an additional hard disk to the Windows VM. Ensure it is mounted as a volume below.
+      USERNAME: "$USERNAME" # Uncomment to set a custom Windows username. The default is 'Docker'.
+      PASSWORD: "$PASSWORD" # Uncomment to set a password for the Windows user. There is no default password.
+      HOME: "${HOME}" # Set path to Linux user home folder.
+    privileged: true # Grant the Windows VM extended privileges.
     ports:
-      - ${NET_ACCESS_OPTION}8006:8006
-      - ${NET_ACCESS_OPTION}3389:3389/tcp
-      - ${NET_ACCESS_OPTION}3389:3389/udp
-    stop_grace_period: 120s
-    restart: on-failure
+      - ${NET_ACCESS_OPTION}8006:8006 # Map '8006' on Linux host to '8006' on Windows VM --> For VNC Web Interface @ http://127.0.0.1:8006.
+      - ${NET_ACCESS_OPTION}3389:3389/tcp # Map '3389' on Linux host to '3389' on Windows VM --> For Remote Desktop Protocol (RDP).
+      - ${NET_ACCESS_OPTION}3389:3389/udp # Map '3389' on Linux host to '3389' on Windows VM --> For Remote Desktop Protocol (RDP).
+    stop_grace_period: 120s # Wait 120 seconds before sending SIGTERM when attempting to shut down the Windows VM.
+    restart: on-failure # Restart the Windows VM if the exit code indicates an error.
     volumes:
-      - data:/storage
-      - ${HOME}:/shared
-      - ./oem:/oem
+      - data:/storage # Mount volume 'data' to use as Windows 'C:' drive.
+      - ${HOME}:/shared # Mount Linux user home directory @ '\\host.lan\Data'.
+      #- /path/to/second/hard/disk:/storage2 # Uncomment to mount the second hard disk within the Windows VM. Ensure 'DISK2_SIZE' is specified above.
+      - ./oem:/oem # Enables automatic post-install execution of 'oem/install.bat', applying Windows registry modifications contained within 'oem/RDPApps.reg'.
+      #- /path/to/windows/install/media.iso:/custom.iso # Uncomment to use a custom Windows ISO. If specified, 'VERSION' (e.g. 'tiny11') will be ignored.
     devices:
       - /dev/kvm # Enable KVM.
+      #- /dev/sdX:/disk1 # Uncomment to mount a disk directly within the Windows VM (Note: 'disk1' will be mounted as the main drive).
+      #- /dev/sdY:/disk2 # Uncomment to mount a disk directly within the Windows VM (Note: 'disk2' and higher will be mounted as secondary drives).
 EOF
 
 CUSTOM_ISO_LINE="      - ${INSTALL_ISO}:/custom.iso"
@@ -735,37 +744,46 @@ fi
 # Build this file only if macvlan option is selected
 if [[ ${NET_CONFIG_OPTION} == "macvlan" ]]; then
     cat <<EOF >"${HOMEDIR}"/.config/winapps/macvlan-net.yaml
-name: "WinApps"
+name: "winapps" # Docker Compose Project Name.
 volumes:
+  # Create Volume 'data'.
+  # Located @ '/var/lib/docker/volumes/winapps_data/_data' (Docker).
+  # Located @ '/var/lib/containers/storage/volumes/winapps_data/_data' or '~/.local/share/containers/storage/volumes/winapps_data/_data' (Podman).
   data:
 services:
   windows:
-    image: dockurr/windows
-    container_name: WinApps # Don't change $CONTAINER_NAME
+    image: dockurr/windows # https://hub.docker.com/r/dockurr/windows
+    container_name: WinApps # Created Docker VM Name.
     environment:
       DHCP: "Y"
+      # Version of Windows to configure. For valid options, visit:
+      # https://github.com/dockur/windows?tab=readme-ov-file#how-do-i-select-the-windows-version
+      # https://github.com/dockur/windows?tab=readme-ov-file#how-do-i-install-a-custom-image
       VERSION: "$VERSION"
-      RAM_SIZE: "$RAM_SIZE"
-      CPU_CORES: "$CPU_CORES"
-      DISK_SIZE: "$DISK_SIZE"
-      USERNAME: "$USERNAME"
-      PASSWORD: "$PASSWORD"
-      HOME: "${HOME}"
-    privileged: true
-    cap_add:
-      - NET_ADMIN
+      RAM_SIZE: "$RAM_SIZE" # RAM allocated to the Windows VM.
+      CPU_CORES: "$CPU_CORES" # CPU cores allocated to the Windows VM.
+      DISK_SIZE: "$DISK_SIZE" # Size of the primary hard disk.
+      #DISK2_SIZE: "32G" # Uncomment to add an additional hard disk to the Windows VM. Ensure it is mounted as a volume below.
+      USERNAME: "$USERNAME" # Uncomment to set a custom Windows username. The default is 'Docker'.
+      PASSWORD: "$PASSWORD" # Uncomment to set a password for the Windows user. There is no default password.
+      HOME: "${HOME}" # Set path to Linux user home folder.
+    privileged: true # Grant the Windows VM extended privileges.
     ports:
-      - ${NET_ACCESS_OPTION}8006:8006
-      - ${NET_ACCESS_OPTION}3389:3389/tcp
-      - ${NET_ACCESS_OPTION}3389:3389/udp
-    stop_grace_period: 120s
-    restart: on-failure
+      - ${NET_ACCESS_OPTION}8006:8006 # Map '8006' on Linux host to '8006' on Windows VM --> For VNC Web Interface @ http://127.0.0.1:8006.
+      - ${NET_ACCESS_OPTION}3389:3389/tcp # Map '3389' on Linux host to '3389' on Windows VM --> For Remote Desktop Protocol (RDP).
+      - ${NET_ACCESS_OPTION}3389:3389/udp # Map '3389' on Linux host to '3389' on Windows VM --> For Remote Desktop Protocol (RDP).
+    stop_grace_period: 120s # Wait 120 seconds before sending SIGTERM when attempting to shut down the Windows VM.
+    restart: on-failure # Restart the Windows VM if the exit code indicates an error.
     volumes:
-      - data:/storage
-      - ${HOME}:/shared
-      - ./oem:/oem
+      - data:/storage # Mount volume 'data' to use as Windows 'C:' drive.
+      - ${HOME}:/shared # Mount Linux user home directory @ '\\host.lan\Data'.
+      #- /path/to/second/hard/disk:/storage2 # Uncomment to mount the second hard disk within the Windows VM. Ensure 'DISK2_SIZE' is specified above.
+      - ./oem:/oem # Enables automatic post-install execution of 'oem/install.bat', applying Windows registry modifications contained within 'oem/RDPApps.reg'.
+      #- /path/to/windows/install/media.iso:/custom.iso # Uncomment to use a custom Windows ISO. If specified, 'VERSION' (e.g. 'tiny11') will be ignored.
     devices:
       - /dev/kvm # Enable KVM.
+      #- /dev/sdX:/disk1 # Uncomment to mount a disk directly within the Windows VM (Note: 'disk1' will be mounted as the main drive).
+      #- /dev/sdY:/disk2 # Uncomment to mount a disk directly within the Windows VM (Note: 'disk2' and higher will be mounted as secondary drives).
       - /dev/vhost-net
     device_cgroup_rules:
       - 'c *:* rwm'
