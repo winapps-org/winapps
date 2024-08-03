@@ -273,20 +273,24 @@ If you already have a Windows VM or server you wish to use with WinApps, you wil
 2. Install the required dependencies.
     - Debian/Ubuntu:
         ```bash
-        sudo apt install -y dialog freerdp3-x11
+        sudo apt install -y dialog freerdp3-x11 iproute2 libnotify-bin netcat
         ```
     - Fedora/RHEL:
         ```bash
-        sudo dnf install -y dialog freerdp
+        sudo dnf install -y dialog freerdp iproute libnotify nmap-ncat
         ```
     - Arch Linux:
         ```bash
-        sudo pacman -Syu --needed -y dialog freerdp
+        sudo pacman -Syu --needed -y dialog freerdp iproute2 libnotify gnu-netcat
         ```
     - Gentoo Linux:
         ```bash
-        sudo emerge --ask=n sys-libs/dialog net-misc/freerdp:3
+        sudo emerge --ask=n sys-libs/dialog net-misc/freerdp:3 net-misc/iproute2 x11-libs/libnotify net-analyzer/netcat
         ```
+
+- `Docker Engine`: https://docs.docker.com/engine/install/
+- `Podman`: https://podman.io/docs/installation
+- `podman-compose`: https://github.com/containers/podman-compose
 
 > [!NOTE]
 > WinApps requires `FreeRDP` version 3 or later. If not available for your distribution through your package manager, you can install the [Flatpak](https://flathub.org/apps/com.freerdp.FreeRDP).
