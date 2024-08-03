@@ -74,8 +74,8 @@ PGK_FREERDP="freerdp3-x11"
 FLAT_FREERDP="com.freerdp.FreeRDP"
 VLAN_DEV_NAME="macvlan-br"
 MAC_VLAN_NAME="winapps_macvlan"
-CONTAINER_IP="" # Override auto IP selection ( use with > /30 subnets)   
-VLAN_IP=""      # Override auto IP selection ( use with > /30 subnets)  
+CONTAINER_IP="" # Override auto IP selection ( use with > /30 subnets)
+VLAN_IP=""      # Override auto IP selection ( use with > /30 subnets)
 
 # Text colours
 BLUE='\033[38;5;33m'
@@ -392,18 +392,18 @@ while true; do
                 subnet_mask=$mask
 
                 # Choose between auto macvlan addressing or manually prescribed IP addresses:
-				if [ -z "${CONTAINER_IP}" ]; then
-				  container_ip=${lowest_ip}
-				   else 
-				  container_ip=${CONTAINER_IP}
-				fi
-				
-				if [ -z "${VLAN_IP}" ]; then
-				  vlan_ip=$highest_ip
-				   else
-				  vlan_ip=${VLAN_IP}
-				fi 
-				
+                if [ -z "${CONTAINER_IP}" ]; then
+                  container_ip=${lowest_ip}
+                   else
+                  container_ip=${CONTAINER_IP}
+                fi
+
+                if [ -z "${VLAN_IP}" ]; then
+                  vlan_ip=$highest_ip
+                   else
+                  vlan_ip=${VLAN_IP}
+                fi
+
                 break
             else
                 echo "Invalid CIDR format. Please enter a valid CIDR (e.g., 192.168.1.252/30)."
