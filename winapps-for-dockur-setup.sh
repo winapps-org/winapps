@@ -169,7 +169,7 @@ while true; do
                 else
                     echo "    Error: The default ISO file does not exist at ${DEFAULT_INSTALL_ISO}"
                     echo "    Please check the path and try again."
-					echo
+                    echo
                 fi
             else
                 echo "    No default ISO is set. Please enter 2 or 3."
@@ -187,7 +187,7 @@ while true; do
         ;;
     *)
         echo "   Invalid choice. Please enter 1, 2, or 3."
-		echo
+        echo
         ;;
     esac
 done
@@ -223,7 +223,7 @@ while true; do
         break
     else
         echo "    Passwords do not match. Please try again."
-		echo
+        echo
     fi
 done
 
@@ -254,8 +254,8 @@ disable_sound() {
 
 while true; do
     read -r -p "    Enable sound with RDP client? (yes/no) [default: ${DEFAULT_ENABLE_SOUND}]: " choice
-	choice="${choice:-${DEFAULT_ENABLE_SOUND}}"
-	
+    choice="${choice:-${DEFAULT_ENABLE_SOUND}}"
+
     case "$choice" in
     yes | YES | y | Y)
         enable_sound
@@ -267,7 +267,7 @@ while true; do
         ;;
     *)
         echo "    Invalid choice. Please enter 'yes' or 'no'."
-		echo
+        echo
         ;;
     esac
 done
@@ -398,7 +398,7 @@ while true; do
         ;;
     *)
         echo " Invalid option, please try again."
-		echo
+        echo
         ;;
     esac
 done
@@ -427,8 +427,8 @@ while true; do
         ;;
     *)
         echo " Invalid option, please try again."
-		echo
-		;;
+        echo
+        ;;
     esac
 done
 
@@ -602,21 +602,21 @@ cd "${HOMEDIR}" || exit
 git clone "$GITREPO"
 
 # install.bat and  RDPApps.reg customizations:
-	# Update WinApps unattended OEM setup script to set the Windows hostname during install
-	sed -i "/echo off/a wmic computersystem where caption='%COMPUTERNAME%' rename $HOSTNAME\ntimeout /t 3 /nobreak" winapps/oem/install.bat
+    # Update WinApps unattended OEM setup script to set the Windows hostname during install
+    sed -i "/echo off/a wmic computersystem where caption='%COMPUTERNAME%' rename $HOSTNAME\ntimeout /t 3 /nobreak" winapps/oem/install.bat
 
-	# Hack to obtain the new container's DHCP address and populate the RDP test script with the correct address
-	if [[ ${NET_CONFIG_OPTION} == "macvlan" ]]; then
-		LINE=$(printf "ipconfig > \\\\\\\\%s\\Data\\CONTAINER_DHCP_IP.txt" "${container_ip}")
-		echo "$LINE" >>winapps/oem/install.bat
-	fi
+    # Hack to obtain the new container's DHCP address and populate the RDP test script with the correct address
+    if [[ ${NET_CONFIG_OPTION} == "macvlan" ]]; then
+        LINE=$(printf "ipconfig > \\\\\\\\%s\\Data\\CONTAINER_DHCP_IP.txt" "${container_ip}")
+        echo "$LINE" >>winapps/oem/install.bat
+    fi
 
-	# Workaround to enable or disable sound - this will be overwritten with any subsequent git update
-	if [[ ${SOUND} == "on" ]]; then
-		sed -i 's/audio-mode:1/audio-mode:0/g' "${HOMEDIR}"/winapps/bin/winapps
-	elif [[ ${SOUND} == "off" ]]; then
-		sed -i 's/audio-mode:0/audio-mode:1/g' "${HOMEDIR}"/winapps/bin/winapps
-	fi
+    # Workaround to enable or disable sound - this will be overwritten with any subsequent git update
+    if [[ ${SOUND} == "on" ]]; then
+        sed -i 's/audio-mode:1/audio-mode:0/g' "${HOMEDIR}"/winapps/bin/winapps
+    elif [[ ${SOUND} == "off" ]]; then
+        sed -i 's/audio-mode:0/audio-mode:1/g' "${HOMEDIR}"/winapps/bin/winapps
+    fi
 
 # Create a simple script for testing RDP connections to the new container
 cat <<EOF >"${HOMEDIR}"/winapps/test-rdp.sh
