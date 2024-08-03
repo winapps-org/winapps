@@ -74,6 +74,8 @@ PGK_FREERDP="freerdp3-x11"
 FLAT_FREERDP="com.freerdp.FreeRDP"
 VLAN_DEV_NAME="macvlan-br"
 MAC_VLAN_NAME="winapps_macvlan"
+CONTAINER_IP="" # Override auto IP selection ( use with > /30 subnets)   
+VLAN_IP=""      # Override auto IP selection ( use with > /30 subnets)  
 
 # Text colours
 BLUE='\033[38;5;33m'
@@ -324,6 +326,7 @@ IFS=. read -r m1 m2 m3 m4 <<<"$i1.$i2.$i3.$i4"
 network_address=$(printf "%d.%d.%d.%d\n" "$((a & m1))" "$((b & m2))" "$((c & m3))" "$((d & m4))")
 
 NIC=$(ip route | grep default | awk '{print $5}')
+IP_ADDRESS=$ip_address
 SUBNET=$network_address/$cidr_prefix
 GATEWAY=$(ip route | grep default | awk '{print $3}')
 CIDR="" # initialised for config menu
@@ -388,9 +391,19 @@ while true; do
                 highest_ip=$(convert_decimal_to_ip "$last_usable_decimal") # Reserved for macvlan routing
                 subnet_mask=$mask
 
-                # Manually override macvlan addressing scheme here:
-                container_ip=$lowest_ip
-                vlan_ip=$highest_ip
+                # Choose between auto macvlan addressing or manually prescribed IP addresses:
+				if [ -z "${CONTAINER_IP}" ]; then
+				  container_ip=${lowest_ip}
+				   else 
+				  container_ip=${CONTAINER_IP}
+				fi
+				
+				if [ -z "${VLAN_IP}" ]; then
+				  vlan_ip=$highest_ip
+				   else
+				  vlan_ip=${VLAN_IP}
+				fi 
+				
                 break
             else
                 echo "Invalid CIDR format. Please enter a valid CIDR (e.g., 192.168.1.252/30)."
@@ -638,7 +651,7 @@ cat <<EOF >"${HOMEDIR}"/winapps/test-rdp.sh
   NET_CONFIG_OPTION="${NET_CONFIG_OPTION}"
   RDP_CHOICE="${RDP_CHOICE}"
 
-# Determine the RDP connection IP address based on the network selection at installation
+# Determine the RDP connection IP address based on the network type chosen at installation
 if [ "\${NET_CONFIG_OPTION}" == "default" ]; then
    CONTAINER_IP="127.0.0.1"
    elif [ "\${NET_CONFIG_OPTION}" == "macvlan" ]; then
@@ -779,8 +792,6 @@ echo
 echo -e "${BLUE} ## Starting automated Docker Windows container build ##${NC}"
 
 # To perform everything in one script we need to start a new shell to refresh group membership (avoids using sudo)
-LOCAL_IP=$(ip -4 addr show "$(ip route show default | awk '/default/ { print $5 }')" | awk '/inet / {print $2}' | cut -d/ -f1)
-
 newgrp docker <<END
 
 # To allow the script to be re-run, clear old macvlan and any incomplete installs
@@ -796,7 +807,7 @@ if [[ ${NET_CONFIG_OPTION} == "default" ]]; then
     # Build with the default networking
     echo
     echo -e " ${ORANGE}WINDOWS CONTAINER BUILD IS NOW UNDERWAY...${NC}"
-    echo -e " ${GREEN}You can observe the build at http://127.0.0.1:8006 or http://$LOCAL_IP:8006${NC}"
+    echo -e " ${GREEN}You can observe the build at http://127.0.0.1:8006 or http://$IP_ADDRESS:8006${NC}"
     echo " Please wait for Windows to finish installing before testing RDP with the below command:"
     echo -e " ${BLUE}$HOMEDIR/winapps/test-rdp.sh${NC}"
     echo
