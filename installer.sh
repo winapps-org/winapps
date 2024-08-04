@@ -452,9 +452,6 @@ function waLoadConfig() {
 function waCheckScriptDependencies() {
     # 'Dialog'.
     if ! command -v dialog &>/dev/null; then
-        # Complete the previous line.
-        echo -e "${FAIL_TEXT}Failed!${CLEAR_TEXT}\n"
-
         # Display the error type.
         echo -e "${ERROR_TEXT}ERROR:${CLEAR_TEXT} ${BOLD_TEXT}MISSING DEPENDENCIES.${CLEAR_TEXT}"
 
