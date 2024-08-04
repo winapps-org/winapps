@@ -1,9 +1,8 @@
 pub mod freerdp_back {
     use crate::{get_data_dir, unwrap_or_exit, Config, RemoteClient};
-    use decompress::{decompressors, ExtractOptsBuilder};
     use indicatif::ProgressBar;
-    use regex::Regex;
     use std::cmp::min;
+    use std::fs::File;
     use std::process::{Command, Stdio};
     use tokio_stream::StreamExt;
     use tracing::{info, warn};
@@ -17,30 +16,16 @@ pub mod freerdp_back {
                 .build()
                 .unwrap()
                 .block_on(Freerdp::install_freerdp());
-            Command::new(get_data_dir().join("bin/xfreerdp"))
+            Command::new(get_data_dir().join("usr/bin/xfreerdp"))
         }
 
-        // fn get_freerdp_dir() -> PathBuf {
-        //     let path = get_data_dir().join("bin");
-
-        //     if !path.exists() {
-        //         let dir = path.clone();
-        //         info!(
-        //             "Freerdp directory {:?} does not exist! Creating...",
-        //             dir.to_str()
-        //         );
-        //         fs::create_dir_all(dir).expect("Failed to create directory");
-        //     }
-
-        //     if !path.is_dir() {
-        //         error!("Freerdp directory {:?} is not a directory", path).panic();
-        //     }
-
-        //     path
-        // }
-
         async fn install_freerdp() {
+            if get_data_dir().join("usr/bin/xfreerdp").exists() {
+                return;
+            }
+
             let freerdp_file = "freerdp-3.6.3-1.fc41.x86_64.rpm";
+
             let bar = ProgressBar::new(1);
 
             bar.set_style(indicatif::ProgressStyle::with_template(
@@ -51,7 +36,7 @@ pub mod freerdp_back {
             bar.tick();
 
             let response = reqwest::get(
-                "https://kojipkgs.fedoraproject.org//packages/freerdp/3.6.3/1.fc41/x86_64/"
+                "https://kojipkgs.fedoraproject.org/packages/freerdp/3.6.3/1.fc41/x86_64/"
                     .to_owned()
                     + freerdp_file,
             )
@@ -75,43 +60,40 @@ pub mod freerdp_back {
                     .map_err(|err| std::io::Error::new(std::io::ErrorKind::Other, err))
             });
 
-            let mut tmp_file = tokio::fs::File::create(get_data_dir().join(freerdp_file))
+            let mut file = tokio::fs::File::create(get_data_dir().join(freerdp_file))
                 .await
                 .unwrap();
 
             while let Some(item) = stream.next().await {
-                tokio::io::copy(&mut item.unwrap().as_ref(), &mut tmp_file)
+                tokio::io::copy(&mut item.unwrap().as_ref(), &mut file)
                     .await
                     .unwrap();
             }
 
-            // let mut decoder =
-            //     async_compression::tokio::bufread::ZstdDecoder::new(StreamReader::new(stream));
+            let mut rpm2cpio = Command::new("rpm2cpio");
+            rpm2cpio.stdin(Stdio::from(
+                File::open(get_data_dir().join(freerdp_file)).unwrap(),
+            ));
+            rpm2cpio.stdout(Stdio::piped());
+            rpm2cpio.stderr(Stdio::null());
+            rpm2cpio.current_dir(get_data_dir());
 
-            // let mut target = tokio::fs::File::create(get_data_dir().join("bin1"))
-            //     .await
-            //     .unwrap();
-
-            // io::copy(&mut decoder, &mut target).await.unwrap();
-
-            // let file = tokio::fs::File::create(get_data_dir().join("bin1"))
-            //     .await
-            //     .unwrap();
-
-            let decompressor =
-                decompress::Decompress::build(vec![decompressors::zstd::Zstd::build(Some(
-                    Regex::new(r".*").unwrap(),
-                ))]);
-
-            let res = decompressor.decompress(
-                get_data_dir()
-                    .join("freerdp-3.6.3-1.fc41.x86_64.zst")
-                    .as_path(),
-                get_data_dir().join("bin").as_path(),
-                &ExtractOptsBuilder::default().build().unwrap(),
+            let rpm2cpio = unwrap_or_exit!(
+                rpm2cpio.spawn(),
+                "rpm2cpio execution failed! Check if rpm2cpio (rpm) is installed!",
             );
 
-            info!("{res:?}");
+            let mut cpio = Command::new("cpio");
+            cpio.stdin(Stdio::from(rpm2cpio.stdout.unwrap()));
+            cpio.stdout(Stdio::null());
+            cpio.stderr(Stdio::null());
+            cpio.current_dir(get_data_dir());
+            cpio.arg("-idmv");
+
+            unwrap_or_exit!(
+                cpio.spawn(),
+                "cpio execution failed! Check if cpio is installed!",
+            );
         }
     }
 
