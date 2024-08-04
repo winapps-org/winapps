@@ -450,14 +450,8 @@ function waLoadConfig() {
 # Name: 'waCheckScriptDependencies'
 # Role: Terminate script if dependencies are missing.
 function waCheckScriptDependencies() {
-    # Print feedback.
-    echo -n "Checking whether installation script dependencies are installed... "
-
     # 'Dialog'.
     if ! command -v dialog &>/dev/null; then
-        # Complete the previous line.
-        echo -e "${FAIL_TEXT}Failed!${CLEAR_TEXT}\n"
-
         # Display the error type.
         echo -e "${ERROR_TEXT}ERROR:${CLEAR_TEXT} ${BOLD_TEXT}MISSING DEPENDENCIES.${CLEAR_TEXT}"
 
