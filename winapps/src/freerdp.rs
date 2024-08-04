@@ -106,7 +106,8 @@ pub mod freerdp_back {
 
             unwrap_or_exit!(
                 xfreerdp.spawn(),
-                "Freerdp execution failed! It needs to be installed!",
+                "Freerdp execution failed! Try to delete {}, to force a reinstall.",
+                get_data_dir().join("usr").display(),
             );
 
             info!("Freerdp found!");
