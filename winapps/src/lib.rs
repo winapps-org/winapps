@@ -1,6 +1,5 @@
 pub mod errors;
 pub mod freerdp;
-pub mod quickemu;
 
 use crate::errors::WinappsError;
 use derive_new::new;
@@ -27,16 +26,6 @@ pub struct Config {
     host: HostConfig,
     #[new(value = "RemoteConfig::new()")]
     rdp: RemoteConfig,
-    #[new(value = "VmConfig::new()")]
-    vm: VmConfig,
-}
-
-#[derive(new, Debug, Deserialize, Serialize)]
-pub struct VmConfig {
-    #[new(value = "\"windows-10\".to_string()")]
-    short_name: String,
-    #[new(value = "\"windows-10-22H2\".to_string()")]
-    name: String,
 }
 
 #[derive(new, Debug, Deserialize, Serialize)]
@@ -49,11 +38,11 @@ pub struct HostConfig {
 pub struct RemoteConfig {
     #[new(value = "\"127.0.0.1\".to_string()")]
     host: String,
-    #[new(value = "\"WORKGROUP\".to_string()")]
+    #[new(value = "\"\".to_string()")]
     domain: String,
-    #[new(value = "\"Quickemu\".to_string()")]
+    #[new(value = "\"Docker\".to_string()")]
     username: String,
-    #[new(value = "\"quickemu\".to_string()")]
+    #[new(value = "\"\".to_string()")]
     password: String,
 }
 
