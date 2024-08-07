@@ -32,8 +32,6 @@ repos:
       - id: detect-private-key
       - id: end-of-file-fixer
       - id: fix-byte-order-marker
-      - id: forbid-new-submodules
-      - id: forbid-submodules
       - id: mixed-line-ending
       - id: pretty-format-json
         args: [ "--autofix", "--no-sort-keys" ]
