@@ -2,7 +2,7 @@ name: Update submodules
 on:
   repository_dispatch:
     types: update
-  
+
 jobs:
   update:
     runs-on: ubuntu-latest
@@ -10,7 +10,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           submodules: recursive
-      
+
       - name: Update module
         run: |
           git submodule update --init --recursive --checkout -f
