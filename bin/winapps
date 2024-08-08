@@ -675,6 +675,8 @@ if [ "$WAFLAVOR" = "docker" ] || [ "$WAFLAVOR" = "podman" ]; then
 elif [ "$WAFLAVOR" = "libvirt" ]; then
     waCheckGroupMembership
     waCheckVMRunning
+elif [ "$WAFLAVOR" = "manual" ]; then
+    waCheckPortOpen
 else
     waThrowExit "$EC_INVALID_FLAVOR"
 fi
