@@ -277,7 +277,7 @@ If you already have a Windows VM or server you wish to use with WinApps, you wil
 ### Step 2: Clone WinApps Repository and Dependencies
 1. Clone the WinApps GitHub repository.
     ```bash
-    git clone https://github.com/winapps-org/winapps.git && cd winapps
+    git clone --recurse-submodules --remote-submodules https://github.com/winapps-org/winapps.git && cd winapps
     ```
 
 2. Install the required dependencies.
@@ -387,7 +387,7 @@ DEBUG="true"
 
 # [AUTOMATICALLY PAUSE WINDOWS]
 # NOTES:
-# - This is currently INCOMPATIBLE with 'docker'.
+# - This is currently INCOMPATIBLE with 'docker' and 'manual'.
 # - See https://github.com/dockur/windows/issues/674
 # DEFAULT VALUE: 'off'
 # VALID VALUES:
