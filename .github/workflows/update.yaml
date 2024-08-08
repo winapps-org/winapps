@@ -1,0 +1,25 @@
+name: Update submodules
+on:
+  repository_dispatch:
+    types: update
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Update module
+        run: |
+          git submodule update --init --recursive --checkout -f
+
+      - name: Commit and push
+        uses: EndBug/add-and-commit@v9
+        with:
+          add: "WinApps-Launcher"
+          default_author: github_actions
+          message: "Update submodules"
+          push: true
+          fetch: true
