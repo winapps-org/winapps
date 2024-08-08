@@ -1494,8 +1494,7 @@ function waInstall() {
         # Check if the Windows VM is powered on.
         waCheckVMRunning
     elif [ "$WAFLAVOR" = "manual" ]; then
-        # TODO do some checks for an existing windows vm
-        echo "Using existing vm"
+        waCheckPortOpen
     else
         # Display the error type.
         echo -e "${ERROR_TEXT}ERROR:${CLEAR_TEXT} ${BOLD_TEXT}INVALID WINAPPS BACKEND.${CLEAR_TEXT}"
