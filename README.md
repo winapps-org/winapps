@@ -348,6 +348,7 @@ RDP_IP=""
 # - 'docker'
 # - 'podman'
 # - 'libvirt'
+# - 'manual'
 WAFLAVOR="docker"
 
 # [DISPLAY SCALING FACTOR]
