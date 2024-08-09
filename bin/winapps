@@ -626,29 +626,32 @@ function waCheckIdle() {
     local TIME_ELAPSED=0
     local SUSPEND_WINDOWS=0
 
-    # Check if there are no WinApps-related FreeRDP processes running.
-    if ! ls "$APPDATA_PATH"/FreeRDP_Process_*.cproc &>/dev/null; then
-        SUSPEND_WINDOWS=1
-        while (( TIME_ELAPSED < AUTOPAUSE_TIME )); do
-            if ls "$APPDATA_PATH"/FreeRDP_Process_*.cproc &>/dev/null; then
-                SUSPEND_WINDOWS=0
-                break
-            fi
-            sleep $TIME_INTERVAL
-            TIME_ELAPSED=$((TIME_ELAPSED + TIME_INTERVAL))
-        done
-    fi
+    # Prevent 'autopause' functionality with unsupported Windows backends.
+    if [ "$WAFLAVOR" != "manual" ] && [ "$WAFLAVOR" != "docker" ]; then
+        # Check if there are no WinApps-related FreeRDP processes running.
+        if ! ls "$APPDATA_PATH"/FreeRDP_Process_*.cproc &>/dev/null; then
+            SUSPEND_WINDOWS=1
+            while (( TIME_ELAPSED < AUTOPAUSE_TIME )); do
+                if ls "$APPDATA_PATH"/FreeRDP_Process_*.cproc &>/dev/null; then
+                    SUSPEND_WINDOWS=0
+                    break
+                fi
+                sleep $TIME_INTERVAL
+                TIME_ELAPSED=$((TIME_ELAPSED + TIME_INTERVAL))
+            done
+        fi
 
-    # Hibernate/Pause Windows.
-    if [ "$SUSPEND_WINDOWS" -eq 1 ]; then
-        dprint "IDLE FOR ${AUTOPAUSE_TIME} SECONDS. SUSPENDING WINDOWS."
-        notify-send --expire-time=8000 --icon="info" --app-name="WinApps" --urgency="low" "WinApps" "Pausing Windows due to inactivity."
-        if [ "$WAFLAVOR" = "docker" ]; then
-            docker compose --file "$COMPOSE_PATH" pause &>/dev/null
-        elif [ "$WAFLAVOR" = "podman" ]; then
-            podman-compose --file "$COMPOSE_PATH" pause &>/dev/null
-        elif [ "$WAFLAVOR" = "libvirt" ]; then
-            virsh suspend "$VM_NAME" &>/dev/null
+        # Hibernate/Pause Windows.
+        if [ "$SUSPEND_WINDOWS" -eq 1 ]; then
+            dprint "IDLE FOR ${AUTOPAUSE_TIME} SECONDS. SUSPENDING WINDOWS."
+            notify-send --expire-time=8000 --icon="info" --app-name="WinApps" --urgency="low" "WinApps" "Pausing Windows due to inactivity."
+            if [ "$WAFLAVOR" = "docker" ]; then
+                docker compose --file "$COMPOSE_PATH" pause &>/dev/null
+            elif [ "$WAFLAVOR" = "podman" ]; then
+                podman-compose --file "$COMPOSE_PATH" pause &>/dev/null
+            elif [ "$WAFLAVOR" = "libvirt" ]; then
+                virsh suspend "$VM_NAME" &>/dev/null
+            fi
         fi
     fi
 }
