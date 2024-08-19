@@ -509,7 +509,8 @@ function waRunCommand() {
             +dynamic-resolution \
             +auto-reconnect \
             +home-drive \
-            /audio-mode:1 \
+			/sound \
+			/microphone \
             /wm-class:"Microsoft Windows" \
             /t:"Windows RDP Session [$RDP_IP]" \
             /v:"$RDP_IP" &>/dev/null &
@@ -528,7 +529,8 @@ function waRunCommand() {
             +auto-reconnect \
             +clipboard \
             +home-drive \
-            /audio-mode:1 \
+            /sound \
+			/microphone \
             -wallpaper \
             +dynamic-resolution \
             "$MULTI_FLAG" \
@@ -566,7 +568,8 @@ function waRunCommand() {
                 +auto-reconnect \
                 +clipboard \
                 +home-drive \
-                /audio-mode:1 \
+                /sound \
+				/microphone \
                 -wallpaper \
                 +dynamic-resolution \
                 "$MULTI_FLAG" \
@@ -593,7 +596,8 @@ function waRunCommand() {
                 +auto-reconnect \
                 +clipboard \
                 +home-drive \
-                /audio-mode:1 \
+                /sound \
+				/microphone \
                 -wallpaper \
                 +dynamic-resolution \
                 "$MULTI_FLAG" \
