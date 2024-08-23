@@ -229,7 +229,7 @@ Contributing to the list of supported applications is encouraged through submiss
         </td>
         <td>
             <b>Microsoft Visio</b><br>
-            (Standard/Pro 2021, Plan 2)<br>
+            (Standard/Pro. 2021, Plan 2)<br>
             <i><a href="https://en.m.wikipedia.org/wiki/File:Microsoft_Office_Visio_(2019).svg">Icon</a> in the Public Domain.</i>
         </td>
     </tr>
@@ -240,9 +240,20 @@ Contributing to the list of supported applications is encouraged through submiss
         </td>
         <td>
             <b>Microsoft Project</b><br>
-            (Standard/Pro 2021, Plan 3/5)<br>
+            (Standard/Pro. 2021, Plan 3/5)<br>
             <i><a href="https://en.m.wikipedia.org/wiki/File:Microsoft_Project_(2019–present).svg">Icon</a> in the Public Domain.</i>
         </td>
+        <!-- Microsoft Visual Studio -->
+        <td>
+            <img src="apps/visual-studio-pro/icon.svg" width="100">
+        </td>
+        <td>
+            <b>Microsoft Visual Studio</b><br>
+            (Comm./Pro./Ent. 2022)<br>
+            <i><a href="https://en.m.wikipedia.org/wiki/File:Visual_Studio_Icon_2022.svg">Icon</a> in the Public Domain.</i>
+        </td>
+    </tr>
+    <tr>
         <!-- PowerShell -->
         <td>
             <img src="apps/powershell/icon.svg" width="100">
@@ -251,7 +262,6 @@ Contributing to the list of supported applications is encouraged through submiss
             <b>PowerShell</b><br>
             <i><a href="https://iconduck.com/icons/102322/file-type-powershell">Icon</a> under <a href="https://iconduck.com/licenses/mit">MIT license</a>.</i>
         </td>
-        <tr>
         <!-- Windows -->
         <td>
             <img src="icons/windows.svg" width="100">
