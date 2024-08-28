@@ -491,30 +491,6 @@ function waCheckScriptDependencies() {
         return "$EC_MISSING_DEPS"
     fi
 
-    # 'curl'
-    if ! command -v curl &>/dev/null; then
-        # Display the error type.
-        echo -e "${ERROR_TEXT}ERROR:${CLEAR_TEXT} ${BOLD_TEXT}MISSING DEPENDENCIES.${CLEAR_TEXT}"
-
-        # Display the error details.
-        echo -e "${INFO_TEXT}Please install 'curl' to proceed.${CLEAR_TEXT}"
-
-        # Display the suggested action(s).
-        echo "--------------------------------------------------------------------------------"
-        echo "Debian/Ubuntu-based systems:"
-        echo -e "  ${COMMAND_TEXT}sudo apt install curl${CLEAR_TEXT}"
-        echo "Red Hat/Fedora-based systems:"
-        echo -e "  ${COMMAND_TEXT}sudo dnf install curl${CLEAR_TEXT}"
-        echo "Arch Linux systems:"
-        echo -e "  ${COMMAND_TEXT}sudo pacman -S curl${CLEAR_TEXT}"
-        echo "Gentoo Linux systems:"
-        echo -e "  ${COMMAND_TEXT}sudo emerge --ask net-misc/curl${CLEAR_TEXT}"
-        echo "--------------------------------------------------------------------------------"
-
-        # Terminate the script.
-        return "$EC_MISSING_DEPS"
-    fi
-
     # 'Dialog'.
     if ! command -v dialog &>/dev/null; then
         # Display the error type.
