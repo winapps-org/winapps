@@ -56,7 +56,7 @@ docker compose --file ~/.config/winapps/compose.yaml up
 > Since no Windows user password is set by default, Windows may automatically log in, which may cause the WinApps installation to fail due to complications establishing an RDP connection. To avoid this issue, please use the VNC connection to ensure that the Windows user is logged out before starting the WinApps installation.
 
 ```bash
-./setup.sh
+bash <(curl https://raw.githubusercontent.com/winapps-org/winapps/main/setup.sh)
 ```
 
 ### Changing `compose.yaml`

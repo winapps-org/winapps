@@ -679,5 +679,5 @@ You may now proceed to install other applications like 'Microsoft 365', 'Adobe C
 Finally, restart the virtual machine, but **DO NOT** log in. Close the virtual machine viewer and proceed to run the WinApps installation.
 
 ```bash
-./setup.sh
+bash <(curl https://raw.githubusercontent.com/winapps-org/winapps/main/setup.sh)
 ```
