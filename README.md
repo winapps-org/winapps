@@ -443,10 +443,10 @@ FREERDP_COMMAND=""
 ### Step 4: Run the WinApps Installer
 Run the WinApps installer.
 ```bash
-./installer.sh
+./setup.sh
 ```
 
-A list of supported additional arguments can be accessed by running `./installer.sh --help`.
+A list of supported additional arguments can be accessed by running `./setup.sh --help`.
 
 <img src="./demo/installer.gif" width=1000 alt="WinApps Installer Animation.">
 

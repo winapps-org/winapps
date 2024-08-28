@@ -125,13 +125,13 @@ function waTerminateScript() {
 # Role: Displays usage information for the script.
 function waUsage() {
     echo -e "Usage:
-  ${COMMAND_TEXT}./installer.sh --user${CLEAR_TEXT}                                        # Install WinApps and selected applications in ${HOME}
-  ${COMMAND_TEXT}./installer.sh --system${CLEAR_TEXT}                                      # Install WinApps and selected applications in /usr
-  ${COMMAND_TEXT}./installer.sh --user --setupAllOfficiallySupportedApps${CLEAR_TEXT}      # Install WinApps and all officially supported applications in ${HOME}
-  ${COMMAND_TEXT}./installer.sh --system --setupAllOfficiallySupportedApps${CLEAR_TEXT}    # Install WinApps and all officially supported applications in /usr
-  ${COMMAND_TEXT}./installer.sh --user --uninstall${CLEAR_TEXT}                            # Uninstall everything in ${HOME}
-  ${COMMAND_TEXT}./installer.sh --system --uninstall${CLEAR_TEXT}                          # Uninstall everything in /usr
-  ${COMMAND_TEXT}./installer.sh --help${CLEAR_TEXT}                                        # Display this usage message."
+  ${COMMAND_TEXT}./setup.sh --user${CLEAR_TEXT}                                        # Install WinApps and selected applications in ${HOME}
+  ${COMMAND_TEXT}./setup.sh --system${CLEAR_TEXT}                                      # Install WinApps and selected applications in /usr
+  ${COMMAND_TEXT}./setup.sh --user --setupAllOfficiallySupportedApps${CLEAR_TEXT}      # Install WinApps and all officially supported applications in ${HOME}
+  ${COMMAND_TEXT}./setup.sh --system --setupAllOfficiallySupportedApps${CLEAR_TEXT}    # Install WinApps and all officially supported applications in /usr
+  ${COMMAND_TEXT}./setup.sh --user --uninstall${CLEAR_TEXT}                            # Uninstall everything in ${HOME}
+  ${COMMAND_TEXT}./setup.sh --system --uninstall${CLEAR_TEXT}                          # Uninstall everything in /usr
+  ${COMMAND_TEXT}./setup.sh --help${CLEAR_TEXT}                                        # Display this usage message."
 }
 
 # Name: 'waSetWorkingDirectory'
@@ -349,7 +349,7 @@ function waCheckExistingInstall() {
 
         # Display the suggested action(s).
         echo "--------------------------------------------------------------------------------"
-        echo -e "Please remove the existing WinApps installation using ${COMMAND_TEXT}./installer.sh --user --uninstall${CLEAR_TEXT}."
+        echo -e "Please remove the existing WinApps installation using ${COMMAND_TEXT}./setup.sh --user --uninstall${CLEAR_TEXT}."
         echo "--------------------------------------------------------------------------------"
 
         # Terminate the script.
@@ -369,7 +369,7 @@ function waCheckExistingInstall() {
 
         # Display the suggested action(s).
         echo "--------------------------------------------------------------------------------"
-        echo -e "Please remove the existing WinApps installation using ${COMMAND_TEXT}./installer.sh --system --uninstall${CLEAR_TEXT}."
+        echo -e "Please remove the existing WinApps installation using ${COMMAND_TEXT}./setup.sh --system --uninstall${CLEAR_TEXT}."
         echo "--------------------------------------------------------------------------------"
 
         # Terminate the script.
