@@ -156,6 +156,9 @@ function waGetSourceCode() {
 
     if [[ ! -d "$SOURCE_PATH" ]]; then
         $SUDO git clone --recurse-submodules --remote-submodules https://github.com/winapps-org/winapps.git "$SOURCE_PATH"
+    else
+        echo -e "${INFO_TEXT}WinApps installation already present at ${CLEAR_TEXT}${COMMAND_TEXT}${SOURCE_PATH}${CLEAR_TEXT}${INFO_TEXT}. Updating...${CLEAR_TEXT}"
+        $SUDO git -C "$SOURCE_PATH" pull --no-rebase
     fi
 
     # Silently change the working directory.
@@ -374,7 +377,7 @@ function waCheckExistingInstall() {
     fi
 
     # Check for an existing 'system' installation.
-    if [[ -f "${SYS_BIN_PATH}/winapps" || -d "${USER_SOURCE_PATH}/winapps" ]]; then
+    if [[ -f "${SYS_BIN_PATH}/winapps" || -d "${SYS_SOURCE_PATH}/winapps" ]]; then
         # Complete the previous line.
         echo -e "${FAIL_TEXT}Failed!${CLEAR_TEXT}\n"
 
@@ -485,6 +488,30 @@ function waCheckScriptDependencies() {
         echo -e "  ${COMMAND_TEXT}sudo pacman -S git${CLEAR_TEXT}"
         echo "Gentoo Linux systems:"
         echo -e "  ${COMMAND_TEXT}sudo emerge --ask dev-vcs/git${CLEAR_TEXT}"
+        echo "--------------------------------------------------------------------------------"
+
+        # Terminate the script.
+        return "$EC_MISSING_DEPS"
+    fi
+
+    # 'curl'
+    if ! command -v curl &>/dev/null; then
+        # Display the error type.
+        echo -e "${ERROR_TEXT}ERROR:${CLEAR_TEXT} ${BOLD_TEXT}MISSING DEPENDENCIES.${CLEAR_TEXT}"
+
+        # Display the error details.
+        echo -e "${INFO_TEXT}Please install 'curl' to proceed.${CLEAR_TEXT}"
+
+        # Display the suggested action(s).
+        echo "--------------------------------------------------------------------------------"
+        echo "Debian/Ubuntu-based systems:"
+        echo -e "  ${COMMAND_TEXT}sudo apt install curl${CLEAR_TEXT}"
+        echo "Red Hat/Fedora-based systems:"
+        echo -e "  ${COMMAND_TEXT}sudo dnf install curl${CLEAR_TEXT}"
+        echo "Arch Linux systems:"
+        echo -e "  ${COMMAND_TEXT}sudo pacman -S curl${CLEAR_TEXT}"
+        echo "Gentoo Linux systems:"
+        echo -e "  ${COMMAND_TEXT}sudo emerge --ask net-misc/curl${CLEAR_TEXT}"
         echo "--------------------------------------------------------------------------------"
 
         # Terminate the script.
@@ -1510,9 +1537,6 @@ function waInstall() {
     # Check for missing dependencies.
     waCheckInstallDependencies
 
-    # Get the source code
-    waGetSourceCode
-
     # Update $MULTI_FLAG.
     if [[ $MULTIMON == "true" ]]; then
         MULTI_FLAG="/multimon"
@@ -1706,6 +1730,9 @@ ${CLEAR_TEXT}"
 
 # Check dependencies for the script.
 waCheckScriptDependencies
+
+# Get the source code
+waGetSourceCode
 
 # Source the contents of 'inquirer.sh'.
 # shellcheck source=/dev/null # Exclude this file from being checked by ShellCheck.
