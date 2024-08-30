@@ -182,6 +182,18 @@ function waGetSourceCode() {
     fi
 }
 
+# Name: 'waGetInquirer'
+# Role: Loads the inquirer script, even if the source isn't cloned yet
+function waGetInquirer() {
+    if [[ ! -d "$SYS_SOURCE_PATH" || ! -d "$USER_SOURCE_PATH" ]]; then
+        INQUIRER_PATH="/tmp/waInquirer.sh"
+        curl "https://raw.githubusercontent.com/winapps-org/winapps/main/install/inquirer.sh" -O "$INQUIRER_PATH"
+    fi
+
+    # shellcheck source=/dev/null # Exclude this file from being checked by ShellCheck.
+    source "$INQUIRER_PATH"
+}
+
 # Name: 'waCheckInput'
 # Role: Sanitises input and guides users through selecting appropriate options if no arguments are provided.
 function waCheckInput() {
@@ -1731,18 +1743,17 @@ ${CLEAR_TEXT}"
 # Check dependencies for the script.
 waCheckScriptDependencies
 
-# Get the source code
-waGetSourceCode
-
 # Source the contents of 'inquirer.sh'.
-# shellcheck source=/dev/null # Exclude this file from being checked by ShellCheck.
-source "$INQUIRER_PATH"
+waGetInquirer
 
 # Sanitise and parse the user input.
 waCheckInput "$@"
 
 # Configure paths and permissions.
 waConfigurePathsAndPermissions
+
+# Get the source code
+waGetSourceCode
 
 # Install or uninstall WinApps.
 if [ "$OPT_UNINSTALL" -eq 1 ]; then
