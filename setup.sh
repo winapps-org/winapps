@@ -188,7 +188,7 @@ function waGetInquirer() {
     if [ ! -d "$SYS_SOURCE_PATH" ] && [ ! -d "$USER_SOURCE_PATH" ]; then
         INQUIRER_PATH="/tmp/waInquirer.sh"
         rm -f "$INQUIRER_PATH"
-        
+
         curl "https://raw.githubusercontent.com/winapps-org/winapps/main/install/inquirer.sh" -O "$INQUIRER_PATH"
     fi
 
