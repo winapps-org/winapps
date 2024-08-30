@@ -471,6 +471,70 @@ The installer can be run multiple times. To update your installation of WinApps:
 2. Pull the latest changes from the WinApps GitHub repository.
 3. Re-install WinApps using the WinApps installer.
 
+## Installation using Nix
+
+First, follow Step 1 of the normal installation guide to create your VM.
+Then, install WinApps according to the following instructions.
+
+After installation, it will be available under `winapps`, with the installer being available under `winapps-setup`
+and the optional launcher being available under `winapps-launcher.`
+
+### Using standalone Nix
+
+First, make sure Flakes and the `nix` command are enabled.
+In your `~/.config/nix/nix.conf`:
+```
+experimental-features = nix-command flakes
+```
+
+```bash
+nix profile install github:winapps-org/winapps#winapps
+nix profile install github:winapps-org/winapps#winapps-launcher # optional
+```
+
+### On NixOS using Flakes
+
+```nix
+{
+  description = "My configuration";
+
+  inputs = {
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+
+    winapps = {
+      url = ""github:winapps-org/winapps;
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+  };
+
+  outputs = {
+    nixpkgs,
+    winapps,
+    ...
+  }: {
+    nixosConfigurations.hostname = nixpkgs.lib.nixosSystem rec {
+      system = "x86_64-linux";
+
+      modules = [
+        ./configuration.nix
+        ({pkgs, ...}: {
+          environment.systemPackages = [
+            winapps.packages.${system}.winapps
+            winapps.packages.${system}.winapps-launcher # optional
+          ];
+        })
+      ];
+    };
+  };
+}
+```
+
+### On NixOS without Flakes
+
+[Flakes aren't real and they can't hurt you.](https://jade.fyi/blog/flakes-arent-real/).
+See https://wiki.nixos.org/wiki/Flakes#Using_nix_flakes_with_NixOS on how to enable Flakes on your system.
+
+
 ## Star History
 <a href="https://star-history.com/#winapps-org/winapps&Date">
  <picture>
