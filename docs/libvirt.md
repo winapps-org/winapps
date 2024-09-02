@@ -680,6 +680,24 @@ Scroll down to `Remote Desktop`, and enable `Enable Remote Desktop`.
 
 At this point, you will need to restart the Windows virtual machine.
 
+## Configuring a Fallback Shared Folder
+When connecting to Windows through FreeRDP, your home folder will be shared automatically. However, this sharing setup does not apply when using Windows via virt-manager. To configure a fallback shared folder, follow these steps:
+
+1. Navigate to "Virtual Hardware Details", then "Memory" and then check the box for "Enable shared memory".
+
+2. Add filesystem hardware by going to "Virtual Hardware Details" and selecting "Add Hardware" followed by "Filesystem". Choose `virtiofs` as the driver, enter the path to the shared folder, and provide a name for the shared folder in the target path (e.g., "Windows Shared Folder").
+
+3. Install [`WinFSP`](https://github.com/winfsp/winfsp/releases/) on Windows.
+
+4. Enable and start a 'VirtIO Filesystem' service within Windows by running the following commands within a PowerShell prompt.
+    ```PowerShell
+    sc.exe create VirtioFsSvc binpath= "C:\Program Files\Virtio-Win\VioFS\virtiofs.exe" start=auto depend="WinFsp.Launcher/VirtioFsDrv" DisplayName="Virtio Filesystem Service"
+    sc.exe start VirtioFsSvc
+    ```
+
+5. Reboot Windows.
+
+## Installing Windows Software and Configuring WinApps
 You may now proceed to install other applications like 'Microsoft 365', 'Adobe Creative Cloud' or any other applications you would like to use through WinApps.
 
 > [!NOTE]
