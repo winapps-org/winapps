@@ -729,7 +729,7 @@ When connecting to Windows through FreeRDP, your home folder will be shared auto
         virsh net-destroy "default" # Replace with the correct name on your system
         virsh net-start "default" # Replace with the correct name on your system
         ```
-    
+
     5. Reboot Windows.
 
 ## Installing Windows Software and Configuring WinApps
