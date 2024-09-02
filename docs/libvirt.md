@@ -52,6 +52,19 @@ Together, these components form a powerful and flexible virtualization stack, wi
     sudo reboot # Reboot the system to ensure the user is added to the relevant groups.
     ```
 
+    Note: Due to a known bug in `rpm-ostree`, which affects various distributions such as Silverblue, Bazzite, Bluefin, Kinoite, Aurora, UCore, and others, the commands provided earlier may not properly add your user to all required groups. If the `groups $USER` command does not show your user as being part of the necessary groups, you'll need to manually add these groups to `/etc/group` if they are present in `/usr/lib/group`.
+
+    To resolve this:
+    1. Identify which groups are missing from the output of `groups $USER`.
+    2. Use the following snippet to add each missing group to `/etc/group`. Ensure you replace "kvm" with the name of the missing group.
+
+        ```bash
+        grep -E '^kvm:' /usr/lib/group | sudo tee -a /etc/group
+        sudo usermod -aG kvm $USER
+        ```
+
+    3. Reboot your system to ensure that the user is correctly added to the relevant groups.
+
 6. If relevant to your distribution, disable `AppArmor` for the `libvirt` daemon.
     ``` bash
     sudo ln -s /etc/apparmor.d/usr.sbin.libvirtd /etc/apparmor.d/disable/ # Disable AppArmor for the libvirt daemon by creating a symbolic link.
