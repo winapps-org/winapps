@@ -192,7 +192,9 @@ function AppSearchWinReg {
 
     # Get corresponding application names for unique installed executable files.
     foreach ($exePath in $exePaths) {
-        $exeNames += GetApplicationName -exePath $exePath
+        if (Test-Path -Path $exePath) {
+            $exeNames += GetApplicationName -exePath $exePath
+        }
     }
 
     # Process extracted executable file paths.
