@@ -180,6 +180,7 @@ function AppSearchWinReg {
     # Initialise empty arrays.
     $exeNames = @()
     $exePaths = @()
+    $validPaths = @()
 
     # Query windows registry for unique installed executable files.
     $exePaths = Get-ItemProperty "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\*" |
@@ -193,12 +194,13 @@ function AppSearchWinReg {
     # Get corresponding application names for unique installed executable files.
     foreach ($exePath in $exePaths) {
         if (Test-Path -Path $exePath) {
+            $validPaths += $exePath
             $exeNames += GetApplicationName -exePath $exePath
         }
     }
 
     # Process extracted executable file paths.
-    PrintArrayData -Names $exeNames -Paths $exePaths -Source "winreg"
+    PrintArrayData -Names $exeNames -Paths $validPaths -Source "winreg"
 }
 
 # Name: 'AppSearchUWP'
