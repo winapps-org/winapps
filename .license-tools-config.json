@@ -1,0 +1,23 @@
+{
+  "author": {
+    "from_git": false,
+    "name": "winapps-org",
+    "latest_year_only": true
+  },
+  "title": false,
+  "style_override_for_suffix": {
+    ".yaml": "POUND_STYLE",
+    ".ps1": "POUND_STYLE",
+    ".bat": "BATCH_STYLE",
+    "": "POUND_STYLE"
+  },
+  "exclude": [
+    "^\\.[^/]+",
+    "/\\.[^/]+",
+    "^(.+)\\.(md|svg|png|reg|gif)",
+    "^fonts(/.*)?"
+  ],
+  "license": false,
+  "force_license": false,
+  "custom_license": "SPDX-License-Identifier: Unlicense"
+}

@@ -48,3 +48,8 @@ repos:
     rev: v0.10.0.1
     hooks:
       - id: shellcheck
+
+  - repo: https://github.com/emzeat/mz-lictools
+    rev: v2.2
+    hooks:
+      - id: license-tools
