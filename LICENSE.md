@@ -7,7 +7,6 @@ We have tried contacting Fmstrat about this, but they abandoned the project and 
 However, almost all parts of the codebase have been rewritten and all new contributions require a Contributor License Agreement ([for individuals](https://gist.github.com/oskardotglobal/35f0a72eb45fcc7087e535561383dbc5), [for legal entities](https://gist.github.com/oskardotglobal/75a8cc056e56a439fa6a1551129ae47f)) to be signed.
 Therefore, the below license is applied to all new contributions made to the project, releasing it into the public domain.
 
-All source code files shall have a valid SPDX-Identifier. For more information, see <https://spdx.dev/learn/handling-license-info/>.
 Refer to a specific file for it's respective license.
 
 ## The Unlicense
