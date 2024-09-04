@@ -1,4 +1,8 @@
 #!/usr/bin/env bash
+# Copyright (c) 2024 winapps-org
+# All rights reserved.
+#
+# SPDX-License-Identifier: Unlicense
 
 ### GLOBAL CONSTANTS ###
 # ERROR CODES
