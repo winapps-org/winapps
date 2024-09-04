@@ -50,6 +50,6 @@ repos:
       - id: shellcheck
 
   - repo: https://github.com/emzeat/mz-lictools
-    rev: v2.2
+    rev: v2.7.0
     hooks:
       - id: license-tools

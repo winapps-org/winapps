@@ -18,6 +18,7 @@
     "^fonts(/.*)?"
   ],
   "license": false,
+  "force_author": false,
   "force_license": false,
   "custom_license": "SPDX-License-Identifier: Unlicense"
 }
