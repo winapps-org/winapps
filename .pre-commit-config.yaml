@@ -1,5 +1,6 @@
 ci:
   autoupdate_branch: "rewrite"
+  skip: [license-tools]
 
 repos:
   - repo: https://github.com/Lucas-C/pre-commit-hooks
