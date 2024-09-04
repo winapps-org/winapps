@@ -1,108 +1,702 @@
 #!/usr/bin/env bash
 
-if [ ! -f "${HOME}/.config/winapps/winapps.conf" ] && [ ! -f "${HOME}/.winapps" ]; then
-	echo "You need to create a ~/.config/winapps/winapps.conf configuration. Exiting..."
-	exit
-fi
+### GLOBAL CONSTANTS ###
+# ERROR CODES
+readonly EC_MISSING_CONFIG=1
+readonly EC_MISSING_FREERDP=2
+readonly EC_NOT_IN_GROUP=3
+readonly EC_FAIL_START=4
+readonly EC_FAIL_RESUME=5
+readonly EC_FAIL_DESTROY=6
+readonly EC_SD_TIMEOUT=7
+readonly EC_DIE_TIMEOUT=8
+readonly EC_RESTART_TIMEOUT=9
+readonly EC_NOT_EXIST=10
+readonly EC_UNKNOWN=11
+readonly EC_NO_IP=12
+readonly EC_BAD_PORT=13
+readonly EC_UNSUPPORTED_APP=14
+readonly EC_INVALID_FLAVOR=15
 
-DIR="$(dirname "$(readlink -f "$0")")"
-RUN="$(date)-${RANDOM}"
+# PATHS
+readonly APPDATA_PATH="${HOME}/.local/share/winapps"
+readonly SYS_APP_PATH="/usr/local/share/winapps"
+readonly LASTRUN_PATH="${APPDATA_PATH}/lastrun"
+readonly LOG_PATH="${APPDATA_PATH}/winapps.log"
+readonly CONFIG_PATH="${HOME}/.config/winapps/winapps.conf"
+readonly COMPOSE_PATH="${HOME}/.config/winapps/compose.yaml"
+# shellcheck disable=SC2155 # Silence warnings regarding masking return values through simultaneous declaration and assignment.
+readonly SCRIPT_DIR_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
 
-if [ ! -d "${HOME}/.local/share/winapps" ]; then
-	mkdir -p "${HOME}/.local/share/winapps"
-fi
+# OTHER
+readonly VM_NAME="RDPWindows" # FOR 'libvirt' ONLY
+readonly CONTAINER_NAME="WinApps" # FOR 'docker' AND 'podman' ONLY
+readonly RDP_PORT=3389
+readonly DOCKER_IP="127.0.0.1"
+# shellcheck disable=SC2155 # Silence warnings regarding masking return values through simultaneous declaration and assignment.
+readonly RUN="$(date)-${RANDOM}"
 
+### GLOBAL VARIABLES ###
+# WINAPPS CONFIGURATION FILE
+RDP_USER=""
+RDP_PASS=""
+RDP_DOMAIN=""
+RDP_IP=""
+WAFLAVOR="docker"
+RDP_FLAGS=""
+FREERDP_COMMAND=""
 RDP_SCALE=100
+AUTOPAUSE="off"
+AUTOPAUSE_TIME="300"
+MULTIMON="false"
+DEBUG="true"
+MULTI_FLAG=""
 
-if [ -f "${HOME}/.config/winapps/winapps.conf" ]; then
-	. "${HOME}/.config/winapps/winapps.conf"
-else
-	. "${HOME}/.winapps"
-fi
+# OTHER
+FREERDP_PID=-1
 
-function dprint() {
-	if [ "${DEBUG}" = "true" ]; then
-		echo "[${RUN}] ${1}" >> "${HOME}/.local/share/winapps/winapps.log"
-	fi
+### TRAPS ###
+# Catch SIGINT (CTRL+C) to call 'waCleanUp'.
+trap waCleanUp SIGINT
+
+### FUNCTIONS ###
+# Name: 'waCleanUp'
+# Role: Clean up remains prior to exit.
+waCleanUp() {
+    # Kill FreeRDP.
+    [ "$FREERDP_PID" -gt 0 ] && kill -9 "$FREERDP_PID" &>/dev/null
+
+    # Remove '.cproc' file.
+    [ -f "${APPDATA_PATH}/FreeRDP_Process_${FREERDP_PID}.cproc" ] && rm "${APPDATA_PATH}/FreeRDP_Process_${FREERDP_PID}.cproc" &>/dev/null
+
+    # Terminate script.
+    exit 1
 }
 
+# Name: 'waThrowExit'
+# Role: Throw an error message and exit the script.
+function waThrowExit() {
+    # Declare variables.
+    local ERR_CODE="$1"
+
+    # Throw error.
+    case "$ERR_CODE" in
+    "$EC_MISSING_CONFIG")
+        # Missing WinApps configuration file.
+        dprint "ERROR: MISSING WINAPPS CONFIGURATION FILE. EXITING."
+        notify-send --expire-time=8000 --icon="dialog-error" --app-name="WinApps" --urgency="low" "WinApps" "The WinApps configuration file is missing.\nPlease create a WinApps configuration file at '${CONFIG_PATH}'."
+        ;;
+    "$EC_MISSING_FREERDP")
+        dprint "ERROR: FREERDP VERSION 3 IS NOT INSTALLED. EXITING."
+        notify-send --expire-time=8000 --icon="dialog-error" --app-name="WinApps" --urgency="low" "WinApps" "FreeRDP version 3 is not installed."
+        ;;
+    "$EC_NOT_IN_GROUP")
+        dprint "ERROR: USER NOT PART OF REQUIRED GROUPS. EXITING."
+        notify-send --expire-time=8000 --icon="dialog-error" --app-name="WinApps" --urgency="low" "WinApps" "The user $(whoami) is not part of the required groups.
+Please run:
+    sudo usermod -a -G libvirt $(whoami)
+    sudo usermod -a -G kvm $(whoami)"
+        ;;
+    "$EC_FAIL_START")
+        dprint "ERROR: WINDOWS FAILED TO START. EXITING."
+        notify-send --expire-time=8000 --icon="dialog-error" --app-name="WinApps" --urgency="low" "WinApps" "Windows failed to start."
+        ;;
+    "$EC_FAIL_RESUME")
+        dprint "ERROR: WINDOWS FAILED TO RESUME. EXITING."
+        notify-send --expire-time=8000 --icon="dialog-error" --app-name="WinApps" --urgency="low" "WinApps" "Windows failed to resume."
+        ;;
+    "$EC_FAIL_DESTROY")
+        dprint "ERROR: WINDOWS FAILED TO IMMEDIATELY UNGRACEFULLY SHUT DOWN WINDOWS. EXITING."
+        notify-send --expire-time=8000 --icon="dialog-error" --app-name="WinApps" --urgency="low" "WinApps" "Failed to ungracefully shut down Windows."
+        ;;
+    "$EC_SD_TIMEOUT")
+        dprint "ERROR: WINDOWS TOOK TOO LONG TO SHUT DOWN. EXITING."
+        notify-send --expire-time=8000 --icon="dialog-error" --app-name="WinApps" --urgency="low" "WinApps" "Windows took too long to shut down."
+        ;;
+    "$EC_DIE_TIMEOUT")
+        dprint "ERROR: WINDOWS TOOK TOO LONG TO SHUT DOWN. EXITING."
+        notify-send --expire-time=8000 --icon="dialog-error" --app-name="WinApps" --urgency="low" "WinApps" "Windows took too long to die."
+        ;;
+    "$EC_RESTART_TIMEOUT")
+        dprint "ERROR: WINDOWS TOOK TOO LONG TO RESTART. EXITING."
+        notify-send --expire-time=8000 --icon="dialog-error" --app-name="WinApps" --urgency="low" "WinApps" "Windows took too long to restart."
+        ;;
+    "$EC_NOT_EXIST")
+        dprint "ERROR: WINDOWS NONEXISTENT. EXITING."
+        notify-send --expire-time=8000 --icon="dialog-error" --app-name="WinApps" --urgency="low" "WinApps" "Windows does not exist."
+        ;;
+    "$EC_UNKNOWN")
+        dprint "ERROR: UNKNOWN CONTAINER ERROR. EXITING."
+        notify-send --expire-time=8000 --icon="dialog-error" --app-name="WinApps" --urgency="low" "WinApps" "Unknown Windows container error."
+        ;;
+    "$EC_NO_IP")
+        dprint "ERROR: WINDOWS UNREACHABLE. EXITING."
+        notify-send --expire-time=8000 --icon="dialog-error" --app-name="WinApps" --urgency="low" "WinApps" "Windows is unreachable.\nPlease ensure Windows is assigned an IP address."
+        ;;
+    "$EC_BAD_PORT")
+        dprint "ERROR: RDP PORT CLOSED. EXITING."
+        notify-send --expire-time=8000 --icon="dialog-error" --app-name="WinApps" --urgency="low" "WinApps" "The Windows RDP port '${RDP_PORT}' is closed.\nPlease ensure Remote Desktop is correctly configured on Windows."
+        ;;
+    "$EC_UNSUPPORTED_APP")
+        dprint "ERROR: APPLICATION NOT FOUND. EXITING."
+        notify-send --expire-time=8000 --icon="dialog-error" --app-name="WinApps" --urgency="low" "WinApps" "Application not found.\nPlease ensure the program is correctly configured as an officially supported application."
+        ;;
+    "$EC_INVALID_FLAVOR")
+        dprint "ERROR: INVALID FLAVOR. EXITING."
+        notify-send --expire-time=8000 --icon="dialog-error" --app-name="WinApps" --urgency="low" "WinApps" "Invalid WinApps flavor.\nPlease ensure 'docker', 'podman' or 'libvirt' are specified as the flavor in the WinApps configuration file."
+        ;;
+    esac
+
+    # Terminate the script.
+    exit "$ERR_CODE"
+}
+
+# Name: 'dprint'
+# Role: Conditionally print debug messages to a log file, creating it if it does not exist.
+function dprint() {
+    [ "$DEBUG" = "true" ] && echo "[$RUN] $1" >>"$LOG_PATH"
+}
+
+# Name: 'waFixScale'
+# Role: Since FreeRDP only supports '/scale' values of 100, 140 or 180, find the closest supported argument to the user's configuration.
+function waFixScale() {
+    # Define variables.
+    local OLD_SCALE=100
+    local VALID_SCALE_1=100
+    local VALID_SCALE_2=140
+    local VALID_SCALE_3=180
+
+    # Check for an unsupported value.
+    if [ "$RDP_SCALE" != "$VALID_SCALE_1" ] && [ "$RDP_SCALE" != "$VALID_SCALE_2" ] && [ "$RDP_SCALE" != "$VALID_SCALE_3" ]; then
+        # Save the unsupported scale.
+        OLD_SCALE="$RDP_SCALE"
+
+        # Calculate the absolute differences.
+        local DIFF_1=$(( RDP_SCALE > VALID_SCALE_1 ? RDP_SCALE - VALID_SCALE_1 : VALID_SCALE_1 - RDP_SCALE ))
+        local DIFF_2=$(( RDP_SCALE > VALID_SCALE_2 ? RDP_SCALE - VALID_SCALE_2 : VALID_SCALE_2 - RDP_SCALE ))
+        local DIFF_3=$(( RDP_SCALE > VALID_SCALE_3 ? RDP_SCALE - VALID_SCALE_3 : VALID_SCALE_3 - RDP_SCALE ))
+
+        # Set the final scale to the valid scale value with the smallest absolute difference.
+        if (( DIFF_1 <= DIFF_2 && DIFF_1 <= DIFF_3 )); then
+            RDP_SCALE="$VALID_SCALE_1"
+        elif (( DIFF_2 <= DIFF_1 && DIFF_2 <= DIFF_3 )); then
+            RDP_SCALE="$VALID_SCALE_2"
+        else
+            RDP_SCALE="$VALID_SCALE_3"
+        fi
+
+        # Print feedback.
+        dprint "WARNING: Unsupported RDP_SCALE value '${OLD_SCALE}'. Defaulting to '${RDP_SCALE}'."
+        notify-send --expire-time=4000 --icon="dialog-warning" --app-name="WinApps" --urgency="low" "WinApps" "Unsupported RDP_SCALE value '${OLD_SCALE}'.\nDefaulting to '${RDP_SCALE}'."
+    fi
+}
+
+# Name: 'waLoadConfig'
+# Role: Load the variables within the WinApps configuration file.
+function waLoadConfig() {
+    # Load WinApps configuration file.
+    if [ -f "$CONFIG_PATH" ]; then
+        # shellcheck source=/dev/null # Exclude WinApps configuration file from being checked by ShellCheck.
+        source "$CONFIG_PATH"
+    else
+        waThrowExit $EC_MISSING_CONFIG
+    fi
+
+    # Update 'MULTI_FLAG' based on 'MULTIMON'.
+    MULTI_FLAG=$([[ $MULTIMON == "true" ]] && echo "/multimon" || echo "+span")
+
+    # Update $RDP_SCALE.
+    waFixScale
+
+    # Update $AUTOPAUSE_TIME.
+    # RemoteApp RDP sessions take, at minimum, 20 seconds to be terminated by the Windows server.
+    # Hence, subtract 20 from the timeout specified by the user, as a 'built in' timeout of 20 seconds will occur.
+    # Source: https://techcommunity.microsoft.com/t5/security-compliance-and-identity/terminal-services-remoteapp-8482-session-termination-logic/ba-p/246566
+    AUTOPAUSE_TIME=$((AUTOPAUSE_TIME - 20))
+    AUTOPAUSE_TIME=$((AUTOPAUSE_TIME < 0 ? 0 : AUTOPAUSE_TIME))
+}
+
+# Name: 'waLastRun'
+# Role: Determine the last time this script was run.
+function waLastRun() {
+    # Declare variables.
+    local LAST_RUN_UNIX_TIME=0
+    local CURR_RUN_UNIX_TIME=0
+
+    # Store the time this script was run last as a unix timestamp.
+    if [ -f "$LASTRUN_PATH" ]; then
+        LAST_RUN_UNIX_TIME=$(stat -t -c %Y "$LASTRUN_PATH")
+        dprint "LAST_RUN: ${LAST_RUN_UNIX_TIME}"
+    fi
+
+    # Update the file modification time with the current time.
+    touch "$LASTRUN_PATH"
+    CURR_RUN_UNIX_TIME=$(stat -t -c %Y "$LASTRUN_PATH")
+    dprint "THIS_RUN: ${CURR_RUN_UNIX_TIME}"
+}
+
+# Name: 'waGetFreeRDPCommand'
+# Role: Determine the correct FreeRDP command to use.
+function waGetFreeRDPCommand() {
+    # Declare variables.
+    local FREERDP_MAJOR_VERSION="" # Stores the major version of the installed copy of FreeRDP.
+
+    # Attempt to set a FreeRDP command if the command variable is empty.
+    if [ -z "$FREERDP_COMMAND" ]; then
+        # Check for 'xfreerdp'.
+        if command -v xfreerdp &>/dev/null; then
+            # Check FreeRDP major version is 3 or greater.
+            FREERDP_MAJOR_VERSION=$(xfreerdp --version | head -n 1 | grep -o -m 1 '\b[0-9]\S*' | head -n 1 | cut -d'.' -f1)
+            if [[ $FREERDP_MAJOR_VERSION =~ ^[0-9]+$ ]] && ((FREERDP_MAJOR_VERSION >= 3)); then
+                FREERDP_COMMAND="xfreerdp"
+            fi
+        fi
+
+        # Check for 'xfreerdp3' command as a fallback option.
+        if [ -z "$FREERDP_COMMAND" ]; then
+            if command -v xfreerdp3 &>/dev/null; then
+                # Check FreeRDP major version is 3 or greater.
+                FREERDP_MAJOR_VERSION=$(xfreerdp3 --version | head -n 1 | grep -o -m 1 '\b[0-9]\S*' | head -n 1 | cut -d'.' -f1)
+                if [[ $FREERDP_MAJOR_VERSION =~ ^[0-9]+$ ]] && ((FREERDP_MAJOR_VERSION >= 3)); then
+                    FREERDP_COMMAND="xfreerdp3"
+                fi
+            fi
+        fi
+
+        # Check for FreeRDP Flatpak (fallback option).
+        if [ -z "$FREERDP_COMMAND" ]; then
+            if command -v flatpak &>/dev/null; then
+                if flatpak list --columns=application | grep -q "^com.freerdp.FreeRDP$"; then
+                    # Check FreeRDP major version is 3 or greater.
+                    FREERDP_MAJOR_VERSION=$(flatpak list --columns=application,version | grep "^com.freerdp.FreeRDP" | awk '{print $2}' | cut -d'.' -f1)
+                    if [[ $FREERDP_MAJOR_VERSION =~ ^[0-9]+$ ]] && ((FREERDP_MAJOR_VERSION >= 3)); then
+                        FREERDP_COMMAND="flatpak run --command=xfreerdp com.freerdp.FreeRDP"
+                    fi
+                fi
+            fi
+        fi
+    fi
+
+    if command -v "$FREERDP_COMMAND" &>/dev/null || [ "$FREERDP_COMMAND" = "flatpak run --command=xfreerdp com.freerdp.FreeRDP" ]; then
+        dprint "Using FreeRDP command '${FREERDP_COMMAND}'."
+
+        # Append additional flags or parameters to FreeRDP.
+        # These additional flags are loaded prior in 'waLoadConfig'.
+        [[ -n $RDP_FLAGS ]] && FREERDP_COMMAND="${FREERDP_COMMAND} ${RDP_FLAGS}"
+    else
+        waThrowExit "$EC_MISSING_FREERDP"
+    fi
+}
+
+# Name: 'waCheckGroupMembership'
+# Role: Ensures the current user is part of the required groups.
+function waCheckGroupMembership() {
+    # Identify groups the current user belongs to.
+    # shellcheck disable=SC2155 # Silence warnings regarding masking return values through simultaneous declaration and assignment.
+    local USER_GROUPS=$(groups "$(whoami)")
+
+    if ! (echo "$USER_GROUPS" | grep -q -E "\blibvirt\b") || ! (echo "$USER_GROUPS" | grep -q -E "\bkvm\b"); then
+        waThrowExit "$EC_NOT_IN_GROUP"
+    fi
+}
+
+# Name: 'waCheckVMRunning'
+# Role: Check if the Windows 'libvirt' VM is running, and attempt to start it if it is not.
+function waCheckVMRunning() {
+    # Declare exit status variable.
+    local EXIT_STATUS=0
+
+    # Declare timer variables.
+    local TIME_ELAPSED=0
+    local TIME_LIMIT=60
+    local TIME_INTERVAL=5
+
+    # Attempt to run the Windows virtual machine.
+    # Note: States 'running' and 'idle' do not require intervention, and are not checked for.
+    if (virsh list --all --name | xargs | grep -wq "$VM_NAME"); then
+        if (virsh list --state-shutoff --name | xargs | grep -wq "$VM_NAME"); then
+            dprint "WINDOWS SHUT OFF. BOOTING WINDOWS."
+            notify-send --expire-time=4000 --icon="dialog-info" --app-name="WinApps" --urgency="low" "WinApps" "Booting Windows."
+            virsh start "$VM_NAME" &>/dev/null || EXIT_STATUS=$EC_FAIL_START
+            if (virsh list --state-paused --name | xargs | grep -wq "$VM_NAME"); then
+                dprint "WINDOWS PAUSED. RESUMING WINDOWS."
+                notify-send --expire-time=4000 --icon="dialog-info" --app-name="WinApps" --urgency="low" "WinApps" "Resuming Windows."
+                virsh resume "$VM_NAME" &>/dev/null || EXIT_STATUS=$EC_FAIL_RESUME
+            fi
+        elif (virsh list --state-paused --name | xargs | grep -wq "$VM_NAME"); then
+            dprint "WINDOWS PAUSED. RESUMING WINDOWS."
+            notify-send --expire-time=4000 --icon="dialog-info" --app-name="WinApps" --urgency="low" "WinApps" "Resuming Windows."
+            virsh resume "$VM_NAME" &>/dev/null || EXIT_STATUS=$EC_FAIL_RESUME
+        elif (virsh list --state-other --name | xargs | grep -wq "$VM_NAME"); then
+            if (virsh domstate "$VM_NAME" | xargs | grep -wq "shutdown"); then
+                dprint "WINDOWS SHUTTING DOWN. WAITING."
+                notify-send --expire-time=4000 --icon="dialog-info" --app-name="WinApps" --urgency="low" "WinApps" "Windows is currently shutting down.\nIt will automatically restart once the shutdown process is complete."
+                EXIT_STATUS=$EC_SD_TIMEOUT
+                while (( TIME_ELAPSED < TIME_LIMIT )); do
+                    if (virsh list --state-shutoff --name | xargs | grep -wq "$VM_NAME"); then
+                        EXIT_STATUS=0
+                        dprint "WINDOWS SHUT OFF. BOOTING WINDOWS."
+                        notify-send --expire-time=4000 --icon="dialog-info" --app-name="WinApps" --urgency="low" "WinApps" "Booting Windows."
+                        virsh start "$VM_NAME" &>/dev/null || EXIT_STATUS=$EC_FAIL_START
+                        break
+                    fi
+                    sleep $TIME_INTERVAL
+                    TIME_ELAPSED=$((TIME_ELAPSED + TIME_INTERVAL))
+                done
+            elif (virsh domstate "$VM_NAME" | xargs | grep -wq "crashed"); then
+                dprint "WINDOWS CRASHED. DESTROYING WINDOWS."
+                notify-send --expire-time=4000 --icon="dialog-info" --app-name="WinApps" --urgency="low" "WinApps" "Windows experienced an unexpected crash.\nAttempting to restart Windows."
+                virsh destroy "$VM_NAME" &>/dev/null || EXIT_STATUS=$EC_FAIL_DESTROY
+                if [ "$EXIT_STATUS" -eq 0 ]; then
+                    dprint "WINDOWS DESTROYED. BOOTING WINDOWS."
+                    notify-send --expire-time=4000 --icon="dialog-info" --app-name="WinApps" --urgency="low" "WinApps" "Booting Windows."
+                    virsh start "$VM_NAME" &>/dev/null || EXIT_STATUS=$EC_FAIL_START
+                fi
+            elif (virsh domstate "$VM_NAME" | xargs | grep -wq "dying"); then
+                dprint "WINDOWS DYING. WAITING."
+                notify-send --expire-time=4000 --icon="dialog-info" --app-name="WinApps" --urgency="low" "WinApps" "Windows is currently shutting down unexpectedly.\nIt will try to restart once the shutdown process finishes."
+                EXIT_STATUS=$EC_DIE_TIMEOUT
+                while (( TIME_ELAPSED < TIME_LIMIT )); do
+                    if (virsh domstate "$VM_NAME" | xargs | grep -wq "crashed"); then
+                        EXIT_STATUS=0
+                        dprint "WINDOWS CRASHED. DESTROYING WINDOWS."
+                        notify-send --expire-time=4000 --icon="dialog-info" --app-name="WinApps" --urgency="low" "WinApps" "Windows experienced an unexpected crash.\nAttempting to restart Windows."
+                        virsh destroy "$VM_NAME" &>/dev/null || EXIT_STATUS=$EC_FAIL_DESTROY
+                        if [ "$EXIT_STATUS" -eq 0 ]; then
+                            dprint "WINDOWS DESTROYED. BOOTING WINDOWS."
+                            notify-send --expire-time=4000 --icon="dialog-info" --app-name="WinApps" --urgency="low" "WinApps" "Booting Windows."
+                            virsh start "$VM_NAME" &>/dev/null || EXIT_STATUS=$EC_FAIL_START
+                        fi
+                        break
+                    elif (virsh list --state-shutoff --name | xargs | grep -wq "$VM_NAME"); then
+                        EXIT_STATUS=0
+                        dprint "WINDOWS SHUT OFF. BOOTING WINDOWS."
+                        notify-send --expire-time=4000 --icon="dialog-info" --app-name="WinApps" --urgency="low" "WinApps" "Booting Windows."
+                        virsh start "$VM_NAME" &>/dev/null || EXIT_STATUS=$EC_FAIL_START
+                        break
+                    fi
+                    sleep $TIME_INTERVAL
+                    TIME_ELAPSED=$((TIME_ELAPSED + TIME_INTERVAL))
+                done
+            elif (virsh domstate "$VM_NAME" | xargs | grep -wq "pmsuspended" ); then
+                dprint "WINDOWS SUSPENDED. RESUMING WINDOWS."
+                virsh resume "$VM_NAME" &>/dev/null || EXIT_STATUS=$EC_FAIL_RESUME
+            fi
+        fi
+    else
+        EXIT_STATUS=$EC_NOT_EXIST
+    fi
+
+    # Handle non-zero exit statuses.
+    [ "$EXIT_STATUS" -ne 0 ] && waThrowExit "$EXIT_STATUS"
+}
+
+# Name: 'waCheckContainerRunning'
+# Role: Throw an error if the Docker container is not running.
+function waCheckContainerRunning() {
+    # Declare variables.
+    local EXIT_STATUS=0
+    local CONTAINER_STATE=""
+    local COMPOSE_COMMAND=""
+    local TIME_ELAPSED=0
+    local TIME_LIMIT=60
+    local TIME_INTERVAL=5
+
+    # Determine the state of the container.
+    CONTAINER_STATE=$("$WAFLAVOR" inspect --format='{{.State.Status}}' "$CONTAINER_NAME")
+
+    # Determine the compose command.
+    case "$WAFLAVOR" in
+        "docker") COMPOSE_COMMAND="docker compose" ;;
+        "podman") COMPOSE_COMMAND="podman-compose" ;;
+    esac
+
+    # Check container state.
+    # Note: Errors DO NOT result in non-zero exit statuses.
+    # Docker: 'created', 'restarting', 'running', 'removing', 'paused', 'exited' or 'dead'.
+    # Podman: 'created', 'running', 'paused', 'exited' or 'unknown'.
+    case "$CONTAINER_STATE" in
+        "created")
+            dprint "WINDOWS CREATED. BOOTING WINDOWS."
+            notify-send --expire-time=4000 --icon="dialog-info" --app-name="WinApps" --urgency="low" "WinApps" "Booting Windows."
+            $COMPOSE_COMMAND --file "$COMPOSE_PATH" start &>/dev/null
+            ;;
+        "restarting")
+            dprint "WINDOWS RESTARTING. WAITING."
+            notify-send --expire-time=4000 --icon="dialog-info" --app-name="WinApps" --urgency="low" "WinApps" "Windows is currently restarting. Please wait."
+            EXIT_STATUS=$EC_RESTART_TIMEOUT
+            while (( TIME_ELAPSED < TIME_LIMIT )); do
+                if [[ $("$WAFLAVOR" inspect --format='{{.State.Status}}' "$CONTAINER_NAME") == "running" ]]; then
+                    EXIT_STATUS=0
+                    dprint "WINDOWS RESTARTED."
+                    notify-send --expire-time=4000 --icon="dialog-info" --app-name="WinApps" --urgency="low" "WinApps" "Restarted Windows."
+                    break
+                fi
+                sleep $TIME_INTERVAL
+                TIME_ELAPSED=$((TIME_ELAPSED + TIME_INTERVAL))
+            done
+            ;;
+        "paused")
+            dprint "WINDOWS PAUSED. RESUMING WINDOWS."
+            notify-send --expire-time=4000 --icon="dialog-info" --app-name="WinApps" --urgency="low" "WinApps" "Resuming Windows."
+            $COMPOSE_COMMAND --file "$COMPOSE_PATH" unpause &>/dev/null
+            ;;
+        "exited")
+            dprint "WINDOWS SHUT OFF. BOOTING WINDOWS."
+            notify-send --expire-time=4000 --icon="dialog-info" --app-name="WinApps" --urgency="low" "WinApps" "Booting Windows."
+            $COMPOSE_COMMAND --file "$COMPOSE_PATH" start &>/dev/null
+            ;;
+        "dead")
+            dprint "WINDOWS DEAD. RECREATING WINDOWS CONTAINER."
+            notify-send --expire-time=4000 --icon="dialog-info" --app-name="WinApps" --urgency="low" "WinApps" "Re-creating and booting Windows."
+            $COMPOSE_COMMAND --file "$COMPOSE_PATH" down &>/dev/null && $COMPOSE_COMMAND --file "$COMPOSE_PATH" up -d &>/dev/null
+            ;;
+        "unknown")
+            EXIT_STATUS=$EC_UNKNOWN
+            ;;
+    esac
+
+    # Handle non-zero exit statuses.
+    [ "$EXIT_STATUS" -ne 0 ] && waThrowExit "$EXIT_STATUS"
+}
+
+# Name: 'waCheckPortOpen'
+# Role: Assesses whether the RDP port on Windows is open.
+function waCheckPortOpen() {
+    # Declare variables.
+    local VM_MAC="" # Stores the MAC address of the Windows VM.
+    local TIME_ELAPSED=0
+    local TIME_LIMIT=30
+    local TIME_INTERVAL=5
+
+    # Obtain Windows VM IP Address ('libvirt' ONLY)
+    # Note: 'RDP_IP' should not be empty if 'WAFLAVOR' is 'docker', since it is set to localhost before this function is called.
+    if [ -z "$RDP_IP" ] && [ "$WAFLAVOR" = "libvirt" ]; then
+        VM_MAC=$(virsh domiflist "$VM_NAME" | grep -oE "([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})") # VM MAC address.
+
+        while (( TIME_ELAPSED < TIME_LIMIT )); do
+            if [ "$TIME_ELAPSED" -eq "$TIME_INTERVAL" ]; then
+                notify-send --expire-time=4000 --icon="dialog-info" --app-name="WinApps" --urgency="low" "WinApps" "Requesting Windows IP address..."
+            fi
+            RDP_IP=$(ip neigh show | grep "$VM_MAC" | grep -oE "([0-9]{1,3}\.){3}[0-9]{1,3}") # VM IP address.
+            [ -n "$RDP_IP" ] && break
+            sleep $TIME_INTERVAL
+            TIME_ELAPSED=$((TIME_ELAPSED + TIME_INTERVAL))
+        done
+
+        [ -z "$RDP_IP" ] && waThrowExit "$EC_NO_IP"
+    fi
+
+    # Check for an open RDP port.
+    timeout 10 nc -z "$RDP_IP" "$RDP_PORT" &>/dev/null || waThrowExit "$EC_BAD_PORT"
+}
+
+# Name: 'waRunCommand'
+# Role: Run the requested WinApps command.
+function waRunCommand() {
+    # Declare variables.
+    local ICON=""
+    local FILE_PATH=""
+
+    # Run option.
+    if [ "$1" = "windows" ]; then
+        # Update timeout (since there is no 'in-built' 20 second delay for full RDP sessions post-logout).
+        AUTOPAUSE_TIME=$((AUTOPAUSE_TIME + 20))
+
+        # Open Windows RDP session.
+        dprint "WINDOWS"
+        $FREERDP_COMMAND \
+            /d:"$RDP_DOMAIN" \
+            /u:"$RDP_USER" \
+            /p:"$RDP_PASS" \
+            /scale:"$RDP_SCALE" \
+            +dynamic-resolution \
+            +auto-reconnect \
+            +home-drive \
+            /sound \
+            /microphone \
+            /wm-class:"Microsoft Windows" \
+            /t:"Windows RDP Session [$RDP_IP]" \
+            /v:"$RDP_IP" &>/dev/null &
+
+        # Capture the process ID.
+        FREERDP_PID=$!
+    elif [ "$1" = "manual" ]; then
+        # Open specified application.
+        dprint "MANUAL: ${2}"
+        $FREERDP_COMMAND \
+            /cert:tofu \
+            /d:"$RDP_DOMAIN" \
+            /u:"$RDP_USER" \
+            /p:"$RDP_PASS" \
+            /scale:"$RDP_SCALE" \
+            +auto-reconnect \
+            +clipboard \
+            +home-drive \
+            /sound \
+            /microphone \
+            -wallpaper \
+            +dynamic-resolution \
+            "$MULTI_FLAG" \
+            /app:program:"$2" \
+            /v:"$RDP_IP" &>/dev/null &
+
+        # Capture the process ID.
+        FREERDP_PID=$!
+    else
+        # Script summoned from right-click menu or application icon (plus/minus a file path).
+        if [ -e "${SCRIPT_DIR_PATH}/../apps/${1}/info" ]; then
+            # shellcheck source=/dev/null # Exclude this file from being checked by ShellCheck.
+            source "${SCRIPT_DIR_PATH}/../apps/${1}/info"
+            ICON="${SCRIPT_DIR_PATH}/../apps/${1}/icon.svg"
+        elif [ -e "${APPDATA_PATH}/apps/${1}/info" ]; then
+            # shellcheck source=/dev/null # Exclude this file from being checked by ShellCheck.
+            source "${APPDATA_PATH}/apps/${1}/info"
+            ICON="${APPDATA_PATH}/apps/${1}/icon.svg"
+        elif [ -e "${SYS_APP_PATH}/apps/${1}/info" ]; then
+            # shellcheck source=/dev/null # Exclude this file from being checked by ShellCheck.
+            source "${SYS_APP_PATH}/apps/${1}/info"
+            ICON="${SYS_APP_PATH}/apps/${1}/icon.svg"
+        else
+            waThrowExit "$EC_UNSUPPORTED_APP"
+        fi
+
+        # Check if a file path was specified, and pass this to the application.
+        if [ -z "$2" ]; then
+            # No file path specified.
+            $FREERDP_COMMAND \
+                /d:"$RDP_DOMAIN" \
+                /u:"$RDP_USER" \
+                /p:"$RDP_PASS" \
+                /scale:"$RDP_SCALE" \
+                +auto-reconnect \
+                +clipboard \
+                +home-drive \
+                /sound \
+                /microphone \
+                -wallpaper \
+                +dynamic-resolution \
+                "$MULTI_FLAG" \
+                /wm-class:"$FULL_NAME" \
+                /app:program:"$WIN_EXECUTABLE",icon:"$ICON",name:"$FULL_NAME" \
+                /v:"$RDP_IP" &>/dev/null &
+
+            # Capture the process ID.
+            FREERDP_PID=$!
+        else
+            # Convert path from UNIX to Windows style.
+            FILE_PATH=$(echo "$2" | sed \
+                -e 's|'"${HOME}"'|\\\\tsclient\\home|' \
+                -e 's|/|\\|g')
+            dprint "UNIX_FILE_PATH: ${2}"
+            dprint "WINDOWS_FILE_PATH: ${FILE_PATH}"
+
+            $FREERDP_COMMAND \
+                /cert:tofu \
+                /d:"$RDP_DOMAIN" \
+                /u:"$RDP_USER" \
+                /p:"$RDP_PASS" \
+                /scale:"$RDP_SCALE" \
+                +auto-reconnect \
+                +clipboard \
+                +home-drive \
+                /sound \
+                /microphone \
+                -wallpaper \
+                +dynamic-resolution \
+                "$MULTI_FLAG" \
+                /wm-class:"$FULL_NAME" \
+                /app:program:"$WIN_EXECUTABLE",icon:"$ICON",name:$"FULL_NAME",cmd:\""$FILE_PATH"\" \
+                /v:"$RDP_IP" &>/dev/null &
+
+            # Capture the process ID.
+            FREERDP_PID=$!
+        fi
+    fi
+
+    if [ "$FREERDP_PID" -ne -1 ]; then
+        # Create a file with the process ID.
+        touch "${APPDATA_PATH}/FreeRDP_Process_${FREERDP_PID}.cproc"
+
+        # Wait for the process to terminate.
+        wait $FREERDP_PID
+
+        # Remove the file with the process ID.
+        rm "${APPDATA_PATH}/FreeRDP_Process_${FREERDP_PID}.cproc" &>/dev/null
+    fi
+}
+
+# Name: 'waCheckIdle'
+# Role: Suspend Windows if idle.
+function waCheckIdle() {
+    # Declare variables
+    local TIME_INTERVAL=10
+    local TIME_ELAPSED=0
+    local SUSPEND_WINDOWS=0
+
+    # Prevent 'autopause' functionality with unsupported Windows backends.
+    if [ "$WAFLAVOR" != "manual" ] && [ "$WAFLAVOR" != "docker" ]; then
+        # Check if there are no WinApps-related FreeRDP processes running.
+        if ! ls "$APPDATA_PATH"/FreeRDP_Process_*.cproc &>/dev/null; then
+            SUSPEND_WINDOWS=1
+            while (( TIME_ELAPSED < AUTOPAUSE_TIME )); do
+                if ls "$APPDATA_PATH"/FreeRDP_Process_*.cproc &>/dev/null; then
+                    SUSPEND_WINDOWS=0
+                    break
+                fi
+                sleep $TIME_INTERVAL
+                TIME_ELAPSED=$((TIME_ELAPSED + TIME_INTERVAL))
+            done
+        fi
+
+        # Hibernate/Pause Windows.
+        if [ "$SUSPEND_WINDOWS" -eq 1 ]; then
+            dprint "IDLE FOR ${AUTOPAUSE_TIME} SECONDS. SUSPENDING WINDOWS."
+            notify-send --expire-time=8000 --icon="info" --app-name="WinApps" --urgency="low" "WinApps" "Pausing Windows due to inactivity."
+            if [ "$WAFLAVOR" = "docker" ]; then
+                docker compose --file "$COMPOSE_PATH" pause &>/dev/null
+            elif [ "$WAFLAVOR" = "podman" ]; then
+                podman-compose --file "$COMPOSE_PATH" pause &>/dev/null
+            elif [ "$WAFLAVOR" = "libvirt" ]; then
+                virsh suspend "$VM_NAME" &>/dev/null
+            fi
+        fi
+    fi
+}
+
+### MAIN LOGIC ###
+#set -x # Enable for debugging.
 dprint "START"
+dprint "SCRIPT_DIR: ${SCRIPT_DIR_PATH}"
+dprint "SCRIPT_ARGS: ${*}"
+dprint "HOME_DIR: ${HOME}"
+mkdir -p "$APPDATA_PATH"
+waLastRun
+waLoadConfig
+waGetFreeRDPCommand
 
-if [ -f "${HOME}/.local/share/winapps/run" ]; then
-	LAST_RAN=$(stat -t -c %Y "${HOME}/.local/share/winapps/run")
-	dprint "LAST_RAN:${LAST_RAN}"
-	touch "${HOME}/.local/share/winapps/run"
-	THIS_RUN=$(stat -t -c %Y "${HOME}/.local/share/winapps/run")
-	dprint "THIS_RUN:${THIS_RUN}"
-	if (( $THIS_RUN - $LAST_RAN < 2 )); then
-		exit
-	fi
+# If using podman backend, modify the FreeRDP command to enter a new namespace.
+if [ "$WAFLAVOR" = "podman" ]; then
+    FREERDP_COMMAND="podman unshare --rootless-netns ${FREERDP_COMMAND}"
+fi
+
+if [ "$WAFLAVOR" = "docker" ] || [ "$WAFLAVOR" = "podman" ]; then
+    RDP_IP="$DOCKER_IP"
+    waCheckContainerRunning
+elif [ "$WAFLAVOR" = "libvirt" ]; then
+    waCheckGroupMembership
+    waCheckVMRunning
+elif [ "$WAFLAVOR" = "manual" ]; then
+    waCheckPortOpen
 else
-	touch "${HOME}/.local/share/winapps/run"
+    waThrowExit "$EC_INVALID_FLAVOR"
 fi
 
-if [ -z "$(which xfreerdp)" ]; then
-	echo "You need xfreerdp!"
-	echo "  sudo apt-get install -y freerdp2-x11"
-	exit
-fi
+waCheckPortOpen
+waRunCommand "$@"
 
-if [ -z "${RDP_IP}" ]; then
-	if [ -z "$(groups |grep libvirt)" ]; then
-		echo "You are not a member of the libvirt group. Run the below then reboot."
-		echo '  sudo usermod -a -G libvirt $(whoami)'
-		echo '  sudo usermod -a -G kvm $(whoami)'
-		exit
-	fi
-	if [ -z "$(virsh list |grep RDPWindows)" ]; then
-		echo "RDPWindows is not running, run:"
-		echo "  virsh start RDPWindows"
-		exit
-	fi
-	RDP_IP=$(virsh net-dhcp-leases default |grep RDPWindows |awk '{print $5}')
-	RDP_IP=${RDP_IP%%\/*}
-fi
-
-dprint "1:${1}"
-dprint "2:${2}"
-dprint "@:${@}"
-
-MULTI_FLAG="span"
-if [ "${MULTIMON}" = "true" ]; then
-	MULTI_FLAG="multimon"
-fi
-
-if [ "${1}" = "windows" ]; then
-	xfreerdp ${RDP_FLAGS} /d:"${RDP_DOMAIN}" /u:"${RDP_USER}" /p:"${RDP_PASS}" /v:${RDP_IP} /scale:${RDP_SCALE} /dynamic-resolution +auto-reconnect +home-drive /wm-class:"Microsoft Windows" 1> /dev/null 2>&1 &
-elif [ "${1}" = "check" ]; then
-	dprint "CHECK"
-	xfreerdp ${RDP_FLAGS} /d:"${RDP_DOMAIN}" /u:"${RDP_USER}" /p:"${RDP_PASS}" /v:${RDP_IP} +auto-reconnect +home-drive -wallpaper /scale:${RDP_SCALE} /dynamic-resolution /${MULTI_FLAG} /app:"explorer.exe"
-elif [ "${1}" = "manual" ]; then
-	dprint "MANUAL:${2}"
-	xfreerdp ${RDP_FLAGS} /d:"${RDP_DOMAIN}" /u:"${RDP_USER}" /p:"${RDP_PASS}" /v:${RDP_IP} +auto-reconnect +home-drive -wallpaper /scale:${RDP_SCALE} /dynamic-resolution /${MULTI_FLAG} /app:"${2}" 1> /dev/null 2>&1 &
-elif [ "${1}" != "install" ]; then
-	dprint "DIR:${DIR}"
-	if [ -e "${DIR}/../apps/${1}/info" ]; then
-		. "${DIR}/../apps/${1}/info"
-		ICON="${DIR}/../apps/${1}/icon.svg"
-	elif [ -e "${HOME}/.local/share/winapps/apps/${1}/info" ]; then
-		. "${HOME}/.local/share/winapps/apps/${1}/info"
-		ICON="${HOME}/.local/share/winapps/apps/${1}/icon.svg"
-	elif [ -e "/usr/local/share/winapps/apps/${1}/info" ]; then
-		. "/usr/local/share/winapps/apps/${1}/info"
-		ICON="/usr/local/share/winapps/apps/${1}/icon.svg"
-	else
-		echo "You need to run 'install.sh' first."
-		exit 1
-	fi
-	if [ -n "${2}" ]; then
-		dprint "HOME:${HOME}"
-		FILE=$(echo "${2}" | sed 's|'"${HOME}"'|\\\\tsclient\\home|;s|/|\\|g;s|\\|\\\\|g')
-		dprint "FILE:${FILE}"
-		xfreerdp ${RDP_FLAGS} /d:"${RDP_DOMAIN}" /u:"${RDP_USER}" /p:"${RDP_PASS}" /v:${RDP_IP} +auto-reconnect +clipboard +home-drive -wallpaper /scale:${RDP_SCALE} /dynamic-resolution /${MULTI_FLAG} /wm-class:"${FULL_NAME}" /app:"${WIN_EXECUTABLE}" /app-icon:"${ICON}" /app-cmd:"\"${FILE}\"" 1> /dev/null 2>&1 &
-	else
-		xfreerdp ${RDP_FLAGS} /d:"${RDP_DOMAIN}" /u:"${RDP_USER}" /p:"${RDP_PASS}" /v:${RDP_IP} +auto-reconnect +clipboard +home-drive -wallpaper /scale:${RDP_SCALE} /dynamic-resolution /${MULTI_FLAG} /wm-class:"${FULL_NAME}" /app:"${WIN_EXECUTABLE}" /app-icon:"${ICON}" 1> /dev/null 2>&1 &
-	fi
+if [[ "$AUTOPAUSE" == "on" ]]; then
+    waCheckIdle
 fi
 
 dprint "END"

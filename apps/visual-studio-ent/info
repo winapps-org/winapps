@@ -1,0 +1,14 @@
+# GNOME shortcut name
+NAME="Visual Studio Enterprise"
+
+# Used for descriptions and window class
+FULL_NAME="Microsoft Visual Studio - Enterprise Version"
+
+# The executable inside windows
+WIN_EXECUTABLE="C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\IDE\devenv.exe"
+
+# GNOME categories
+CATEGORIES="WinApps;Development"
+
+# GNOME mimetypes
+MIME_TYPES=""

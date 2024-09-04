@@ -1,0 +1,562 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   version="1.2"
+   viewBox="0 0 541.04065 394.31107"
+   width="541.04065"
+   height="394.31107"
+   id="svg171"
+   sodipodi:docname="Virtualisation_Stack.svg"
+   inkscape:version="1.3.2 (091e20ef0f, 2023-11-25)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:dc="http://purl.org/dc/elements/1.1/">
+  <defs
+     id="defs171" />
+  <sodipodi:namedview
+     id="namedview171"
+     pagecolor="#505050"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="true"
+     inkscape:deskcolor="#d1d1d1"
+     showgrid="false"
+     inkscape:zoom="1.4142136"
+     inkscape:cx="157.68481"
+     inkscape:cy="190.56528"
+     inkscape:window-width="1920"
+     inkscape:window-height="1003"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="Hardware" />
+  <title
+     id="title1">Open-source-virtualization-stack</title>
+  <style
+     id="style1">
+        tspan { white-space:pre }
+        .s0 { fill: #c8c8c8 }
+        .t1 { font-size: 16px;fill: #000000;font-weight: 700;font-family: &quot;Unageo-Bold&quot;, &quot;Unageo&quot; }
+        .s2 { fill: #f99b0f }
+        .t3 { font-size: 16px;fill: #ffffff;font-weight: 700;font-family: &quot;Unageo-Bold&quot;, &quot;Unageo&quot; }
+        .s4 { fill: #e95420 }
+        .s5 { fill: #ffffff;stroke: #666666;stroke-miterlimit:100;stroke-width: 5 }
+        .s6 { fill: #e5e5e5 }
+        .s7 { fill: #772953 }
+        .s8 { fill: #ffffff }
+    </style>
+  <g
+     id="Hardware"
+     transform="translate(-44.959351,10.311069)">
+    <rect
+       style="fill:#c8c8c8;fill-opacity:1;stroke-width:3.42257"
+       id="rect188-2-0"
+       width="541.04065"
+       height="60.038387"
+       x="44.959351"
+       y="323.96161"
+       sodipodi:type="rect"
+       ry="17.790911"
+       inkscape:label="Hardware_Box" />
+    <text
+       id="Hardware_Layer_Text"
+       x="63.743351"
+       y="359.4928"
+       inkscape:label="Hardware_Text"><tspan
+         x="63.743351"
+         y="359.4928"
+         class="t1"
+         id="tspan1">H</tspan><tspan
+         y="359.4928"
+         class="t1"
+         id="tspan2">a</tspan><tspan
+         y="359.4928"
+         class="t1"
+         id="tspan3">r</tspan><tspan
+         y="359.4928"
+         class="t1"
+         id="tspan4">d</tspan><tspan
+         y="359.4928"
+         class="t1"
+         id="tspan5">w</tspan><tspan
+         y="359.4928"
+         class="t1"
+         id="tspan6">a</tspan><tspan
+         y="359.4928"
+         class="t1"
+         id="tspan7">r</tspan><tspan
+         y="359.4928"
+         class="t1"
+         id="tspan8">e
+</tspan></text>
+    <g
+       id="Hardware_Layer_Children">
+      <g
+         id="Device_1"
+         inkscape:label="Devices"
+         transform="translate(80,1.0017452)">
+        <rect
+           style="fill:#f99b0f;fill-opacity:1;stroke-width:1.24488"
+           id="rect188-8"
+           width="108.45322"
+           height="39.624557"
+           x="389.18134"
+           y="333.16678"
+           sodipodi:type="rect"
+           ry="11.741771"
+           inkscape:label="Devices_Box" />
+        <text
+           id="text33"
+           style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:16px;font-family:Unageo;-inkscape-font-specification:'Unageo, Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#ffffff;fill-opacity:1;stroke:none;stroke-opacity:1"
+           inkscape:label="Devices_Text"
+           x="413.58316"
+           y="357.9075"><tspan
+             sodipodi:role="line"
+             id="tspan200"
+             x="413.58316"
+             y="357.9075"
+             inkscape:label="Devices_Text">Devices</tspan></text>
+      </g>
+      <g
+         id="Device_1-5"
+         inkscape:label="HDD/SSD"
+         transform="translate(-31.607138,1.0017452)">
+        <rect
+           style="fill:#f99b0f;fill-opacity:1;stroke-width:1.24488"
+           id="rect188-8-0"
+           width="108.45322"
+           height="39.624557"
+           x="388.52295"
+           y="333.16678"
+           sodipodi:type="rect"
+           ry="11.741771"
+           inkscape:label="HDD/SSD_Box" />
+        <text
+           id="text33-6"
+           style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:16px;font-family:Unageo;-inkscape-font-specification:'Unageo, Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#ffffff;fill-opacity:1;stroke:none;stroke-opacity:1"
+           inkscape:label="HDD/SSD_Text"
+           x="407.37357"
+           y="357.9075"><tspan
+             sodipodi:role="line"
+             id="tspan201"
+             x="407.37357"
+             y="357.9075"
+             inkscape:label="HDD/SSD_Text">HDD/SSD</tspan></text>
+      </g>
+      <g
+         id="Device_1-5-6"
+         inkscape:label="RAM"
+         transform="translate(-143.87266,1.001745)">
+        <rect
+           style="fill:#f99b0f;fill-opacity:1;stroke-width:1.03229"
+           id="rect188-8-0-2"
+           width="74.573944"
+           height="39.624557"
+           x="422.40222"
+           y="333.16678"
+           sodipodi:type="rect"
+           ry="11.741771"
+           inkscape:label="RAM_Box" />
+        <text
+           id="text33-6-5"
+           style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:16px;font-family:Unageo;-inkscape-font-specification:'Unageo, Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#ffffff;fill-opacity:1;stroke:none;stroke-opacity:1"
+           inkscape:label="RAM_Text"
+           x="442.39319"
+           y="358.57907"><tspan
+             sodipodi:role="line"
+             id="tspan203"
+             x="442.39319"
+             y="358.57907">RAM</tspan></text>
+      </g>
+      <g
+         id="Device_1-5-6-6"
+         inkscape:label="CPU"
+         transform="translate(-242.93787,1.363287)">
+        <rect
+           style="fill:#f99b0f;fill-opacity:1;stroke-width:1.03229"
+           id="rect188-8-0-2-7"
+           width="74.573944"
+           height="39.624557"
+           x="443.08118"
+           y="332.80524"
+           sodipodi:type="rect"
+           ry="11.741771"
+           inkscape:label="CPU_Box" />
+        <text
+           id="text33-6-5-8"
+           style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:16px;font-family:Unageo;-inkscape-font-specification:'Unageo, Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#ffffff;fill-opacity:1;stroke:none;stroke-opacity:1"
+           inkscape:label="CPU_Text"
+           x="464.82416"
+           y="358.21744"><tspan
+             sodipodi:role="line"
+             id="tspan202"
+             x="464.82416"
+             y="358.21744">CPU</tspan></text>
+      </g>
+    </g>
+    <g
+       id="Arrows"
+       transform="translate(60,-10.314655)">
+      <path
+         id="Arrow_7"
+         fill-rule="evenodd"
+         class="s8"
+         d="m 266.57968,306.38322 c -0.6,-0.7 -1.6,-0.7 -2.2,0 l -6.2,6.2 c -0.6,0.6 -0.6,1.6 0,2.2 0.6,0.6 1.6,0.6 2.2,0 l 3.5,-3.6 v 18 c 0,0.9 0.7,1.5 1.6,1.5 0.8,0 1.5,-0.6 1.5,-1.5 v -18 l 3.6,3.6 c 0.6,0.6 1.6,0.6 2.2,0 0.6,-0.6 0.6,-1.6 0,-2.2 0,0 -6.2,-6.2 -6.2,-6.2 z"
+         inkscape:label="Arrow_Up" />
+      <path
+         id="Arrow_6"
+         fill-rule="evenodd"
+         class="s8"
+         d="m 244.37968,330.28322 c 0.6,0.6 1.6,0.6 2.2,0 l 6.2,-6.2 c 0.6,-0.6 0.6,-1.6 0,-2.2 -0.6,-0.6 -1.6,-0.6 -2.2,0 l -3.6,3.5 v -17.9 c 0,-0.9 -0.7,-1.6 -1.5,-1.6 -0.9,0 -1.6,0.7 -1.6,1.6 v 17.9 l -3.5,-3.5 c -0.6,-0.6 -1.6,-0.6 -2.2,0 -0.6,0.6 -0.6,1.6 0,2.2 z"
+         inkscape:label="Arrow_Down" />
+    </g>
+  </g>
+  <g
+     id="Linux_Kernel"
+     transform="translate(-44.959351,-0.00358646)">
+    <rect
+       style="fill:#c8c8c8;fill-opacity:1;stroke-width:3.42257"
+       id="rect188-2"
+       width="541.04065"
+       height="60.038387"
+       x="44.959351"
+       y="242.0282"
+       sodipodi:type="rect"
+       ry="17.790911"
+       inkscape:label="Linux_Kernel_Box" />
+    <text
+       id="Kernel_Layer_Text"
+       inkscape:label="Linux_Kernel_Text"
+       x="63.743351"
+       y="277.83139"
+       style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:16px;font-family:Unageo;-inkscape-font-specification:'Unageo, Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal"><tspan
+         sodipodi:role="line"
+         id="tspan179"
+         x="63.743351"
+         y="277.83139"
+         inkscape:label="Linux_Kernel_Text">Linux Kernel</tspan></text>
+    <g
+       id="KVM"
+       inkscape:label="KVM_Hypervisor">
+      <rect
+         style="fill:#ce3b3b;fill-opacity:1;stroke-width:2.23071"
+         id="rect188-2-1"
+         width="313.58145"
+         height="44.00354"
+         x="264.0531"
+         y="250.06953"
+         sodipodi:type="rect"
+         ry="13.039374"
+         inkscape:label="KVM_Hypervisor_Box" />
+      <text
+         id="KVM_Text"
+         style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:16px;font-family:Unageo;-inkscape-font-specification:'Unageo, Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#ffffff;fill-opacity:1"
+         x="360.41183"
+         y="276.25531"
+         inkscape:label="KVM_Hypervisor_Text"><tspan
+           sodipodi:role="line"
+           id="tspan187"
+           x="360.41183"
+           y="276.25531"
+           inkscape:label="KVM_Hypervisor_Text">KVM Hypervisor</tspan></text>
+    </g>
+    <g
+       id="g206"
+       inkscape:label="Arrows"
+       transform="translate(60)">
+      <path
+         id="Arrow_5"
+         fill-rule="evenodd"
+         class="s8"
+         d="m 370.37233,213.93929 c -0.6,-0.7 -1.6,-0.7 -2.2,0 l -6.2,6.2 c -0.6,0.6 -0.6,1.6 0,2.2 0.6,0.6 1.6,0.6 2.2,0 l 3.5,-3.6 v 18 c 0,0.9 0.7,1.5 1.6,1.5 0.8,0 1.5,-0.6 1.5,-1.5 v -18 l 3.6,3.6 c 0.6,0.6 1.6,0.6 2.2,0 0.6,-0.6 0.6,-1.6 0,-2.2 0,0 -6.2,-6.2 -6.2,-6.2 z"
+         inkscape:label="Up_Arrow" />
+      <path
+         id="Arrow_4"
+         fill-rule="evenodd"
+         class="s8"
+         d="m 348.17233,237.83929 c 0.6,0.6 1.6,0.6 2.2,0 l 6.2,-6.2 c 0.6,-0.6 0.6,-1.6 0,-2.2 -0.6,-0.6 -1.6,-0.6 -2.2,0 l -3.6,3.5 v -17.9 c 0,-0.9 -0.7,-1.6 -1.5,-1.6 -0.9,0 -1.6,0.7 -1.6,1.6 v 17.9 l -3.5,-3.5 c -0.6,-0.6 -1.6,-0.6 -2.2,0 -0.6,0.6 -0.6,1.6 0,2.2 0,0 6.2,6.2 6.2,6.2 z"
+         inkscape:label="Down_Arrow" />
+    </g>
+  </g>
+  <g
+     id="GNU/Linux_Applications"
+     transform="translate(15.046545,-0.00120841)">
+    <g
+       id="QEMU"
+       transform="matrix(1.0004025,0,0,1,-52.024771,-0.03358027)">
+      <rect
+         style="fill:#772953;fill-opacity:1;stroke-width:5.03902"
+         id="rect188-1-2-8-6"
+         width="335.35287"
+         height="209.96338"
+         x="242.42934"
+         y="0.034788683"
+         sodipodi:type="rect"
+         ry="21.214319"
+         inkscape:label="QEMU_Box" />
+      <g
+         id="VM_1"
+         inkscape:label="VM"
+         transform="translate(-8.9179688)">
+        <rect
+           style="fill:#ffffff;fill-opacity:1;stroke:#c8c8c8;stroke-width:3.9992;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;paint-order:stroke fill markers"
+           id="rect194"
+           width="310.60089"
+           height="162.15367"
+           x="263.7233"
+           y="36.053669"
+           inkscape:label="VM_Box"
+           ry="22.935234" />
+        <g
+           id="VM_Kernel"
+           transform="translate(1.3399048,-2)">
+          <rect
+             style="fill:#c8c8c8;fill-opacity:1;stroke-width:1.94504"
+             id="rect188-1-2-8"
+             width="287.91882"
+             height="36.437138"
+             x="273.72443"
+             y="152.90547"
+             sodipodi:type="rect"
+             ry="10.797256"
+             inkscape:label="VM_Kernel_Box" />
+          <text
+             id="VM_Kernel_text"
+             x="380.61926"
+             y="176.62694"
+             inkscape:label="VM_Kernel_Text"
+             style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:15.9968px;font-family:Unageo;-inkscape-font-specification:'Unageo, Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#000000;fill-opacity:1"><tspan
+               sodipodi:role="line"
+               id="tspan174"
+               x="380.61926"
+               y="176.62694"
+               inkscape:label="VM_Kernel_Text">VM Kernel</tspan></text>
+        </g>
+        <g
+           id="VM_Kernel-9"
+           transform="matrix(1.0004025,0,0,1,40.454492,92.64688)"
+           inkscape:label="VirtIO_Drivers">
+          <rect
+             style="fill:#e95420;fill-opacity:1;stroke-width:1.94465"
+             id="rect188-1-2"
+             width="287.80298"
+             height="36.437138"
+             x="234.51544"
+             y="18.651285"
+             sodipodi:type="rect"
+             ry="10.797256"
+             inkscape:label="VirtIO_Drivers_Box" />
+          <text
+             id="VM_Kernel_text-6"
+             x="328.36932"
+             y="42.652699"
+             inkscape:label="VirtIO_Drivers_Text"
+             style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:15.9968px;font-family:Unageo;-inkscape-font-specification:'Unageo, Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#ffffff;fill-opacity:1"><tspan
+               sodipodi:role="line"
+               id="tspan177"
+               x="328.36932"
+               y="42.652699"
+               inkscape:label="VirtIO_Drivers_Text">VirtIO Drivers</tspan></text>
+        </g>
+        <g
+           id="VM_Applications-4"
+           inkscape:label="QEMU_Guest_Agent"
+           transform="translate(204.88644,-6.0165224)">
+          <rect
+             style="fill:#772953;fill-opacity:1;stroke-width:1.46467"
+             id="rect188-1-2-9-3"
+             width="163.26472"
+             height="36.437138"
+             x="194.83199"
+             y="78.043976"
+             sodipodi:type="rect"
+             ry="10.797256"
+             inkscape:label="QEMU_Guest_Agent_Box" />
+          <text
+             id="VM_Applications_Text-7"
+             x="204.8786"
+             y="100.24575"
+             inkscape:label="QEMU_Guest_Agent_Text"
+             style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:15.9968px;font-family:Unageo;-inkscape-font-specification:'Unageo, Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#ffffff;fill-opacity:1"><tspan
+               sodipodi:role="line"
+               id="tspan185"
+               x="204.8786"
+               y="100.24575"
+               inkscape:label="QEMU_Guest_Agent_Text">QEMU Guest Agent</tspan></text>
+        </g>
+        <g
+           id="VM_Applications"
+           inkscape:label="Applications"
+           transform="translate(81.826784,-5.6741752)">
+          <rect
+             style="fill:#772953;fill-opacity:1;stroke-width:1.26836"
+             id="rect188-1-2-9"
+             width="122.43394"
+             height="36.437138"
+             x="193.23755"
+             y="77.757698"
+             sodipodi:type="rect"
+             ry="10.797256"
+             inkscape:label="Applications_Box" />
+          <text
+             id="VM_Applications_Text"
+             x="209.37514"
+             y="100.25541"
+             inkscape:label="Applications_Text"
+             style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:15.9968px;font-family:Unageo;-inkscape-font-specification:'Unageo, Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#ffffff;fill-opacity:1"><tspan
+               sodipodi:role="line"
+               id="tspan186"
+               x="209.37514"
+               y="100.25541"
+               inkscape:label="Applications_Text">Applications</tspan></text>
+        </g>
+        <text
+           id="VM_Box_Text"
+           x="342.20712"
+           y="59.87468"
+           style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:15.9968px;font-family:Unageo;-inkscape-font-specification:'Unageo, Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#000000;fill-opacity:1"
+           inkscape:label="VM_Text"><tspan
+             sodipodi:role="line"
+             id="tspan178"
+             inkscape:label="VM_Box_Text"
+             x="342.20712"
+             y="59.87468">Windows Guest (VM)</tspan></text>
+      </g>
+      <text
+         id="QEMU_Layer_Text"
+         x="410.32974"
+         y="23.077698"
+         inkscape:label="QEMU_Text"
+         style="fill:#ffffff;fill-opacity:1"><tspan
+           x="387.12976"
+           y="23.077698"
+           class="t1"
+           id="tspan127"
+           style="fill:#ffffff;fill-opacity:1">Q</tspan><tspan
+           y="23.077698"
+           class="t1"
+           id="tspan128"
+           style="fill:#ffffff;fill-opacity:1">E</tspan><tspan
+           y="23.077698"
+           class="t1"
+           id="tspan129"
+           style="fill:#ffffff;fill-opacity:1">M</tspan><tspan
+           y="23.077698"
+           class="t1"
+           id="tspan130"
+           style="fill:#ffffff;fill-opacity:1">U
+</tspan></text>
+    </g>
+    <g
+       id="g137"
+       inkscape:label="libvirt + qemu-guest-agent"
+       transform="translate(0,-69.931008)">
+      <rect
+         style="fill:#772953;fill-opacity:1;stroke-width:1.9483"
+         id="rect188-5"
+         width="146.3732"
+         height="71.912071"
+         x="9.4620256"
+         y="192.95787"
+         sodipodi:type="rect"
+         ry="21.309387"
+         inkscape:label="libvirt_+_qemu-guest-agent_Box" />
+      <text
+         id="libvirt"
+         x="82.632622"
+         y="223.08191"
+         style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:16px;font-family:Unageo;-inkscape-font-specification:'Unageo, Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#ffffff;fill-opacity:1"
+         inkscape:label="libvirt_+_qemu-guest-agent_Text"><tspan
+           sodipodi:role="line"
+           id="tspan204"
+           x="82.632622"
+           y="223.08191"
+           style="text-align:center;text-anchor:middle">libvirt +</tspan><tspan
+           sodipodi:role="line"
+           id="tspan205"
+           x="82.632622"
+           y="243.08191"
+           style="text-align:center;text-anchor:middle">qemu-guest-agent</tspan></text>
+    </g>
+    <g
+       id="g205"
+       inkscape:label="Arrows">
+      <path
+         id="Arrow_2"
+         fill-rule="evenodd"
+         class="s8"
+         d="m 185.26144,170.08528 c 0.7,-0.6 0.7,-1.6 0,-2.2 l -6.2,-6.2 c -0.6,-0.6 -1.6,-0.6 -2.2,0 -0.6,0.6 -0.6,1.6 0,2.2 l 3.6,3.6 h -18 c -0.9,0 -1.5,0.7 -1.5,1.5 0,0.9 0.6,1.6 1.5,1.6 h 18 l -3.6,3.5 c -0.6,0.6 -0.6,1.6 0,2.2 0.6,0.6 1.6,0.6 2.2,0 z"
+         inkscape:label="Right_Arrow"
+         transform="translate(-0.005896,-0.00237805)" />
+      <path
+         id="Arrow_3"
+         fill-rule="evenodd"
+         class="s8"
+         d="m 161.36144,147.88528 c -0.6,0.6 -0.6,1.6 0,2.2 l 6.2,6.2 c 0.6,0.6 1.6,0.6 2.2,0 0.6,-0.6 0.6,-1.6 0,-2.2 l -3.5,-3.5 h 17.9 c 0.9,0 1.6,-0.7 1.6,-1.6 0,-0.8 -0.7,-1.5 -1.6,-1.5 h -17.9 l 3.5,-3.6 c 0.6,-0.6 0.6,-1.6 0,-2.2 -0.6,-0.6 -1.6,-0.6 -2.2,0 z"
+         inkscape:label="Left_Arrow"
+         transform="translate(-0.005896,-0.00237805)" />
+      <path
+         id="Arrow_0"
+         fill-rule="evenodd"
+         class="s8"
+         d="m 93.754521,93.097776 c -0.6,-0.7 -1.6,-0.7 -2.2,0 l -6.2,6.2 c -0.6,0.6 -0.6,1.600004 0,2.200004 0.6,0.6 1.6,0.6 2.2,0 l 3.5,-3.600004 v 18.000004 c 0,0.9 0.7,1.5 1.6,1.5 0.8,0 1.5,-0.6 1.5,-1.5 V 97.897776 l 3.6,3.600004 c 0.6,0.6 1.6,0.6 2.2,0 0.599999,-0.6 0.599999,-1.600004 0,-2.200004 0,0 -6.2,-6.2 -6.2,-6.2 z"
+         inkscape:label="Up_Arrow"
+         transform="translate(-0.005896,-0.00237805)" />
+      <path
+         id="Arrow_1"
+         fill-rule="evenodd"
+         class="s8"
+         d="m 71.554521,116.96028 c 0.6,0.6 1.6,0.6 2.2,0 l 6.2,-6.2 c 0.6,-0.6 0.6,-1.6 0,-2.2 -0.6,-0.6 -1.6,-0.6 -2.2,0 l -3.6,3.5 V 94.160276 c 0,-0.9 -0.7,-1.6 -1.5,-1.6 -0.9,0 -1.6,0.7 -1.6,1.6 v 17.900004 l -3.5,-3.5 c -0.6,-0.6 -1.6,-0.6 -2.2,0 -0.6,0.6 -0.6,1.6 0,2.2 z"
+         inkscape:label="Down_Arrow"
+         transform="translate(-0.005896,-0.00237805)" />
+    </g>
+    <g
+       id="g149"
+       inkscape:label="virt-manager"
+       transform="translate(0,75.02924)">
+      <rect
+         style="fill:#772953;fill-opacity:1;stroke-width:1.9483"
+         id="rect188"
+         width="146.3732"
+         height="71.912071"
+         x="9.4620256"
+         y="-60.00238"
+         sodipodi:type="rect"
+         ry="21.309387"
+         inkscape:label="virt-manager_Box" />
+      <text
+         id="virt-manager"
+         x="35.917446"
+         y="-19.878342"
+         style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:16px;font-family:Unageo;-inkscape-font-specification:'Unageo, Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#ffffff;fill-opacity:1"><tspan
+           sodipodi:role="line"
+           id="tspan181"
+           x="35.917446"
+           y="-19.878342">virt-manager</tspan></text>
+    </g>
+    <text
+       id="GNU/Linux_Applications_Text"
+       x="-193.88689"
+       y="-3.0945449"
+       style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:16px;font-family:Unageo;-inkscape-font-specification:'Unageo, Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#ffffff;fill-opacity:1"
+       transform="rotate(-90)"><tspan
+         sodipodi:role="line"
+         id="tspan188"
+         x="-193.88689"
+         y="-3.0945449">GNU/Linux Applications</tspan></text>
+  </g>
+  <metadata
+     id="metadata188">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:title>Open-source-virtualization-stack</dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+</svg>

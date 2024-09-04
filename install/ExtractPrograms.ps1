@@ -1,222 +1,339 @@
-
-Function Get-Icon {
-    <#
-        Get-Icon License:
-
-        License
-
-        The MIT License (MIT)
-
-        Copyright (c)
-
-        Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
-
-        The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-
-        THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-    #>
-    <#
-        .SYNOPSIS
-            Gets the icon from a file
-
-        .DESCRIPTION
-            Gets the icon from a file and displays it in a variety formats.
-
-        .PARAMETER Path
-            The path to a file to get the icon
-
-        .PARAMETER ToBytes
-            Displays outputs as a byte array
-
-        .PARAMETER ToBitmap
-            Display the icon as a bitmap object
-
-        .PARAMETER ToBase64
-            Displays the icon in Base64 encoded format
-
-        .NOTES
-            Name: Get-Icon
-            Author: Boe Prox
-            Version History:
-                1.0 //Boe Prox - 11JAN2016
-                    - Initial version
-
-        .OUTPUT
-            System.Drawing.Icon
-            System.Drawing.Bitmap
-            System.String
-            System.Byte[]
-
-        .EXAMPLE
-            Get-Icon -Path 'C:\windows\system32\WindowsPowerShell\v1.0\PowerShell.exe'
-
-            FullName : C:\windows\system32\WindowsPowerShell\v1.0\PowerShell.exe
-            Handle   : 164169893
-            Height   : 32
-            Size     : {Width=32, Height=32}
-            Width    : 32
-
-            Description
-            -----------
-            Returns the System.Drawing.Icon representation of the icon
-
-        .EXAMPLE
-            Get-Icon -Path 'C:\windows\system32\WindowsPowerShell\v1.0\PowerShell.exe' -ToBitmap
-
-            Tag                  : 
-            PhysicalDimension    : {Width=32, Height=32}
-            Size                 : {Width=32, Height=32}
-            Width                : 32
-            Height               : 32
-            HorizontalResolution : 96
-            VerticalResolution   : 96
-            Flags                : 2
-            RawFormat            : [ImageFormat: b96b3caa-0728-11d3-9d7b-0000f81ef32e]
-            PixelFormat          : Format32bppArgb
-            Palette              : System.Drawing.Imaging.ColorPalette
-            FrameDimensionsList  : {7462dc86-6180-4c7e-8e3f-ee7333a7a483}
-            PropertyIdList       : {}
-            PropertyItems        : {}
-
-            Description
-            -----------
-            Returns the System.Drawing.Bitmap representation of the icon
-
-        .EXAMPLE
-            $FileName = 'C:\Temp\PowerShellIcon.png'
-            $Format = [System.Drawing.Imaging.ImageFormat]::Png
-            (Get-Icon -Path 'C:\windows\system32\WindowsPowerShell\v1.0\PowerShell.exe' -ToBitmap).Save($FileName,$Format)
-
-            Description
-            -----------
-            Saves the icon as a file.
-
-        .EXAMPLE
-            Get-Icon -Path 'C:\windows\system32\WindowsPowerShell\v1.0\PowerShell.exe' -ToBase64
-
-            AAABAAEAICAQHQAAAADoAgAAFgAAACgAAAAgAAAAQAAAAAEABAAAAAAAgAIAAAAAAAAAAAAAAAAAAAA
-            AAAAAAAAAAACAAACAAAAAgIAAgAAAAIAAgACAgAAAgICAAMDAwAAAAP8AAP8AAAD//wD/AAAA/wD/AP
-            //AAD///8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-            AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABmZmZmZmZmZmZmZgAAAAAAaId3d3d3d4iIiIdgAA
-            AHdmhmZmZmZmZmZmZoZAAAB2ZnZmZmZmZmZmZmZ3YAAAdmZ3ZmiHZniIiHZmaGAAAHZmd2Zv/4eIiIi
-            GZmhgAAB2ZmdmZ4/4eIh3ZmZnYAAAd2ZnZmZo//h2ZmZmZ3YAAHZmaGZmZo//h2ZmZmd2AAB3Zmd2Zm
-            Znj/h2ZmZmhgAAd3dndmZmZuj/+GZmZoYAAHd3dod3dmZuj/9mZmZ2AACHd3aHd3eIiP/4ZmZmd2AAi
-            Hd2iIiIiI//iId2ZndgAIiIhoiIiIj//4iIiIiIYACIiId4iIiP//iIiIiIiGAAiIiIaIiI//+IiIiI
-            iIhkAIiIiGiIiP/4iIiIiIiIdgCIiIhoiIj/iIiIiIiIiIYAiIiIeIiIiIiIiIiIiIiGAAiIiIaP///
-            ////////4hgAAAAAGZmZmZmZmZmZmZmYAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-            AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD////////////////gA
-            AAf4AAAD+AAAAfgAAAHAAAABwAAAAcAAAAHAAAAAwAAAAMAAAADAAAAAwAAAAMAAAABAAAAAQAAAAEA
-            AAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgAAAAP4AAAH//////////////////////////w==
-
-            Description
-            -----------
-            Returns the Base64 encoded representation of the icon
-
-        .EXAMPLE
-            Get-Icon -Path 'C:\windows\system32\WindowsPowerShell\v1.0\PowerShell.exe' -ToBase64 | Clip
-
-            Description
-            -----------
-            Returns the Base64 encoded representation of the icon and saves it to the clipboard.
-
-        .EXAMPLE
-            (Get-Icon -Path 'C:\windows\system32\WindowsPowerShell\v1.0\PowerShell.exe' -ToBytes) -Join ''
-
-            0010103232162900002322002200040000320006400010400000128200000000000000000000000
-            0128001280001281280128000128012801281280012812812801921921920002550025500025525
-            5025500025502550255255002552552550000000000000000000000000000000000000000000000
-            0000000000000000000000000000000000006102102102102102102102102102102960000613611
-            9119119119119120136136136118000119102134102102102102102102102102102134640011810
-            2118102102102102102102102102102119960011810211910210413510212013613611810210496
-            0011810211910211125513513613613613410210496001181021031021031432481201361191021
-            0210396001191021031021021042552481181021021021031180011810210410210210214325513
-            5102102102103118001191021031181021021031432481181021021021340011911910311810210
-            2102232255248102102102134001191191181351191181021101432551021021021180013511911
-            8135119119136136255248102102102119960136119118136136136136143255136135118102119
-            9601361361341361361361362552551361361361361369601361361351201361361432552481361
-            3613613613696013613613610413613625525513613613613613613610001361361361041361362
-            5524813613613613613613611801361361361041361362551361361361361361361361340136136
-            1361201361361361361361361361361361361340813613613414325525525525525525525525524
-            8134000061021021021021021021021021021021020000000000000000000000000000000000000
-            0000000000000000000000000000000000000000000025525525525525525525525525525525525
-            5224003122400152240072240070007000700070003000300030003000300010001000100010000
-            0000000000000000000012800025400125525525525525525525525525525525525525525525525
-            5255255255255
-
-            Description
-            -----------
-            Returns the bytes representation of the icon. -Join was used in this for the sake
-            of displaying all of the data.
-
-    #>
-    [cmdletbinding(
-        DefaultParameterSetName = '__DefaultParameterSetName'
-    )]
-    Param (
-        [parameter(ValueFromPipelineByPropertyName=$True)]
-        [ValidateNotNullorEmpty()]
-        [string]$Path,
-        [parameter(ParameterSetName = 'Bytes')]
-        [switch]$ToBytes,
-        [parameter(ParameterSetName = 'Bitmap')]
-        [switch]$ToBitmap,
-        [parameter(ParameterSetName = 'Base64')]
-        [switch]$ToBase64
+### FUNCTIONS ###
+# Name: 'GetApplicationIcon'
+# Role: Extract the icon from a given executable file as a base-64 string.
+# Args:
+#    - 'exePath': Provides the path to the executable file.
+Function GetApplicationIcon {
+    param (
+        [Parameter(Mandatory = $true)]
+        [string]$exePath
     )
-    Begin {
-        If ($PSBoundParameters.ContainsKey('Debug')) {
-            $DebugPreference = 'Continue'
-        }
+
+    try {
+        # Load the 'System.Drawing' assembly to access 'ExtractAssociatedIcon'.
         Add-Type -AssemblyName System.Drawing
+
+        # Extract the icon from the executable.
+        $exeIcon = [System.Drawing.Icon]::ExtractAssociatedIcon($exePath)
+
+        # Create a bitmap from the icon.
+        $exeIconBitmap = New-Object System.Drawing.Bitmap $exeIcon.Width, $exeIcon.Height
+        $graphics = [System.Drawing.Graphics]::FromImage($exeIconBitmap)
+        $graphics.DrawIcon($exeIcon, 0, 0)
+
+        # Save the bitmap to a 'MemoryStream' as a '.PNG' to preserve the icon colour depth.
+        $memoryStream = New-Object System.IO.MemoryStream
+        $exeIconBitmap.Save($memoryStream, [System.Drawing.Imaging.ImageFormat]::Png)
+
+        # Convert the PNG 'MemoryStream' to a base-64 string.
+        $bytes = $memoryStream.ToArray()
+        $base64String = [Convert]::ToBase64String($bytes)
+
+        # Clean up.
+        $memoryStream.Flush()
+        $memoryStream.Dispose()
+        $graphics.Dispose()
+        $exeIconBitmap.Dispose()
+        $exeIcon.Dispose()
+    } catch {
+        # Use a generic 32x32 PNG.
+        $base64String = "iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAMAAABEpIrGAAAAAXNSR0IB2cksfwAAAAlwSFlzAAALEwAACxMBAJqcGAAAASZQTFRFAAAA+vr65ubm4uLkhYmLvL7A7u7w+/r729vb4eHjFYPbFoTa5eXnGIbcG4jc+fn7Gofc7+/x7OzuF4Xb+fn54uLiC37Z5OTmEIHaIIjcEYHbDoDZFIPcJ43fHYjd9fX28PDy3d3fI4rd3d3dHojc19fXttTsJIve2dnZDX/YCn3Y09PTjL/p5+fnh7zo2traJYzfIYjdE4Pb6urrW6Tf9PT1Ioneir7otNPsCX3Zhbvn+Pj5YKfhJYfWMo7a39/gKIzeKo7eMI3ZNJDcXqbg4eHhuNTsB3zYIoncBXvZLIrXIYjbLJDgt7m6ubu+YqjiKYvYvr6+tba3rs/sz8/P1+byJonXv7/DiImLxsbGjo6Ra6reurq6io6QkJKVw8PD0tLSycnJq1DGywAAAGJ0Uk5TAP////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////+BVJDaAAABY0lEQVR4nM2RaVOCUBSGr1CBgFZimppgoGnKopZSaYGmRpravq///0904IqOM9j00WeGT+9ztgtCS8Dzyh98fL6i2+HqQoaj0RPSzQNgzZc4F4wgvUuoqkr1er094MjlIeBCwRdFua9CqURQ51cty7Lykj0YCIIibnlEkS4TgCuky3nbTmSFsCKSHuso96N/Ox1aacjrlYQQ3gjNCYV7UlUJ6szCeRZyXmlkNjEZEPSuLIMAuYTreVYROQ8Y8SLTNAhlCdfzLMsaIhfHgEAT7pLtvFTH9QxTNWrmLsaEDu8558y2ZOP5LLNTNUQyiCFnHaRZnjTmzryhnR36FSdnIU9up7RGxAOuKJjOFX2vHvKU5jPiepbvxzR3BIffwROc++AAJy9qjQxQwz9rIjyGeN6tj8VACEyZCqfQn3H7F48vTvwEdlIP+aWvMNkPcl8h8DYeN5vNTqdzCNz5CIv4h7AE/AKcwUFbShJywQAAAABJRU5ErkJggg=="
     }
-    Process {
-        $Path = Convert-Path -Path $Path
-        Write-Debug $Path
-        If (Test-Path -Path $Path) {
-            #$Icon = [System.Drawing.Icon]::ExtractAssociatedIcon($Path)| 
-            $Icon = [System.Drawing.Icon]::ExtractAssociatedIcon($Path)| 
-            Add-Member -MemberType NoteProperty -Name FullName -Value $Path -PassThru
-            If ($PSBoundParameters.ContainsKey('ToBytes')) {
-                Write-Verbose "Retrieving bytes"
-                $MemoryStream = New-Object System.IO.MemoryStream
-                $Icon.save($MemoryStream)
-                Write-Debug ($MemoryStream | Out-String)
-                $MemoryStream.ToArray()   
-                $MemoryStream.Flush()  
-                $MemoryStream.Dispose()           
-            } ElseIf ($PSBoundParameters.ContainsKey('ToBitmap')) {
-                $Icon.ToBitMap()
-            } ElseIf ($PSBoundParameters.ContainsKey('ToBase64')) {
-                $MemoryStream = New-Object System.IO.MemoryStream
-                $Icon.save($MemoryStream)
-                Write-Debug ($MemoryStream | Out-String)
-                $Bytes = $MemoryStream.ToArray()   
-                $MemoryStream.Flush() 
-                $MemoryStream.Dispose()
-                [convert]::ToBase64String($Bytes)
-            }  Else {
-                $Icon
-            }
-        } Else {
-            Write-Warning "$Path does not exist!"
-            Continue
+
+    # Return the base-64 string.
+    return $base64String
+}
+
+# Name: 'PrintArrayData'
+# Role: Print application names, executable paths and base-64 encoded icons in a format suitable for importing into bash arrays.
+# Args:
+#    - 'Names': An array of application names.
+#    - 'Paths': An array of executable paths.
+#    - 'Source': The source of the applications (e.g. Windows Registry, Package manangers, Universal Windows Platform (UWP), etc.)
+function PrintArrayData {
+    param (
+        [string[]]$Names,
+        [string[]]$Paths,
+        [string]$Source
+    )
+
+    # Combine the arrays into an array of objects
+    $NamesandPaths = @()
+    for ($i = 0; $i -lt $Names.Length; $i++) {
+        $NamesandPaths += [PSCustomObject]@{
+            Name = $Names[$i]
+            Path = $Paths[$i]
         }
+    }
+
+    # Sort the combined array based on the application names.
+    $NamesandPaths = $NamesandPaths | Sort-Object {$_.Name}
+
+    # Loop through the extracted executable file paths.
+    foreach ($Application in $NamesandPaths) {
+
+        # Remove undesirable suffix for chocolatey shims.
+        if ($Source -eq "choco") {
+            if ($Application.Name.EndsWith(" - Chocolatey Shim")) {
+                $Application.Name = $Application.Name.Substring(0, $Application.Name.Length - " - Chocolatey Shim".Length)
+            }
+        }
+
+        # Add the appropriate tag to the application name.
+        if ($Source -ne "winreg") {
+            $Application.Name = $Application.Name + " [" + $Source.ToUpper() + "]"
+        }
+
+        # Store the application icon as a base-64 string.
+        $Icon = GetApplicationIcon -exePath $Application.Path
+
+        # Output the results as bash commands that append the results to several bash arrays.
+        Write-Output ('NAMES+=("' + $Application.Name + '")')
+        Write-Output ('EXES+=("' + $Application.Path + '")')
+        Write-Output ('ICONS+=("' + $Icon + '")')
     }
 }
 
-"NAMES=()"
-"ICONS=()"
-"EXES=()"
-Get-ItemProperty "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\*" |
-    Select-Object -Property "(default)" -Unique |
-    Where-Object {$_."(default)" -ne $null} |
-    ForEach-Object {
-        $Exe = $_."(default)".Trim('"')
-        $Name = (Get-Item $Exe).VersionInfo.FileDescription.Trim() -replace "  "," "
-        $Icon = Get-Icon -Path $Exe -ToBase64
-        #Get-ItemProperty $Exe -Name VersionInfo
-        "NAMES+=(""$Name"")"
-        "EXES+=(""$Exe"")"
-        "ICONS+=(""$Icon"")"
+# Name: 'GetApplicationName'
+# Role: Determine the application name for a given executable file.
+# Args:
+#    - 'exePath': The path to a given executable file.
+function GetApplicationName {
+    param (
+        [string]$exePath
+    )
+
+    if ((Get-Item $exePath).VersionInfo.FileDescription) {
+        # Remove leading/trailing whitespace and replace multiple spaces with a single space.
+        $productName = (Get-Item $exePath).VersionInfo.FileDescription.Trim() -replace '\s+', ' '
+    } else {
+        # Get the executable file name without the file extension.
+        $productName = [System.IO.Path]::GetFileNameWithoutExtension($exePath)
     }
 
+    return $productName
+}
+
+# Name: 'GetUWPApplicationName'
+# Role: Determine the application name for a given UWP application.
+# Args:
+#    - 'exePath': The path to a given executable file.
+function GetUWPApplicationName {
+    param (
+        [string]$exePath
+    )
+
+    # Query the application executable for the application name.
+    if (Test-Path $exePath) {
+        if ((Get-Item $exePath).VersionInfo.FileDescription) {
+            # Remove leading/trailing whitespace and replace multiple spaces with a single space.
+            $productName = (Get-Item $exePath).VersionInfo.FileDescription.Trim() -replace '\s+', ' '
+        }
+    }
+
+    # Use the 'DisplayName' (if available) if the previous method failed.
+    if (-not $productName -and $app.DisplayName) {
+        $productName = $app.DisplayName
+    }
+
+    # Use the 'Name' (if available) as a final fallback.
+    if (-not $productName -and $app.Name) {
+        $productName = $app.Name
+    }
+
+    return $productName
+}
+
+# Name: 'GetUWPExecutablePath'
+# Role: Obtain the UWP application executable path from 'AppxManifest.xml'.
+# Args:
+#    - 'instLoc': UWP application folder path (C:\Program Files\WindowsApps\*).
+function GetUWPExecutablePath {
+    param (
+        [string]$instLoc
+    )
+
+    # Determine the path to 'AppxManifest.xml' for the selected application.
+    $manifestPath = Join-Path -Path $instLoc -ChildPath "AppxManifest.xml"
+
+    if (Test-Path $manifestPath) {
+        # Parse the XML file.
+        [xml]$manifest = Get-Content $manifestPath
+        $applications = $manifest.Package.Applications.Application
+
+        # Return the path to the first executable specified within the XML.
+        foreach ($application in $applications) {
+            $executable = $application.Executable
+            if ($executable) {
+                return Join-Path -Path $instLoc -ChildPath $executable
+            }
+        }
+    }
+
+    # Return 'null' if nothing was found.
+    return $null
+}
+
+# Name: 'AppSearchWinReg'
+# Role: Search the Windows Registry for installed applications.
+function AppSearchWinReg {
+    # Initialise empty arrays.
+    $exeNames = @()
+    $exePaths = @()
+    $validPaths = @()
+
+    # Query windows registry for unique installed executable files.
+    $exePaths = Get-ItemProperty "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\*" |
+        ForEach-Object { $_."(default)" } |  # Extract the value of the (default) property
+        Where-Object { $_ -ne $null } |  # Filter out null values
+        Sort-Object -Unique  # Ensure uniqueness
+
+    # Remove leading and trailing double quotes from all paths.
+    $exePaths = $exePaths -replace '^"*|"*$'
+
+    # Get corresponding application names for unique installed executable files.
+    foreach ($exePath in $exePaths) {
+        if (Test-Path -Path $exePath) {
+            $validPaths += $exePath
+            $exeNames += GetApplicationName -exePath $exePath
+        }
+    }
+
+    # Process extracted executable file paths.
+    PrintArrayData -Names $exeNames -Paths $validPaths -Source "winreg"
+}
+
+# Name: 'AppSearchUWP'
+# Role: Search for 'non-system' UWP applications.
+function AppSearchUWP {
+    # Initialise empty arrays.
+    $exeNames = @()
+    $exePaths = @()
+
+    # Obtain all 'non-system' UWP applications using 'Get-AppxPackage'.
+    $uwpApps = Get-AppxPackage | Where-Object {
+        $_.IsFramework -eq $false -and
+        $_.IsResourcePackage -eq $false -and
+        $_.SignatureKind -ne 'System'
+    }
+
+    # Create an array to store UWP application details.
+    $uwpAppDetails = @()
+
+    # Loop through each UWP application.
+    foreach ($app in $uwpApps) {
+        # Initialise the variable responsible for storing the UWP application name.
+        $productName = $null
+
+        # Obtain the path to the UWP application executable.
+        $exePath = GetUWPExecutablePath -instLoc $app.InstallLocation
+
+        # Proceed only if an executable path was identified.
+        if ($exePath) {
+            $productName = GetUWPApplicationName -exePath $exePath
+
+            # Ignore UWP applications with no name, or those named 'Microsoft® Windows® Operating System'.
+            if ($productName -ne "Microsoft® Windows® Operating System" -and [string]::IsNullOrEmpty($productName) -eq $false) {
+                # Store the UWP application name and executable path.
+                $exeNames += $productName
+                $exePaths += $exePath
+            }
+        }
+    }
+
+    # Process extracted executable file paths.
+    PrintArrayData -Names $exeNames -Paths $exePaths -Source "uwp"
+}
+
+# Name: 'AppSearchWinReg'
+# Role: Search for chocolatey shims.
+function AppSearchChocolatey {
+    # Initialise empty arrays.
+    $exeNames = @()
+    $exePaths = @()
+
+    # Specify the 'chocolatey' shims directory.
+    $chocoDir = "C:\ProgramData\chocolatey\bin"
+
+    # Check if the 'chocolatey' shims directory exists.
+    if (Test-Path -Path $chocoDir -PathType Container) {
+        # Get all shim '.exe' files.
+        $shimExeFiles = Get-ChildItem -Path $chocoDir -Filter *.exe
+
+        # Loop through each '.shim' file to extract the executable path.
+        foreach ($shimExeFile in $shimExeFiles) {
+            # Resolve the shim to the actual executable path.
+            $exePath = (Get-Command $shimExeFile).Source
+
+            # Proceed only if an executable path was identified.
+            if ($exePath) {
+                $exeNames += GetApplicationName -exePath $exePath
+                $exePaths += $exePath
+            }
+        }
+
+        # Process extracted executable file paths.
+        PrintArrayData -Names $exeNames -Paths $exePaths -Source "choco"
+    }
+}
+
+# Name: 'AppSearchWinReg'
+# Role: Search for scoop shims.
+function AppSearchScoop {
+    # Initialise empty arrays.
+    $exeNames = @()
+    $exePaths = @()
+
+    # Specify the 'scoop' shims directory.
+    $scoopDir = "$HOME\scoop\shims"
+
+    # Check if the 'scoop' shims directory exists.
+    if (Test-Path -Path $scoopDir -PathType Container) {
+        # Get all '.shim' files.
+        $shimFiles = Get-ChildItem -Path $scoopDir -Filter *.shim
+
+        # Loop through each '.shim' file to extract the executable path.
+        foreach ($shimFile in $shimFiles) {
+            # Read the content of the '.shim' file.
+            $shimFileContent = Get-Content -Path $shimFile.FullName
+
+            # Extract the path using regex, exiting the loop after the first match is found.
+            $exePath = ""
+
+            foreach ($line in $shimFileContent) {
+                # '^\s*path\s*=\s*"([^"]+)"'
+                # ^       --> Asserts the start of the line.
+                # \s*     --> Matches any whitespace characters (zero or more times).
+                # path    --> Matches the literal string "path".
+                # \s*=\s* --> Matches an equal sign = surrounded by optional whitespace characters.
+                # "       --> Matches an initial double quote.
+                # ([^"]+) --> Captures one or more characters that are not ", representing the path inside the double quotes.
+                # "       --> Matches a final double quote.
+                if ($line -match '^\s*path\s*=\s*"([^"]+)"') {
+                    $exePath = $matches[1]
+                    break
+                }
+            }
+
+            if ($exePath -ne "") {
+                $exeNames += GetApplicationName -exePath $exePath
+                $exePaths += $exePath
+            }
+        }
+
+        # Process extracted executable file paths.
+        PrintArrayData -Names $exeNames -Paths $exePaths -Source "scoop"
+    }
+}
+
+### SEQUENTIAL LOGIC ###
+# Print bash commands to define three new arrays.
+Write-Output 'NAMES=()'
+Write-Output 'EXES=()'
+Write-Output 'ICONS=()'
+
+# Search for installed applications.
+AppSearchWinReg     # Windows Registry
+AppSearchUWP        # Universal Windows Platform
+AppSearchChocolatey # Chocolatey Package Manager
+AppSearchScoop      # Scoop Package Manager

@@ -12,3 +12,6 @@ CATEGORIES="WinApps;Office"
 
 # GNOME mimetypes
 MIME_TYPES="application/msonenote;"
+
+# System Icon
+ICON="ms-onenote"

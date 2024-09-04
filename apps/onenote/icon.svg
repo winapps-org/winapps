@@ -1,3 +1,48 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="8 8 16 16">
-    <path d="M9 10.398l8-1.351v13.906l-8-1.352V10.398zm2.227 8.086l.796.04V15c0-.031.005-.06.016-.086a.21.21 0 0 0 .016-.078.058.058 0 0 0 .039.043c.02.008.036.022.047.043a4.335 4.335 0 0 0 .171.344l1.829 3.375 1.062.062v-5.547l-.992.063v3.523a.82.82 0 0 0 .031.227h-.016a42.727 42.727 0 0 0-.976-1.824c-.339-.597-.675-1.2-1.008-1.809l-1.016.04v5.108zM23 13.836c0 .068-.008.112-.023.133-.016.02-.061.031-.133.031H22v7.102a.544.544 0 0 1-.074.254.415.415 0 0 1-.086.101.17.17 0 0 1-.113.043H17.5V20h3v-.5h-3v-1h3V18h-3v-1h3v-.5h-3v-1h3V15h-3v-1h3v-.5h-3v-1h3V12h-3v-1.5h4.227c.103 0 .175.044.214.133.04.089.059.177.059.265v.602h.844c.072 0 .117.01.133.027.015.019.023.064.023.137v2.172zm-.203.664c.067 0 .118.033.152.098a.41.41 0 0 1 .051.183v1.938c0 .057-.018.119-.05.183-.035.066-.086.098-.153.098H22.5v-2.5h.297zm0 3c.067 0 .118.033.152.098.033.065.051.127.051.183v1.938c0 .057-.018.119-.05.183-.035.066-.086.098-.153.098H22.5v-2.5h.297z" fill="#ca64ea"/>
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Generator: Adobe Illustrator 23.0.1, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd" [
+    <!ENTITY ns_extend "http://ns.adobe.com/Extensibility/1.0/">
+    <!ENTITY ns_ai "http://ns.adobe.com/AdobeIllustrator/10.0/">
+    <!ENTITY ns_graphs "http://ns.adobe.com/Graphs/1.0/">
+    <!ENTITY ns_vars "http://ns.adobe.com/Variables/1.0/">
+    <!ENTITY ns_imrep "http://ns.adobe.com/ImageReplacement/1.0/">
+    <!ENTITY ns_sfw "http://ns.adobe.com/SaveForWeb/1.0/">
+    <!ENTITY ns_custom "http://ns.adobe.com/GenericCustomNamespace/1.0/">
+    <!ENTITY ns_adobe_xpath "http://ns.adobe.com/XPath/1.0/">
+]>
+<svg version="1.1" id="Livello_1" xmlns:x="&ns_extend;" xmlns:i="&ns_ai;" xmlns:graph="&ns_graphs;"
+     xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 2744.833 2553.333"
+     enable-background="new 0 0 2744.833 2553.333" xml:space="preserve">
+<metadata>
+    <sfw  xmlns="&ns_sfw;">
+        <slices></slices>
+        <sliceSourceBounds  bottomLeftOrigin="true" height="2553.333" width="2744.833" x="-1380.333" y="-1252.667">
+            </sliceSourceBounds>
+    </sfw>
+</metadata>
+<path fill="#CA64EA" d="M2106.5,2553.333H755.212c-64.55,0-116.879-52.328-116.879-116.879l0,0V116.879
+    C638.333,52.328,690.662,0,755.212,0l0,0h1872.742c64.551,0,116.879,52.328,116.879,116.879c0,0,0,0,0,0v521.454L2106.5,2553.333z"
+    />
+<path fill="#AE4BD5" d="M2744.833,1276.667l-319.167,191.5l-319.167-191.5V638.333h638.333V1276.667z"/>
+<path fill="#9332BF" d="M2744.833,1915l-319.167,191.5L2106.5,1915v-638.333h638.333V1915z"/>
+<path fill="#7719AA" d="M2106.5,1915h638.333v518.646c0,66.102-53.586,119.688-119.688,119.688H2106.5V1915z"/>
+<path opacity="0.2" enable-background="new    " d="M1414.994,510.667h-776.66V2106.5h776.66
+    c64.534-0.21,116.796-52.473,117.006-117.006V627.673C1531.79,563.14,1479.527,510.877,1414.994,510.667z"/>
+<path opacity="0.2" enable-background="new    " d="M1351.16,574.5H638.333v1595.833h712.827
+    c64.534-0.21,116.796-52.473,117.006-117.006V691.507C1467.957,626.973,1415.694,574.71,1351.16,574.5z"/>
+<path opacity="0.5" enable-background="new    " d="M1351.16,574.5H638.333v1468.167h712.827
+    c64.534-0.21,116.796-52.473,117.006-117.006V691.507C1467.957,626.973,1415.694,574.71,1351.16,574.5z"/>
+<path opacity="0.5" enable-background="new    " d="M1287.327,574.5H638.333v1468.167h648.993
+    c64.534-0.21,116.796-52.473,117.007-117.006V691.507C1404.123,626.973,1351.86,574.71,1287.327,574.5z"/>
+<linearGradient id="SVGID_1_" gradientUnits="userSpaceOnUse" x1="243.9611" y1="2072.2598" x2="1160.3723" y2="485.0735" gradientTransform="matrix(1 0 0 -1 0 2555.3333)">
+    <stop  offset="0" style="stop-color:#8324B3"/>
+    <stop  offset="0.5" style="stop-color:#7A1BAC"/>
+    <stop  offset="1" style="stop-color:#621197"/>
+</linearGradient>
+<path fill="url(#SVGID_1_)" d="M117.007,574.5h1170.32c64.621,0,117.007,52.386,117.007,117.007v1170.32
+    c0,64.621-52.386,117.007-117.007,117.007H117.007C52.386,1978.833,0,1926.448,0,1861.827V691.507
+    C0,626.886,52.386,574.5,117.007,574.5z"/>
+<path fill="#FFFFFF" d="M384.66,896.348h158.626l311.698,504.283c14.171,22.597,24.81,40.789,31.917,54.577h2.043
+    c-3.856-34.327-5.391-68.876-4.596-103.41V896.348h135.327v760.638H871.197l-323.38-518.263
+    c-10.953-17.099-20.598-35.003-28.853-53.556h-2.553c3.26,37.74,4.602,75.62,4.021,113.496v458.323H384.66V896.348z"/>
 </svg>
