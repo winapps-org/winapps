@@ -1,8 +1,4 @@
 #!/usr/bin/env bash
-# Copyright (c) 2024 winapps-org
-# All rights reserved.
-#
-# SPDX-License-Identifier: Unlicense
 
 ### GLOBAL CONSTANTS ###
 declare -r ANSI_LIGHT_BLUE="\033[1;94m" # Light blue text.

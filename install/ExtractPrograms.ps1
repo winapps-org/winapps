@@ -1,8 +1,3 @@
-# Copyright (c) 2024 winapps-org
-# All rights reserved.
-#
-# SPDX-License-Identifier: Unlicense
-
 ### FUNCTIONS ###
 # Name: 'GetApplicationIcon'
 # Role: Extract the icon from a given executable file as a base-64 string.
