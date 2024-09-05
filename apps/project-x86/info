@@ -1,7 +1,7 @@
-# Copyright (c) 2024 Fmstrat
+# Copyright (c) 2024 Oskar Manhart
 # All rights reserved.
 #
-# SPDX-License-Identifier: Proprietary
+# SPDX-License-Identifier: GPL-3.0-or-later
 
 # GNOME shortcut name
 NAME="Project"
