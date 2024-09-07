@@ -1,4 +1,9 @@
 #!/usr/bin/env bash
+# Copyright (c) 2024 winapps-org
+# All rights reserved.
+#
+# SPDX-License-Identifier: Unlicense
+
 # shellcheck disable=SC2034           # Silence warnings regarding unused variables globally.
 
 ### GLOBAL CONSTANTS ###

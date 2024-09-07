@@ -1,5 +1,6 @@
 ci:
   autoupdate_branch: "rewrite"
+  skip: [license-tools]
 
 repos:
   - repo: https://github.com/Lucas-C/pre-commit-hooks
@@ -48,3 +49,8 @@ repos:
     rev: v0.10.0.1
     hooks:
       - id: shellcheck
+
+  - repo: https://github.com/emzeat/mz-lictools
+    rev: v2.7.0
+    hooks:
+      - id: license-tools
