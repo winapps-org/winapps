@@ -284,33 +284,25 @@ The following guides are available:
 
 If you already have a Windows VM or server you wish to use with WinApps, you will need to merge `install/RDPApps.reg` into the Windows Registry manually.
 
-### Step 2: Clone WinApps Repository and Dependencies
-1. Clone the WinApps GitHub repository.
-    ```bash
-    git clone --recurse-submodules --remote-submodules https://github.com/winapps-org/winapps.git && cd winapps
-    ```
-
-2. Install the required dependencies.
-    - Debian/Ubuntu:
-        ```bash
-        sudo apt install -y dialog freerdp3-x11 iproute2 libnotify-bin netcat
-        ```
-    - Fedora/RHEL:
-        ```bash
-        sudo dnf install -y dialog freerdp iproute libnotify nmap-ncat
-        ```
-    - Arch Linux:
-        ```bash
-        sudo pacman -Syu --needed -y dialog freerdp iproute2 libnotify gnu-netcat
-        ```
-    - Gentoo Linux:
-        ```bash
-        sudo emerge --ask=n sys-libs/dialog net-misc/freerdp:3 net-misc/iproute2 x11-libs/libnotify net-analyzer/netcat
-        ```
-
-- `Docker Engine`: https://docs.docker.com/engine/install/
-- `Podman`: https://podman.io/docs/installation
-- `podman-compose`: https://github.com/containers/podman-compose
+### Step 2: Install Dependencies
+Install the required dependencies.
+  - Debian/Ubuntu:
+      ```bash
+      sudo apt install -y dialog freerdp3-x11 iproute2 libnotify-bin netcat
+      ```
+  - Fedora/RHEL:
+      ```bash
+      sudo dnf install -y dialog freerdp iproute libnotify nmap-ncat
+      ```
+  - Arch Linux:
+      ```bash
+      sudo pacman -Syu --needed -y dialog freerdp iproute2 libnotify
+      gnu-netcat
+      ```
+  - Gentoo Linux:
+      ```bash
+      sudo emerge --ask=n sys-libs/dialog net-misc/freerdp:3 net-misc/iproute2 x11-libs/libnotify net-analyzer/netcat
+      ```
 
 > [!NOTE]
 > WinApps requires `FreeRDP` version 3 or later. If not available for your distribution through your package manager, you can install the [Flatpak](https://flathub.org/apps/com.freerdp.FreeRDP).
@@ -443,10 +435,10 @@ FREERDP_COMMAND=""
 ### Step 4: Run the WinApps Installer
 Run the WinApps installer.
 ```bash
-./installer.sh
+bash <(curl https://raw.githubusercontent.com/winapps-org/winapps/main/setup.sh)
 ```
 
-A list of supported additional arguments can be accessed by running `./installer.sh --help`.
+A list of supported additional arguments can be accessed by running `./setup.sh --help`.
 
 <img src="./demo/installer.gif" width=1000 alt="WinApps Installer Animation.">
 
@@ -461,15 +453,15 @@ Adding your own applications with custom icons and MIME types to the installer i
 WinApps offers a manual mode for running applications that were not configured by the WinApps installer. This is completed with the `manual` flag. Executables that are in the Windows PATH do not require full path definition.
 
 ```bash
-./bin/winapps manual "C:\my\directory\executableNotInPath.exe"
-./bin/winapps manual executableInPath.exe
+winapps manual "C:\my\directory\executableNotInPath.exe"
+winapps manual executableInPath.exe
 ```
 
 ## Updating WinApps
 The installer can be run multiple times. To update your installation of WinApps:
 1. Run the WinApps installer to remove WinApps from your system.
 2. Pull the latest changes from the WinApps GitHub repository.
-3. Re-install WinApps using the WinApps installer.
+3. Re-install WinApps using the WinApps installer by running `winapps-setup`.
 
 ## Star History
 <a href="https://star-history.com/#winapps-org/winapps&Date">
