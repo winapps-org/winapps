@@ -42,6 +42,8 @@ in
 
       sed -E -i \
         -e 's/grep -q -E "\\blibvirt\\b"/grep -q -E "\\blibvirtd\\b"/' \
+        -e 's|$SUDO ln -s "./bin/winapps"(.*)||' \
+        -e 's|$SUDO ln -s "./setup.sh"(.*)||' \
         $out/bin/winapps
 
       sed -E -i \
