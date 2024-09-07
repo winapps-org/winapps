@@ -185,15 +185,17 @@ function waGetSourceCode() {
 # Name: 'waGetInquirer'
 # Role: Loads the inquirer script, even if the source isn't cloned yet
 function waGetInquirer() {
-    if [ ! -d "$SYS_SOURCE_PATH" ] && [ ! -d "$USER_SOURCE_PATH" ]; then
-        INQUIRER_PATH="/tmp/waInquirer.sh"
-        rm -f "$INQUIRER_PATH"
+    local INQUIRER=$INQUIRER_PATH
 
-        curl "https://raw.githubusercontent.com/winapps-org/winapps/main/install/inquirer.sh" -O "$INQUIRER_PATH"
+    if [ ! -d "$SYS_SOURCE_PATH" ] && [ ! -d "$USER_SOURCE_PATH" ]; then
+        INQUIRER="/tmp/waInquirer.sh"
+        rm -f "$INQUIRER"
+
+        curl -o "$INQUIRER" "https://raw.githubusercontent.com/winapps-org/winapps/main/install/inquirer.sh"
     fi
 
     # shellcheck source=/dev/null # Exclude this file from being checked by ShellCheck.
-    source "$INQUIRER_PATH"
+    source "$INQUIRER"
 }
 
 # Name: 'waCheckInput'
