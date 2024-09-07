@@ -1,8 +1,13 @@
 #!/usr/bin/env bash
-# Copyright (c) 2024 winapps-org
+# Copyright (c) 2024 Felix Bartels
+# Copyright (c) 2024 Coruscant11
+# Copyright (c) 2024 escapefreeg
+# Copyright (c) 2024 Rohan Barar
+# Copyright (c) 2024 Oskar Manhart
+# Copyright (c) 2024 Sebastien Bürky
 # All rights reserved.
 #
-# SPDX-License-Identifier: Unlicense
+# SPDX-License-Identifier: GPL-3.0-or-later
 
 # shellcheck disable=SC2034           # Silence warnings regarding unused variables globally.
 

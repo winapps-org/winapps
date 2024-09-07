@@ -1,7 +1,8 @@
-# Copyright (c) 2024 winapps-org
+# Copyright (c) 2024 Rohan Barar
+# Copyright (c) 2024 Oskar Manhart
 # All rights reserved.
 #
-# SPDX-License-Identifier: Unlicense
+# SPDX-License-Identifier: GPL-3.0-or-later
 
 ### FUNCTIONS ###
 # Name: 'GetApplicationIcon'
