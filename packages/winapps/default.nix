@@ -10,8 +10,8 @@
   iproute2,
   ...
 }: let
-  rev = "feat-install-script"; # "9417382ae73d2ae5ad69d1c5c407e8b1e5f001dc";
-  hash = "sha256-iasuufBu+DhulH/hj2uUaM/KzGO7241+PZXuujsT/qI=";
+  rev = "4e3d5bd4581250a49974a19b37f55fc76165051a";
+  hash = "sha256-meM9U6MLVqN0SjzorL8TeYKEkFXykCJI7BTady5CWMA=";
 in
   stdenv.mkDerivation rec {
     pname = "winapps";
@@ -42,8 +42,8 @@ in
 
       sed -E -i \
         -e 's/grep -q -E "\\blibvirt\\b"/grep -q -E "\\blibvirtd\\b"/' \
-        -e 's|$SUDO ln -s "./bin/winapps"(.*)||' \
-        -e 's|$SUDO ln -s "./setup.sh"(.*)||' \
+        -e 's|\$SUDO ln -s "./bin/winapps"(.*)||' \
+        -e 's|\$SUDO ln -s "./setup.sh"(.*)||' \
         $out/bin/winapps
 
       sed -E -i \
