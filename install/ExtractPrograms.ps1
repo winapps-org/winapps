@@ -103,11 +103,9 @@ function GetApplicationName {
         [string]$exePath
     )
 
-    if ((Get-Item $exePath).VersionInfo.FileDescription) {
-        # Remove leading/trailing whitespace and replace multiple spaces with a single space.
+    try {
         $productName = (Get-Item $exePath).VersionInfo.FileDescription.Trim() -replace '\s+', ' '
-    } else {
-        # Get the executable file name without the file extension.
+    } catch {
         $productName = [System.IO.Path]::GetFileNameWithoutExtension($exePath)
     }
 
@@ -125,10 +123,7 @@ function GetUWPApplicationName {
 
     # Query the application executable for the application name.
     if (Test-Path $exePath) {
-        if ((Get-Item $exePath).VersionInfo.FileDescription) {
-            # Remove leading/trailing whitespace and replace multiple spaces with a single space.
-            $productName = (Get-Item $exePath).VersionInfo.FileDescription.Trim() -replace '\s+', ' '
-        }
+        $productName = GetApplicationName -exePath $exePath
     }
 
     # Use the 'DisplayName' (if available) if the previous method failed.
