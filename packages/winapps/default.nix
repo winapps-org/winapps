@@ -10,8 +10,8 @@
   iproute2,
   ...
 }: let
-  rev = "4e3d5bd4581250a49974a19b37f55fc76165051a";
-  hash = "sha256-meM9U6MLVqN0SjzorL8TeYKEkFXykCJI7BTady5CWMA=";
+  rev = "350f003d817765ed9e6f4791e86c3d69019f230a";
+  hash = "sha256-MqQ9KFyo6bZDxfWCe62z1zDSvHJJjvWqZLO4UxwELow=";
 in
   stdenv.mkDerivation rec {
     pname = "winapps";
@@ -42,8 +42,6 @@ in
 
       sed -E -i \
         -e 's/grep -q -E "\\blibvirt\\b"/grep -q -E "\\blibvirtd\\b"/' \
-        -e 's|\$SUDO ln -s "./bin/winapps"(.*)||' \
-        -e 's|\$SUDO ln -s "./setup.sh"(.*)||' \
         $out/bin/winapps
 
       sed -E -i \
@@ -53,6 +51,9 @@ in
         -e "$(printf "%s$out%s" 's|^readonly USER_SOURCE_PATH="(.*?)"|readonly USER_SOURCE_PATH="' '/src"|')" \
         -e 's/\$SUDO git -C "\$SOURCE_PATH" pull --no-rebase//g' \
         -e 's|./setup.sh|winapps-setup|g' \
+        -e 's|\$SUDO ln -s "./bin/winapps" "\$\{BIN_PATH\}/winapps"||' \
+        -e 's|\$SUDO ln -s "./setup.sh" "\$\{BIN_PATH\}/winapps-setup"||' \
+        -e "s|\$\{BIN_PATH\}/winapps|$out/bin/winapps|" \
         $out/bin/winapps-setup
 
       for f in winapps-setup winapps; do
