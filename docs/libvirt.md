@@ -52,6 +52,19 @@ Together, these components form a powerful and flexible virtualization stack, wi
     sudo reboot # Reboot the system to ensure the user is added to the relevant groups.
     ```
 
+    Note: Due to a known bug in `rpm-ostree`, which affects various distributions such as Silverblue, Bazzite, Bluefin, Kinoite, Aurora, UCore, and others, the commands provided earlier may not properly add your user to all required groups. If the `groups $USER` command does not show your user as being part of the necessary groups, you'll need to manually add these groups to `/etc/group` if they are present in `/usr/lib/group`.
+
+    To resolve this:
+    1. Identify which groups are missing from the output of `groups $USER`.
+    2. Use the following snippet to add each missing group to `/etc/group`. Ensure you replace "kvm" with the name of the missing group.
+
+        ```bash
+        grep -E '^kvm:' /usr/lib/group | sudo tee -a /etc/group
+        sudo usermod -aG kvm $USER
+        ```
+
+    3. Reboot your system to ensure that the user is correctly added to the relevant groups.
+
 6. If relevant to your distribution, disable `AppArmor` for the `libvirt` daemon.
     ``` bash
     sudo ln -s /etc/apparmor.d/usr.sbin.libvirtd /etc/apparmor.d/disable/ # Disable AppArmor for the libvirt daemon by creating a symbolic link.
@@ -583,21 +596,20 @@ Once you get to the point of selecting the location for installation, you will s
     <img src="./libvirt_images/20.png" width="700px"/>
 </p>
 
-The next hurdle will be bypassing the network selection screen. As the `VirtIO` drivers
-for networking have not yet been loaded, the virtual machine will not be able to be connected to the internet.
-- For Windows 11: Press "Shift + F10" to open the command prompt. Type 'OOBE\BYPASSNRO' (without the surrounding quotation marks) and press Enter. The system will restart and now allow you to click `I don't have internet`.
+The next hurdle will be bypassing the network selection screen. As the `VirtIO` drivers for networking have not yet been loaded, the virtual machine will not be able to be connected to the internet.
+- For Windows 11: When prompted to select your country or region, press "Shift + F10" to open the command prompt. Enter `OOBE\BYPASSNRO` and press Enter. The system will restart, allowing you to select "I don't have internet" later on. It is crucial to run this command as soon as possible, as doing so later in the installation process will not work, and you may be required to create a Microsoft account despite not having an internet connection.
 
 <p align="center">
     <img src="./libvirt_images/21.png" width="700px"/>
 </p>
 
-- For Windows 10: Simply click `I don't have internet`.
+- For Windows 10: Simply click "I don't have internet".
 
 <p align="center">
     <img src="./libvirt_images/22.png" width="700px"/>
 </p>
 
-Following the above, choose to `Continue with limited setup`.
+Following the above, choose to "Continue with limited setup".
 
 <p align="center">
     <img src="./libvirt_images/23.png" width="700px"/>
@@ -668,6 +680,59 @@ Scroll down to `Remote Desktop`, and enable `Enable Remote Desktop`.
 
 At this point, you will need to restart the Windows virtual machine.
 
+## (Optional) Configuring a Fallback Shared Folder
+When connecting to Windows through FreeRDP, your home folder will be shared automatically. However, this sharing setup does not apply when using Windows via virt-manager. To configure a fallback shared folder, follow these steps:
+
+1. Navigate to "Virtual Hardware Details", then "Memory" and then check the box for "Enable shared memory".
+
+2. Add filesystem hardware by going to "Virtual Hardware Details" and selecting "Add Hardware" followed by "Filesystem". Choose `virtiofs` as the driver, enter the path to the shared folder, and provide a name for the shared folder in the target path (e.g., "Windows Shared Folder").
+
+3. Install [`WinFSP`](https://github.com/winfsp/winfsp/releases/) on Windows.
+
+4. Enable and start a 'VirtIO Filesystem' service within Windows by running the following commands within a PowerShell prompt.
+    ```PowerShell
+    sc.exe create VirtioFsSvc binpath= "C:\Program Files\Virtio-Win\VioFS\virtiofs.exe" start=auto depend="WinFsp.Launcher/VirtioFsDrv" DisplayName="Virtio Filesystem Service"
+    sc.exe start VirtioFsSvc
+    ```
+
+5. Reboot Windows.
+
+## (Optional) Configuring a Static IP Address
+1. Identify the Windows MAC address.
+    ```bash
+    virsh dumpxml "RDPWindows" | grep "mac address"
+    ```
+
+2. Edit the virtual network configuration.
+    1. Identify the correct network name.
+        ```bash
+        virsh net-list # Will likely return "default"
+        ```
+
+    2. Edit the configuration file.
+        ```bash
+        virsh net-edit "default" # Replace "default" with the appropriate network name if different
+        ```
+
+    3. Update the `<dhcp>` section in the configuration file using the MAC address you obtained earlier. In the below example, "RDPWindows" has MAC address "df:87:4c:75:e5:fb" and is assigned the static IP address "192.168.122.2".
+        ```xml
+        <dhcp>
+          <range start="192.168.122.2" end="192.168.122.254"/>
+          <host mac="df:87:4c:75:e5:fb" name="RDPWindows" ip="192.168.122.2"/>
+          <host mac="53:45:6b:de:a0:7b" name="Debian" ip="192.168.122.3"/>
+          <host mac="7d:62:4f:59:ef:f5" name="FreeBSD" ip="192.168.122.4"/>
+        </dhcp>
+        ```
+
+    4. Restart the virtual network.
+        ```bash
+        virsh net-destroy "default" # Replace with the correct name on your system
+        virsh net-start "default" # Replace with the correct name on your system
+        ```
+
+    5. Reboot Windows.
+
+## Installing Windows Software and Configuring WinApps
 You may now proceed to install other applications like 'Microsoft 365', 'Adobe Creative Cloud' or any other applications you would like to use through WinApps.
 
 > [!NOTE]
@@ -679,5 +744,5 @@ You may now proceed to install other applications like 'Microsoft 365', 'Adobe C
 Finally, restart the virtual machine, but **DO NOT** log in. Close the virtual machine viewer and proceed to run the WinApps installation.
 
 ```bash
-./installer.sh
+bash <(curl https://raw.githubusercontent.com/winapps-org/winapps/main/setup.sh)
 ```

@@ -103,11 +103,9 @@ function GetApplicationName {
         [string]$exePath
     )
 
-    if ((Get-Item $exePath).VersionInfo.FileDescription) {
-        # Remove leading/trailing whitespace and replace multiple spaces with a single space.
+    try {
         $productName = (Get-Item $exePath).VersionInfo.FileDescription.Trim() -replace '\s+', ' '
-    } else {
-        # Get the executable file name without the file extension.
+    } catch {
         $productName = [System.IO.Path]::GetFileNameWithoutExtension($exePath)
     }
 
@@ -125,10 +123,7 @@ function GetUWPApplicationName {
 
     # Query the application executable for the application name.
     if (Test-Path $exePath) {
-        if ((Get-Item $exePath).VersionInfo.FileDescription) {
-            # Remove leading/trailing whitespace and replace multiple spaces with a single space.
-            $productName = (Get-Item $exePath).VersionInfo.FileDescription.Trim() -replace '\s+', ' '
-        }
+        $productName = GetApplicationName -exePath $exePath
     }
 
     # Use the 'DisplayName' (if available) if the previous method failed.
@@ -180,6 +175,7 @@ function AppSearchWinReg {
     # Initialise empty arrays.
     $exeNames = @()
     $exePaths = @()
+    $validPaths = @()
 
     # Query windows registry for unique installed executable files.
     $exePaths = Get-ItemProperty "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\*" |
@@ -192,11 +188,14 @@ function AppSearchWinReg {
 
     # Get corresponding application names for unique installed executable files.
     foreach ($exePath in $exePaths) {
-        $exeNames += GetApplicationName -exePath $exePath
+        if (Test-Path -Path $exePath) {
+            $validPaths += $exePath
+            $exeNames += GetApplicationName -exePath $exePath
+        }
     }
 
     # Process extracted executable file paths.
-    PrintArrayData -Names $exeNames -Paths $exePaths -Source "winreg"
+    PrintArrayData -Names $exeNames -Paths $validPaths -Source "winreg"
 }
 
 # Name: 'AppSearchUWP'

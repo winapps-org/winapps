@@ -37,6 +37,9 @@ readonly EC_INVALID_FLAVOR="16"  # Backend specified is not 'libvirt', 'docker' 
 readonly SYS_BIN_PATH="/usr/local/bin"                  # UNIX path to 'bin' directory for a '--system' WinApps installation.
 readonly USER_BIN_PATH="${HOME}/.local/bin"             # UNIX path to 'bin' directory for a '--user' WinApps installation.
 readonly USER_BIN_PATH_WIN='\\tsclient\home\.local\bin' # WINDOWS path to 'bin' directory for a '--user' WinApps installation.
+# 'SOURCE'
+readonly SYS_SOURCE_PATH="${SYS_BIN_PATH}/winapps" # UNIX path to WinApps source directory for a '--system' WinApps installation.
+readonly USER_SOURCE_PATH="${USER_BIN_PATH}/winapps" # UNIX path to WinApps source directory for a '--system' WinApps installation.
 # 'APP'
 readonly SYS_APP_PATH="/usr/share/applications"                        # UNIX path to 'applications' directory for a '--system' WinApps installation.
 readonly USER_APP_PATH="${HOME}/.local/share/applications"             # UNIX path to 'applications' directory for a '--user' WinApps installation.
@@ -98,6 +101,7 @@ SUDO=""         # Set to "sudo" if the user specifies '--system', or "" if the u
 BIN_PATH=""     # Set to $SYS_BIN_PATH if the user specifies '--system', or $USER_BIN_PATH if the user specifies '--user'.
 APP_PATH=""     # Set to $SYS_APP_PATH if the user specifies '--system', or $USER_APP_PATH if the user specifies '--user'.
 APPDATA_PATH="" # Set to $SYS_APPDATA_PATH if the user specifies '--system', or $USER_APPDATA_PATH if the user specifies '--user'.
+SOURCE_PATH=""  # Set to $SYS_SOURCE_PATH if the user specifies '--system', or $USER_SOURCE_PATH if the user specifies '--user'.
 
 # INSTALLATION PROCESS
 INSTALLED_EXES=() # List of executable file names of officially supported applications that have already been configured during the current installation process.
@@ -125,43 +129,73 @@ function waTerminateScript() {
 # Role: Displays usage information for the script.
 function waUsage() {
     echo -e "Usage:
-  ${COMMAND_TEXT}./installer.sh --user${CLEAR_TEXT}                                        # Install WinApps and selected applications in ${HOME}
-  ${COMMAND_TEXT}./installer.sh --system${CLEAR_TEXT}                                      # Install WinApps and selected applications in /usr
-  ${COMMAND_TEXT}./installer.sh --user --setupAllOfficiallySupportedApps${CLEAR_TEXT}      # Install WinApps and all officially supported applications in ${HOME}
-  ${COMMAND_TEXT}./installer.sh --system --setupAllOfficiallySupportedApps${CLEAR_TEXT}    # Install WinApps and all officially supported applications in /usr
-  ${COMMAND_TEXT}./installer.sh --user --uninstall${CLEAR_TEXT}                            # Uninstall everything in ${HOME}
-  ${COMMAND_TEXT}./installer.sh --system --uninstall${CLEAR_TEXT}                          # Uninstall everything in /usr
-  ${COMMAND_TEXT}./installer.sh --help${CLEAR_TEXT}                                        # Display this usage message."
+  ${COMMAND_TEXT}./setup.sh --user${CLEAR_TEXT}                                        # Install WinApps and selected applications in ${HOME}
+  ${COMMAND_TEXT}./setup.sh --system${CLEAR_TEXT}                                      # Install WinApps and selected applications in /usr
+  ${COMMAND_TEXT}./setup.sh --user --setupAllOfficiallySupportedApps${CLEAR_TEXT}      # Install WinApps and all officially supported applications in ${HOME}
+  ${COMMAND_TEXT}./setup.sh --system --setupAllOfficiallySupportedApps${CLEAR_TEXT}    # Install WinApps and all officially supported applications in /usr
+  ${COMMAND_TEXT}./setup.sh --user --uninstall${CLEAR_TEXT}                            # Uninstall everything in ${HOME}
+  ${COMMAND_TEXT}./setup.sh --system --uninstall${CLEAR_TEXT}                          # Uninstall everything in /usr
+  ${COMMAND_TEXT}./setup.sh --help${CLEAR_TEXT}                                        # Display this usage message."
 }
 
-# Name: 'waSetWorkingDirectory'
-# Role: Changes the working directory to the directory containing the script.
-function waSetWorkingDirectory() {
+# Name: 'waGetSourceCode'
+# Role: Grab the WinApps source code using Git.
+function waGetSourceCode() {
     # Declare variables.
     local SCRIPT_DIR_PATH="" # Stores the absolute path of the directory containing the script.
 
     # Determine the absolute path to the directory containing the script.
     SCRIPT_DIR_PATH=$(readlink -f "$(dirname "${BASH_SOURCE[0]}")")
 
+    # Check if winapps is currently installed on $SOURCE_PATH
+    if [ -f "$SCRIPT_DIR_PATH/winapps" ] && [ "$SCRIPT_DIR_PATH" -ne "$SOURCE_PATH" ]; then
+        # Display a warning.
+        echo -e "${WARNING_TEXT}[WARNING]${CLEAR_TEXT} You are running a WinApps installation located outside of default location '${SOURCE_PATH}'. A new installation will be created."
+        echo -e "${WARNING_TEXT}[WARNING]${CLEAR_TEXT} You might want to remove your old installation on '${SCRIPT_DIR_PATH}'."
+    fi
+
+    if [[ ! -d "$SOURCE_PATH" ]]; then
+        $SUDO git clone --recurse-submodules --remote-submodules https://github.com/winapps-org/winapps.git "$SOURCE_PATH"
+    else
+        echo -e "${INFO_TEXT}WinApps installation already present at ${CLEAR_TEXT}${COMMAND_TEXT}${SOURCE_PATH}${CLEAR_TEXT}${INFO_TEXT}. Updating...${CLEAR_TEXT}"
+        $SUDO git -C "$SOURCE_PATH" pull --no-rebase
+    fi
+
     # Silently change the working directory.
-    if ! cd "$SCRIPT_DIR_PATH" &>/dev/null; then
+    if ! cd "$SOURCE_PATH" &>/dev/null; then
         # Display the error type.
         echo -e "${ERROR_TEXT}ERROR:${CLEAR_TEXT} ${BOLD_TEXT}DIRECTORY CHANGE FAILURE.${CLEAR_TEXT}"
 
         # Display error details.
-        echo -e "${INFO_TEXT}Failed to change the working directory to ${CLEAR_TEXT}${COMMAND_TEXT}${SCRIPT_DIR_PATH}${CLEAR_TEXT}${INFO_TEXT}.${CLEAR_TEXT}"
+        echo -e "${INFO_TEXT}Failed to change the working directory to ${CLEAR_TEXT}${COMMAND_TEXT}${SOURCE_PATH}${CLEAR_TEXT}${INFO_TEXT}.${CLEAR_TEXT}"
 
         # Display the suggested action(s).
         echo "--------------------------------------------------------------------------------"
         echo "Ensure:"
-        echo -e "  - ${COMMAND_TEXT}${SCRIPT_DIR_PATH}${CLEAR_TEXT} exists."
-        echo -e "  - ${COMMAND_TEXT}${SCRIPT_DIR_PATH}${CLEAR_TEXT} is valid and does not contain syntax errors."
-        echo -e "  - The current user has sufficient permissions to access ${COMMAND_TEXT}${SCRIPT_DIR_PATH}${CLEAR_TEXT}."
+        echo -e "  - ${COMMAND_TEXT}${SOURCE_PATH}${CLEAR_TEXT} exists."
+        echo -e "  - ${COMMAND_TEXT}${SOURCE_PATH}${CLEAR_TEXT} has been cloned and checked out properly."
+        echo -e "  - The current user has sufficient permissions to access and write to ${COMMAND_TEXT}${SOURCE_PATH}${CLEAR_TEXT}."
         echo "--------------------------------------------------------------------------------"
 
         # Terminate the script.
         return "$EC_FAILED_CD"
     fi
+}
+
+# Name: 'waGetInquirer'
+# Role: Loads the inquirer script, even if the source isn't cloned yet
+function waGetInquirer() {
+    local INQUIRER=$INQUIRER_PATH
+
+    if [ ! -d "$SYS_SOURCE_PATH" ] && [ ! -d "$USER_SOURCE_PATH" ]; then
+        INQUIRER="/tmp/waInquirer.sh"
+        rm -f "$INQUIRER"
+
+        curl -o "$INQUIRER" "https://raw.githubusercontent.com/winapps-org/winapps/main/install/inquirer.sh"
+    fi
+
+    # shellcheck source=/dev/null # Exclude this file from being checked by ShellCheck.
+    source "$INQUIRER"
 }
 
 # Name: 'waCheckInput'
@@ -301,11 +335,13 @@ function waCheckInput() {
 function waConfigurePathsAndPermissions() {
     if [ "$OPT_USER" -eq 1 ]; then
         SUDO=""
+        SOURCE_PATH="$USER_SOURCE_PATH"
         BIN_PATH="$USER_BIN_PATH"
         APP_PATH="$USER_APP_PATH"
         APPDATA_PATH="$USER_APPDATA_PATH"
     elif [ "$OPT_SYSTEM" -eq 1 ]; then
         SUDO="sudo"
+        SOURCE_PATH="$SYS_SOURCE_PATH"
         BIN_PATH="$SYS_BIN_PATH"
         APP_PATH="$SYS_APP_PATH"
         APPDATA_PATH="$SYS_APPDATA_PATH"
@@ -337,7 +373,7 @@ function waCheckExistingInstall() {
     echo -n "Checking for existing conflicting WinApps installations... "
 
     # Check for an existing 'user' installation.
-    if [ -f "${USER_BIN_PATH}/winapps" ]; then
+    if [[ -f "${USER_BIN_PATH}/winapps" || -d "${USER_SOURCE_PATH}/winapps" ]]; then
         # Complete the previous line.
         echo -e "${FAIL_TEXT}Failed!${CLEAR_TEXT}\n"
 
@@ -349,7 +385,7 @@ function waCheckExistingInstall() {
 
         # Display the suggested action(s).
         echo "--------------------------------------------------------------------------------"
-        echo -e "Please remove the existing WinApps installation using ${COMMAND_TEXT}./installer.sh --user --uninstall${CLEAR_TEXT}."
+        echo -e "Please remove the existing WinApps installation using ${COMMAND_TEXT}./setup.sh --user --uninstall${CLEAR_TEXT}."
         echo "--------------------------------------------------------------------------------"
 
         # Terminate the script.
@@ -357,7 +393,7 @@ function waCheckExistingInstall() {
     fi
 
     # Check for an existing 'system' installation.
-    if [ -f "${SYS_BIN_PATH}/winapps" ]; then
+    if [[ -f "${SYS_BIN_PATH}/winapps" || -d "${SYS_SOURCE_PATH}/winapps" ]]; then
         # Complete the previous line.
         echo -e "${FAIL_TEXT}Failed!${CLEAR_TEXT}\n"
 
@@ -369,7 +405,7 @@ function waCheckExistingInstall() {
 
         # Display the suggested action(s).
         echo "--------------------------------------------------------------------------------"
-        echo -e "Please remove the existing WinApps installation using ${COMMAND_TEXT}./installer.sh --system --uninstall${CLEAR_TEXT}."
+        echo -e "Please remove the existing WinApps installation using ${COMMAND_TEXT}./setup.sh --system --uninstall${CLEAR_TEXT}."
         echo "--------------------------------------------------------------------------------"
 
         # Terminate the script.
@@ -450,6 +486,54 @@ function waLoadConfig() {
 # Name: 'waCheckScriptDependencies'
 # Role: Terminate script if dependencies are missing.
 function waCheckScriptDependencies() {
+    # 'Git'
+    if ! command -v git &>/dev/null; then
+        # Display the error type.
+        echo -e "${ERROR_TEXT}ERROR:${CLEAR_TEXT} ${BOLD_TEXT}MISSING DEPENDENCIES.${CLEAR_TEXT}"
+
+        # Display the error details.
+        echo -e "${INFO_TEXT}Please install 'git' to proceed.${CLEAR_TEXT}"
+
+        # Display the suggested action(s).
+        echo "--------------------------------------------------------------------------------"
+        echo "Debian/Ubuntu-based systems:"
+        echo -e "  ${COMMAND_TEXT}sudo apt install git${CLEAR_TEXT}"
+        echo "Red Hat/Fedora-based systems:"
+        echo -e "  ${COMMAND_TEXT}sudo dnf install git${CLEAR_TEXT}"
+        echo "Arch Linux systems:"
+        echo -e "  ${COMMAND_TEXT}sudo pacman -S git${CLEAR_TEXT}"
+        echo "Gentoo Linux systems:"
+        echo -e "  ${COMMAND_TEXT}sudo emerge --ask dev-vcs/git${CLEAR_TEXT}"
+        echo "--------------------------------------------------------------------------------"
+
+        # Terminate the script.
+        return "$EC_MISSING_DEPS"
+    fi
+
+    # 'curl'
+    if ! command -v curl &>/dev/null; then
+        # Display the error type.
+        echo -e "${ERROR_TEXT}ERROR:${CLEAR_TEXT} ${BOLD_TEXT}MISSING DEPENDENCIES.${CLEAR_TEXT}"
+
+        # Display the error details.
+        echo -e "${INFO_TEXT}Please install 'curl' to proceed.${CLEAR_TEXT}"
+
+        # Display the suggested action(s).
+        echo "--------------------------------------------------------------------------------"
+        echo "Debian/Ubuntu-based systems:"
+        echo -e "  ${COMMAND_TEXT}sudo apt install curl${CLEAR_TEXT}"
+        echo "Red Hat/Fedora-based systems:"
+        echo -e "  ${COMMAND_TEXT}sudo dnf install curl${CLEAR_TEXT}"
+        echo "Arch Linux systems:"
+        echo -e "  ${COMMAND_TEXT}sudo pacman -S curl${CLEAR_TEXT}"
+        echo "Gentoo Linux systems:"
+        echo -e "  ${COMMAND_TEXT}sudo emerge --ask net-misc/curl${CLEAR_TEXT}"
+        echo "--------------------------------------------------------------------------------"
+
+        # Terminate the script.
+        return "$EC_MISSING_DEPS"
+    fi
+
     # 'Dialog'.
     if ! command -v dialog &>/dev/null; then
         # Display the error type.
@@ -852,7 +936,7 @@ function waCheckContainerRunning() {
         # Display the suggested action(s).
         echo "--------------------------------------------------------------------------------"
         echo "Please ensure Windows is powered on:"
-        echo -e "${COMMAND_TEXT}${COMPOSE_COMMAND} --file ~/.config/winapps/winapps.conf start${CLEAR_TEXT}"
+        echo -e "${COMMAND_TEXT}${COMPOSE_COMMAND} --file ~/.config/winapps/compose.yaml start${CLEAR_TEXT}"
         echo "--------------------------------------------------------------------------------"
 
         # Terminate the script.
@@ -1536,8 +1620,9 @@ function waInstall() {
     # Check for installed applications.
     waFindInstalled
 
-    # Install the WinApps bash script.
-    $SUDO cp "./bin/winapps" "${BIN_PATH}/winapps"
+    # Install the WinApps bash scripts.
+    $SUDO ln -s "./bin/winapps" "${BIN_PATH}/winapps"
+    $SUDO ln -s "./setup.sh" "${BIN_PATH}/winapps-setup"
 
     # Configure the Windows RDP session application launcher.
     waConfigureWindows
@@ -1553,8 +1638,25 @@ function waInstall() {
         waConfigureDetectedApps
     fi
 
+    # Ensure BIN_PATH is on PATH
+    waEnsureOnPath
+
     # Print feedback.
     echo -e "${SUCCESS_TEXT}INSTALLATION COMPLETE.${CLEAR_TEXT}"
+}
+
+# Name: 'waEnsureOnPath'
+# Role: Ensures that $BIN_PATH is on $PATH.
+function waEnsureOnPath() {
+    if [[ ":$PATH:" == *":$BIN_PATH:"* ]]; then
+        echo -e "${WARNING_TEXT}[WARNING]${CLEAR_TEXT} It seems like '${BIN_PATH}' is not on PATH."
+        echo -e "${WARNING_TEXT}[WARNING]${CLEAR_TEXT} You can add it by running:"
+        # shellcheck disable=SC2086
+        echo -e "${WARNING_TEXT}[WARNING]${CLEAR_TEXT}   - For Bash: ${COMMAND_TEXT}echo 'export PATH="${BIN_PATH}:\$PATH"' >> ~/.bashrc${CLEAR_TEXT}"
+        # shellcheck disable=SC2086
+        echo -e "${WARNING_TEXT}[WARNING]${CLEAR_TEXT}   - For ZSH: ${COMMAND_TEXT}echo 'export PATH="${BIN_PATH}:\$PATH"' >> ~/.zshrc${CLEAR_TEXT}"
+        echo -e "${WARNING_TEXT}[WARNING]${CLEAR_TEXT} Make sure to restart your Terminal afterwards.\n"
+    fi
 }
 
 # Name: 'waUninstall'
@@ -1570,8 +1672,9 @@ function waUninstall() {
     local DESKTOP_FILE_NAME=""        # Stores the name of the '.desktop' file for the application.
     local BASH_SCRIPT_NAME=""         # Stores the name of the application.
 
-    # Remove the 'WinApps' bash script.
+    # Remove the 'WinApps' bash scripts.
     $SUDO rm -f "${BIN_PATH}/winapps"
+    $SUDO rm -f "${BIN_PATH}/winapps-setup"
 
     # Remove WinApps configuration data, temporary files and logs.
     rm -rf "$USER_APPDATA_PATH"
@@ -1622,9 +1725,10 @@ function waUninstall() {
     done
 
     # Print caveats.
-    echo -e "\n${INFO_TEXT}Please note your WinApps configuration folder was not removed.${CLEAR_TEXT}"
-    echo -e "${INFO_TEXT}You can remove this manually by running:${CLEAR_TEXT}"
-    echo -e "${COMMAND_TEXT}rm -r $(dirname "$CONFIG_PATH")${CLEAR_TEXT}\n"
+    echo -e "\n${INFO_TEXT}Please note that your WinApps configuration and the WinApps source code were not removed.${CLEAR_TEXT}"
+    echo -e "${INFO_TEXT}You can remove these manually by running:${CLEAR_TEXT}"
+    echo -e "${COMMAND_TEXT}rm -r $(dirname "$CONFIG_PATH")${CLEAR_TEXT}"
+    echo -e "${COMMAND_TEXT}rm -r ${SOURCE_PATH}${CLEAR_TEXT}\n"
 
     # Print feedback.
     echo -e "${SUCCESS_TEXT}UNINSTALLATION COMPLETE.${CLEAR_TEXT}"
@@ -1644,17 +1748,16 @@ ${CLEAR_TEXT}"
 waCheckScriptDependencies
 
 # Source the contents of 'inquirer.sh'.
-# shellcheck source=/dev/null # Exclude this file from being checked by ShellCheck.
-source "$INQUIRER_PATH"
-
-# Set the working directory.
-waSetWorkingDirectory
+waGetInquirer
 
 # Sanitise and parse the user input.
 waCheckInput "$@"
 
 # Configure paths and permissions.
 waConfigurePathsAndPermissions
+
+# Get the source code
+waGetSourceCode
 
 # Install or uninstall WinApps.
 if [ "$OPT_UNINSTALL" -eq 1 ]; then
