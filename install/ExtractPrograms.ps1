@@ -2,7 +2,7 @@
 # Copyright (c) 2024 Oskar Manhart
 # All rights reserved.
 #
-# SPDX-License-Identifier: GPL-3.0-or-later
+# SPDX-License-Identifier: AGPL-3.0-or-later
 
 ### FUNCTIONS ###
 # Name: 'GetApplicationIcon'

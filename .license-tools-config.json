@@ -66,5 +66,5 @@
   "license": false,
   "force_author": false,
   "force_license": true,
-  "custom_license": "SPDX-License-Identifier: GPL-3.0-or-later"
+  "custom_license": "SPDX-License-Identifier: AGPL-3.0-or-later"
 }

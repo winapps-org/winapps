@@ -7,7 +7,7 @@
 # Copyright (c) 2024 Sebastien Bürky
 # All rights reserved.
 #
-# SPDX-License-Identifier: GPL-3.0-or-later
+# SPDX-License-Identifier: AGPL-3.0-or-later
 
 # shellcheck disable=SC2034           # Silence warnings regarding unused variables globally.
 
