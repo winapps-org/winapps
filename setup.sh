@@ -38,8 +38,8 @@ readonly SYS_BIN_PATH="/usr/local/bin"                  # UNIX path to 'bin' dir
 readonly USER_BIN_PATH="${HOME}/.local/bin"             # UNIX path to 'bin' directory for a '--user' WinApps installation.
 readonly USER_BIN_PATH_WIN='\\tsclient\home\.local\bin' # WINDOWS path to 'bin' directory for a '--user' WinApps installation.
 # 'SOURCE'
-readonly SYS_SOURCE_PATH="${SYS_BIN_PATH}/winapps" # UNIX path to WinApps source directory for a '--system' WinApps installation.
-readonly USER_SOURCE_PATH="${USER_BIN_PATH}/winapps" # UNIX path to WinApps source directory for a '--system' WinApps installation.
+readonly SYS_SOURCE_PATH="${SYS_BIN_PATH}/winapps-src" # UNIX path to WinApps source directory for a '--system' WinApps installation.
+readonly USER_SOURCE_PATH="${USER_BIN_PATH}/winapps-src" # UNIX path to WinApps source directory for a '--system' WinApps installation.
 # 'APP'
 readonly SYS_APP_PATH="/usr/share/applications"                        # UNIX path to 'applications' directory for a '--system' WinApps installation.
 readonly USER_APP_PATH="${HOME}/.local/share/applications"             # UNIX path to 'applications' directory for a '--user' WinApps installation.
@@ -1673,7 +1673,7 @@ function waUninstall() {
     local BASH_SCRIPT_NAME=""         # Stores the name of the application.
 
     # Remove the 'WinApps' bash scripts.
-    $SUDO rm -rf "${BIN_PATH}/winapps"
+    $SUDO rm -f "${BIN_PATH}/winapps"
     $SUDO rm -f "${BIN_PATH}/winapps-setup"
 
     # Remove WinApps configuration data, temporary files and logs.
