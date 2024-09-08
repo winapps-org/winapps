@@ -1673,7 +1673,7 @@ function waUninstall() {
     local BASH_SCRIPT_NAME=""         # Stores the name of the application.
 
     # Remove the 'WinApps' bash scripts.
-    $SUDO rm -f "${BIN_PATH}/winapps"
+    $SUDO rm -rf "${BIN_PATH}/winapps"
     $SUDO rm -f "${BIN_PATH}/winapps-setup"
 
     # Remove WinApps configuration data, temporary files and logs.
