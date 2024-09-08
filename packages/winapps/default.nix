@@ -10,8 +10,8 @@
   iproute2,
   ...
 }: let
-  rev = "350f003d817765ed9e6f4791e86c3d69019f230a";
-  hash = "sha256-MqQ9KFyo6bZDxfWCe62z1zDSvHJJjvWqZLO4UxwELow=";
+  rev = "7bae17e3a3607e6b93c7cfc4155dfbdca7bba005";
+  hash = "sha256-PP4POMwHCsAdiCxZkjXlON84F0Mg3Pd5bHEI6tC+Sds=";
 in
   stdenv.mkDerivation rec {
     pname = "winapps";
