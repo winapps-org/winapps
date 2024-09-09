@@ -1,6 +1,5 @@
 ci:
   autoupdate_branch: "rewrite"
-  skip: [nixfmt]
 
 repos:
   - repo: https://github.com/Lucas-C/pre-commit-hooks
@@ -49,8 +48,3 @@ repos:
     rev: v0.10.0.1
     hooks:
       - id: shellcheck
-
-  - repo: https://github.com/NixOS/nixfmt
-    rev: d0c0cda4fe6b7ae2b9aa37f3ee15e6412573eb01
-    hooks:
-      - id: nixfmt

@@ -29,7 +29,7 @@ stdenv.mkDerivation rec {
     (callPackage ../winapps { })
   ];
 
-  patches = [ ./WinAppsLauncher.diff ];
+  patches = [ ./WinAppsLauncher.patch ];
 
   postPatch = ''
     substituteAllInPlace WinAppsLauncher.sh
