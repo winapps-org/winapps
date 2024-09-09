@@ -11,8 +11,8 @@
   ...
 }:
 let
-  rev = "7bae17e3a3607e6b93c7cfc4155dfbdca7bba005";
-  hash = "sha256-PP4POMwHCsAdiCxZkjXlON84F0Mg3Pd5bHEI6tC+Sds=";
+  rev = "07817afe0c2cad15c4eb90b5c94261a2b4d365d4";
+  hash = "sha256-4KxssnSw1Xk6huKRpbRFw6NXIhjCoZYBzu/HYA1ngDM=";
 in
 stdenv.mkDerivation rec {
   pname = "winapps";

@@ -1,6 +1,8 @@
 ci:
   autoupdate_branch: "rewrite"
 
+exclude: ^(.+)\.patch$
+
 repos:
   - repo: https://github.com/Lucas-C/pre-commit-hooks
     rev: v1.5.5
