@@ -1621,8 +1621,8 @@ function waInstall() {
     waFindInstalled
 
     # Install the WinApps bash scripts.
-    $SUDO ln -s "./bin/winapps" "${BIN_PATH}/winapps"
-    $SUDO ln -s "./setup.sh" "${BIN_PATH}/winapps-setup"
+    $SUDO ln -sf "${SOURCE_PATH}/bin/winapps" "${BIN_PATH}/winapps"
+    $SUDO ln -sf "${SOURCE_PATH}/setup.sh" "${BIN_PATH}/winapps-setup"
 
     # Configure the Windows RDP session application launcher.
     waConfigureWindows
