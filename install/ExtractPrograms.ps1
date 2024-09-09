@@ -335,6 +335,8 @@ Write-Output 'ICONS=()'
 
 # Search for installed applications.
 AppSearchWinReg     # Windows Registry
-AppSearchUWP        # Universal Windows Platform
+if (Get-Command Get-AppxPackage -ErrorAction SilentlyContinue){
+    AppSearchUWP        # Universal Windows Platform
+}
 AppSearchChocolatey # Chocolatey Package Manager
 AppSearchScoop      # Scoop Package Manager

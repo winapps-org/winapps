@@ -1,0 +1,20 @@
+# Copyright (c) 2024 Adam
+# Copyright (c) 2024 Oskar Manhart
+# All rights reserved.
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
+# GNOME shortcut name
+NAME="Powershell"
+
+# Used for descriptions and window class
+FULL_NAME="Microsoft Powershell"
+
+# The executable inside windows
+WIN_EXECUTABLE="C:\Windows\SysWOW64\WindowsPowerShell\v1.0\powershell.exe"
+
+# GNOME categories
+CATEGORIES="WinApps;Windows"
+
+# GNOME mimetypes
+MIME_TYPES=""

@@ -1,0 +1,20 @@
+# Copyright (c) 2024 Adam
+# Copyright (c) 2024 Oskar Manhart
+# All rights reserved.
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
+# GNOME shortcut name
+NAME="Acrobat 9"
+
+# Used for descriptions and window class
+FULL_NAME="Acrobat 9"
+
+# The executable inside windows
+WIN_EXECUTABLE="C:\Program Files (x86)\Adobe\Acrobat 9.0\Acrobat\Acrobat.exe"
+
+# GNOME categories
+CATEGORIES="WinApps;Documents"
+
+# GNOME mimetypes
+MIME_TYPES="application/pdf;"
