@@ -29,15 +29,17 @@ stdenv.mkDerivation rec {
     (callPackage ../winapps { })
   ];
 
+  patches = [ ./WinAppsLauncher.diff ];
+
+  postPatch = ''
+    substituteAllInPlace WinAppsLauncher.sh
+  '';
+
   installPhase = ''
     runHook preInstall
 
     mkdir -p $out
     cp -r ./Icons $out/Icons
-
-    sed -E -i \
-      -e "$(printf "%s$out%s" 's|^declare -rx ICONS_PATH="./Icons"|declare -rx ICONS_PATH="' '/Icons"|')" \
-      WinAppsLauncher.sh
 
     install -m755 -D WinAppsLauncher.sh $out/bin/winapps-launcher
     install -Dm444 -T Icons/AppIcon.svg $out/share/pixmaps/winapps.svg

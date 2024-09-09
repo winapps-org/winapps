@@ -34,29 +34,22 @@ stdenv.mkDerivation rec {
     iproute2
   ];
 
+  patches = [
+    ./winapps.patch
+    ./setup.patch
+  ];
+
+  postPatch = ''
+    substituteAllInPlace bin/winapps
+    substituteAllInPlace setup.sh
+    patchShebangs install/inquirer.sh
+  '';
+
   installPhase = ''
     runHook preInstall
 
     mkdir -p $out
     mkdir -p $out/src
-
-    patchShebangs install/inquirer.sh
-
-    sed -E -i \
-      -e 's/grep -q -E "\\blibvirt\\b"/grep -q -E "\\blibvirtd\\b"/' \
-      bin/winapps
-
-    sed -E -i \
-      -e 's/grep -q -E "\\blibvirt\\b"/grep -q -E "\\blibvirtd\\b"/' \
-      -e "$(printf "%s$out%s" 's|^readonly INQUIRER_PATH="./install/inquirer.sh"|readonly INQUIRER_PATH="' '/src/install/inquirer.sh"|')" \
-      -e "$(printf "%s$out%s" 's|^readonly SYS_SOURCE_PATH="(.*?)"|readonly SYS_SOURCE_PATH="' '/src"|')" \
-      -e "$(printf "%s$out%s" 's|^readonly USER_SOURCE_PATH="(.*?)"|readonly USER_SOURCE_PATH="' '/src"|')" \
-      -e 's/\$SUDO git -C "\$SOURCE_PATH" pull --no-rebase//g' \
-      -e 's|./setup.sh|winapps-setup|g' \
-      -e 's|\$SUDO ln -s "./bin/winapps" "\$\{BIN_PATH\}/winapps"||' \
-      -e 's|\$SUDO ln -s "./setup.sh" "\$\{BIN_PATH\}/winapps-setup"||' \
-      -e "s|\$\{BIN_PATH\}/winapps|$out/bin/winapps|" \
-      ./setup.sh
 
     cp -r ./ $out/src/
 

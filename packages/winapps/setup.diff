@@ -1,0 +1,88 @@
+--- a/setup.sh
++++ b/setup.sh
+@@ -38,8 +38,8 @@ readonly SYS_BIN_PATH="/usr/local/bin"                  # UNIX path to 'bin' dir
+ readonly USER_BIN_PATH="${HOME}/.local/bin"             # UNIX path to 'bin' directory for a '--user' WinApps installation.
+ readonly USER_BIN_PATH_WIN='\\tsclient\home\.local\bin' # WINDOWS path to 'bin' directory for a '--user' WinApps installation.
+ # 'SOURCE'
+-readonly SYS_SOURCE_PATH="${SYS_BIN_PATH}/winapps" # UNIX path to WinApps source directory for a '--system' WinApps installation.
+-readonly USER_SOURCE_PATH="${USER_BIN_PATH}/winapps" # UNIX path to WinApps source directory for a '--system' WinApps installation.
++readonly SYS_SOURCE_PATH="@out@/src" # UNIX path to WinApps source directory for a '--system' WinApps installation.
++readonly USER_SOURCE_PATH="@out@/src" # UNIX path to WinApps source directory for a '--system' WinApps installation.
+ # 'APP'
+ readonly SYS_APP_PATH="/usr/share/applications"                        # UNIX path to 'applications' directory for a '--system' WinApps installation.
+ readonly USER_APP_PATH="${HOME}/.local/share/applications"             # UNIX path to 'applications' directory for a '--user' WinApps installation.
+@@ -69,7 +69,7 @@ readonly TEST_PATH_WIN="${USER_APPDATA_PATH_WIN}\\FreeRDP_Connection_Test" # WIN
+ # 'WinApps Configuration File'
+ readonly CONFIG_PATH="${HOME}/.config/winapps/winapps.conf" # UNIX path to the WinApps configuration file.
+ # 'Inquirer Bash Script'
+-readonly INQUIRER_PATH="./install/inquirer.sh" # UNIX path to the 'inquirer' script, which is used to produce selection menus.
++readonly INQUIRER_PATH="@out@/src/install/inquirer.sh" # UNIX path to the 'inquirer' script, which is used to produce selection menus.
+
+ # REMOTE DESKTOP CONFIGURATION
+ readonly VM_NAME="RDPWindows"  # Name of the Windows VM (FOR 'libvirt' ONLY).
+@@ -129,13 +129,13 @@ function waTerminateScript() {
+ # Role: Displays usage information for the script.
+ function waUsage() {
+     echo -e "Usage:
+-  ${COMMAND_TEXT}./setup.sh --user${CLEAR_TEXT}                                        # Install WinApps and selected applications in ${HOME}
+-  ${COMMAND_TEXT}./setup.sh --system${CLEAR_TEXT}                                      # Install WinApps and selected applications in /usr
+-  ${COMMAND_TEXT}./setup.sh --user --setupAllOfficiallySupportedApps${CLEAR_TEXT}      # Install WinApps and all officially supported applications in ${HOME}
+-  ${COMMAND_TEXT}./setup.sh --system --setupAllOfficiallySupportedApps${CLEAR_TEXT}    # Install WinApps and all officially supported applications in /usr
+-  ${COMMAND_TEXT}./setup.sh --user --uninstall${CLEAR_TEXT}                            # Uninstall everything in ${HOME}
+-  ${COMMAND_TEXT}./setup.sh --system --uninstall${CLEAR_TEXT}                          # Uninstall everything in /usr
+-  ${COMMAND_TEXT}./setup.sh --help${CLEAR_TEXT}                                        # Display this usage message."
++  ${COMMAND_TEXT}winapps-setup --user${CLEAR_TEXT}                                        # Install WinApps and selected applications in ${HOME}
++  ${COMMAND_TEXT}winapps-setup --system${CLEAR_TEXT}                                      # Install WinApps and selected applications in /usr
++  ${COMMAND_TEXT}winapps-setup --user --setupAllOfficiallySupportedApps${CLEAR_TEXT}      # Install WinApps and all officially supported applications in ${HOME}
++  ${COMMAND_TEXT}winapps-setup --system --setupAllOfficiallySupportedApps${CLEAR_TEXT}    # Install WinApps and all officially supported applications in /usr
++  ${COMMAND_TEXT}winapps-setup --user --uninstall${CLEAR_TEXT}                            # Uninstall everything in ${HOME}
++  ${COMMAND_TEXT}winapps-setup --system --uninstall${CLEAR_TEXT}                          # Uninstall everything in /usr
++  ${COMMAND_TEXT}winapps-setup --help${CLEAR_TEXT}                                        # Display this usage message."
+ }
+
+ # Name: 'waGetSourceCode'
+@@ -158,7 +158,7 @@ function waGetSourceCode() {
+         $SUDO git clone --recurse-submodules --remote-submodules https://github.com/winapps-org/winapps.git "$SOURCE_PATH"
+     else
+         echo -e "${INFO_TEXT}WinApps installation already present at ${CLEAR_TEXT}${COMMAND_TEXT}${SOURCE_PATH}${CLEAR_TEXT}${INFO_TEXT}. Updating...${CLEAR_TEXT}"
+-        $SUDO git -C "$SOURCE_PATH" pull --no-rebase
++
+     fi
+
+     # Silently change the working directory.
+@@ -385,7 +385,7 @@ function waCheckExistingInstall() {
+
+         # Display the suggested action(s).
+         echo "--------------------------------------------------------------------------------"
+-        echo -e "Please remove the existing WinApps installation using ${COMMAND_TEXT}./setup.sh --user --uninstall${CLEAR_TEXT}."
++        echo -e "Please remove the existing WinApps installation using ${COMMAND_TEXT}winapps-setup --user --uninstall${CLEAR_TEXT}."
+         echo "--------------------------------------------------------------------------------"
+
+         # Terminate the script.
+@@ -405,7 +405,7 @@ function waCheckExistingInstall() {
+
+         # Display the suggested action(s).
+         echo "--------------------------------------------------------------------------------"
+-        echo -e "Please remove the existing WinApps installation using ${COMMAND_TEXT}./setup.sh --system --uninstall${CLEAR_TEXT}."
++        echo -e "Please remove the existing WinApps installation using ${COMMAND_TEXT}winapps-setup --system --uninstall${CLEAR_TEXT}."
+         echo "--------------------------------------------------------------------------------"
+
+         # Terminate the script.
+@@ -800,7 +800,7 @@ function waCheckGroupMembership() {
+     # Identify groups the current user belongs to.
+     USER_GROUPS=$(groups "$(whoami)")
+
+-    if ! (echo "$USER_GROUPS" | grep -q -E "\blibvirt\b") || ! (echo "$USER_GROUPS" | grep -q -E "\bkvm\b"); then
++    if ! (echo "$USER_GROUPS" | grep -q -E "\blibvirtd\b") || ! (echo "$USER_GROUPS" | grep -q -E "\bkvm\b"); then
+         # Complete the previous line.
+         echo -e "${FAIL_TEXT}Failed!${CLEAR_TEXT}\n"
+
+@@ -1621,8 +1621,8 @@ function waInstall() {
+     waFindInstalled
+
+     # Install the WinApps bash scripts.
+-    $SUDO ln -s "./bin/winapps" "${BIN_PATH}/winapps"
+-    $SUDO ln -s "./setup.sh" "${BIN_PATH}/winapps-setup"
+
+     # Configure the Windows RDP session application launcher.
+     waConfigureWindows
