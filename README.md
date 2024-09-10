@@ -365,9 +365,9 @@ WAFLAVOR="docker"
 RDP_SCALE="100"
 
 # [ADDITIONAL FREERDP FLAGS & ARGUMENTS]
-# DEFAULT VALUE: '' (BLANK)
+# DEFAULT VALUE: '/cert:tofu /sound /microphone'
 # VALID VALUES: See https://github.com/awakecoding/FreeRDP-Manuals/blob/master/User/FreeRDP-User-Manual.markdown
-RDP_FLAGS=""
+RDP_FLAGS="/cert:tofu /sound /microphone"
 
 # [MULTIPLE MONITORS]
 # NOTES:
