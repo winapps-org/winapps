@@ -1,4 +1,12 @@
 #!/usr/bin/env bash
+# Copyright (c) 2024 Felix Bartels
+# Copyright (c) 2024 Rhea Barar
+# Copyright (c) 2024 Rohan Barar
+# Copyright (c) 2024 Oskar Manhart
+# Copyright (c) 2024 escapefreeg
+# All rights reserved.
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
 
 ### GLOBAL CONSTANTS ###
 # ERROR CODES
