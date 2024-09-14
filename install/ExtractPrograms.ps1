@@ -1,3 +1,9 @@
+# Copyright (c) 2024 Rohan Barar
+# Copyright (c) 2024 Oskar Manhart
+# All rights reserved.
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 ### FUNCTIONS ###
 # Name: 'GetApplicationIcon'
 # Role: Extract the icon from a given executable file as a base-64 string.
