@@ -1,4 +1,12 @@
 #!/usr/bin/env bash
+# Copyright (c) 2024 Felix Bartels
+# Copyright (c) 2024 Rhea Barar
+# Copyright (c) 2024 Rohan Barar
+# Copyright (c) 2024 Oskar Manhart
+# Copyright (c) 2024 escapefreeg
+# All rights reserved.
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
 
 ### GLOBAL CONSTANTS ###
 # ERROR CODES
@@ -513,8 +521,8 @@ function waRunCommand() {
             +dynamic-resolution \
             +auto-reconnect \
             +home-drive \
-            /sound \
-            /microphone \
+            +clipboard \
+            -wallpaper \
             /wm-class:"Microsoft Windows" \
             /t:"Windows RDP Session [$RDP_IP]" \
             /v:"$RDP_IP" &>/dev/null &
@@ -525,18 +533,15 @@ function waRunCommand() {
         # Open specified application.
         dprint "MANUAL: ${2}"
         $FREERDP_COMMAND \
-            /cert:tofu \
             /d:"$RDP_DOMAIN" \
             /u:"$RDP_USER" \
             /p:"$RDP_PASS" \
             /scale:"$RDP_SCALE" \
-            +auto-reconnect \
-            +clipboard \
-            +home-drive \
-            /sound \
-            /microphone \
-            -wallpaper \
             +dynamic-resolution \
+            +auto-reconnect \
+            +home-drive \
+            +clipboard \
+            -wallpaper \
             "$MULTI_FLAG" \
             /app:program:"$2" \
             /v:"$RDP_IP" &>/dev/null &
@@ -569,13 +574,11 @@ function waRunCommand() {
                 /u:"$RDP_USER" \
                 /p:"$RDP_PASS" \
                 /scale:"$RDP_SCALE" \
-                +auto-reconnect \
-                +clipboard \
-                +home-drive \
-                /sound \
-                /microphone \
-                -wallpaper \
                 +dynamic-resolution \
+                +auto-reconnect \
+                +home-drive \
+                +clipboard \
+                -wallpaper \
                 "$MULTI_FLAG" \
                 /wm-class:"$FULL_NAME" \
                 /app:program:"$WIN_EXECUTABLE",icon:"$ICON",name:"$FULL_NAME" \
@@ -592,18 +595,15 @@ function waRunCommand() {
             dprint "WINDOWS_FILE_PATH: ${FILE_PATH}"
 
             $FREERDP_COMMAND \
-                /cert:tofu \
                 /d:"$RDP_DOMAIN" \
                 /u:"$RDP_USER" \
                 /p:"$RDP_PASS" \
                 /scale:"$RDP_SCALE" \
-                +auto-reconnect \
-                +clipboard \
-                +home-drive \
-                /sound \
-                /microphone \
-                -wallpaper \
                 +dynamic-resolution \
+                +auto-reconnect \
+                +home-drive \
+                +clipboard \
+                -wallpaper \
                 "$MULTI_FLAG" \
                 /wm-class:"$FULL_NAME" \
                 /app:program:"$WIN_EXECUTABLE",icon:"$ICON",name:$"FULL_NAME",cmd:\""$FILE_PATH"\" \

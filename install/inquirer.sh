@@ -1,4 +1,9 @@
 #!/usr/bin/env bash
+# Copyright (c) 2024 kahkhang
+# All rights reserved.
+#
+# SPDX-License-Identifier: MIT
+# For original source, see https://github.com/kahkhang/Inquirer.sh
 
 ### GLOBAL CONSTANTS ###
 declare -r ANSI_LIGHT_BLUE="\033[1;94m" # Light blue text.
