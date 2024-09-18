@@ -34,11 +34,11 @@ echo         Set-ItemProperty -Path $profilePath -Name "ProfileName" -Value "Win
 echo         Write-Host "Renamed profile to: WinApps"
 echo     }
 echo }
-) > C:\Windows\NetProfileCleanup.ps1
+) > %windir%\NetProfileCleanup.ps1
 
 :: Create network profile cleanup scheduled task
 set "taskname=NetworkProfileCleanup"
-set "command=powershell.exe -ExecutionPolicy Bypass -File "C:\Windows\NetProfileCleanup.ps1^""
+set "command=powershell.exe -ExecutionPolicy Bypass -File "%windir%\NetProfileCleanup.ps1^""
 
 schtasks /query /tn "%taskname%" >nul 2>&1
 if %ERRORLEVEL% equ 0 (
