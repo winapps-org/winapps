@@ -6,7 +6,7 @@ REM SPDX-License-Identifier: AGPL-3.0-or-later
 
 REG IMPORT C:\OEM\RDPApps.reg
 
-:: Write the Powershell network profile cleanup script
+:: Create Powershell network profile cleanup script
 (
 echo # Get the current network profile name
 echo $currentProfile = ^(Get-NetConnectionProfile^).Name

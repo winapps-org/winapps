@@ -4,7 +4,7 @@
 ; SPDX-License-Identifier: Proprietary
 Windows Registry Editor Version 5.00
 
-    ; Disable RemoteApp allowlist so all applications can be used in a Remote Desktop session
+    ; Disable RemoteApp allowlist so all applications can be used in Remote Desktop sessions
     [HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Terminal Server\TSAppAllowList]
     "fDisabledAllowList"=dword:00000001
 
