@@ -1,14 +1,14 @@
 Windows Registry Editor Version 5.00
 
     ; Disable RemoteApp allowlist so all applications can be used in a Remote Desktop session
-	[HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Terminal Server\TSAppAllowList]
+    [HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Terminal Server\TSAppAllowList]
     "fDisabledAllowList"=dword:00000001
 
-	; Allow unlisted programs to be run in Remote Desktop sessions
+    ; Allow unlisted programs to be run in Remote Desktop sessions
     [HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services]
     "fAllowUnlistedRemotePrograms"=dword:00000001
 
-	; Disable automatic administrator logon at startup 
+    ; Disable automatic administrator logon at startup
     [HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon]
     "AutoAdminLogon"="0"
 
