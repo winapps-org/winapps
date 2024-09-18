@@ -16,9 +16,12 @@ jobs:
         with:
           python-version: 3.x
 
+      - name: Set git author to @actions
+        uses: fregante/setup-git-user@v2
+
       - name: Install lictool
         run: pip install git+https://github.com/emzeat/mz-lictools@v2.7.0
-
+        
       - name: Run lictool
         run: lictool
 
