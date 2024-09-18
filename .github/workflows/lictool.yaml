@@ -31,4 +31,4 @@ jobs:
           default_author: github_actions
           message: "[ci] update license header"
           push: true
-          fetch: true
+          fetch: false
