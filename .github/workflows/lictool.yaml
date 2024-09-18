@@ -29,7 +29,7 @@ jobs:
 
       - name: Install lictool
         run: pip install git+https://github.com/emzeat/mz-lictools@v2.7.0
-        
+
       - name: Run lictool
         run: lictool
 
