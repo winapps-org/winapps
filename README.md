@@ -288,7 +288,7 @@ If you already have a Windows VM or server you wish to use with WinApps, you wil
 Install the required dependencies.
   - Debian/Ubuntu:
       ```bash
-      sudo apt install -y dialog freerdp3-x11 iproute2 libnotify-bin netcat
+      sudo apt install -y dialog freerdp3-x11 iproute2 libnotify-bin netcat-openbsd
       ```
   - Fedora/RHEL:
       ```bash
@@ -296,8 +296,7 @@ Install the required dependencies.
       ```
   - Arch Linux:
       ```bash
-      sudo pacman -Syu --needed -y dialog freerdp iproute2 libnotify
-      gnu-netcat
+      sudo pacman -Syu --needed -y dialog freerdp iproute2 libnotify gnu-netcat
       ```
   - Gentoo Linux:
       ```bash
