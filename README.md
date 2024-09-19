@@ -296,8 +296,7 @@ Install the required dependencies.
       ```
   - Arch Linux:
       ```bash
-      sudo pacman -Syu --needed -y dialog freerdp iproute2 libnotify
-      gnu-netcat
+      sudo pacman -Syu --needed -y dialog freerdp iproute2 libnotify gnu-netcat
       ```
   - Gentoo Linux:
       ```bash
