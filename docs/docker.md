@@ -49,15 +49,6 @@ docker compose --file ./compose.yaml down
 docker compose --file ~/.config/winapps/compose.yaml up
 ```
 
-### Installing WinApps
-`Docker` simplifies the WinApps installation process by eliminating the need for any additional configuration of the Windows virtual machine. Once the Windows virtual machine is up and running, you can directly launch the WinApps installer, which should automatically detect and interface with Windows.
-
-> [!NOTE]
-> Since no Windows user password is set by default, Windows may automatically log in, which may cause the WinApps installation to fail due to complications establishing an RDP connection. To avoid this issue, please use the VNC connection to ensure that the Windows user is logged out before starting the WinApps installation.
-
-```bash
-bash <(curl https://raw.githubusercontent.com/winapps-org/winapps/main/setup.sh)
-```
 
 ### Changing `compose.yaml`
 Changes to `compose.yaml` require the Windows virtual machine to be removed and re-created. This should __NOT__ affect your data.
