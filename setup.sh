@@ -48,7 +48,7 @@ readonly SYS_BIN_PATH="/usr/local/bin"                  # UNIX path to 'bin' dir
 readonly USER_BIN_PATH="${HOME}/.local/bin"             # UNIX path to 'bin' directory for a '--user' WinApps installation.
 readonly USER_BIN_PATH_WIN='\\tsclient\home\.local\bin' # WINDOWS path to 'bin' directory for a '--user' WinApps installation.
 # 'SOURCE'
-readonly SYS_SOURCE_PATH="${SYS_BIN_PATH}/winapps-src" # UNIX path to WinApps source directory for a '--system' WinApps installation.
+readonly SYS_SOURCE_PATH="${SYS_BIN_PATH}/winapps-src"   # UNIX path to WinApps source directory for a '--system' WinApps installation.
 readonly USER_SOURCE_PATH="${USER_BIN_PATH}/winapps-src" # UNIX path to WinApps source directory for a '--system' WinApps installation.
 # 'APP'
 readonly SYS_APP_PATH="/usr/share/applications"                        # UNIX path to 'applications' directory for a '--system' WinApps installation.
@@ -78,8 +78,6 @@ readonly TEST_PATH="${USER_APPDATA_PATH}/FreeRDP_Connection_Test"          # UNI
 readonly TEST_PATH_WIN="${USER_APPDATA_PATH_WIN}\\FreeRDP_Connection_Test" # WINDOWS path to temporary file whose existence is used to confirm a successful RDP connection was established.
 # 'WinApps Configuration File'
 readonly CONFIG_PATH="${HOME}/.config/winapps/winapps.conf" # UNIX path to the WinApps configuration file.
-# 'Inquirer Bash Script'
-readonly INQUIRER_PATH="./install/inquirer.sh" # UNIX path to the 'inquirer' script, which is used to produce selection menus.
 
 # REMOTE DESKTOP CONFIGURATION
 readonly VM_NAME="RDPWindows"  # Name of the Windows VM (FOR 'libvirt' ONLY).
@@ -192,20 +190,45 @@ function waGetSourceCode() {
     fi
 }
 
-# Name: 'waGetInquirer'
-# Role: Loads the inquirer script, even if the source isn't cloned yet
-function waGetInquirer() {
-    local INQUIRER=$INQUIRER_PATH
+# Name: 'inqMenu'
+# Role: Display a menu using Zenity and return the selected option
+function inqMenu() {
+    local PROMPT="$1"
+    shift
+    local -n OPTIONS_REF="$1"
+    local -n RESULT="$2"
 
-    if [ ! -d "$SYS_SOURCE_PATH" ] && [ ! -d "$USER_SOURCE_PATH" ]; then
-        INQUIRER="/tmp/waInquirer.sh"
-        rm -f "$INQUIRER"
+    local ZENITY_OPTIONS=()
+    for option in "${OPTIONS_REF[@]}"; do
+        ZENITY_OPTIONS+=("$option")
+    done
 
-        curl -o "$INQUIRER" "https://raw.githubusercontent.com/winapps-org/winapps/main/install/inquirer.sh"
-    fi
+    RESULT=$(zenity --list \
+        --title="WinApps Setup" \
+        --text="$PROMPT" \
+        --column="Options" \
+        "${ZENITY_OPTIONS[@]}" \
+        --width=400 --height=300 \
+        --print-column=ALL)
+}
 
-    # shellcheck source=/dev/null # Exclude this file from being checked by ShellCheck.
-    source "$INQUIRER"
+# Name: 'inqChkBx'
+# Role: Display a checklist using Zenity and return the selected options
+function inqChkBx() {
+    local PROMPT="$1"
+    shift
+    local -n OPTIONS="$1"
+    local -n RESULT="$2"
+
+    RESULT=($(zenity --list \
+        --title="WinApps Setup" \
+        --text="$PROMPT" \
+        --checklist \
+        --column="Select" \
+        --column="Options" \
+        $(printf "FALSE %s " "${OPTIONS[@]}") \
+        --width=400 --height=300 \
+        --print-column=2))
 }
 
 # Name: 'waCheckInput'
@@ -441,14 +464,14 @@ function waFixScale() {
         OLD_SCALE="$RDP_SCALE"
 
         # Calculate the absolute differences.
-        local DIFF_1=$(( RDP_SCALE > VALID_SCALE_1 ? RDP_SCALE - VALID_SCALE_1 : VALID_SCALE_1 - RDP_SCALE ))
-        local DIFF_2=$(( RDP_SCALE > VALID_SCALE_2 ? RDP_SCALE - VALID_SCALE_2 : VALID_SCALE_2 - RDP_SCALE ))
-        local DIFF_3=$(( RDP_SCALE > VALID_SCALE_3 ? RDP_SCALE - VALID_SCALE_3 : VALID_SCALE_3 - RDP_SCALE ))
+        local DIFF_1=$((RDP_SCALE > VALID_SCALE_1 ? RDP_SCALE - VALID_SCALE_1 : VALID_SCALE_1 - RDP_SCALE))
+        local DIFF_2=$((RDP_SCALE > VALID_SCALE_2 ? RDP_SCALE - VALID_SCALE_2 : VALID_SCALE_2 - RDP_SCALE))
+        local DIFF_3=$((RDP_SCALE > VALID_SCALE_3 ? RDP_SCALE - VALID_SCALE_3 : VALID_SCALE_3 - RDP_SCALE))
 
         # Set the final scale to the valid scale value with the smallest absolute difference.
-        if (( DIFF_1 <= DIFF_2 && DIFF_1 <= DIFF_3 )); then
+        if ((DIFF_1 <= DIFF_2 && DIFF_1 <= DIFF_3)); then
             RDP_SCALE="$VALID_SCALE_1"
-        elif (( DIFF_2 <= DIFF_1 && DIFF_2 <= DIFF_3 )); then
+        elif ((DIFF_2 <= DIFF_1 && DIFF_2 <= DIFF_3)); then
             RDP_SCALE="$VALID_SCALE_2"
         else
             RDP_SCALE="$VALID_SCALE_3"
@@ -544,24 +567,24 @@ function waCheckScriptDependencies() {
         return "$EC_MISSING_DEPS"
     fi
 
-    # 'Dialog'.
-    if ! command -v dialog &>/dev/null; then
+    # 'Zenity'
+    if ! command -v zenity &>/dev/null; then
         # Display the error type.
         echo -e "${ERROR_TEXT}ERROR:${CLEAR_TEXT} ${BOLD_TEXT}MISSING DEPENDENCIES.${CLEAR_TEXT}"
 
         # Display the error details.
-        echo -e "${INFO_TEXT}Please install 'dialog' to proceed.${CLEAR_TEXT}"
+        echo -e "${INFO_TEXT}Please install 'zenity' to proceed.${CLEAR_TEXT}"
 
         # Display the suggested action(s).
         echo "--------------------------------------------------------------------------------"
         echo "Debian/Ubuntu-based systems:"
-        echo -e "  ${COMMAND_TEXT}sudo apt install dialog${CLEAR_TEXT}"
+        echo -e "  ${COMMAND_TEXT}sudo apt install zenity${CLEAR_TEXT}"
         echo "Red Hat/Fedora-based systems:"
-        echo -e "  ${COMMAND_TEXT}sudo dnf install dialog${CLEAR_TEXT}"
+        echo -e "  ${COMMAND_TEXT}sudo dnf install zenity${CLEAR_TEXT}"
         echo "Arch Linux systems:"
-        echo -e "  ${COMMAND_TEXT}sudo pacman -S dialog${CLEAR_TEXT}"
+        echo -e "  ${COMMAND_TEXT}sudo pacman -S zenity${CLEAR_TEXT}"
         echo "Gentoo Linux systems:"
-        echo -e "  ${COMMAND_TEXT}sudo emerge --ask dialog${CLEAR_TEXT}"
+        echo -e "  ${COMMAND_TEXT}sudo emerge --ask gnome-extra/zenity${CLEAR_TEXT}"
         echo "--------------------------------------------------------------------------------"
 
         # Terminate the script.
@@ -851,7 +874,6 @@ function waCheckVMRunning() {
     virsh list --state-running | grep -wq "$VM_NAME" || VM_RUNNING="$?"
     VM_SHUTOFF=0
     virsh list --state-shutoff | grep -wq "$VM_NAME" || VM_SHUTOFF="$?"
-
     if [[ $VM_SHUTOFF == "0" ]]; then
         # Complete the previous line.
         echo -e "${FAIL_TEXT}Failed!${CLEAR_TEXT}\n"
@@ -923,13 +945,13 @@ function waCheckContainerRunning() {
 
     # Determine the state of the container.
     CONTAINER_STATE=$("$WAFLAVOR" ps --all --filter name="WinApps" --format '{{.Status}}')
-    CONTAINER_STATE=${CONTAINER_STATE,,} # Convert the string to lowercase.
+    CONTAINER_STATE=${CONTAINER_STATE,,}   # Convert the string to lowercase.
     CONTAINER_STATE=${CONTAINER_STATE%% *} # Extract the first word.
 
     # Determine the compose command.
     case "$WAFLAVOR" in
-        "docker") COMPOSE_COMMAND="docker compose" ;;
-        "podman") COMPOSE_COMMAND="podman-compose" ;;
+    "docker") COMPOSE_COMMAND="docker compose" ;;
+    "podman") COMPOSE_COMMAND="podman-compose" ;;
     esac
 
     # Check container state.
@@ -1756,9 +1778,6 @@ ${CLEAR_TEXT}"
 
 # Check dependencies for the script.
 waCheckScriptDependencies
-
-# Source the contents of 'inquirer.sh'.
-waGetInquirer
 
 # Sanitise and parse the user input.
 waCheckInput "$@"
