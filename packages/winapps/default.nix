@@ -6,7 +6,7 @@
   freerdp3,
   dialog,
   libnotify,
-  netcat-gnu,
+  netcat,
   iproute2,
   ...
 }:
@@ -30,7 +30,7 @@ stdenv.mkDerivation rec {
     freerdp3
     libnotify
     dialog
-    netcat-gnu
+    netcat
     iproute2
   ];
 
