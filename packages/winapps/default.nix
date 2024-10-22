@@ -1,3 +1,8 @@
+# Copyright (c) 2024 Oskar Manhart
+# All rights reserved.
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 {
   stdenv,
   lib,
@@ -11,12 +16,12 @@
   ...
 }:
 let
-  rev = "07817afe0c2cad15c4eb90b5c94261a2b4d365d4";
-  hash = "sha256-4KxssnSw1Xk6huKRpbRFw6NXIhjCoZYBzu/HYA1ngDM=";
+  rev = "c8dcccad08b3e5489d78f2aad034189d8654745c";
+  hash = "sha256-RM9jv8oS8wKcSJpvkFFG9uyiRv9EaLQWANymGTXdl4o=";
 in
 stdenv.mkDerivation rec {
   pname = "winapps";
-  version = "git+${rev}";
+  version = "0-unstable-${rev}";
 
   src = fetchFromGitHub {
     owner = "winapps-org";
