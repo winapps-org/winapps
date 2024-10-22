@@ -7,10 +7,12 @@
   "style_override_for_suffix": {
     ".yaml": "POUND_STYLE",
     ".ps1": "POUND_STYLE",
+    ".nix": "POUND_STYLE",
     ".bat": "BATCH_STYLE",
     "": "POUND_STYLE"
   },
   "exclude": [
+    "flake.lock",
     "^\\.[^/]+",
     "/\\.[^/]+",
     "^(.+)\\.(md|svg|png|reg|gif)",

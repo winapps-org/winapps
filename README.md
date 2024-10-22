@@ -487,6 +487,7 @@ nix profile install github:winapps-org/winapps#winapps-launcher # optional
 ### On NixOS using Flakes
 
 ```nix
+# flake.nix
 {
   description = "My configuration";
 
@@ -494,38 +495,60 @@ nix profile install github:winapps-org/winapps#winapps-launcher # optional
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
 
     winapps = {
-      url = ""github:winapps-org/winapps;
+      url = "" "github:winapps-org/winapps";
       inputs.nixpkgs.follows = "nixpkgs";
     };
   };
 
-  outputs = {
-    nixpkgs,
-    winapps,
-    ...
-  }: {
-    nixosConfigurations.hostname = nixpkgs.lib.nixosSystem rec {
-      system = "x86_64-linux";
+  outputs =
+    {
+      nixpkgs,
+      winapps,
+      ...
+    }:
+    {
+      nixosConfigurations.hostname = nixpkgs.lib.nixosSystem rec {
+        system = "x86_64-linux";
 
-      modules = [
-        ./configuration.nix
-        ({pkgs, ...}: {
-          environment.systemPackages = [
-            winapps.packages.${system}.winapps
-            winapps.packages.${system}.winapps-launcher # optional
-          ];
-        })
-      ];
+        modules = [
+          ./configuration.nix
+          (
+            { pkgs, ... }:
+            {
+              environment.systemPackages = [
+                winapps.packages.${system}.winapps
+                winapps.packages.${system}.winapps-launcher # optional
+              ];
+            }
+          )
+        ];
+      };
     };
-  };
 }
 ```
 
 ### On NixOS without Flakes
 
 [Flakes aren't real and they can't hurt you.](https://jade.fyi/blog/flakes-arent-real/).
-See https://wiki.nixos.org/wiki/Flakes#Using_nix_flakes_with_NixOS on how to enable Flakes on your system.
+However, if you still don't want to use flakes, you can use WinApps with flake-compat like:
 
+```nix
+# configuration.nix
+{ ... }:
+{
+
+  environment.systemPackages =
+    let
+      winapps =
+        (import (builtins.fetchTarball "https://github.com/winapps-org/winapps/archive/main.tar.gz"))
+        .packages."${system}";
+    in
+    [
+      winapps.winapps
+      winapps.winapps-launcher # optional
+    ];
+}
+```
 
 ## Star History
 <a href="https://star-history.com/#winapps-org/winapps&Date">

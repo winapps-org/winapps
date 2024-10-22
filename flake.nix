@@ -1,8 +1,15 @@
+# Copyright (c) 2024 Oskar Manhart
+# All rights reserved.
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 {
   description = "WinApps Nix packages & NixOS module";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+
+    flake-compat.url = "https://flakehub.com/f/edolstra/flake-compat/1.tar.gz";
     flake-utils.url = "github:numtide/flake-utils";
   };
 
