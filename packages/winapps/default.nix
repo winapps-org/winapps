@@ -21,7 +21,7 @@ let
 in
 stdenv.mkDerivation rec {
   pname = "winapps";
-  version = "0-unstable-${rev}";
+  version = "0-unstable-2024-10-09";
 
   src = fetchFromGitHub {
     owner = "winapps-org";
