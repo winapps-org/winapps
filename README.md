@@ -495,7 +495,7 @@ nix profile install github:winapps-org/winapps#winapps-launcher # optional
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
 
     winapps = {
-      url = "" "github:winapps-org/winapps";
+      url = "github:winapps-org/winapps";
       inputs.nixpkgs.follows = "nixpkgs";
     };
   };
