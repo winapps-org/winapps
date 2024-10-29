@@ -1,4 +1,4 @@
-pub(crate) mod docker;
+mod docker;
 
 use crate::backend::docker::Docker;
 use crate::config::Config;
