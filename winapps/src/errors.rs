@@ -62,6 +62,16 @@ macro_rules! error_from {
     };
 }
 
+/// This macro is a shortcut for creating a `WinappsError` from a string, overwriting the passed result's error with the newly created one.
+/// The first argument is the source error.
+/// You can use normal `format!` syntax inside the macro.
+#[macro_export]
+macro_rules! map_err {
+    ($result:expr, $($fmt:tt)*) => {
+       $result.map_err(|e| $crate::errors::WinappsError::WithError(anyhow::Error::new(e), format!($($fmt)*)))
+    };
+}
+
 /// This trait serves as a generic way to convert a `Result` or `Option` into a `WinappsError`.
 pub trait IntoError<T> {
     fn into_error(self, msg: String) -> Result<T, WinappsError>;
