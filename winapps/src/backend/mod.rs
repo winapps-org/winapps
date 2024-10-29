@@ -13,7 +13,7 @@ pub trait Backend {
 
 impl Config {
     pub fn get_backend(&self) -> impl Backend + Sized {
-        assert!(self.libvirt.enable || self.container.enable || self.manual.enable);
+        assert!(self.libvirt.enable ^ self.container.enable ^ self.manual.enable);
 
         if self.libvirt.enable {
             todo!()
