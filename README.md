@@ -462,6 +462,93 @@ The installer can be run multiple times. To update your installation of WinApps:
 2. Pull the latest changes from the WinApps GitHub repository.
 3. Re-install WinApps using the WinApps installer by running `winapps-setup`.
 
+## Installation using Nix
+
+First, follow Step 1 of the normal installation guide to create your VM.
+Then, install WinApps according to the following instructions.
+
+After installation, it will be available under `winapps`, with the installer being available under `winapps-setup`
+and the optional launcher being available under `winapps-launcher.`
+
+### Using standalone Nix
+
+First, make sure Flakes and the `nix` command are enabled.
+In your `~/.config/nix/nix.conf`:
+```
+experimental-features = nix-command flakes
+```
+
+```bash
+nix profile install github:winapps-org/winapps#winapps
+nix profile install github:winapps-org/winapps#winapps-launcher # optional
+```
+
+### On NixOS using Flakes
+
+```nix
+# flake.nix
+{
+  description = "My configuration";
+
+  inputs = {
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+
+    winapps = {
+      url = "github:winapps-org/winapps";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+  };
+
+  outputs =
+    {
+      nixpkgs,
+      winapps,
+      ...
+    }:
+    {
+      nixosConfigurations.hostname = nixpkgs.lib.nixosSystem rec {
+        system = "x86_64-linux";
+
+        modules = [
+          ./configuration.nix
+          (
+            { pkgs, ... }:
+            {
+              environment.systemPackages = [
+                winapps.packages.${system}.winapps
+                winapps.packages.${system}.winapps-launcher # optional
+              ];
+            }
+          )
+        ];
+      };
+    };
+}
+```
+
+### On NixOS without Flakes
+
+[Flakes aren't real and they can't hurt you.](https://jade.fyi/blog/flakes-arent-real/).
+However, if you still don't want to use flakes, you can use WinApps with flake-compat like:
+
+```nix
+# configuration.nix
+{ ... }:
+{
+
+  environment.systemPackages =
+    let
+      winapps =
+        (import (builtins.fetchTarball "https://github.com/winapps-org/winapps/archive/main.tar.gz"))
+        .packages."${system}";
+    in
+    [
+      winapps.winapps
+      winapps.winapps-launcher # optional
+    ];
+}
+```
+
 ## Star History
 <a href="https://star-history.com/#winapps-org/winapps&Date">
  <picture>
