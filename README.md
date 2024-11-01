@@ -300,7 +300,7 @@ Install the required dependencies.
       ```
   - Gentoo Linux:
       ```bash
-      sudo emerge --ask=n sys-libs/dialog net-misc/freerdp:3 net-misc/iproute2 x11-libs/libnotify net-analyzer/netcat
+      sudo emerge --ask=n dev-util/dialog net-misc/freerdp:3 sys-apps/iproute2 x11-libs/libnotify net-analyzer/openbsd-netcat
       ```
 
 > [!NOTE]
