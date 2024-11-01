@@ -10,10 +10,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Install Nix
         uses: cachix/install-nix-action@v20
 
       - name: Update flake packages
-        uses: selfuryon/nix-update-action@v1
+        uses: selfuryon/nix-update-action@v1.1.0

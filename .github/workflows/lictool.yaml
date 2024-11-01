@@ -9,11 +9,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         if: ${{ github.event_name != 'pull_request' }}
 
       - name: Checkout pull request
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         if: ${{ github.event_name == 'pull_request' }}
         with:
           repository: ${{ github.event.pull_request.head.repo.full_name }}
