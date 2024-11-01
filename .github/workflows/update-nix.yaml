@@ -1,5 +1,9 @@
 name: "Update Flake Packages"
 
+permissions:
+  contents: write
+  pull-requests: write
+
 on:
   workflow_dispatch:
   schedule:
@@ -16,4 +20,6 @@ jobs:
         uses: cachix/install-nix-action@v20
 
       - name: Update flake packages
-        uses: selfuryon/nix-update-action@v1.1.0
+        uses: winapps-org/nix-update-action@v1.2.0
+        with:
+          extra-args: --version=branch
