@@ -1,5 +1,4 @@
-use crate::config::App;
-use crate::Config;
+use crate::{config::App, Config};
 
 impl PartialEq for App {
     fn eq(&self, other: &Self) -> bool {

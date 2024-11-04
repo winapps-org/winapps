@@ -1,10 +1,10 @@
+use std::fmt::Debug;
+
+use crate::{backend::docker::Docker, Config, Result};
+
 mod docker;
 
-use crate::backend::docker::Docker;
-use crate::config::Config;
-use crate::errors::Result;
-
-pub trait Backend {
+pub trait Backend: Debug {
     fn check_depends(&self) -> Result<()>;
 
     fn get_host(&self) -> String;

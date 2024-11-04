@@ -1,9 +1,9 @@
 use std::process::{Command, Stdio};
 use std::sync::RwLockReadGuard;
+
 use tracing::{info, warn};
 
-use crate::command::execute;
-use crate::{Backend, Config, RemoteClient, Result};
+use crate::{command::execute, Backend, Config, RemoteClient, Result};
 
 pub struct Freerdp {
     config: RwLockReadGuard<'static, Config>,

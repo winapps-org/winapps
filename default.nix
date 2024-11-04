@@ -4,7 +4,7 @@
 let
   manifest = (pkgs.lib.importTOML ./winapps-cli/Cargo.toml).package;
 in
-pkgs.rustPlatform.buildRustPackage rec {
+pkgs.rustPlatform.buildRustPackage {
   pname = manifest.name;
   version = manifest.version;
   cargoLock.lockFile = ./Cargo.lock;
@@ -16,4 +16,5 @@ pkgs.rustPlatform.buildRustPackage rec {
   PKG_CONFIG_PATH = "${pkgs.openssl.dev}/lib/pkgconfig";
 
   propagatedBuildInputs = with pkgs; [ freerdp3 ];
+  wrapperArgs = [  ];
 }

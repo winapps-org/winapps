@@ -4,6 +4,8 @@ use std::io::Write;
 use std::path::{Path, PathBuf};
 use std::sync::{LazyLock, RwLock, RwLockReadGuard};
 
+use tracing::warn;
+
 use crate::{bail, Config, Error, IntoResult, Result};
 
 fn path_ok(path: &Path) -> Result<()> {
@@ -27,6 +29,32 @@ impl Config {
         CONFIG.read().unwrap()
     }
 
+    /// Reads the config from disk.
+    ///
+    /// Note: Since this uses a RwLock under the hood, call this before aquiring any read locks
+    /// (ensure `Config::get` isn't called anywhere unless the config is already loaded)
+    /// TODO: This behaviour is not ideal.
+    pub fn load(path: Option<&str>) -> Result<()> {
+        let config_path = Self::get_path(path)?;
+
+        if !config_path.exists() {
+            warn!("Config does not exist, writing default...");
+            return CONFIG.read().unwrap().save(path);
+        }
+
+        let config_file = fs::read_to_string(config_path).into_result()?;
+        let config: Self = toml::from_str(config_file.as_str()).into_result()?;
+
+        if !(config.libvirt.enable ^ config.container.enable ^ config.manual.enable) {
+            bail!(Error::Config("More than one backend enabled, please set only one of libvirt.enable, container.enable, and manual.enable"));
+        }
+
+        let mut global_config = CONFIG.try_write().unwrap();
+        *global_config = config;
+
+        Ok(())
+    }
+
     fn get_path(path: Option<&str>) -> Result<PathBuf> {
         let path = match (path, dirs::config_dir()) {
             (Some(path), _) => Ok(PathBuf::from(path)),
@@ -39,26 +67,6 @@ impl Config {
         path_ok(parent)?;
 
         Ok(path)
-    }
-
-    pub fn load(&self, path: Option<&str>) -> Result<()> {
-        let config_path = Self::get_path(path)?;
-
-        if !config_path.exists() {
-            return self.save(path);
-        }
-
-        let config_file = fs::read_to_string(config_path).into_result()?;
-        let config: Self = toml::from_str(config_file.as_str()).into_result()?;
-
-        if !(config.libvirt.enable ^ config.container.enable ^ config.manual.enable) {
-            bail!(Error::Config("More than one backend enabled, please set only one of libvirt.enable, container.enable, and manual.enable"));
-        }
-
-        let mut global_config = CONFIG.write().unwrap();
-        *global_config = config;
-
-        Ok(())
     }
 
     pub fn save(&self, path: Option<&str>) -> Result<()> {

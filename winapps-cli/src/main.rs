@@ -23,13 +23,14 @@ fn main() -> Result<()> {
         // .with_timer(tracing_subscriber::fmt::time::uptime())
         .without_time()
         .with_target(false)
+        .with_level(true)
         .init();
 
     let cli = cli();
     let matches = cli.clone().get_matches();
 
+    Config::load(None)?;
     let config = Config::get();
-    config.load(None)?;
 
     let client = Freerdp::new();
     let backend = config.get_backend();

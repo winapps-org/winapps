@@ -1,7 +1,8 @@
-use crate::command::execute_str;
-use crate::{ensure, Backend, Config, Error, Result};
 use std::sync::RwLockReadGuard;
 
+use crate::{command::execute_str, ensure, Backend, Config, Error, Result};
+
+#[derive(Debug)]
 pub struct Docker {
     config: RwLockReadGuard<'static, Config>,
 }
