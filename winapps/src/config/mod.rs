@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 mod apps;
 mod operations;
 
-#[derive(new, Debug, Deserialize, Serialize)]
+#[derive(new, Debug, Deserialize, Serialize, Clone)]
 pub struct Config {
     #[new(value = "AuthConfig::new()")]
     pub auth: AuthConfig,
@@ -18,7 +18,7 @@ pub struct Config {
     pub installed_apps: Vec<App>,
 }
 
-#[derive(new, Debug, Deserialize, Serialize)]
+#[derive(new, Debug, Deserialize, Serialize, Clone)]
 pub struct AuthConfig {
     #[new(value = "\"Docker\".to_string()")]
     pub username: String,
@@ -28,7 +28,7 @@ pub struct AuthConfig {
     pub domain: String,
 }
 
-#[derive(new, Debug, Deserialize, Serialize)]
+#[derive(new, Debug, Deserialize, Serialize, Clone)]
 pub struct ContainerConfig {
     #[new(value = "true")]
     pub enable: bool,
@@ -38,7 +38,7 @@ pub struct ContainerConfig {
     pub container_name: String,
 }
 
-#[derive(new, Debug, Deserialize, Serialize)]
+#[derive(new, Debug, Deserialize, Serialize, Clone)]
 pub struct LibvirtConfig {
     #[new(value = "false")]
     pub enable: bool,
@@ -46,7 +46,7 @@ pub struct LibvirtConfig {
     pub vm_name: String,
 }
 
-#[derive(new, Debug, Deserialize, Serialize)]
+#[derive(new, Debug, Deserialize, Serialize, Clone)]
 pub struct ManualConfig {
     #[new(value = "false")]
     pub enable: bool,

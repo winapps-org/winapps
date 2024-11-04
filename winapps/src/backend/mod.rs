@@ -2,13 +2,12 @@ mod docker;
 
 use crate::backend::docker::Docker;
 use crate::config::Config;
+use crate::errors::Result;
 
 pub trait Backend {
-    fn check_depends(&self, config: &Config);
+    fn check_depends(&self) -> Result<()>;
 
-    fn start(&self, config: &Config);
-
-    fn get_host(&self, config: &Config) -> String;
+    fn get_host(&self) -> String;
 }
 
 impl Config {
@@ -24,7 +23,7 @@ impl Config {
                 todo!()
             }
 
-            return Docker {};
+            return Docker::new();
         }
 
         if self.manual.enable {

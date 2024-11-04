@@ -1,11 +1,11 @@
-use crate::Config;
+use crate::Result;
 
 pub(crate) mod freerdp;
 
 pub trait RemoteClient {
-    fn check_depends(&self, config: &Config);
+    fn check_depends(&self) -> Result<()>;
 
-    fn run_executable(&self, config: &Config, exec: String);
+    fn run_executable(&self, exec: String) -> Result<()>;
 
-    fn run_windows(&self, config: &Config);
+    fn run_windows(&self) -> Result<()>;
 }
