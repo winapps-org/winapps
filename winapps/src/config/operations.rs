@@ -34,7 +34,7 @@ impl Config {
             _ => "Could not find $XDG_CONFIG_HOME and no config path specified".into_result(),
         }
         .map(|path| path.join("winapps").join("config.toml"))?;
-        
+
         let parent = path.parent().unwrap();
         path_ok(parent)?;
 
@@ -47,7 +47,7 @@ impl Config {
         if !config_path.exists() {
             return self.save(path);
         }
-        
+
         let config_file = fs::read_to_string(config_path).into_result()?;
         let config: Self = toml::from_str(config_file.as_str()).into_result()?;
 
