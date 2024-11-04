@@ -18,6 +18,7 @@ jobs:
         with:
           profile: minimal
           toolchain: nightly
+          default: true
 
       - name: Checkout code
         uses: actions/checkout@v4

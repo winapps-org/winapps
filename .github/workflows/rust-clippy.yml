@@ -37,6 +37,7 @@ jobs:
           profile: minimal
           toolchain: nightly
           components: clippy
+          default: true
 
       - name: Checkout code
         uses: actions/checkout@v4
