@@ -1,5 +1,5 @@
 {
-  pkgs ? import <nixpkgs-unstable> { overlays = [ (import <rust-overlay>) ]; },
+  pkgs ? import <nixpkgs> { overlays = [ (import <rust-overlay>) ]; },
 }:
 pkgs.mkShell {
   buildInputs = with pkgs; [
