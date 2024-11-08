@@ -1,6 +1,7 @@
 # Generated files
 target/
 result/
+/result
 
 # We don't want to commit IDE configuration files.
 .idea/
