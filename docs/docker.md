@@ -112,9 +112,6 @@ podman-compose --file ./compose.yaml down
 podman-compose --file ~/.config/winapps/compose.yaml up
 ```
 
-### Installing WinApps
-Please follow the [`docker` instructions](#installing-winapps).
-
 ### Changing `compose.yaml`
 Changes to `compose.yaml` require the Windows virtual machine to be removed and re-created. This should __NOT__ affect your data.
 
