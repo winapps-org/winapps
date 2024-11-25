@@ -298,6 +298,10 @@ Install the required dependencies.
       ```bash
       sudo pacman -Syu --needed -y dialog freerdp iproute2 libnotify gnu-netcat
       ```
+  - OpenSUSE:
+      ```bash
+      sudo zypper install -y dialog freerdp iproute2 libnotify netcat-openbsd
+      ```
   - Gentoo Linux:
       ```bash
       sudo emerge --ask=n dev-util/dialog net-misc/freerdp:3 sys-apps/iproute2 x11-libs/libnotify net-analyzer/openbsd-netcat
