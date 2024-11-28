@@ -42,7 +42,7 @@ readonly CONTAINER_NAME="WinApps" # FOR 'docker' AND 'podman' ONLY
 readonly RDP_PORT=3389
 readonly DOCKER_IP="127.0.0.1"
 # shellcheck disable=SC2155 # Silence warnings regarding masking return values through simultaneous declaration and assignment.
-readonly RUN="$(date)-${RANDOM}"
+readonly RUNID="${RANDOM}" #Set a random int for the run ID to assist with logging
 
 ### GLOBAL VARIABLES ###
 # WINAPPS CONFIGURATION FILE
@@ -162,7 +162,7 @@ Please run:
 # Name: 'dprint'
 # Role: Conditionally print debug messages to a log file, creating it if it does not exist.
 function dprint() {
-    [ "$DEBUG" = "true" ] && echo "[$RUN] $1" >>"$LOG_PATH"
+    [ "$DEBUG" = "true" ] && echo "[$(date)-$RUNID] $1" >>"$LOG_PATH"
 }
 
 # Name: 'waFixScale'
