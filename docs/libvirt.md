@@ -28,8 +28,16 @@ Together, these components form a powerful and flexible virtualization stack, wi
 
 3. Configure `libvirt` to use the 'system' URI by adding the line `LIBVIRT_DEFAULT_URI="qemu:///system"` to your preferred shell profile file (e.g., `.bashrc`, `.zshrc`, etc.).
     ```bash
-    echo "export LIBVIRT_DEFAULT_URI=\"qemu:///system\"" >> ~/.bashrc
+    echo 'export LIBVIRT_DEFAULT_URI="qemu:///system"' >> ~/.bashrc
     ```
+
+> [!NOTE]
+> WinApps may not read your shell's configuration. If you're having issues getting the installer to detect your VM, try adding
+> `LIBVIRT_DEFAULT_URI="qemu:///system"` to your `/etc/environment` like:
+> ```bash
+> echo 'LIBVIRT_DEFAULT_URI="qemu:///system"' | sudo tee -a /etc/environment
+> ```
+> Thanks to imoize for pointing this out: https://github.com/winapps-org/winapps/issues/310#issuecomment-2505348088
 
 4. Install `QEMU Guest Agent`.
     ```bash
