@@ -14,7 +14,7 @@ volumes:
   data:
 services:
   windows:
-    image: dockurr/windows # https://hub.docker.com/r/dockurr/windows
+    image: ghcr.io/dockur/windows:latest
     container_name: WinApps # Created Docker VM Name.
     environment:
       # Version of Windows to configure. For valid options, visit:
