@@ -20,6 +20,6 @@ jobs:
         uses: cachix/install-nix-action@v20
 
       - name: Update flake packages
-        uses: winapps-org/nix-update-action@v1.2.0
+        uses: winapps-org/nix-update-action@v1.3.0
         with:
           extra-args: --version=branch
