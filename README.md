@@ -332,6 +332,8 @@ Create a configuration file at `~/.config/winapps/winapps.conf` containing the f
 RDP_USER="MyWindowsUser"
 
 # [WINDOWS PASSWORD]
+# NOTES:
+# - If using FreeRDP v3.9.0 or greater, you *have* to set a password
 RDP_PASS="MyWindowsPassword"
 
 # [WINDOWS DOMAIN]
