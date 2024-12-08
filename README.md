@@ -290,6 +290,11 @@ Install the required dependencies.
       ```bash
       sudo apt install -y dialog freerdp3-x11 iproute2 libnotify-bin netcat-openbsd
       ```
+
+> [!NOTE]
+> On Debian you need to enable the `backports` repository for the `freerdp3-x11` package to become available.  
+> For instructions, see https://backports.debian.org/Instructions.
+
   - Fedora/RHEL:
       ```bash
       sudo dnf install -y dialog freerdp iproute libnotify nmap-ncat
