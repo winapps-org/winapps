@@ -375,6 +375,8 @@ WAFLAVOR="docker"
 RDP_SCALE="100"
 
 # [ADDITIONAL FREERDP FLAGS & ARGUMENTS]
+# NOTES:
+# - If you're facing issues, try removing the /network:lan flag.
 # DEFAULT VALUE: '/cert:tofu /sound /microphone /network:lan'
 # VALID VALUES: See https://github.com/awakecoding/FreeRDP-Manuals/blob/master/User/FreeRDP-User-Manual.markdown
 RDP_FLAGS="/cert:tofu /sound /microphone /network:lan"
