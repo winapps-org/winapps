@@ -1,0 +1,20 @@
+# Copyright (c) 2024 Adam
+# Copyright (c) 2024 Oskar Manhart
+# All rights reserved.
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+#
+# GNOME shortcut name
+NAME="SQL Server Management Studio"
+
+# Used for descriptions and window class
+FULL_NAME="SQL Server Management Studio"
+
+# The executable inside windows
+WIN_EXECUTABLE="C:\Program Files (x86)\Microsoft SQL Server Management Studio 20\Common7\IDE\Ssms.exe"
+
+# GNOME categories
+CATEGORIES="Development"
+
+# GNOME mimetypes
+MIME_TYPES="text/sql"
