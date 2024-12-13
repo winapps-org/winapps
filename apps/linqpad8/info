@@ -1,0 +1,20 @@
+# Copyright (c) 2024 Adam
+# Copyright (c) 2024 Oskar Manhart
+# All rights reserved.
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
+# GNOME shortcut name
+NAME="LINQPad8"
+
+# Used for descriptions and window class
+FULL_NAME="LINQPad 8"
+
+# The executable inside windows
+WIN_EXECUTABLE="C:\Program Files\LINQPad8\LINQPad8.exe"
+
+# GNOME categories
+CATEGORIES="WinApps;Development"
+
+# GNOME mimetypes
+MIME_TYPES="text/cs"
