@@ -1,9 +1,3 @@
-# Copyright (c) 2024 Oskar Manhart
-# Copyright (c) 2024 Rohan Barar
-# All rights reserved.
-#
-# SPDX-License-Identifier: AGPL-3.0-or-later
-
 # For documentation, FAQ, additional configuration options and technical help, visit: https://github.com/dockur/windows
 
 name: "winapps" # Docker Compose Project Name.

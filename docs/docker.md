@@ -12,7 +12,7 @@ Although WinApps supports using `QEMU+KVM+libvirt` as a backend for running Wind
 You can find a guide for installing `Docker Engine` [here](https://docs.docker.com/engine/install/).
 
 ### Setup `Docker` Container
-WinApps utilises `docker compose` to configure Windows VMs. A template [`compose.yaml`](https://github.com/winapps-org/winapps/blob/main/compose.yaml) is provided.
+WinApps utilises `docker compose` to configure Windows VMs. A template [`compose.yaml`](../compose.yaml) is provided.
 
 Prior to installing Windows, you can modify the RAM and number of CPU cores available to the Windows VM by changing `RAM_SIZE` and `CPU_CORES` within `compose.yaml`.
 

@@ -282,7 +282,7 @@ The following guides are available:
 - [Creating a Windows VM with `Docker` or `Podman`](docs/docker.md)
 - [Creating a Windows VM with `libvirt`](docs/libvirt.md)
 
-If you already have a Windows VM or server you wish to use with WinApps, you will need to merge `install/RDPApps.reg` into the Windows Registry manually.
+If you already have a Windows VM or server you wish to use with WinApps, you will still have to follow the [final steps described in the `libvirt` documentation](docs/libvirt.md#final-configuration-steps).
 
 ### Step 2: Install Dependencies
 Install the required dependencies.
@@ -376,10 +376,10 @@ RDP_SCALE="100"
 
 # [ADDITIONAL FREERDP FLAGS & ARGUMENTS]
 # NOTES:
-# - If you're facing issues, try removing the /network:lan flag.
-# DEFAULT VALUE: '/cert:tofu /sound /microphone /network:lan'
+# - You can try adding /network:lan to these flags in order to increase performance, however, some users have faced issues with this.
+# DEFAULT VALUE: '/cert:tofu /sound /microphone'
 # VALID VALUES: See https://github.com/awakecoding/FreeRDP-Manuals/blob/master/User/FreeRDP-User-Manual.markdown
-RDP_FLAGS="/cert:tofu /sound /microphone /network:lan"
+RDP_FLAGS="/cert:tofu /sound /microphone"
 
 # [MULTIPLE MONITORS]
 # NOTES:

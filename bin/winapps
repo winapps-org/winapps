@@ -1,12 +1,4 @@
 #!/usr/bin/env bash
-# Copyright (c) 2024 Felix Bartels
-# Copyright (c) 2024 Rhea Barar
-# Copyright (c) 2024 Rohan Barar
-# Copyright (c) 2024 Oskar Manhart
-# Copyright (c) 2024 escapefreeg
-# All rights reserved.
-#
-# SPDX-License-Identifier: AGPL-3.0-or-later
 
 ### GLOBAL CONSTANTS ###
 # ERROR CODES
@@ -42,7 +34,7 @@ readonly CONTAINER_NAME="WinApps" # FOR 'docker' AND 'podman' ONLY
 readonly RDP_PORT=3389
 readonly DOCKER_IP="127.0.0.1"
 # shellcheck disable=SC2155 # Silence warnings regarding masking return values through simultaneous declaration and assignment.
-readonly RUNID="${RANDOM}" #Set a random int for the run ID to assist with logging
+readonly RUNID="${RANDOM}"
 
 ### GLOBAL VARIABLES ###
 # WINAPPS CONFIGURATION FILE
