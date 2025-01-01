@@ -489,6 +489,10 @@ First, make sure Flakes and the `nix` command are enabled.
 In your `~/.config/nix/nix.conf`:
 ```
 experimental-features = nix-command flakes
+# specify to use binary cache (optional)
+extra-substituters = https://winapps.cachix.org/
+extra-trusted-public-keys = winapps.cachix.org-1:HI82jWrXZsQRar/PChgIx1unmuEsiQMQq+zt05CD36g=
+extra-trusted-users = <your-username> # replace with your username
 ```
 
 ```bash
@@ -527,6 +531,12 @@ nix profile install github:winapps-org/winapps#winapps-launcher # optional
           (
             { pkgs, ... }:
             {
+              # set up binary cache (optional)
+              nix.settings = {
+                substituters = [ "https://winapps.cachix.org/" ];
+                trusted-public-keys = [ "winapps.cachix.org-1:HI82jWrXZsQRar/PChgIx1unmuEsiQMQq+zt05CD36g=" ];
+              };
+
               environment.systemPackages = [
                 winapps.packages.${system}.winapps
                 winapps.packages.${system}.winapps-launcher # optional
@@ -546,8 +556,14 @@ However, if you still don't want to use flakes, you can use WinApps with flake-c
 
 ```nix
 # configuration.nix
-{ ... }:
+{ system, ... }:
 {
+  # set up binary cache (optional)
+  nix.settings = {
+    substituters = [ "https://winapps.cachix.org/" ];
+    trusted-public-keys = [ "winapps.cachix.org-1:HI82jWrXZsQRar/PChgIx1unmuEsiQMQq+zt05CD36g=" ];
+    trusted-users = [ "<your username>" ]; # replace with your username
+  };
 
   environment.systemPackages =
     let
