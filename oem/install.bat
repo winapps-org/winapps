@@ -1,3 +1,2 @@
 @echo off
-
-REG IMPORT C:\OEM\RDPApps.reg
+powershell.exe -ExecutionPolicy Bypass %~dp0\install.ps1
