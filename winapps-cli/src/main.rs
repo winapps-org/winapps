@@ -1,7 +1,7 @@
 use clap::{arg, Command};
 use miette::{bail, IntoDiagnostic, Result};
-use tracing::info;
-
+use tracing::{info, Level};
+use tracing_subscriber::EnvFilter;
 use winapps::{Backend, Config, Freerdp, RemoteClient};
 
 fn cli() -> Command {
@@ -24,15 +24,16 @@ fn main() -> Result<()> {
         .without_time()
         .with_target(false)
         .with_level(true)
+        .with_max_level(Level::INFO)
+        .with_env_filter(EnvFilter::from_default_env())
         .init();
 
     let cli = cli();
     let matches = cli.clone().get_matches();
 
-    Config::load(None)?;
-    let config = Config::get();
+    let config = Config::load()?;
 
-    let client = Freerdp::new();
+    let client = Freerdp::new(config);
     let backend = config.get_backend();
 
     client.check_depends()?;
@@ -45,21 +46,21 @@ fn main() -> Result<()> {
             client.run_windows()?;
             Ok(())
         }
+
         Some(("run", sub_matches)) => {
             info!("Connecting to app on remote");
 
             match sub_matches.get_one::<String>("NAME") {
                 None => bail!("App is required and should never be None here"),
-                Some(app) => client.run_executable(app.to_string()),
+                Some(app) => client.run_executable(app.to_owned()),
             }?;
 
             Ok(())
         }
-        Some((_, _)) => cli
+
+        _ => cli
             .about("Command not found, try existing ones!")
             .print_help()
             .into_diagnostic(),
-
-        _ => unreachable!(),
     }
 }

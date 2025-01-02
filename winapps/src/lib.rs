@@ -1,5 +1,14 @@
 #![feature(decl_macro)]
 #![feature(exit_status_error)]
+#![feature(once_cell_try)]
+#![feature(once_wait)]
+
+pub use crate::{
+    backend::{Backend, Backends},
+    config::Config,
+    errors::{bail, ensure, Error, IntoResult, Result},
+    remote_client::{freerdp::Freerdp, RemoteClient},
+};
 
 mod backend;
 mod command;
@@ -7,8 +16,3 @@ mod errors;
 mod remote_client;
 
 pub mod config;
-
-pub use crate::backend::Backend;
-pub use crate::config::Config;
-pub use crate::errors::{bail, ensure, Error, IntoResult, Result};
-pub use crate::remote_client::{freerdp::Freerdp, RemoteClient};

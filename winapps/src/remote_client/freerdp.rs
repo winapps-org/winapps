@@ -1,77 +1,64 @@
-use std::process::{Command, Stdio};
-use std::sync::RwLockReadGuard;
+use std::{
+    net::{SocketAddr, TcpStream},
+    time::Duration,
+};
+use tracing::info;
 
-use tracing::{info, warn};
-
-use crate::{command::execute, Backend, Config, RemoteClient, Result};
+use crate::{command::Command, Config, Error, RemoteClient, Result};
 
 pub struct Freerdp {
-    config: RwLockReadGuard<'static, Config>,
+    config: &'static Config,
 }
 
 impl Freerdp {
-    pub fn new() -> Self {
-        Self {
-            config: Config::get(),
-        }
-    }
+    const TIMEOUT: Duration = Duration::from_secs(5);
+    const RDP_PORT: u16 = 3389;
 
     fn get_command(&self) -> Command {
-        let mut command = Command::new("xfreerdp");
-
-        command.stdout(Stdio::null()).stderr(Stdio::null()).args([
-            &format!("/d:{}", &self.config.auth.domain),
-            &format!("/u:{}", &self.config.auth.username),
-            &format!("/p:{}", &self.config.auth.password),
-            &format!("/v:{}", &self.config.get_backend().get_host()),
-            "/dynamic-resolution",
-            "+auto-reconnect",
-            "+clipboard",
-            "+home-drive",
-        ]);
-
-        command
+        Command::new(self.config.freerdp.executable.as_str())
+            .with_err("Freerdp execution failed, check logs above!")
+            .args(vec![
+                format!("/d:{}", &self.config.auth.domain),
+                format!("/u:{}", &self.config.auth.username),
+                format!("/p:{}", &self.config.auth.password),
+                format!("/v:{}", &self.config.get_host()),
+            ])
+            .args(self.config.freerdp.extra_args.iter().cloned())
+            .loud(self.config.debug)
     }
-}
 
-impl Default for Freerdp {
-    fn default() -> Self {
-        Self::new()
+    pub fn new(config: &'static Config) -> Self {
+        Self { config }
     }
 }
 
 impl RemoteClient for Freerdp {
     fn check_depends(&self) -> Result<()> {
-        let mut xfreerdp = self.get_command();
-        xfreerdp.arg("-h");
-
-        execute(xfreerdp, "Freerdp execution failed, check logs above!")?;
+        self.get_command()
+            .clear_args()
+            .with_err("Freerdp execution failed, is `freerdp.executable` correctly set, FreeRDP properly installed and the binary on $PATH?")
+            .spawn()?;
 
         info!("Freerdp found!");
+        info!("Checking whether host is reachable..");
 
-        info!("All dependencies found!");
-        info!("Running explorer as test!");
-        warn!("Check yourself if it appears correctly!");
+        let socket_address = SocketAddr::new(self.config.get_host(), Self::RDP_PORT);
 
-        self.run_executable("explorer.exe".to_string())?;
-
-        info!("Test finished!");
+        TcpStream::connect_timeout(&socket_address, Self::TIMEOUT)
+            .map(|_| ())
+            .map_err(|_| Error::HostUnreachable)?;
 
         Ok(())
     }
 
     fn run_executable(&self, app: String) -> Result<()> {
-        let mut xfreerdp = self.get_command();
-        xfreerdp.arg(format!("/app:{app}"));
-
-        execute(xfreerdp, "Freerdp execution failed, check logs above!").map(|_| ())
+        self.get_command()
+            .arg(format!("/app:program:{app}"))
+            .spawn()
+            .map(|_| ())
     }
 
     fn run_windows(&self) -> Result<()> {
-        execute(
-            self.get_command(),
-            "Freerdp execution failed, check logs above!",
-        )
-        .map(|_| ())
+        self.get_command().spawn().map(|_| ())
     }
 }

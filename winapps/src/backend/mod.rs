@@ -1,17 +1,30 @@
-use std::fmt::Debug;
+use std::net::IpAddr;
 
-use crate::{backend::docker::Docker, Config, Result};
+use enum_dispatch::enum_dispatch;
 
-mod docker;
+use crate::{
+    backend::{container::Container, manual::Manual},
+    Config, Result,
+};
 
-pub trait Backend: Debug {
+mod container;
+mod manual;
+
+#[enum_dispatch]
+pub trait Backend {
     fn check_depends(&self) -> Result<()>;
 
-    fn get_host(&self) -> String;
+    fn get_host(&self) -> IpAddr;
+}
+
+#[enum_dispatch(Backend)]
+pub enum Backends {
+    Container,
+    Manual,
 }
 
 impl Config {
-    pub fn get_backend(&self) -> impl Backend + Sized {
+    pub fn get_backend(&'static self) -> Backends {
         assert!(self.libvirt.enable ^ self.container.enable ^ self.manual.enable);
 
         if self.libvirt.enable {
@@ -19,17 +32,17 @@ impl Config {
         }
 
         if self.container.enable {
-            if self.container.enable_podman {
-                todo!()
-            }
-
-            return Docker::new();
+            return Container::new(self).into();
         }
 
         if self.manual.enable {
-            todo!()
+            return Manual::new(self).into();
         }
 
         unreachable!()
+    }
+
+    pub fn get_host(&'static self) -> IpAddr {
+        self.get_backend().get_host()
     }
 }

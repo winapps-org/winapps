@@ -22,16 +22,10 @@ pub enum Error {
     #[diagnostic(code(winapps::io_error))]
     Io(#[from] std::io::Error),
 
-    #[error(
-        r#"
-child command ran with error: {message}
-command output:
-{output}"#
-    )]
+    #[error("{message}")]
     #[diagnostic(code(winapps::child_command_error))]
     Command {
-        message: &'static str,
-        output: String,
+        message: String,
         source: anyhow::Error,
     },
 
@@ -49,6 +43,18 @@ command output:
     #[error(transparent)]
     #[diagnostic(code(winapps::toml_invalid_error))]
     Serialize(#[from] toml::ser::Error),
+
+    #[error("RDP host is unreachable")]
+    #[diagnostic(
+        code(winapps::bad_vm_state),
+        help("Ensure that the VM or your Firewall doesn't block ping traffic. \
+        In case you're running a containerized VM, ensure the container runtime is properly configured.")
+    )]
+    HostUnreachable,
+
+    #[error("String passed to Command::fromStr was empty")]
+    #[diagnostic(code(winapps::bad_string_command))]
+    EmptyCommand,
 }
 
 pub type Result<T> = std::result::Result<T, Error>;
@@ -80,12 +86,12 @@ impl<T> IntoResult<T> for &str {
 
 pub macro ensure {
     ($cond:expr, $err:expr) => {
-        if $cond {
+        if !$cond {
             $crate::bail!($err);
         }
     },
     ($cond:expr, $err:expr, $($fmt:tt)*) => {
-        if $cond {
+        if !$cond {
             $crate::bail!($err, $($fmt)*)
         }
     }
