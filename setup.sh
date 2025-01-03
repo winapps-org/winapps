@@ -188,8 +188,12 @@ function waGetSourceCode() {
 function waGetInquirer() {
     local INQUIRER=$INQUIRER_PATH
 
-    if [ ! -d "$SYS_SOURCE_PATH" ] && [ ! -d "$USER_SOURCE_PATH" ]; then
-        INQUIRER="/tmp/waInquirer.sh"
+    if [ -d "$SYS_SOURCE_PATH" ]; then
+	INQUIRER=$SYS_SOURCE_PATH/$INQUIRER_PATH
+    elif [ -d "$USER_SOURCE_PATH" ] ; then
+	INQUIRER=$USER_SOURCE_PATH/$INQUIRER_PATH
+    else
+	INQUIRER="/tmp/waInquirer.sh"
         rm -f "$INQUIRER"
 
         curl -o "$INQUIRER" "https://raw.githubusercontent.com/winapps-org/winapps/main/install/inquirer.sh"
