@@ -435,9 +435,9 @@ FREERDP_COMMAND=""
 > If you wish to use an alternative WinApps backend (other than `Docker`), uncomment and change `WAFLAVOR="docker"` to `WAFLAVOR="podman"` or `WAFLAVOR="libvirt"`.
 
 > [!NOTE]
-> If you encounter issues with tls certificate getting rejected, delete the existing `.pem` file with 
-> `rm -rf .config/freerdp/server/127.0.0.1_3389.pem` and run 
-> `xfreerdp3 /u:MyWindowsUser /p:MyWindowsPassword /v:127.0.0.1 /cert:tofu` 
+> If you encounter issues with tls certificate getting rejected, delete the existing `.pem` file with
+> `rm -rf .config/freerdp/server/127.0.0.1_3389.pem` and run
+> `xfreerdp3 /u:MyWindowsUser /p:MyWindowsPassword /v:127.0.0.1 /cert:tofu`
 > to set up Trust On First Authentication. Then retry the `setup.sh` script.
 
 #### Configuration Options Explained
