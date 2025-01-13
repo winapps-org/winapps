@@ -526,10 +526,18 @@ nix profile install github:winapps-org/winapps#winapps-launcher # optional
       nixosConfigurations.hostname = nixpkgs.lib.nixosSystem rec {
         system = "x86_64-linux";
 
+        specialArgs = {
+          inherit inputs system;
+        };
+
         modules = [
           ./configuration.nix
           (
-            { pkgs, ... }:
+            {
+              pkgs,
+              system ? pkgs.system,
+              ...
+            }:
             {
               # set up binary cache (optional)
               nix.settings = {
@@ -556,7 +564,11 @@ However, if you still don't want to use flakes, you can use WinApps with flake-c
 
 ```nix
 # configuration.nix
-{ system, ... }:
+{
+  pkgs,
+  system ? pkgs.system,
+  ...
+}:
 {
   # set up binary cache (optional)
   nix.settings = {
