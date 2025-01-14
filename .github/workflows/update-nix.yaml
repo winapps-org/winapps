@@ -31,4 +31,4 @@ jobs:
           extra-args: --version=branch
 
       - name: Build packages
-        run: nix-build
+        run: nix build .#winapps .#winapps-launcher

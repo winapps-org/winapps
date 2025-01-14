@@ -517,7 +517,7 @@ nix profile install github:winapps-org/winapps#winapps-launcher # optional
   };
 
   outputs =
-    {
+    inputs@{
       nixpkgs,
       winapps,
       ...
@@ -546,8 +546,8 @@ nix profile install github:winapps-org/winapps#winapps-launcher # optional
               };
 
               environment.systemPackages = [
-                winapps.packages.${system}.winapps
-                winapps.packages.${system}.winapps-launcher # optional
+                winapps.packages."${system}".winapps
+                winapps.packages."${system}".winapps-launcher # optional
               ];
             }
           )
