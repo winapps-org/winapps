@@ -117,7 +117,7 @@ index b7d930d6..18000c65 100755
  [Desktop Entry]
  Name=Windows
 -Exec=${BIN_PATH}/winapps windows %F
-+Exec=@out/bin/winapps windows %F
++Exec=@out@/bin/winapps windows %F
  Terminal=false
  Type=Application
  Icon=${APPDATA_PATH}/icons/windows.svg
