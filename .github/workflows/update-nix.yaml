@@ -18,6 +18,8 @@ jobs:
 
       - name: Install Nix
         uses: DeterminateSystems/nix-installer-action@main
+        with:
+          trust-runner-user: true
 
       - name: Set up cache
         uses: cachix/cachix-action@v15
