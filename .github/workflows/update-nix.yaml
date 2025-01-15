@@ -18,6 +18,8 @@ jobs:
 
       - name: Install Nix
         uses: DeterminateSystems/nix-installer-action@main
+        with:
+          trust-runner-user: true
 
       - name: Set up cache
         uses: cachix/cachix-action@v15
@@ -31,4 +33,4 @@ jobs:
           extra-args: --version=branch
 
       - name: Build packages
-        run: nix-build
+        run: nix build .#winapps .#winapps-launcher

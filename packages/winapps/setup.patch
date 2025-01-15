@@ -1,8 +1,8 @@
 diff --git a/setup.sh b/setup.sh
-index 6aa9b574..9fbefe65 100755
+index b7d930d6..18000c65 100755
 --- a/setup.sh
 +++ b/setup.sh
-@@ -48,8 +48,8 @@ readonly SYS_BIN_PATH="/usr/local/bin"                  # UNIX path to 'bin' dir
+@@ -39,8 +39,8 @@ readonly SYS_BIN_PATH="/usr/local/bin"                  # UNIX path to 'bin' dir
  readonly USER_BIN_PATH="${HOME}/.local/bin"             # UNIX path to 'bin' directory for a '--user' WinApps installation.
  readonly USER_BIN_PATH_WIN='\\tsclient\home\.local\bin' # WINDOWS path to 'bin' directory for a '--user' WinApps installation.
  # 'SOURCE'
@@ -13,7 +13,7 @@ index 6aa9b574..9fbefe65 100755
  # 'APP'
  readonly SYS_APP_PATH="/usr/share/applications"                        # UNIX path to 'applications' directory for a '--system' WinApps installation.
  readonly USER_APP_PATH="${HOME}/.local/share/applications"             # UNIX path to 'applications' directory for a '--user' WinApps installation.
-@@ -79,7 +79,7 @@ readonly TEST_PATH_WIN="${USER_APPDATA_PATH_WIN}\\FreeRDP_Connection_Test" # WIN
+@@ -70,7 +70,7 @@ readonly TEST_PATH_WIN="${USER_APPDATA_PATH_WIN}\\FreeRDP_Connection_Test" # WIN
  # 'WinApps Configuration File'
  readonly CONFIG_PATH="${HOME}/.config/winapps/winapps.conf" # UNIX path to the WinApps configuration file.
  # 'Inquirer Bash Script'
@@ -22,7 +22,7 @@ index 6aa9b574..9fbefe65 100755
  
  # REMOTE DESKTOP CONFIGURATION
  readonly VM_NAME="RDPWindows"  # Name of the Windows VM (FOR 'libvirt' ONLY).
-@@ -139,13 +139,13 @@ function waTerminateScript() {
+@@ -130,13 +130,13 @@ function waTerminateScript() {
  # Role: Displays usage information for the script.
  function waUsage() {
      echo -e "Usage:
@@ -43,16 +43,44 @@ index 6aa9b574..9fbefe65 100755
  }
  
  # Name: 'waGetSourceCode'
-@@ -168,7 +168,7 @@ function waGetSourceCode() {
-         $SUDO git clone --recurse-submodules --remote-submodules https://github.com/winapps-org/winapps.git "$SOURCE_PATH"
-     else
-         echo -e "${INFO_TEXT}WinApps installation already present at ${CLEAR_TEXT}${COMMAND_TEXT}${SOURCE_PATH}${CLEAR_TEXT}${INFO_TEXT}. Updating...${CLEAR_TEXT}"
--        $SUDO git -C "$SOURCE_PATH" pull --no-rebase
-+        
+@@ -155,13 +155,6 @@ function waGetSourceCode() {
+         echo -e "${WARNING_TEXT}[WARNING]${CLEAR_TEXT} You might want to remove your old installation on '${SCRIPT_DIR_PATH}'."
      fi
  
+-    if [[ ! -d "$SOURCE_PATH" ]]; then
+-        $SUDO git clone --recurse-submodules --remote-submodules https://github.com/winapps-org/winapps.git "$SOURCE_PATH"
+-    else
+-        echo -e "${INFO_TEXT}WinApps installation already present at ${CLEAR_TEXT}${COMMAND_TEXT}${SOURCE_PATH}${CLEAR_TEXT}${INFO_TEXT}. Updating...${CLEAR_TEXT}"
+-        $SUDO git -C "$SOURCE_PATH" pull --no-rebase
+-    fi
+-
      # Silently change the working directory.
-@@ -395,7 +395,7 @@ function waCheckExistingInstall() {
+     if ! cd "$SOURCE_PATH" &>/dev/null; then
+         # Display the error type.
+@@ -186,21 +179,8 @@ function waGetSourceCode() {
+ # Name: 'waGetInquirer'
+ # Role: Loads the inquirer script, even if the source isn't cloned yet
+ function waGetInquirer() {
+-    local INQUIRER=$INQUIRER_PATH
+-
+-    if [ -d "$SYS_SOURCE_PATH" ]; then
+-        INQUIRER=$SYS_SOURCE_PATH/$INQUIRER_PATH
+-    elif [ -d "$USER_SOURCE_PATH" ] ; then
+-        INQUIRER=$USER_SOURCE_PATH/$INQUIRER_PATH
+-    else
+-        INQUIRER="/tmp/waInquirer.sh"
+-        rm -f "$INQUIRER"
+-
+-        curl -o "$INQUIRER" "https://raw.githubusercontent.com/winapps-org/winapps/main/install/inquirer.sh"
+-    fi
+-
+     # shellcheck source=/dev/null # Exclude this file from being checked by ShellCheck.
+-    source "$INQUIRER"
++    source "$INQUIRER_PATH"
+ }
+ 
+ # Name: 'waCheckInput'
+@@ -390,7 +370,7 @@ function waCheckExistingInstall() {
  
          # Display the suggested action(s).
          echo "--------------------------------------------------------------------------------"
@@ -61,7 +89,7 @@ index 6aa9b574..9fbefe65 100755
          echo "--------------------------------------------------------------------------------"
  
          # Terminate the script.
-@@ -415,7 +415,7 @@ function waCheckExistingInstall() {
+@@ -410,7 +390,7 @@ function waCheckExistingInstall() {
  
          # Display the suggested action(s).
          echo "--------------------------------------------------------------------------------"
@@ -70,7 +98,7 @@ index 6aa9b574..9fbefe65 100755
          echo "--------------------------------------------------------------------------------"
  
          # Terminate the script.
-@@ -810,7 +810,7 @@ function waCheckGroupMembership() {
+@@ -805,7 +785,7 @@ function waCheckGroupMembership() {
      # Identify groups the current user belongs to.
      USER_GROUPS=$(groups "$(whoami)")
  
@@ -79,7 +107,7 @@ index 6aa9b574..9fbefe65 100755
          # Complete the previous line.
          echo -e "${FAIL_TEXT}Failed!${CLEAR_TEXT}\n"
  
-@@ -1244,11 +1244,11 @@ function waConfigureWindows() {
+@@ -1239,11 +1219,11 @@ function waConfigureWindows() {
      # Populate variables.
      WIN_BASH="\
  #!/usr/bin/env bash
@@ -89,11 +117,11 @@ index 6aa9b574..9fbefe65 100755
  [Desktop Entry]
  Name=Windows
 -Exec=${BIN_PATH}/winapps windows %F
-+Exec=@out/bin/winapps windows %F
++Exec=@out@/bin/winapps windows %F
  Terminal=false
  Type=Application
  Icon=${APPDATA_PATH}/icons/windows.svg
-@@ -1295,13 +1295,13 @@ function waConfigureApp() {
+@@ -1290,13 +1270,13 @@ function waConfigureApp() {
      # Determine the content of the bash script for the application.
      APP_BASH="\
  #!/usr/bin/env bash
@@ -109,18 +137,27 @@ index 6aa9b574..9fbefe65 100755
  Terminal=false
  Type=Application
  Icon=${APP_ICON}
-@@ -1631,8 +1631,8 @@ function waInstall() {
+@@ -1550,7 +1530,7 @@ function waInstall() {
+     echo -e "${BOLD_TEXT}Installing WinApps.${CLEAR_TEXT}"
+ 
+     # Check for existing conflicting WinApps installations.
+-    waCheckExistingInstall
++    # waCheckExistingInstall
+ 
+     # Load the WinApps configuration file.
+     waLoadConfig
+@@ -1626,8 +1606,8 @@ function waInstall() {
      waFindInstalled
  
      # Install the WinApps bash scripts.
 -    $SUDO ln -sf "${SOURCE_PATH}/bin/winapps" "${BIN_PATH}/winapps"
 -    $SUDO ln -sf "${SOURCE_PATH}/setup.sh" "${BIN_PATH}/winapps-setup"
-+    
-+    
++
++
  
      # Configure the Windows RDP session application launcher.
      waConfigureWindows
-@@ -1682,18 +1682,15 @@ function waUninstall() {
+@@ -1677,18 +1657,15 @@ function waUninstall() {
      local DESKTOP_FILE_NAME=""        # Stores the name of the '.desktop' file for the application.
      local BASH_SCRIPT_NAME=""         # Stores the name of the application.
  
@@ -129,7 +166,7 @@ index 6aa9b574..9fbefe65 100755
 -    $SUDO rm -f "${BIN_PATH}/winapps-setup"
 -
      # Remove WinApps configuration data, temporary files and logs.
-+    chmod -R +rw "$USER_APPDATA_PATH" 
++    chmod -R +rw "$USER_APPDATA_PATH"
      rm -rf "$USER_APPDATA_PATH"
  
      # Remove application icons and shortcuts.
@@ -141,7 +178,7 @@ index 6aa9b574..9fbefe65 100755
  
      # Remove each '.desktop' file.
      for DESKTOP_FILE_PATH in "${WINAPPS_DESKTOP_FILES[@]}"; do
-@@ -1714,7 +1711,7 @@ function waUninstall() {
+@@ -1709,7 +1686,7 @@ function waUninstall() {
      done
  
      # Store the paths of bash scripts calling 'WinApps' to launch specific applications in an array, returning an empty array if no such files exist.
@@ -150,7 +187,7 @@ index 6aa9b574..9fbefe65 100755
  
      # Remove each bash script.
      for BASH_SCRIPT_PATH in "${WINAPPS_APP_BASH_SCRIPTS[@]}"; do
-@@ -1735,10 +1732,9 @@ function waUninstall() {
+@@ -1730,10 +1707,9 @@ function waUninstall() {
      done
  
      # Print caveats.
