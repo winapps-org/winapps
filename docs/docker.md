@@ -30,7 +30,7 @@ It is also possible to specify the version of Windows you wish to install within
 Please refer to the [original GitHub repository](https://github.com/dockur/windows) for more information on additional configuration options.
 
 > [!NOTE]
-> If you want to undo all your changes and start from scratch, run the following. For `podman`, replace `docker` with `podman`.
+> If you want to undo all your changes and start from scratch, run the following. For `podman`, replace `docker compose` with `podman-compose`.
 > ```bash
 > docker compose down --rmi=all --volumes
 > ```
