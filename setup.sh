@@ -1653,7 +1653,7 @@ function waInstall() {
 # Name: 'waEnsureOnPath'
 # Role: Ensures that $BIN_PATH is on $PATH.
 function waEnsureOnPath() {
-    if [[ !":$PATH:" =~ *":$BIN_PATH:"* ]]; then
+    if [[ ":$PATH:" != *":$BIN_PATH:"* ]]; then
         echo -e "${WARNING_TEXT}[WARNING]${CLEAR_TEXT} It seems like '${BIN_PATH}' is not on PATH."
         echo -e "${WARNING_TEXT}[WARNING]${CLEAR_TEXT} You can add it by running:"
         # shellcheck disable=SC2086
