@@ -1,5 +1,5 @@
 diff --git a/setup.sh b/setup.sh
-index 8c6209fb..b7651485 100755
+index b7d930d6..18000c65 100755
 --- a/setup.sh
 +++ b/setup.sh
 @@ -39,8 +39,8 @@ readonly SYS_BIN_PATH="/usr/local/bin"                  # UNIX path to 'bin' dir
@@ -137,6 +137,15 @@ index 8c6209fb..b7651485 100755
  Terminal=false
  Type=Application
  Icon=${APP_ICON}
+@@ -1550,7 +1530,7 @@ function waInstall() {
+     echo -e "${BOLD_TEXT}Installing WinApps.${CLEAR_TEXT}"
+ 
+     # Check for existing conflicting WinApps installations.
+-    waCheckExistingInstall
++    # waCheckExistingInstall
+ 
+     # Load the WinApps configuration file.
+     waLoadConfig
 @@ -1626,8 +1606,8 @@ function waInstall() {
      waFindInstalled
  
