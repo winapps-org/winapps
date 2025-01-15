@@ -352,7 +352,7 @@ RDP_DOMAIN=""
 # - 'docker': '127.0.0.1'
 # - 'podman': '127.0.0.1'
 # - 'libvirt': '' (BLANK)
-RDP_IP=""
+RDP_IP="127.0.0.1"
 
 # [WINAPPS BACKEND]
 # DEFAULT VALUE: 'docker'
@@ -433,6 +433,12 @@ FREERDP_COMMAND=""
 
 > [!NOTE]
 > If you wish to use an alternative WinApps backend (other than `Docker`), uncomment and change `WAFLAVOR="docker"` to `WAFLAVOR="podman"` or `WAFLAVOR="libvirt"`.
+
+> [!NOTE]
+> If you encounter issues with tls certificate getting rejected, delete the existing `.pem` file with
+> `rm ~/.config/freerdp/server/127.0.0.1_3389.pem` and run
+> `xfreerdp3 /u:MyWindowsUser /p:MyWindowsPassword /v:127.0.0.1 /cert:tofu`
+> to set up Trust On First Authentication. Then retry the `setup.sh` script.
 
 #### Configuration Options Explained
 - If using a pre-existing Windows RDP server on your LAN, you must use `RDP_IP` to specify the location of the Windows server. You may also wish to configure a static IP address for this server.

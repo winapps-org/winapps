@@ -6,6 +6,12 @@ Although WinApps supports using `QEMU+KVM+libvirt` as a backend for running Wind
 
 > [!IMPORTANT]
 > WinApps does __NOT__ officially support versions of Windows prior to Windows 10. Despite this, it may be possible to achieve a successful installation with some additional experimentation. If you find a way to achieve this, please share your solution through a pull request for the benefit of other users.
+> Possible setup instructions for Windows 10:
+> - 'Professional', 'Enterprise' or 'Server' editions of Windows are required to run RDP applications. Windows 'Home' will __NOT__ suffice. It is recommended to download the ISO from a reputed source, as the built in downloader from dockur (default set to `tiny11`) will take longer than it would to download from a browser/torrent.
+> - It is recommended to edit the initial `compose.yaml` file to keep your required username and password from the beginning.
+> - It is recommended to not use `sudo` to force commands to run. Add your user to the relevant permissions group wherever possible.
+
+
 
 ## `Docker`
 ### Installation
@@ -22,6 +28,12 @@ It is also possible to specify the version of Windows you wish to install within
 > WinApps uses a stripped-down Windows installation by default. Although this is recommended, you can request a stock Windows installation by changing `VERSION` to one of the versions listed in the README of the [original GitHub repository](https://github.com/dockur/windows).
 
 Please refer to the [original GitHub repository](https://github.com/dockur/windows) for more information on additional configuration options.
+
+> [!NOTE]
+> If you want to undo all your changes and start from scratch, run the following. For `podman`, replace `docker compose` with `podman-compose`.
+> ```bash
+> docker compose down --rmi=all --volumes
+> ```
 
 ### Installing Windows
 You can initiate the Windows installation using `docker compose`.
