@@ -1,0 +1,17 @@
+# GNOME shortcut name
+NAME="reMarkable"
+
+# Used for descriptions and window class
+FULL_NAME="reMarkable Desktop App"
+
+# The executable inside windows
+WIN_EXECUTABLE="C:\Program Files\reMarkable\reMarkable.exe"
+
+# GNOME categories
+CATEGORIES="WinApps;Office"
+
+# GNOME mimetypes
+MIME_TYPES=""
+
+# System Icon
+ICON="reMarkable"
