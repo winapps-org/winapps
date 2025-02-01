@@ -39,21 +39,7 @@ Together, these components form a powerful and flexible virtualization stack, wi
 > ```
 > Thanks to imoize for pointing this out: https://github.com/winapps-org/winapps/issues/310#issuecomment-2505348088
 
-4. Install `QEMU Guest Agent`.
-    ```bash
-    sudo apt install qemu-guest-agent # Debian/Ubuntu
-    sudo dnf install qemu-guest-agent # Fedora/RHEL
-    sudo pacman -S qemu-guest-agent # Arch Linux
-    sudo emerge app-emulation/qemu-guest-agent # Gentoo Linux
-    sudo systemctl enable qemu-guest-agent
-    sudo systemctl start qemu-guest-agent
-    ```
-
-> [!NOTE]
-> `QEMU Guest Agent` is a helper daemon used to exchange information and commands between host and guest operating systems.
-> You can read more about `QEMU Guest Agent` [here](https://pve.proxmox.com/wiki/Qemu-guest-agent).
-
-5. Configure rootless `libvirt` and `kvm` by adding your user to groups of the same name.
+4. Configure rootless `libvirt` and `kvm` by adding your user to groups of the same name.
     ``` bash
     sudo usermod -a -G kvm $(id -un) # Add the user to the 'kvm' group.
     sudo usermod -a -G libvirt $(id -un) # Add the user to the 'libvirt' group.
@@ -73,7 +59,7 @@ Together, these components form a powerful and flexible virtualization stack, wi
 
     3. Reboot your system to ensure that the user is correctly added to the relevant groups.
 
-6. If relevant to your distribution, disable `AppArmor` for the `libvirt` daemon.
+5. If relevant to your distribution, disable `AppArmor` for the `libvirt` daemon.
     ``` bash
     sudo ln -s /etc/apparmor.d/usr.sbin.libvirtd /etc/apparmor.d/disable/ # Disable AppArmor for the libvirt daemon by creating a symbolic link.
     ```
@@ -81,12 +67,12 @@ Together, these components form a powerful and flexible virtualization stack, wi
 > [!NOTE]
 > Systems with `SELinux` may also require security policy adjustments if virtual machine images are stored outside the default `/var/lib/libvirt/images` directory. Read [this guide](https://docs.redhat.com/en/documentation/red_hat_enterprise_linux/5/html/virtualization/sect-virtualization-security_for_virtualization-selinux_and_virtualization#sect-Virtualization-Security_for_virtualization-SELinux_and_virtualization) for more information.
 
-7. Download a [Windows 10](https://www.microsoft.com/software-download/windows10ISO) or [Windows 11](https://www.microsoft.com/software-download/windows11) installation `.ISO` image.
+6. Download a [Windows 10](https://www.microsoft.com/software-download/windows10ISO) or [Windows 11](https://www.microsoft.com/software-download/windows11) installation `.ISO` image.
 
 > [!IMPORTANT]
 > 'Professional', 'Enterprise' or 'Server' editions of Windows are required to run RDP applications. Windows 'Home' will NOT suffice.
 
-8. Download [VirtIO drivers](https://fedorapeople.org/groups/virt/virtio-win/direct-downloads/latest-virtio/virtio-win.iso) for the Windows virtual machine.
+7. Download [VirtIO drivers](https://fedorapeople.org/groups/virt/virtio-win/direct-downloads/latest-virtio/virtio-win.iso) for the Windows virtual machine.
 
 > [!NOTE]
 > VirtIO drivers enhance system performance and minimize overhead by enabling the Windows virtual machine to use specialised network and disk device drivers. These drivers are aware that they are operating inside a virtual machine, and cooperate with the hypervisor. This approach eliminates the need for the hypervisor to emulate physical hardware devices, which is a computationally expensive process. This setup allows guests to achieve high-performance network and disk operations, leveraging the benefits of paravirtualisation.
@@ -644,10 +630,23 @@ Status   Name               DisplayName
 Running  QEMU-GA            QEMU Guest Agent
 ```
 
-You can then test whether the host GNU/Linux system can communicate with Windows via `QEMU Guest Agent` by running `virsh qemu-agent-command RDPWindows '{"execute":"guest-info"}'`. The output should resemble:
+You can then test whether the host GNU/Linux system can communicate with Windows via `QEMU Guest Agent` by running `virsh qemu-agent-command RDPWindows '{"execute":"guest-get-osinfo"}' --pretty`. The output should resemble:
 
-```
-{"return":{"version":"107.0.1","supported_commands":[{"enabled":true,"name":"guest-get-cpustats","success-response":true},{"enabled":true,"name":"guest-get-diskstats","success-response":true},{"enabled":true,"name":"guest-get-devices","success-response":true},{"enabled":true,"name":"guest-get-osinfo","success-response":true},{"enabled":true,"name":"guest-get-timezone","success-response":true},{"enabled":true,"name":"guest-get-users","success-response":true},{"enabled":true,"name":"guest-get-host-name","success-response":true},{"enabled":true,"name":"guest-exec","success-response":true},{"enabled":true,"name":"guest-exec-status","success-response":true},{"enabled":false,"name":"guest-get-memory-block-info","success-response":true},{"enabled":false,"name":"guest-set-memory-blocks","success-response":true},{"enabled":false,"name":"guest-get-memory-blocks","success-response":true},{"enabled":true,"name":"guest-set-user-password","success-response":true},{"enabled":true,"name":"guest-get-fsinfo","success-response":true},{"enabled":true,"name":"guest-get-disks","success-response":true},{"enabled":false,"name":"guest-set-vcpus","success-response":true},{"enabled":true,"name":"guest-get-vcpus","success-response":true},{"enabled":true,"name":"guest-network-get-interfaces","success-response":true},{"enabled":false,"name":"guest-suspend-hybrid","success-response":false},{"enabled":true,"name":"guest-suspend-ram","success-response":false},{"enabled":true,"name":"guest-suspend-disk","success-response":false},{"enabled":true,"name":"guest-fstrim","success-response":true},{"enabled":true,"name":"guest-fsfreeze-thaw","success-response":true},{"enabled":true,"name":"guest-fsfreeze-freeze-list","success-response":true},{"enabled":true,"name":"guest-fsfreeze-freeze","success-response":true},{"enabled":true,"name":"guest-fsfreeze-status","success-response":true},{"enabled":true,"name":"guest-file-flush","success-response":true},{"enabled":true,"name":"guest-file-seek","success-response":true},{"enabled":true,"name":"guest-file-write","success-response":true},{"enabled":true,"name":"guest-file-read","success-response":true},{"enabled":true,"name":"guest-file-close","success-response":true},{"enabled":true,"name":"guest-file-open","success-response":true},{"enabled":true,"name":"guest-shutdown","success-response":false},{"enabled":true,"name":"guest-info","success-response":true},{"enabled":true,"name":"guest-set-time","success-response":true},{"enabled":true,"name":"guest-get-time","success-response":true},{"enabled":true,"name":"guest-ping","success-response":true},{"enabled":true,"name":"guest-sync","success-response":true},{"enabled":true,"name":"guest-sync-delimited","success-response":true}]}}
+```json
+{
+  "return": {
+    "name": "Microsoft Windows",
+    "kernel-release": "26100",
+    "version": "Microsoft Windows 11",
+    "variant": "client",
+    "pretty-name": "Windows 10 Pro",
+    "version-id": "11",
+    "variant-id": "client",
+    "kernel-version": "10.0",
+    "machine": "x86_64",
+    "id": "mswindows"
+  }
+}
 ```
 
 Next, you will need to make some registry changes to enable RDP Applications to run on the system. Start by downloading the [RDPApps.reg](../oem/RDPApps.reg) file, right-clicking on the `Raw` button, and clicking on `Save target as`. Repeat the same thing for the [install.bat](../oem/install.bat) and the [NetProfileCleanup.ps1](../oem/NetProfileCleanup.ps1). **Do not download the Container.reg.**
