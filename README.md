@@ -428,17 +428,11 @@ AUTOPAUSE_TIME="300"
 FREERDP_COMMAND=""
 ```
 
-> [!NOTE]
+> [!IMPORTANT]
 > `RDP_USER` and `RDP_PASS` must correspond to a complete Windows user account and password, such as those created during Windows setup or for a domain user. User/PIN combinations are not valid for RDP access.
 
-> [!NOTE]
+> [!IMPORTANT]
 > If you wish to use an alternative WinApps backend (other than `Docker`), uncomment and change `WAFLAVOR="docker"` to `WAFLAVOR="podman"` or `WAFLAVOR="libvirt"`.
-
-> [!NOTE]
-> If you encounter issues with tls certificate getting rejected, delete the existing `.pem` file with
-> `rm ~/.config/freerdp/server/127.0.0.1_3389.pem` and run
-> `xfreerdp3 /u:MyWindowsUser /p:MyWindowsPassword /v:127.0.0.1 /cert:tofu`
-> to set up Trust On First Authentication. Then retry the `setup.sh` script.
 
 #### Configuration Options Explained
 - If using a pre-existing Windows RDP server on your LAN, you must use `RDP_IP` to specify the location of the Windows server. You may also wish to configure a static IP address for this server.
@@ -450,13 +444,65 @@ FREERDP_COMMAND=""
 - If you enable `DEBUG`, a log will be created on each application start in `~/.local/share/winapps/winapps.log`.
 - If using a system on which the FreeRDP command is not `xfreerdp` or `xfreerdp3`, the correct command can be specified using `FREERDP_COMMAND`.
 
-### Step 4: Run the WinApps Installer
-Run the WinApps installer.
+### Step 4: Test FreeRDP
+1. Test establishing an RDP session by running the following command, replacing the `/u:`, `/p:`, and `/v:` values with the correct values specified in `~/.config/winapps/winapps.conf`.
+
+    ```bash
+    xfreerdp3 /u:"Your Windows Username" /p:"Your Windows Password" /v:192.168.122.2 /cert:tofu
+
+    # Or, if you installed FreeRDP using Flatpak
+    flatpak run --command=xfreerdp com.freerdp.FreeRDP /u:"Your Windows Username" /p:"Your Windows Password" /v:192.168.122.2 /cert:tofu
+    ```
+
+    - Please note that the correct `FreeRDP` command may vary depending on your system (e.g. `xfreerdp`, `xfreerdp3`, etc.).
+    - Ensure you use the correct IP address for your Windows instance in the above command.
+    - If prompted within the terminal window, choose to accept the certificate permanently.
+
+    If the Windows desktop appears in a `FreeRDP` window, the configuration was successful and the correct RDP TLS certificate was enrolled on the Linux host. Disconnect from the RDP session and skip the following debugging step.
+
+2. [DEBUGGING STEP] If an outdated or expired certificate is detected, the `FreeRDP` command will display output resembling the following. In this case, the old certificate will need to be removed and a new RDP TLS certificate installed.
+
+    ```
+    @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+    @           WARNING: CERTIFICATE NAME MISMATCH!           @
+    @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+    The hostname used for this connection (192.168.122.2:3389)
+    does not match the name given in the certificate:
+    Common Name (CN):
+            RDPWindows
+    A valid certificate for the wrong name should NOT be trusted!
+
+    The host key for 192.168.122.2:3389 has changed
+
+    @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+    @    WARNING: REMOTE HOST IDENTIFICATION HAS CHANGED!     @
+    @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+    IT IS POSSIBLE THAT SOMEONE IS DOING SOMETHING NASTY!
+    Someone could be eavesdropping on you right now (man-in-the-middle attack)!
+    It is also possible that a host key has just been changed.
+    The fingerprint for the host key sent by the remote host is 8e:b4:d2:8e:4e:14:e7:4e:82:9b:07:5b:e1:68:40:18:bc:db:5f:bc:29:0d:91:83:f9:17:f9:13:e6:51:dc:36
+    Please contact your system administrator.
+    Add correct host key in /home/rohanbarar/.config/freerdp/server/192.168.122.2_3389.pem to get rid of this message.
+    ```
+
+    If you experience the above error, delete any old or outdated RDP TLS certificates associated with Windows, as they can prevent `FreeRDP` from establishing a connection.
+
+    These certificates are located within `~/.config/freerdp/server/` and follow the naming format `<Windows-VM-IPv4-Address>_<RDP-Port>.pem` (e.g., `192.168.122.2_3389.pem`, `127.0.0.1_3389.pem`, etc.).
+
+    If you use FreeRDP for purposes other than WinApps, ensure you only remove certificates related to the relevant Windows VM. If no relevant certificates are found, no action is needed.
+
+    Following deletion, re-attempt establishing an RDP session.
+
+### Step 5: Run the WinApps Installer
+With Windows still powered on, run the WinApps installer.
+
 ```bash
 bash <(curl https://raw.githubusercontent.com/winapps-org/winapps/main/setup.sh)
 ```
 
-A list of supported additional arguments can be accessed by running `./setup.sh --help`.
+Once WinApps is installed, a list of additional arguments can be accessed by running `winapps-setup --help`.
 
 <img src="./demo/installer.gif" width=1000 alt="WinApps Installer Animation.">
 
