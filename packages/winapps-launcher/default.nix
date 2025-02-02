@@ -29,10 +29,10 @@ stdenv.mkDerivation rec {
     (callPackage ../winapps { })
   ];
 
-  patches = [ ./WinAppsLauncher.patch ];
+  patches = [ ./WinApps-Launcher.patch ];
 
   postPatch = ''
-    substituteAllInPlace WinAppsLauncher.sh
+    substituteAllInPlace WinApps-Launcher.sh
   '';
 
   installPhase = ''
@@ -41,7 +41,7 @@ stdenv.mkDerivation rec {
     mkdir -p $out
     cp -r ./Icons $out/Icons
 
-    install -m755 -D WinAppsLauncher.sh $out/bin/winapps-launcher
+    install -m755 -D WinApps-Launcher.sh $out/bin/winapps-launcher
     install -Dm444 -T Icons/AppIcon.svg $out/share/pixmaps/winapps.svg
 
     wrapProgram $out/bin/winapps-launcher \
