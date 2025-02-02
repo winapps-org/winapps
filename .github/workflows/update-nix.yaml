@@ -5,12 +5,15 @@ permissions:
   pull-requests: write
 
 on:
-  workflow_dispatch:
+  pull_request:
+    branches: [main]
+    types: [labeled]
   schedule:
     - cron: "0 10 * * 0" # https://crontab.guru/#0_10_*_*_0
 
 jobs:
-  updateFlakePackages:
+  build:
+    if: "${{ github.event_name != 'pull_request' || contains(github.event.pull_request.labels.*.name, 'rebuild nix') }}"
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -25,7 +28,7 @@ jobs:
         uses: cachix/cachix-action@v15
         with:
           name: winapps
-          authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
+          authToken: "${{ secrets.CACHIX_AUTH_TOKEN }}"
 
       - name: Update flake packages
         uses: winapps-org/nix-update-action@v1.3.0
