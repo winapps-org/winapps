@@ -6,7 +6,7 @@
    height="394.31107"
    id="svg171"
    sodipodi:docname="Virtualisation_Stack.svg"
-   inkscape:version="1.3.2 (091e20ef0f, 2023-11-25)"
+   inkscape:version="1.4 (e7c3feb1, 2024-10-09)"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns="http://www.w3.org/2000/svg"
@@ -27,14 +27,14 @@
      inkscape:deskcolor="#d1d1d1"
      showgrid="false"
      inkscape:zoom="1.4142136"
-     inkscape:cx="157.68481"
-     inkscape:cy="190.56528"
-     inkscape:window-width="1920"
-     inkscape:window-height="1003"
+     inkscape:cx="158.03836"
+     inkscape:cy="190.56527"
+     inkscape:window-width="1680"
+     inkscape:window-height="1050"
      inkscape:window-x="0"
      inkscape:window-y="0"
-     inkscape:window-maximized="1"
-     inkscape:current-layer="Hardware" />
+     inkscape:window-maximized="0"
+     inkscape:current-layer="svg171" />
   <title
      id="title1">Open-source-virtualization-stack</title>
   <style
@@ -207,13 +207,15 @@
          fill-rule="evenodd"
          class="s8"
          d="m 266.57968,306.38322 c -0.6,-0.7 -1.6,-0.7 -2.2,0 l -6.2,6.2 c -0.6,0.6 -0.6,1.6 0,2.2 0.6,0.6 1.6,0.6 2.2,0 l 3.5,-3.6 v 18 c 0,0.9 0.7,1.5 1.6,1.5 0.8,0 1.5,-0.6 1.5,-1.5 v -18 l 3.6,3.6 c 0.6,0.6 1.6,0.6 2.2,0 0.6,-0.6 0.6,-1.6 0,-2.2 0,0 -6.2,-6.2 -6.2,-6.2 z"
-         inkscape:label="Arrow_Up" />
+         inkscape:label="Arrow_Up"
+         style="fill:#999999" />
       <path
          id="Arrow_6"
          fill-rule="evenodd"
          class="s8"
          d="m 244.37968,330.28322 c 0.6,0.6 1.6,0.6 2.2,0 l 6.2,-6.2 c 0.6,-0.6 0.6,-1.6 0,-2.2 -0.6,-0.6 -1.6,-0.6 -2.2,0 l -3.6,3.5 v -17.9 c 0,-0.9 -0.7,-1.6 -1.5,-1.6 -0.9,0 -1.6,0.7 -1.6,1.6 v 17.9 l -3.5,-3.5 c -0.6,-0.6 -1.6,-0.6 -2.2,0 -0.6,0.6 -0.6,1.6 0,2.2 z"
-         inkscape:label="Arrow_Down" />
+         inkscape:label="Arrow_Down"
+         style="fill:#999999" />
     </g>
   </g>
   <g
@@ -274,13 +276,15 @@
          fill-rule="evenodd"
          class="s8"
          d="m 370.37233,213.93929 c -0.6,-0.7 -1.6,-0.7 -2.2,0 l -6.2,6.2 c -0.6,0.6 -0.6,1.6 0,2.2 0.6,0.6 1.6,0.6 2.2,0 l 3.5,-3.6 v 18 c 0,0.9 0.7,1.5 1.6,1.5 0.8,0 1.5,-0.6 1.5,-1.5 v -18 l 3.6,3.6 c 0.6,0.6 1.6,0.6 2.2,0 0.6,-0.6 0.6,-1.6 0,-2.2 0,0 -6.2,-6.2 -6.2,-6.2 z"
-         inkscape:label="Up_Arrow" />
+         inkscape:label="Up_Arrow"
+         style="fill:#999999" />
       <path
          id="Arrow_4"
          fill-rule="evenodd"
          class="s8"
          d="m 348.17233,237.83929 c 0.6,0.6 1.6,0.6 2.2,0 l 6.2,-6.2 c 0.6,-0.6 0.6,-1.6 0,-2.2 -0.6,-0.6 -1.6,-0.6 -2.2,0 l -3.6,3.5 v -17.9 c 0,-0.9 -0.7,-1.6 -1.5,-1.6 -0.9,0 -1.6,0.7 -1.6,1.6 v 17.9 l -3.5,-3.5 c -0.6,-0.6 -1.6,-0.6 -2.2,0 -0.6,0.6 -0.6,1.6 0,2.2 0,0 6.2,6.2 6.2,6.2 z"
-         inkscape:label="Down_Arrow" />
+         inkscape:label="Down_Arrow"
+         style="fill:#999999" />
     </g>
   </g>
   <g
@@ -492,28 +496,32 @@
          class="s8"
          d="m 185.26144,170.08528 c 0.7,-0.6 0.7,-1.6 0,-2.2 l -6.2,-6.2 c -0.6,-0.6 -1.6,-0.6 -2.2,0 -0.6,0.6 -0.6,1.6 0,2.2 l 3.6,3.6 h -18 c -0.9,0 -1.5,0.7 -1.5,1.5 0,0.9 0.6,1.6 1.5,1.6 h 18 l -3.6,3.5 c -0.6,0.6 -0.6,1.6 0,2.2 0.6,0.6 1.6,0.6 2.2,0 z"
          inkscape:label="Right_Arrow"
-         transform="translate(-0.005896,-0.00237805)" />
+         transform="translate(-0.005896,-0.00237805)"
+         style="fill:#999999" />
       <path
          id="Arrow_3"
          fill-rule="evenodd"
          class="s8"
          d="m 161.36144,147.88528 c -0.6,0.6 -0.6,1.6 0,2.2 l 6.2,6.2 c 0.6,0.6 1.6,0.6 2.2,0 0.6,-0.6 0.6,-1.6 0,-2.2 l -3.5,-3.5 h 17.9 c 0.9,0 1.6,-0.7 1.6,-1.6 0,-0.8 -0.7,-1.5 -1.6,-1.5 h -17.9 l 3.5,-3.6 c 0.6,-0.6 0.6,-1.6 0,-2.2 -0.6,-0.6 -1.6,-0.6 -2.2,0 z"
          inkscape:label="Left_Arrow"
-         transform="translate(-0.005896,-0.00237805)" />
+         transform="translate(-0.005896,-0.00237805)"
+         style="fill:#999999" />
       <path
          id="Arrow_0"
          fill-rule="evenodd"
          class="s8"
          d="m 93.754521,93.097776 c -0.6,-0.7 -1.6,-0.7 -2.2,0 l -6.2,6.2 c -0.6,0.6 -0.6,1.600004 0,2.200004 0.6,0.6 1.6,0.6 2.2,0 l 3.5,-3.600004 v 18.000004 c 0,0.9 0.7,1.5 1.6,1.5 0.8,0 1.5,-0.6 1.5,-1.5 V 97.897776 l 3.6,3.600004 c 0.6,0.6 1.6,0.6 2.2,0 0.599999,-0.6 0.599999,-1.600004 0,-2.200004 0,0 -6.2,-6.2 -6.2,-6.2 z"
          inkscape:label="Up_Arrow"
-         transform="translate(-0.005896,-0.00237805)" />
+         transform="translate(-0.005896,-0.00237805)"
+         style="fill:#999999" />
       <path
          id="Arrow_1"
          fill-rule="evenodd"
          class="s8"
          d="m 71.554521,116.96028 c 0.6,0.6 1.6,0.6 2.2,0 l 6.2,-6.2 c 0.6,-0.6 0.6,-1.6 0,-2.2 -0.6,-0.6 -1.6,-0.6 -2.2,0 l -3.6,3.5 V 94.160276 c 0,-0.9 -0.7,-1.6 -1.5,-1.6 -0.9,0 -1.6,0.7 -1.6,1.6 v 17.900004 l -3.5,-3.5 c -0.6,-0.6 -1.6,-0.6 -2.2,0 -0.6,0.6 -0.6,1.6 0,2.2 z"
          inkscape:label="Down_Arrow"
-         transform="translate(-0.005896,-0.00237805)" />
+         transform="translate(-0.005896,-0.00237805)"
+         style="fill:#999999" />
     </g>
     <g
        id="g149"
@@ -543,7 +551,7 @@
        id="GNU/Linux_Applications_Text"
        x="-193.88689"
        y="-3.0945449"
-       style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:16px;font-family:Unageo;-inkscape-font-specification:'Unageo, Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#ffffff;fill-opacity:1"
+       style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:16px;font-family:Unageo;-inkscape-font-specification:'Unageo, Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#808080;fill-opacity:1"
        transform="rotate(-90)"><tspan
          sodipodi:role="line"
          id="tspan188"

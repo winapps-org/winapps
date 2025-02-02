@@ -1,5 +1,5 @@
---- a/WinAppsLauncher.sh
-+++ b/WinAppsLauncher.sh
+--- a/WinApps-Launcher.sh
++++ b/WinApps-Launcher.sh
 @@ -19,7 +19,7 @@ declare -rx EC_WIN_NOT_SPEC=6
  declare -rx EC_NO_WIN_FOUND=7
 

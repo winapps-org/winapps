@@ -13,7 +13,13 @@ jobs:
 
       - name: Update module
         run: |
-          git submodule update --init --recursive --checkout -f
+          pushd WinApps-Launcher
+            branch=$(git rev-parse --abbrev-ref origin/HEAD | sed "s|origin/||")
+            git config remote.origin.fetch "+refs/heads/$branch:refs/remotes/origin/$branch"
+            git fetch --depth=1 origin "refs/heads/$branch"
+          popd
+
+          git submodule update --init --remote WinApps-Launcher
 
       - name: Commit and push
         uses: EndBug/add-and-commit@v9
