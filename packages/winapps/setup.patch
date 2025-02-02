@@ -22,27 +22,6 @@ index b7d930d6..18000c65 100755
  
  # REMOTE DESKTOP CONFIGURATION
  readonly VM_NAME="RDPWindows"  # Name of the Windows VM (FOR 'libvirt' ONLY).
-@@ -130,13 +130,13 @@ function waTerminateScript() {
- # Role: Displays usage information for the script.
- function waUsage() {
-     echo -e "Usage:
--  ${COMMAND_TEXT}./setup.sh --user${CLEAR_TEXT}                                        # Install WinApps and selected applications in ${HOME}
--  ${COMMAND_TEXT}./setup.sh --system${CLEAR_TEXT}                                      # Install WinApps and selected applications in /usr
--  ${COMMAND_TEXT}./setup.sh --user --setupAllOfficiallySupportedApps${CLEAR_TEXT}      # Install WinApps and all officially supported applications in ${HOME}
--  ${COMMAND_TEXT}./setup.sh --system --setupAllOfficiallySupportedApps${CLEAR_TEXT}    # Install WinApps and all officially supported applications in /usr
--  ${COMMAND_TEXT}./setup.sh --user --uninstall${CLEAR_TEXT}                            # Uninstall everything in ${HOME}
--  ${COMMAND_TEXT}./setup.sh --system --uninstall${CLEAR_TEXT}                          # Uninstall everything in /usr
--  ${COMMAND_TEXT}./setup.sh --help${CLEAR_TEXT}                                        # Display this usage message."
-+  ${COMMAND_TEXT}winapps-setup --user${CLEAR_TEXT}                                        # Install WinApps and selected applications in ${HOME}
-+  ${COMMAND_TEXT}winapps-setup --system${CLEAR_TEXT}                                      # Install WinApps and selected applications in /usr
-+  ${COMMAND_TEXT}winapps-setup --user --setupAllOfficiallySupportedApps${CLEAR_TEXT}      # Install WinApps and all officially supported applications in ${HOME}
-+  ${COMMAND_TEXT}winapps-setup --system --setupAllOfficiallySupportedApps${CLEAR_TEXT}    # Install WinApps and all officially supported applications in /usr
-+  ${COMMAND_TEXT}winapps-setup --user --uninstall${CLEAR_TEXT}                            # Uninstall everything in ${HOME}
-+  ${COMMAND_TEXT}winapps-setup --system --uninstall${CLEAR_TEXT}                          # Uninstall everything in /usr
-+  ${COMMAND_TEXT}winapps-setup --help${CLEAR_TEXT}                                        # Display this usage message."
- }
- 
- # Name: 'waGetSourceCode'
 @@ -155,13 +155,6 @@ function waGetSourceCode() {
          echo -e "${WARNING_TEXT}[WARNING]${CLEAR_TEXT} You might want to remove your old installation on '${SCRIPT_DIR_PATH}'."
      fi
@@ -80,24 +59,6 @@ index b7d930d6..18000c65 100755
  }
  
  # Name: 'waCheckInput'
-@@ -390,7 +370,7 @@ function waCheckExistingInstall() {
- 
-         # Display the suggested action(s).
-         echo "--------------------------------------------------------------------------------"
--        echo -e "Please remove the existing WinApps installation using ${COMMAND_TEXT}./setup.sh --user --uninstall${CLEAR_TEXT}."
-+        echo -e "Please remove the existing WinApps installation using ${COMMAND_TEXT}winapps-setup --user --uninstall${CLEAR_TEXT}."
-         echo "--------------------------------------------------------------------------------"
- 
-         # Terminate the script.
-@@ -410,7 +390,7 @@ function waCheckExistingInstall() {
- 
-         # Display the suggested action(s).
-         echo "--------------------------------------------------------------------------------"
--        echo -e "Please remove the existing WinApps installation using ${COMMAND_TEXT}./setup.sh --system --uninstall${CLEAR_TEXT}."
-+        echo -e "Please remove the existing WinApps installation using ${COMMAND_TEXT}winapps-setup --system --uninstall${CLEAR_TEXT}."
-         echo "--------------------------------------------------------------------------------"
- 
-         # Terminate the script.
 @@ -805,7 +785,7 @@ function waCheckGroupMembership() {
      # Identify groups the current user belongs to.
      USER_GROUPS=$(groups "$(whoami)")
