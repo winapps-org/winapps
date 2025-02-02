@@ -1,5 +1,5 @@
 <p align="center"><img align="center" width="700" src="./icons/banner_dark.svg#gh-dark-mode-only"/></p>
-<p align="center"><img align="center" width="700" src="./icons/banner_dark.svg#gh-light-mode-only"/></p>
+<p align="center"><img align="center" width="700" src="./icons/banner_light.svg#gh-light-mode-only"/></p>
 <hr>
 
 Run Windows applications (including [Microsoft 365](https://www.microsoft365.com/) and [Adobe Creative Cloud](https://www.adobe.com/creativecloud.html)) on GNU/Linux with `KDE Plasma`, `GNOME` or `XFCE`, integrated seamlessly as if they were native to the OS.
