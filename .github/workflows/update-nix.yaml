@@ -13,7 +13,7 @@ on:
 
 jobs:
   build:
-    if: "${{ github.event_name != 'pull_request' || contains(github.event.pull_request.labels.*.name, 'rebuild nix') }}"
+    if: github.event_name != 'pull_request' || contains(github.event.pull_request.labels.*.name, 'rebuild nix')
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -31,9 +31,10 @@ jobs:
           authToken: "${{ secrets.CACHIX_AUTH_TOKEN }}"
 
       - name: Update flake packages
-        uses: winapps-org/nix-update-action@v1.3.0
+        uses: winapps-org/nix-update-action@v1.4.0
         with:
           extra-args: --version=branch
+          skip-pr: "${{ github.event_name == 'pull_request' }}"
 
       - name: Build packages
         run: nix build .#winapps .#winapps-launcher
