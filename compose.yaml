@@ -1,9 +1,3 @@
-# Copyright (c) 2024 Oskar Manhart
-# Copyright (c) 2024 Rohan Barar
-# All rights reserved.
-#
-# SPDX-License-Identifier: AGPL-3.0-or-later
-
 # For documentation, FAQ, additional configuration options and technical help, visit: https://github.com/dockur/windows
 
 name: "winapps" # Docker Compose Project Name.
@@ -14,7 +8,7 @@ volumes:
   data:
 services:
   windows:
-    image: dockurr/windows # https://hub.docker.com/r/dockurr/windows
+    image: ghcr.io/dockur/windows:latest
     container_name: WinApps # Created Docker VM Name.
     environment:
       # Version of Windows to configure. For valid options, visit:
@@ -25,8 +19,8 @@ services:
       CPU_CORES: "4" # CPU cores allocated to the Windows VM.
       DISK_SIZE: "64G" # Size of the primary hard disk.
       #DISK2_SIZE: "32G" # Uncomment to add an additional hard disk to the Windows VM. Ensure it is mounted as a volume below.
-      #USERNAME: "Docker" # Uncomment to set a custom Windows username. The default is 'Docker'.
-      #PASSWORD: "" # Uncomment to set a password for the Windows user. There is no default password.
+      USERNAME: "MyWindowsUser" # Edit here to set a custom Windows username. The default is 'MyWindowsUser'.
+      PASSWORD: "MyWindowsPassword" # Edit here to set a password for the Windows user. The default is 'MyWindowsPassword'.
       HOME: "${HOME}" # Set path to Linux user home folder.
     privileged: true # Grant the Windows VM extended privileges.
     ports:
@@ -43,5 +37,5 @@ services:
       #- /path/to/windows/install/media.iso:/custom.iso # Uncomment to use a custom Windows ISO. If specified, 'VERSION' (e.g. 'tiny11') will be ignored.
     devices:
       - /dev/kvm # Enable KVM.
-      #- /dev/sdX:/disk1 # Uncomment to mount a disk directly within the Windows VM (Note: 'disk1' will be mounted as the main drive).
-      #- /dev/sdY:/disk2 # Uncomment to mount a disk directly within the Windows VM (Note: 'disk2' and higher will be mounted as secondary drives).
+      #- /dev/sdX:/disk1 # Uncomment to mount a disk directly within the Windows VM (Note: 'disk1' will be mounted as the main drive. THIS DISK WILL BE FORMATTED BY DOCKER).
+      #- /dev/sdY:/disk2 # Uncomment to mount a disk directly within the Windows VM (Note: 'disk2' and higher will be mounted as secondary drives. THIS DISK WILL NOT BE FORMATTED).

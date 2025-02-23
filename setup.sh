@@ -1,13 +1,4 @@
 #!/usr/bin/env bash
-# Copyright (c) 2024 Felix Bartels
-# Copyright (c) 2024 Coruscant11
-# Copyright (c) 2024 escapefreeg
-# Copyright (c) 2024 Rohan Barar
-# Copyright (c) 2024 Oskar Manhart
-# Copyright (c) 2024 Sebastien Bürky
-# All rights reserved.
-#
-# SPDX-License-Identifier: AGPL-3.0-or-later
 
 # shellcheck disable=SC2034           # Silence warnings regarding unused variables globally.
 
@@ -139,13 +130,13 @@ function waTerminateScript() {
 # Role: Displays usage information for the script.
 function waUsage() {
     echo -e "Usage:
-  ${COMMAND_TEXT}./setup.sh --user${CLEAR_TEXT}                                        # Install WinApps and selected applications in ${HOME}
-  ${COMMAND_TEXT}./setup.sh --system${CLEAR_TEXT}                                      # Install WinApps and selected applications in /usr
-  ${COMMAND_TEXT}./setup.sh --user --setupAllOfficiallySupportedApps${CLEAR_TEXT}      # Install WinApps and all officially supported applications in ${HOME}
-  ${COMMAND_TEXT}./setup.sh --system --setupAllOfficiallySupportedApps${CLEAR_TEXT}    # Install WinApps and all officially supported applications in /usr
-  ${COMMAND_TEXT}./setup.sh --user --uninstall${CLEAR_TEXT}                            # Uninstall everything in ${HOME}
-  ${COMMAND_TEXT}./setup.sh --system --uninstall${CLEAR_TEXT}                          # Uninstall everything in /usr
-  ${COMMAND_TEXT}./setup.sh --help${CLEAR_TEXT}                                        # Display this usage message."
+  ${COMMAND_TEXT}    --user${CLEAR_TEXT}                                        # Install WinApps and selected applications in ${HOME}
+  ${COMMAND_TEXT}    --system${CLEAR_TEXT}                                      # Install WinApps and selected applications in /usr
+  ${COMMAND_TEXT}    --user --setupAllOfficiallySupportedApps${CLEAR_TEXT}      # Install WinApps and all officially supported applications in ${HOME}
+  ${COMMAND_TEXT}    --system --setupAllOfficiallySupportedApps${CLEAR_TEXT}    # Install WinApps and all officially supported applications in /usr
+  ${COMMAND_TEXT}    --user --uninstall${CLEAR_TEXT}                            # Uninstall everything in ${HOME}
+  ${COMMAND_TEXT}    --system --uninstall${CLEAR_TEXT}                          # Uninstall everything in /usr
+  ${COMMAND_TEXT}    --help${CLEAR_TEXT}                                        # Display this usage message."
 }
 
 # Name: 'waGetSourceCode'
@@ -158,7 +149,7 @@ function waGetSourceCode() {
     SCRIPT_DIR_PATH=$(readlink -f "$(dirname "${BASH_SOURCE[0]}")")
 
     # Check if winapps is currently installed on $SOURCE_PATH
-    if [ -f "$SCRIPT_DIR_PATH/winapps" ] && [ "$SCRIPT_DIR_PATH" -ne "$SOURCE_PATH" ]; then
+    if [[ -f "$SCRIPT_DIR_PATH/winapps" && "$SCRIPT_DIR_PATH" -ne "$SOURCE_PATH" ]]; then
         # Display a warning.
         echo -e "${WARNING_TEXT}[WARNING]${CLEAR_TEXT} You are running a WinApps installation located outside of default location '${SOURCE_PATH}'. A new installation will be created."
         echo -e "${WARNING_TEXT}[WARNING]${CLEAR_TEXT} You might want to remove your old installation on '${SCRIPT_DIR_PATH}'."
@@ -197,7 +188,11 @@ function waGetSourceCode() {
 function waGetInquirer() {
     local INQUIRER=$INQUIRER_PATH
 
-    if [ ! -d "$SYS_SOURCE_PATH" ] && [ ! -d "$USER_SOURCE_PATH" ]; then
+    if [ -d "$SYS_SOURCE_PATH" ]; then
+        INQUIRER=$SYS_SOURCE_PATH/$INQUIRER_PATH
+    elif [ -d "$USER_SOURCE_PATH" ] ; then
+        INQUIRER=$USER_SOURCE_PATH/$INQUIRER_PATH
+    else
         INQUIRER="/tmp/waInquirer.sh"
         rm -f "$INQUIRER"
 
@@ -395,7 +390,7 @@ function waCheckExistingInstall() {
 
         # Display the suggested action(s).
         echo "--------------------------------------------------------------------------------"
-        echo -e "Please remove the existing WinApps installation using ${COMMAND_TEXT}./setup.sh --user --uninstall${CLEAR_TEXT}."
+        echo -e "Please remove the existing WinApps installation using ${COMMAND_TEXT}winapps-setup --user --uninstall${CLEAR_TEXT}."
         echo "--------------------------------------------------------------------------------"
 
         # Terminate the script.
@@ -415,7 +410,7 @@ function waCheckExistingInstall() {
 
         # Display the suggested action(s).
         echo "--------------------------------------------------------------------------------"
-        echo -e "Please remove the existing WinApps installation using ${COMMAND_TEXT}./setup.sh --system --uninstall${CLEAR_TEXT}."
+        echo -e "Please remove the existing WinApps installation using ${COMMAND_TEXT}winapps-setup --system --uninstall${CLEAR_TEXT}."
         echo "--------------------------------------------------------------------------------"
 
         # Terminate the script.
@@ -1658,13 +1653,13 @@ function waInstall() {
 # Name: 'waEnsureOnPath'
 # Role: Ensures that $BIN_PATH is on $PATH.
 function waEnsureOnPath() {
-    if [[ ":$PATH:" == *":$BIN_PATH:"* ]]; then
+    if [[ ":$PATH:" != *":$BIN_PATH:"* ]]; then
         echo -e "${WARNING_TEXT}[WARNING]${CLEAR_TEXT} It seems like '${BIN_PATH}' is not on PATH."
         echo -e "${WARNING_TEXT}[WARNING]${CLEAR_TEXT} You can add it by running:"
         # shellcheck disable=SC2086
-        echo -e "${WARNING_TEXT}[WARNING]${CLEAR_TEXT}   - For Bash: ${COMMAND_TEXT}echo 'export PATH="${BIN_PATH}:\$PATH"' >> ~/.bashrc${CLEAR_TEXT}"
+        echo -e "${WARNING_TEXT}[WARNING]${CLEAR_TEXT}   - For Bash: ${COMMAND_TEXT}echo 'export PATH="${BIN_PATH}:\$PATH"' >> ~/.bashrc && source ~/.bashrc${CLEAR_TEXT}"
         # shellcheck disable=SC2086
-        echo -e "${WARNING_TEXT}[WARNING]${CLEAR_TEXT}   - For ZSH: ${COMMAND_TEXT}echo 'export PATH="${BIN_PATH}:\$PATH"' >> ~/.zshrc${CLEAR_TEXT}"
+        echo -e "${WARNING_TEXT}[WARNING]${CLEAR_TEXT}   - For ZSH: ${COMMAND_TEXT}echo 'export PATH="${BIN_PATH}:\$PATH"' >> ~/.zshrc && source ~/.zshrc${CLEAR_TEXT}"
         echo -e "${WARNING_TEXT}[WARNING]${CLEAR_TEXT} Make sure to restart your Terminal afterwards.\n"
     fi
 }

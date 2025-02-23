@@ -1,0 +1,14 @@
+# GNOME shortcut name
+NAME="LINQPad8"
+
+# Used for descriptions and window class
+FULL_NAME="LINQPad 8"
+
+# The executable inside windows
+WIN_EXECUTABLE="C:\Program Files\LINQPad8\LINQPad8.exe"
+
+# GNOME categories
+CATEGORIES="WinApps;Development"
+
+# GNOME mimetypes
+MIME_TYPES="text/cs"

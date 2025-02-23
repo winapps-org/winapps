@@ -1,3 +1,5 @@
+For copyright information, please see the [COPYRIGHT.md](./COPYRIGHT.md) file.
+
 This project has files licensed under different licenses.
 
 The original project by Fmstrat <https://github.com/Fmstrat/winapps/> is not free software.

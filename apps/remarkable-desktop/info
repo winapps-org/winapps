@@ -1,14 +1,17 @@
 # GNOME shortcut name
-NAME="Access"
+NAME="reMarkable"
 
 # Used for descriptions and window class
-FULL_NAME="Microsoft Access"
+FULL_NAME="reMarkable Desktop App"
 
 # The executable inside windows
-WIN_EXECUTABLE="C:\Program Files (x86)\Microsoft Office\Office16\MSACCESS.EXE"
+WIN_EXECUTABLE="C:\Program Files\reMarkable\reMarkable.exe"
 
 # GNOME categories
 CATEGORIES="WinApps;Office"
 
 # GNOME mimetypes
-MIME_TYPES="application/x-msaccess;"
+MIME_TYPES=""
+
+# System Icon
+ICON="reMarkable"

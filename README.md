@@ -1,5 +1,5 @@
 <p align="center"><img align="center" width="700" src="./icons/banner_dark.svg#gh-dark-mode-only"/></p>
-<p align="center"><img align="center" width="700" src="./icons/banner_dark.svg#gh-light-mode-only"/></p>
+<p align="center"><img align="center" width="700" src="./icons/banner_light.svg#gh-light-mode-only"/></p>
 <hr>
 
 Run Windows applications (including [Microsoft 365](https://www.microsoft365.com/) and [Adobe Creative Cloud](https://www.adobe.com/creativecloud.html)) on GNU/Linux with `KDE Plasma`, `GNOME` or `XFCE`, integrated seamlessly as if they were native to the OS.
@@ -282,25 +282,34 @@ The following guides are available:
 - [Creating a Windows VM with `Docker` or `Podman`](docs/docker.md)
 - [Creating a Windows VM with `libvirt`](docs/libvirt.md)
 
-If you already have a Windows VM or server you wish to use with WinApps, you will need to merge `install/RDPApps.reg` into the Windows Registry manually.
+If you already have a Windows VM or server you wish to use with WinApps, you will still have to follow the [final steps described in the `libvirt` documentation](docs/libvirt.md#final-configuration-steps).
 
 ### Step 2: Install Dependencies
 Install the required dependencies.
   - Debian/Ubuntu:
       ```bash
-      sudo apt install -y dialog freerdp3-x11 iproute2 libnotify-bin netcat-openbsd
+      sudo apt install -y curl dialog freerdp3-x11 git iproute2 libnotify-bin netcat-openbsd
       ```
+
+> [!NOTE]
+> On Debian you need to enable the `backports` repository for the `freerdp3-x11` package to become available.
+> For instructions, see https://backports.debian.org/Instructions.
+
   - Fedora/RHEL:
       ```bash
-      sudo dnf install -y dialog freerdp iproute libnotify nmap-ncat
+      sudo dnf install -y curl dialog freerdp git iproute libnotify nmap-ncat
       ```
   - Arch Linux:
       ```bash
-      sudo pacman -Syu --needed -y dialog freerdp iproute2 libnotify gnu-netcat
+      sudo pacman -Syu --needed -y curl dialog freerdp git iproute2 libnotify gnu-netcat
+      ```
+  - OpenSUSE:
+      ```bash
+      sudo zypper install -y curl dialog freerdp git iproute2 libnotify netcat-openbsd
       ```
   - Gentoo Linux:
       ```bash
-      sudo emerge --ask=n dev-util/dialog net-misc/freerdp:3 sys-apps/iproute2 x11-libs/libnotify net-analyzer/openbsd-netcat
+      sudo emerge --ask=n net-misc/curl dev-util/dialog net-misc/freerdp:3 dev-vcs/git sys-apps/iproute2 x11-libs/libnotify net-analyzer/openbsd-netcat
       ```
 
 > [!NOTE]
@@ -328,6 +337,8 @@ Create a configuration file at `~/.config/winapps/winapps.conf` containing the f
 RDP_USER="MyWindowsUser"
 
 # [WINDOWS PASSWORD]
+# NOTES:
+# - If using FreeRDP v3.9.0 or greater, you *have* to set a password
 RDP_PASS="MyWindowsPassword"
 
 # [WINDOWS DOMAIN]
@@ -341,7 +352,7 @@ RDP_DOMAIN=""
 # - 'docker': '127.0.0.1'
 # - 'podman': '127.0.0.1'
 # - 'libvirt': '' (BLANK)
-RDP_IP=""
+RDP_IP="127.0.0.1"
 
 # [WINAPPS BACKEND]
 # DEFAULT VALUE: 'docker'
@@ -364,6 +375,8 @@ WAFLAVOR="docker"
 RDP_SCALE="100"
 
 # [ADDITIONAL FREERDP FLAGS & ARGUMENTS]
+# NOTES:
+# - You can try adding /network:lan to these flags in order to increase performance, however, some users have faced issues with this.
 # DEFAULT VALUE: '/cert:tofu /sound /microphone'
 # VALID VALUES: See https://github.com/awakecoding/FreeRDP-Manuals/blob/master/User/FreeRDP-User-Manual.markdown
 RDP_FLAGS="/cert:tofu /sound /microphone"
@@ -415,10 +428,10 @@ AUTOPAUSE_TIME="300"
 FREERDP_COMMAND=""
 ```
 
-> [!NOTE]
+> [!IMPORTANT]
 > `RDP_USER` and `RDP_PASS` must correspond to a complete Windows user account and password, such as those created during Windows setup or for a domain user. User/PIN combinations are not valid for RDP access.
 
-> [!NOTE]
+> [!IMPORTANT]
 > If you wish to use an alternative WinApps backend (other than `Docker`), uncomment and change `WAFLAVOR="docker"` to `WAFLAVOR="podman"` or `WAFLAVOR="libvirt"`.
 
 #### Configuration Options Explained
@@ -431,13 +444,65 @@ FREERDP_COMMAND=""
 - If you enable `DEBUG`, a log will be created on each application start in `~/.local/share/winapps/winapps.log`.
 - If using a system on which the FreeRDP command is not `xfreerdp` or `xfreerdp3`, the correct command can be specified using `FREERDP_COMMAND`.
 
-### Step 4: Run the WinApps Installer
-Run the WinApps installer.
+### Step 4: Test FreeRDP
+1. Test establishing an RDP session by running the following command, replacing the `/u:`, `/p:`, and `/v:` values with the correct values specified in `~/.config/winapps/winapps.conf`.
+
+    ```bash
+    xfreerdp3 /u:"Your Windows Username" /p:"Your Windows Password" /v:192.168.122.2 /cert:tofu
+
+    # Or, if you installed FreeRDP using Flatpak
+    flatpak run --command=xfreerdp com.freerdp.FreeRDP /u:"Your Windows Username" /p:"Your Windows Password" /v:192.168.122.2 /cert:tofu
+    ```
+
+    - Please note that the correct `FreeRDP` command may vary depending on your system (e.g. `xfreerdp`, `xfreerdp3`, etc.).
+    - Ensure you use the correct IP address for your Windows instance in the above command.
+    - If prompted within the terminal window, choose to accept the certificate permanently.
+
+    If the Windows desktop appears in a `FreeRDP` window, the configuration was successful and the correct RDP TLS certificate was enrolled on the Linux host. Disconnect from the RDP session and skip the following debugging step.
+
+2. [DEBUGGING STEP] If an outdated or expired certificate is detected, the `FreeRDP` command will display output resembling the following. In this case, the old certificate will need to be removed and a new RDP TLS certificate installed.
+
+    ```
+    @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+    @           WARNING: CERTIFICATE NAME MISMATCH!           @
+    @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+    The hostname used for this connection (192.168.122.2:3389)
+    does not match the name given in the certificate:
+    Common Name (CN):
+            RDPWindows
+    A valid certificate for the wrong name should NOT be trusted!
+
+    The host key for 192.168.122.2:3389 has changed
+
+    @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+    @    WARNING: REMOTE HOST IDENTIFICATION HAS CHANGED!     @
+    @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+    IT IS POSSIBLE THAT SOMEONE IS DOING SOMETHING NASTY!
+    Someone could be eavesdropping on you right now (man-in-the-middle attack)!
+    It is also possible that a host key has just been changed.
+    The fingerprint for the host key sent by the remote host is 8e:b4:d2:8e:4e:14:e7:4e:82:9b:07:5b:e1:68:40:18:bc:db:5f:bc:29:0d:91:83:f9:17:f9:13:e6:51:dc:36
+    Please contact your system administrator.
+    Add correct host key in /home/rohanbarar/.config/freerdp/server/192.168.122.2_3389.pem to get rid of this message.
+    ```
+
+    If you experience the above error, delete any old or outdated RDP TLS certificates associated with Windows, as they can prevent `FreeRDP` from establishing a connection.
+
+    These certificates are located within `~/.config/freerdp/server/` and follow the naming format `<Windows-VM-IPv4-Address>_<RDP-Port>.pem` (e.g., `192.168.122.2_3389.pem`, `127.0.0.1_3389.pem`, etc.).
+
+    If you use FreeRDP for purposes other than WinApps, ensure you only remove certificates related to the relevant Windows VM. If no relevant certificates are found, no action is needed.
+
+    Following deletion, re-attempt establishing an RDP session.
+
+### Step 5: Run the WinApps Installer
+With Windows still powered on, run the WinApps installer.
+
 ```bash
 bash <(curl https://raw.githubusercontent.com/winapps-org/winapps/main/setup.sh)
 ```
 
-A list of supported additional arguments can be accessed by running `./setup.sh --help`.
+Once WinApps is installed, a list of additional arguments can be accessed by running `winapps-setup --help`.
 
 <img src="./demo/installer.gif" width=1000 alt="WinApps Installer Animation.">
 
@@ -461,6 +526,121 @@ The installer can be run multiple times. To update your installation of WinApps:
 1. Run the WinApps installer to remove WinApps from your system.
 2. Pull the latest changes from the WinApps GitHub repository.
 3. Re-install WinApps using the WinApps installer by running `winapps-setup`.
+
+## Installation using Nix
+
+First, follow Step 1 of the normal installation guide to create your VM.
+Then, install WinApps according to the following instructions.
+
+After installation, it will be available under `winapps`, with the installer being available under `winapps-setup`
+and the optional launcher being available under `winapps-launcher.`
+
+### Using standalone Nix
+
+First, make sure Flakes and the `nix` command are enabled.
+In your `~/.config/nix/nix.conf`:
+```
+experimental-features = nix-command flakes
+# specify to use binary cache (optional)
+extra-substituters = https://winapps.cachix.org/
+extra-trusted-public-keys = winapps.cachix.org-1:HI82jWrXZsQRar/PChgIx1unmuEsiQMQq+zt05CD36g=
+extra-trusted-users = <your-username> # replace with your username
+```
+
+```bash
+nix profile install github:winapps-org/winapps#winapps
+nix profile install github:winapps-org/winapps#winapps-launcher # optional
+```
+
+### On NixOS using Flakes
+
+```nix
+# flake.nix
+{
+  description = "My configuration";
+
+  inputs = {
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+
+    winapps = {
+      url = "github:winapps-org/winapps";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+  };
+
+  outputs =
+    inputs@{
+      nixpkgs,
+      winapps,
+      ...
+    }:
+    {
+      nixosConfigurations.hostname = nixpkgs.lib.nixosSystem rec {
+        system = "x86_64-linux";
+
+        specialArgs = {
+          inherit inputs system;
+        };
+
+        modules = [
+          ./configuration.nix
+          (
+            {
+              pkgs,
+              system ? pkgs.system,
+              ...
+            }:
+            {
+              # set up binary cache (optional)
+              nix.settings = {
+                substituters = [ "https://winapps.cachix.org/" ];
+                trusted-public-keys = [ "winapps.cachix.org-1:HI82jWrXZsQRar/PChgIx1unmuEsiQMQq+zt05CD36g=" ];
+              };
+
+              environment.systemPackages = [
+                winapps.packages."${system}".winapps
+                winapps.packages."${system}".winapps-launcher # optional
+              ];
+            }
+          )
+        ];
+      };
+    };
+}
+```
+
+### On NixOS without Flakes
+
+[Flakes aren't real and they can't hurt you.](https://jade.fyi/blog/flakes-arent-real/).
+However, if you still don't want to use flakes, you can use WinApps with flake-compat like:
+
+```nix
+# configuration.nix
+{
+  pkgs,
+  system ? pkgs.system,
+  ...
+}:
+{
+  # set up binary cache (optional)
+  nix.settings = {
+    substituters = [ "https://winapps.cachix.org/" ];
+    trusted-public-keys = [ "winapps.cachix.org-1:HI82jWrXZsQRar/PChgIx1unmuEsiQMQq+zt05CD36g=" ];
+    trusted-users = [ "<your username>" ]; # replace with your username
+  };
+
+  environment.systemPackages =
+    let
+      winapps =
+        (import (builtins.fetchTarball "https://github.com/winapps-org/winapps/archive/main.tar.gz"))
+        .packages."${system}";
+    in
+    [
+      winapps.winapps
+      winapps.winapps-launcher # optional
+    ];
+}
+```
 
 ## Star History
 <a href="https://star-history.com/#winapps-org/winapps&Date">
