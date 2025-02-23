@@ -254,14 +254,14 @@ Contributing to the list of supported applications is encouraged through submiss
         </td>
     </tr>
     <tr>
-                <!-- mIRC -->
-    <td>
-        <img src="apps/mirc/icon.svg" width="100">
-    </td>
-    <td>
-        <b>mIRC</b><br>
-        <i><a href="https://en.wikipedia.org/wiki/MIRC#/media/File:Mircnewlogo.png">Icon</a> in the Public Domain.</i>
-    </td>
+        <!-- mIRC -->
+        <td>
+            <img src="apps/mirc/icon.svg" width="100">
+        </td>
+        <td>
+            <b>mIRC</b><br>
+            <i><a href="https://en.wikipedia.org/wiki/MIRC#/media/File:Mircnewlogo.png">Icon</a> in the Public Domain.</i>
+        </td>
         <!-- PowerShell -->
         <td>
             <img src="apps/powershell/icon.svg" width="100">
