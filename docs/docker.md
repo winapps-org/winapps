@@ -46,6 +46,7 @@ docker compose --file ./compose.yaml up
 ```
 
 You can then access the Windows virtual machine via a VNC connection to complete the Windows setup by navigating to http://127.0.0.1:8006 in your web browser.
+Run as admin the `installer.bat` inside the `c:\OEM`
 
 After installing Windows, comment out the following lines in the `compose.yaml` file by prepending a '#':
 - `- ./oem:/oem`
