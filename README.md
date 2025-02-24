@@ -254,6 +254,14 @@ Contributing to the list of supported applications is encouraged through submiss
         </td>
     </tr>
     <tr>
+        <!-- mIRC -->
+        <td>
+            <img src="apps/mirc/icon.svg" width="100">
+        </td>
+        <td>
+            <b>mIRC</b><br>
+            <i><a href="https://en.wikipedia.org/wiki/MIRC#/media/File:Mircnewlogo.png">Icon</a> in the Public Domain.</i>
+        </td>
         <!-- PowerShell -->
         <td>
             <img src="apps/powershell/icon.svg" width="100">
@@ -262,6 +270,8 @@ Contributing to the list of supported applications is encouraged through submiss
             <b>PowerShell</b><br>
             <i><a href="https://iconduck.com/icons/102322/file-type-powershell">Icon</a> under <a href="https://iconduck.com/licenses/mit">MIT license</a>.</i>
         </td>
+    </tr>
+    <tr>
         <!-- Windows -->
         <td>
             <img src="icons/windows.svg" width="100">
