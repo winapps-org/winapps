@@ -315,7 +315,7 @@ Install the required dependencies.
       ```
   - OpenSUSE:
       ```bash
-      sudo zypper install -y curl dialog freerdp git iproute2 libnotify netcat-openbsd
+      sudo zypper install -y curl dialog freerdp git iproute2 libnotify-tools netcat-openbsd
       ```
   - Gentoo Linux:
       ```bash
