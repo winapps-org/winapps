@@ -24,8 +24,15 @@ jobs:
       - name: Commit and push
         uses: EndBug/add-and-commit@v9
         with:
-          add: "WinApps-Launcher"
+          add: WinApps-Launcher
           default_author: github_actions
           message: "Update submodules"
-          push: true
-          fetch: true
+          push: false
+
+      - name: Create PR
+        uses: peter-evans/create-pull-request@v7
+        with:
+          branch: chore/update_submodules
+          delete-branch: true
+          title: "Update submodules"
+
