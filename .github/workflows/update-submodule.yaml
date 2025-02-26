@@ -35,4 +35,3 @@ jobs:
           branch: chore/update_submodules
           delete-branch: true
           title: "Update submodules"
-
