@@ -120,7 +120,7 @@ Contributing to the list of supported applications is encouraged through submiss
         </td>
         <td>
             <b>Adobe Photoshop</b><br>
-            (CS6, CC)<br>
+            (CS6, CC, 2022)<br>
             <i><a href="https://commons.wikimedia.org/wiki/File:Adobe_Photoshop_CC_icon.svg">Icon</a> in the Public Domain.</i>
         </td>
         <!-- Command Prompt -->

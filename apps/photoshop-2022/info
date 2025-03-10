@@ -1,0 +1,22 @@
+# Copyright (c) 2024 Fmstrat
+# All rights reserved.
+#
+# SPDX-License-Identifier: Proprietary
+
+# GNOME shortcut name
+NAME="Photoshop 2022"
+
+# Used for descriptions and window class
+FULL_NAME="Adobe Photoshop 2022"
+
+# The executable inside windows
+WIN_EXECUTABLE="C:\Program Files\Adobe\Adobe Photoshop 2022\Photoshop.exe"
+
+# GNOME categories
+CATEGORIES="WinApps;Adobe"
+
+# GNOME mimetypes
+MIME_TYPES="image/vnd.adobe.photoshop;"
+
+# System Icon
+ICON="AdobePhotoshop"
