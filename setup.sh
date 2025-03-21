@@ -1046,7 +1046,7 @@ function waCheckRDPAccess() {
         +home-drive \
         -wallpaper \
         +dynamic-resolution \
-        /app:program:"C:\Windows\System32\cmd.exe",cmd:"/C type NUL > "$TEST_PATH_WIN" && tsdiscon" \
+        /app:program:"C:\Windows\System32\cmd.exe",cmd:"/C type NUL > $TEST_PATH_WIN && tsdiscon" \
         /v:"$RDP_IP" &>"$FREERDP_LOG" &
 
     # Store the FreeRDP process ID.
