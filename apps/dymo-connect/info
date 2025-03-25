@@ -1,0 +1,17 @@
+# GNOME shortcut name
+NAME="DYMO Connect"
+
+# Used for descriptions and window class
+FULL_NAME="Software for DYMO label printers"
+
+# The executable inside windows
+WIN_EXECUTABLE="C:\Program Files (x86)\DYMO\DYMO Connect\DYMOConnect.exe"
+
+# GNOME categories
+CATEGORIES="WinApps;Office"
+
+# GNOME mimetypes
+MIME_TYPES=""
+
+# System Icon
+ICON="DYMOConnect"
