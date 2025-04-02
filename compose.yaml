@@ -14,7 +14,7 @@ services:
       # Version of Windows to configure. For valid options, visit:
       # https://github.com/dockur/windows?tab=readme-ov-file#how-do-i-select-the-windows-version
       # https://github.com/dockur/windows?tab=readme-ov-file#how-do-i-install-a-custom-image
-      VERSION: "tiny11"
+      VERSION: "11"
       RAM_SIZE: "4G" # RAM allocated to the Windows VM.
       CPU_CORES: "4" # CPU cores allocated to the Windows VM.
       DISK_SIZE: "64G" # Size of the primary hard disk.
