@@ -7,7 +7,7 @@ Although WinApps supports using `QEMU+KVM+libvirt` as a backend for running Wind
 > [!IMPORTANT]
 > WinApps does __NOT__ officially support versions of Windows prior to Windows 10. Despite this, it may be possible to achieve a successful installation with some additional experimentation. If you find a way to achieve this, please share your solution through a pull request for the benefit of other users.
 > Possible setup instructions for Windows 10:
-> - 'Professional', 'Enterprise' or 'Server' editions of Windows are required to run RDP applications. Windows 'Home' will __NOT__ suffice. 
+> - 'Professional', 'Enterprise' or 'Server' editions of Windows are required to run RDP applications. Windows 'Home' will __NOT__ suffice.
 > - It is recommended to edit the initial `compose.yaml` file to keep your required username and password from the beginning.
 > - It is recommended to not use `sudo` to force commands to run. Add your user to the relevant permissions group wherever possible.
 
