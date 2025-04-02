@@ -45,17 +45,17 @@ docker compose --file ./compose.yaml up
 You can then access the Windows virtual machine via a VNC connection to complete the Windows setup by navigating to http://127.0.0.1:8006 in your web browser.
 
 ### Changing `compose.yaml`
-Changes to `compose.yaml` require the Windows virtual machine to be removed and re-created. This should __NOT__ affect your data.
+Changes to `compose.yaml` require the container to be removed and re-created. This should __NOT__ affect your data.
 
 ```bash
-# Stop and remove the existing Windows virtual machine.
+# Stop and remove the existing container.
 docker compose --file ~/.config/winapps/compose.yaml down
 
 # Remove the existing FreeRDP certificate (if required).
 # Note: A new certificate will be created when connecting via RDP for the first time.
 rm ~/.config/freerdp/server/127.0.0.1_3389.pem
 
-# Re-create the virtual machine with the updated configuration.
+# Re-create the container with the updated configuration.
 docker compose --file ~/.config/winapps/compose.yaml up
 ```
 
@@ -90,17 +90,17 @@ podman-compose --file ./compose.yaml up
 You can then access the Windows virtual machine via a VNC connection to complete the Windows setup by navigating to http://127.0.0.1:8006 in your web browser.
 
 ### Changing `compose.yaml`
-Changes to `compose.yaml` require the Windows virtual machine to be removed and re-created. This should __NOT__ affect your data.
+Changes to `compose.yaml` require the container to be removed and re-created. This should __NOT__ affect your data.
 
 ```bash
-# Stop and remove the existing Windows virtual machine.
+# Stop and remove the existing container.
 podman-compose --file ~/.config/winapps/compose.yaml down
 
 # Remove the existing FreeRDP certificate (if required).
 # Note: A new certificate will be created when connecting via RDP for the first time.
 rm ~/.config/freerdp/server/127.0.0.1_3389.pem
 
-# Re-create the virtual machine with the updated configuration.
+# Re-create the container with the updated configuration.
 podman-compose --file ~/.config/winapps/compose.yaml up
 ```
 
