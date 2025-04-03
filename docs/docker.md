@@ -56,6 +56,7 @@ docker compose --file ~/.config/winapps/compose.yaml down
 rm ~/.config/freerdp/server/127.0.0.1_3389.pem
 
 # Re-create the container with the updated configuration.
+# Add the -d flag at the end to run the container in the background.
 docker compose --file ~/.config/winapps/compose.yaml up
 ```
 
