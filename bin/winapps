@@ -31,7 +31,7 @@ readonly SCRIPT_DIR_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && p
 # OTHER
 readonly VM_NAME="RDPWindows" # FOR 'libvirt' ONLY
 readonly CONTAINER_NAME="WinApps" # FOR 'docker' AND 'podman' ONLY
-readonly RDP_PORT=3389
+readonly RDP_PORT=3390
 readonly DOCKER_IP="127.0.0.1"
 # shellcheck disable=SC2155 # Silence warnings regarding masking return values through simultaneous declaration and assignment.
 readonly RUNID="${RANDOM}"
@@ -517,7 +517,7 @@ function waRunCommand() {
             -wallpaper \
             /wm-class:"Microsoft Windows" \
             /t:"Windows RDP Session [$RDP_IP]" \
-            /v:"$RDP_IP" &>/dev/null &
+            /v:"$RDP_IP:$RDP_PORT" &>/dev/null &
 
         # Capture the process ID.
         FREERDP_PID=$!
@@ -536,7 +536,7 @@ function waRunCommand() {
             -wallpaper \
             "$MULTI_FLAG" \
             /app:program:"$2" \
-            /v:"$RDP_IP" &>/dev/null &
+            /v:"$RDP_IP:$RDP_PORT" &>/dev/null &
 
         # Capture the process ID.
         FREERDP_PID=$!
@@ -574,7 +574,7 @@ function waRunCommand() {
                 "$MULTI_FLAG" \
                 /wm-class:"$FULL_NAME" \
                 /app:program:"$WIN_EXECUTABLE",icon:"$ICON",name:"$FULL_NAME" \
-                /v:"$RDP_IP" &>/dev/null &
+                /v:"$RDP_IP:$RDP_PORT" &>/dev/null &
 
             # Capture the process ID.
             FREERDP_PID=$!
@@ -599,7 +599,7 @@ function waRunCommand() {
                 "$MULTI_FLAG" \
                 /wm-class:"$FULL_NAME" \
                 /app:program:"$WIN_EXECUTABLE",icon:"$ICON",name:$"FULL_NAME",cmd:\""$FILE_PATH"\" \
-                /v:"$RDP_IP" &>/dev/null &
+                /v:"$RDP_IP:$RDP_PORT" &>/dev/null &
 
             # Capture the process ID.
             FREERDP_PID=$!
