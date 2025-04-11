@@ -581,7 +581,8 @@ function waRunCommand() {
         else
             # Convert path from UNIX to Windows style.
             FILE_PATH=$(echo "$2" | sed \
-                -e 's|'"${HOME}"'|\\\\tsclient\\home|' \
+                -e 's|^'"${HOME}"'|\\\\tsclient\\home|' \
+                -e 's|^/run/media|\\\\tsclient\\media|' \
                 -e 's|/|\\|g')
             dprint "UNIX_FILE_PATH: ${2}"
             dprint "WINDOWS_FILE_PATH: ${FILE_PATH}"
@@ -595,6 +596,7 @@ function waRunCommand() {
                 +auto-reconnect \
                 +home-drive \
                 +clipboard \
+                /drive:media,/run/media \
                 -wallpaper \
                 "$MULTI_FLAG" \
                 /wm-class:"$FULL_NAME" \
