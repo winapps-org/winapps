@@ -383,7 +383,13 @@ WAFLAVOR="docker"
 # - '140'
 # - '180'
 RDP_SCALE="100"
-
+# [MOUNTING REMOVEABLE PATHS FOR FILES]
+# NOTES:
+# udisks which you most probalbly have installed ,use /run/media by default.
+# This will improve the experience while using DEs.
+# However,FHS suggests using /media.Please check your system.
+# If you prefer to mount manually,you can change it to /mnt.
+REMOVABLE_MEDIA = "/run/media"
 # [ADDITIONAL FREERDP FLAGS & ARGUMENTS]
 # NOTES:
 # - You can try adding /network:lan to these flags in order to increase performance, however, some users have faced issues with this.
