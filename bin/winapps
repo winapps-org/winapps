@@ -607,7 +607,7 @@ function waRunCommand() {
                 +auto-reconnect \
                 +home-drive \
                 +clipboard \
-                /drive:media,"$REMOVABLE_MEDIA" \
+                /drive:media,"$REMOVABLE_MEDIA\\$USER" \
                 -wallpaper \
                 "$MULTI_FLAG" \
                 /wm-class:"$FULL_NAME" \
