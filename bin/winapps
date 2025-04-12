@@ -161,7 +161,7 @@ function dprint() {
 # Role: If user left REMOVABLE_MEDIA config null,fallback to /run/media for udisks defaults ,warning.
 function waFixRemovableMedia() {
     if [ -z "$REMOVABLE_MEDIA" ]; then
-        REMOVABLE_MEDIA="/run/media"  # Default for udisks
+        REMOVABLE_MEDIA="/run/media/$USER"  # Default for udisks
         dprint "NOTICE: Using default REMOVABLE_MEDIA: $REMOVABLE_MEDIA"
         notify-send --expire-time=3000 --icon="drive-removable-media" \
             "WinApps Notice" "Using default removable media path: $REMOVABLE_MEDIA"
@@ -217,8 +217,8 @@ function waLoadConfig() {
 
     # Update $RDP_SCALE.
     waFixScale
-    # Update when $REMOVABLE_MEDIA is null
-    waFixRemovableMedia
+    # Update when $REMOVABLE_ is null
+    waFixRemovable
     # Update $AUTOPAUSE_TIME.
     # RemoteApp RDP sessions take, at minimum, 20 seconds to be terminated by the Windows server.
     # Hence, subtract 20 from the timeout specified by the user, as a 'built in' timeout of 20 seconds will occur.
