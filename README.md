@@ -383,13 +383,15 @@ WAFLAVOR="docker"
 # - '140'
 # - '180'
 RDP_SCALE="100"
-# [MOUNTING REMOVEABLE PATHS FOR FILES]
-# NOTES:
-# udisks which you most probalbly have installed ,use /run/media by default.
-# This will improve the experience while using DEs.
-# However,FHS suggests using /media.Please check your system.
-# If you prefer to mount manually,you can change it to /mnt.
-REMOVABLE_MEDIA = "/run/media"
+
+# [MOUNTING REMOVABLE PATHS FOR FILES]  
+# NOTES:  
+# - By default, `udisks` (which you most likely have installed) uses `/run/media/` for mounting removable devices.  
+# - This improves compatibility with most desktop environments (DEs).  
+# - Note: The Filesystem Hierarchy Standard (FHS) recommends `/media` instead. Verify your system's configuration.  
+# - To manually mount devices, you may optionally use `/mnt`.  
+REMOVABLE_MEDIA="/run/media"
+
 # [ADDITIONAL FREERDP FLAGS & ARGUMENTS]
 # NOTES:
 # - You can try adding /network:lan to these flags in order to increase performance, however, some users have faced issues with this.
