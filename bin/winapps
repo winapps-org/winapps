@@ -45,6 +45,7 @@ RDP_IP=""
 WAFLAVOR="docker"
 RDP_FLAGS=""
 FREERDP_COMMAND=""
+REMOVABLE_MEDIA=""
 RDP_SCALE=100
 AUTOPAUSE="off"
 AUTOPAUSE_TIME="300"
@@ -156,7 +157,16 @@ Please run:
 function dprint() {
     [ "$DEBUG" = "true" ] && echo "[$(date)-$RUNID] $1" >>"$LOG_PATH"
 }
-
+# Name: 'waFixRemovableMedia'
+# Role: If user left REMOVABLE_MEDIA config null,fallback to /run/media for udisks defaults ,warning.
+function waFixRemovableMedia() {
+    if [ -z "$REMOVABLE_MEDIA" ]; then
+        REMOVABLE_MEDIA="/run/media"  # Default for udisks
+        dprint "NOTICE: Using default REMOVABLE_MEDIA: $REMOVABLE_MEDIA"
+        notify-send --expire-time=3000 --icon="drive-removable-media" \
+            "WinApps Notice" "Using default removable media path: $REMOVABLE_MEDIA"
+    fi
+}
 # Name: 'waFixScale'
 # Role: Since FreeRDP only supports '/scale' values of 100, 140 or 180, find the closest supported argument to the user's configuration.
 function waFixScale() {
@@ -207,7 +217,8 @@ function waLoadConfig() {
 
     # Update $RDP_SCALE.
     waFixScale
-
+    # Update when $REMOVABLE_MEDIA is null
+    waFixRemovableMedia
     # Update $AUTOPAUSE_TIME.
     # RemoteApp RDP sessions take, at minimum, 20 seconds to be terminated by the Windows server.
     # Hence, subtract 20 from the timeout specified by the user, as a 'built in' timeout of 20 seconds will occur.
@@ -582,7 +593,7 @@ function waRunCommand() {
             # Convert path from UNIX to Windows style.
             FILE_PATH=$(echo "$2" | sed \
                 -e 's|^'"${HOME}"'|\\\\tsclient\\home|' \
-                -e 's|^/run/media|\\\\tsclient\\media|' \
+                -e 's|^\('"${REMOVABLE_MEDIA//|/\\|}"'\)/[^/]*|\\\\tsclient\\media|' 、
                 -e 's|/|\\|g')
             dprint "UNIX_FILE_PATH: ${2}"
             dprint "WINDOWS_FILE_PATH: ${FILE_PATH}"
@@ -596,7 +607,7 @@ function waRunCommand() {
                 +auto-reconnect \
                 +home-drive \
                 +clipboard \
-                /drive:media,/run/media \
+                /drive:media,"$REMOVABLE_MEDIA" \
                 -wallpaper \
                 "$MULTI_FLAG" \
                 /wm-class:"$FULL_NAME" \
