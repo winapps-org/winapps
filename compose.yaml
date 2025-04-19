@@ -41,3 +41,5 @@ services:
       - /dev/net/tun # Enable tuntap
       #- /dev/sdX:/disk1 # Uncomment to mount a disk directly within the Windows VM (Note: 'disk1' will be mounted as the main drive. THIS DISK WILL BE FORMATTED BY DOCKER).
       #- /dev/sdY:/disk2 # Uncomment to mount a disk directly within the Windows VM (Note: 'disk2' and higher will be mounted as secondary drives. THIS DISK WILL NOT BE FORMATTED).
+    #group_add:      # uncomment this line and the next one for using rootless podman containers
+    #  - keep-groups # to make /dev/kvm work with podman. needs "crun" installed, "runc" will not work! Add your user to the 'kvm' group or another that can access /dev/kvm.
