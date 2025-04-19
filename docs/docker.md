@@ -98,6 +98,12 @@ docker compose --file ~/.config/winapps/compose.yaml kill # Force shut down the 
 ### Setup `Podman` Container
 Please follow the [`docker` instructions](#setup-docker-container).
 
+> [!NOTE]
+> #### Rootless `podman` containers
+> If you are invoking podman as a user, your container will be "rootless". This can be desirable as a security feature. However, you may encounter an error about missing permissions to /dev/kvm as a consequence.
+> 
+> For rootless podman to work, you need to add your user to the `kvm` group (depending on your distribution) to be able to access `/dev/kvm`. Make sure that you are using `crun` as your container runtime, not `runc`. Usually this is done by stopping all containers and (de-)installing the corresponding packages. Then either invoke podman-compose as `podman-compose --file ./compose.yaml --podman-create-args '--group-add keep-groups' up`. Or edit `compose.yaml` and uncomment the `group_add:` section at the end.
+
 > [!IMPORTANT]
 > Ensure `WAFLAVOR` is set to `"podman"` in `~/.config/winapps/winapps.conf`.
 
