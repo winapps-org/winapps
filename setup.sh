@@ -1684,7 +1684,7 @@ function waEnsureOnPath() {
 # Name: 'waUninstall'
 # Role: Uninstalls WinApps.
 function waUninstall() {
-    
+
     # Print feedback.
     [ "$OPT_SYSTEM" -eq 1 ] && echo -e "${BOLD_TEXT}REMOVING SYSTEM INSTALLATION.${CLEAR_TEXT}"
     [ "$OPT_USER" -eq 1 ] && echo -e "${BOLD_TEXT}REMOVING USER INSTALLATION.${CLEAR_TEXT}"
