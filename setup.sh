@@ -1320,9 +1320,9 @@ MimeType=${MIME_TYPES}"
 function waConfigureOfficiallySupported() {
     # Declare variables.
     local OSA_LIST=() # Stores a list of all officially supported applications installed on Windows.
+    local OFFICE_APPS=("access" "access-o365" "access-o365-x86" "access-x86" "adobe-cc" "acrobat9" "acrobat-x-pro" "aftereffects-cc" "audition-cc" "bridge-cc" "bridge-cc-x86" "bridge-cs6" "bridge-cs6-x86" "cmd" "dymo-connect" "excel" "excel-o365" "excel-o365-x86" "excel-x86" "excel-x86-2010" "explorer" "iexplorer" "illustrator-cc" "lightroom-cc" "linqpad8" "mirc" "mspaint" "onenote" "onenote-o365" "onenote-o365-x86" "onenote-x86" "outlook" "outlook-o365" "outlook-o365-x86" "powerpoint" "powerpoint-o365" "powerpoint-o365-x86" "powerpoint-x86" "publisher" "publisher-o365" "publisher-o365-x86" "publisher-x86" "project" "project-x86" "remarkable-desktop" "ssms20" "visual-studio-comm" "visual-studio-ent" "visual-studio-pro" "visio" "visio-x86" "word" "word-o365" "word-o365-x86" "word-x86" "word-x86-2010")
 
     # Read the list of officially supported applications that are installed on Windows into an array, returning an empty array if no such files exist.
-    # This will remove leading and trailing whitespace characters as well as ignore empty lines.
     readarray -t OSA_LIST < <(grep -v '^[[:space:]]*$' "$INST_FILE_PATH" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//' 2>/dev/null || true)
 
     # Create application entries for each officially supported application.
@@ -1335,6 +1335,19 @@ function waConfigureOfficiallySupported() {
 
         # Configure the application.
         waConfigureApp "$OSA" svg
+
+        # Check if the application is an Office app and copy the protocol handler.
+        if [[ " ${OFFICE_APPS[*]} " == *" $OSA "* ]]; then
+            # Determine the target directory based on whether the installation is for the system or user.
+            if [[ "$OPT_SYSTEM" -eq 1 ]]; then
+                TARGET_DIR="$SYS_APP_PATH"
+            else
+                TARGET_DIR="$USER_APP_PATH"
+            fi
+
+            # Copy the protocol handler to the appropriate directory.
+            $SUDO cp "./apps/ms-office-protocol-handler.desktop" "$TARGET_DIR/ms-office-protocol-handler.desktop"
+        fi
 
         # Print feedback.
         echo -e "${DONE_TEXT}Done!${CLEAR_TEXT}"
@@ -1667,9 +1680,20 @@ function waEnsureOnPath() {
 # Name: 'waUninstall'
 # Role: Uninstalls WinApps.
 function waUninstall() {
+    
     # Print feedback.
     [ "$OPT_SYSTEM" -eq 1 ] && echo -e "${BOLD_TEXT}REMOVING SYSTEM INSTALLATION.${CLEAR_TEXT}"
     [ "$OPT_USER" -eq 1 ] && echo -e "${BOLD_TEXT}REMOVING USER INSTALLATION.${CLEAR_TEXT}"
+
+    # Determine the target directory for the protocol handler based on the installation type.
+    if [[ "$OPT_SYSTEM" -eq 1 ]]; then
+        TARGET_DIR="$SYS_APP_PATH"
+    else
+        TARGET_DIR="$USER_APP_PATH"
+    fi
+
+    # Remove the 'ms-office-protocol-handler.desktop' file if it exists.
+    $SUDO rm -f "$TARGET_DIR/ms-office-protocol-handler.desktop"
 
     # Declare variables.
     local WINAPPS_DESKTOP_FILES=()    # Stores a list of '.desktop' file paths.
