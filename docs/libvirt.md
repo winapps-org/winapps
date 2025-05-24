@@ -132,6 +132,9 @@ Together, these components form a powerful and flexible virtualization stack, wi
     <img src="./libvirt_images/07.png" width="500px"/>
 </p>
 
+> [!NOTE]
+> A name other than `RDPWindows` can be used if `VM_NAME` is set in `~/.config/winapps/winapps.conf`.
+
 9. After clicking `Finish`, select `Copy host CPU configuration` under 'CPUs', and then click `Apply`.
 
 > [!NOTE]
