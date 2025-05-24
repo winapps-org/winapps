@@ -73,7 +73,6 @@ readonly CONFIG_PATH="${HOME}/.config/winapps/winapps.conf" # UNIX path to the W
 readonly INQUIRER_PATH="./install/inquirer.sh" # UNIX path to the 'inquirer' script, which is used to produce selection menus.
 
 # REMOTE DESKTOP CONFIGURATION
-readonly VM_NAME="RDPWindows"  # Name of the Windows VM (FOR 'libvirt' ONLY).
 readonly RDP_PORT=3389         # Port used for RDP on Windows.
 readonly DOCKER_IP="127.0.0.1" # Localhost.
 
@@ -85,17 +84,18 @@ OPT_UNINSTALL=0 # Set to '1' if the user specifies '--uninstall'.
 OPT_AOSA=0      # Set to '1' if the user specifies '--setupAllOfficiallySupportedApps'.
 
 # WINAPPS CONFIGURATION FILE
-RDP_USER=""        # Imported variable.
-RDP_PASS=""        # Imported variable.
-RDP_DOMAIN=""      # Imported variable.
-RDP_IP=""          # Imported variable.
-WAFLAVOR="docker"  # Imported variable.
-RDP_SCALE=100      # Imported variable.
-RDP_FLAGS=""       # Imported variable.
-MULTIMON="false"   # Imported variable.
-DEBUG="true"       # Imported variable.
-FREERDP_COMMAND="" # Imported variable.
-MULTI_FLAG=""      # Set based on value of $MULTIMON.
+RDP_USER=""          # Imported variable.
+RDP_PASS=""          # Imported variable.
+RDP_DOMAIN=""        # Imported variable.
+RDP_IP=""            # Imported variable.
+VM_NAME="RDPWindows" # Name of the Windows VM (FOR 'libvirt' ONLY).
+WAFLAVOR="docker"    # Imported variable.
+RDP_SCALE=100        # Imported variable.
+RDP_FLAGS=""         # Imported variable.
+MULTIMON="false"     # Imported variable.
+DEBUG="true"         # Imported variable.
+FREERDP_COMMAND=""   # Imported variable.
+MULTI_FLAG=""        # Set based on value of $MULTIMON.
 
 # PERMISSIONS AND DIRECTORIES
 SUDO=""         # Set to "sudo" if the user specifies '--system', or "" if the user specifies '--user'.

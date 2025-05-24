@@ -29,7 +29,6 @@ readonly COMPOSE_PATH="${HOME}/.config/winapps/compose.yaml"
 readonly SCRIPT_DIR_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
 
 # OTHER
-readonly VM_NAME="RDPWindows" # FOR 'libvirt' ONLY
 readonly CONTAINER_NAME="WinApps" # FOR 'docker' AND 'podman' ONLY
 readonly RDP_PORT=3389
 readonly DOCKER_IP="127.0.0.1"
@@ -42,6 +41,7 @@ RDP_USER=""
 RDP_PASS=""
 RDP_DOMAIN=""
 RDP_IP=""
+VM_NAME="RDPWindows" # FOR 'libvirt' ONLY
 WAFLAVOR="docker"
 RDP_FLAGS=""
 FREERDP_COMMAND=""
