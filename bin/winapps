@@ -124,7 +124,7 @@ Please run:
         ;;
     "$EC_NOT_EXIST")
         dprint "ERROR: WINDOWS NONEXISTENT. EXITING."
-        notify-send --expire-time=8000 --icon="dialog-error" --app-name="WinApps" --urgency="low" "WinApps" "Windows does not exist."
+        notify-send --expire-time=8000 --icon="dialog-error" --app-name="WinApps" --urgency="low" "WinApps" "Windows VM named '${VM_NAME}' does not exist."
         ;;
     "$EC_UNKNOWN")
         dprint "ERROR: UNKNOWN CONTAINER ERROR. EXITING."
