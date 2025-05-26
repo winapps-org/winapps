@@ -364,6 +364,13 @@ RDP_DOMAIN=""
 # - 'libvirt': '' (BLANK)
 RDP_IP="127.0.0.1"
 
+# [VM NAME]
+# NOTES:
+# - Only applicable when using 'libvirt'
+# - The libvirt VM name must match so that WinApps can determine VM IP, start the VM, etc.
+# DEFAULT VALUE: 'RDPWindows'
+VM_NAME="RDPWindows"
+
 # [WINAPPS BACKEND]
 # DEFAULT VALUE: 'docker'
 # VALID VALUES:

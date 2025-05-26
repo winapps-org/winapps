@@ -1,5 +1,5 @@
 diff --git a/setup.sh b/setup.sh
-index b7d930d6..18000c65 100755
+index 0debe4d..6aeea08 100755
 --- a/setup.sh
 +++ b/setup.sh
 @@ -39,8 +39,8 @@ readonly SYS_BIN_PATH="/usr/local/bin"                  # UNIX path to 'bin' dir
@@ -21,7 +21,7 @@ index b7d930d6..18000c65 100755
 +readonly INQUIRER_PATH="@out@/src/install/inquirer.sh" # UNIX path to the 'inquirer' script, which is used to produce selection menus.
  
  # REMOTE DESKTOP CONFIGURATION
- readonly VM_NAME="RDPWindows"  # Name of the Windows VM (FOR 'libvirt' ONLY).
+ readonly RDP_PORT=3389         # Port used for RDP on Windows.
 @@ -155,13 +155,6 @@ function waGetSourceCode() {
          echo -e "${WARNING_TEXT}[WARNING]${CLEAR_TEXT} You might want to remove your old installation on '${SCRIPT_DIR_PATH}'."
      fi
