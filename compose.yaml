@@ -18,7 +18,7 @@ services:
       RAM_SIZE: "4G" # RAM allocated to the Windows VM.
       CPU_CORES: "4" # CPU cores allocated to the Windows VM.
       DISK_SIZE: "64G" # Size of the primary hard disk.
-      #DISK2_SIZE: "32G" # Uncomment to add an additional hard disk to the Windows VM. Ensure it is mounted as a volume below.
+      # DISK2_SIZE: "32G" # Uncomment to add an additional hard disk to the Windows VM. Ensure it is mounted as a volume below.
       USERNAME: "MyWindowsUser" # Edit here to set a custom Windows username. The default is 'MyWindowsUser'.
       PASSWORD: "MyWindowsPassword" # Edit here to set a password for the Windows user. The default is 'MyWindowsPassword'.
       HOME: "${HOME}" # Set path to Linux user home folder.
@@ -33,13 +33,17 @@ services:
     volumes:
       - data:/storage # Mount volume 'data' to use as Windows 'C:' drive.
       - ${HOME}:/shared # Mount Linux user home directory @ '\\host.lan\Data'.
-      #- /path/to/second/hard/disk:/storage2 # Uncomment to mount the second hard disk within the Windows VM. Ensure 'DISK2_SIZE' is specified above.
+      #- /path/to/second/hard/disk:/storage2 # Uncomment to create a virtual second hard disk and mount it within the Windows VM. Ensure 'DISK2_SIZE' is specified above.
       - ./oem:/oem # Enables automatic post-install execution of 'oem/install.bat', applying Windows registry modifications contained within 'oem/RDPApps.reg'.
       #- /path/to/windows/install/media.iso:/custom.iso # Uncomment to use a custom Windows ISO. If specified, 'VERSION' (e.g. 'tiny11') will be ignored.
     devices:
       - /dev/kvm # Enable KVM.
       - /dev/net/tun # Enable tuntap
-      #- /dev/sdX:/disk1 # Uncomment to mount a disk directly within the Windows VM (Note: 'disk1' will be mounted as the main drive. THIS DISK WILL BE FORMATTED BY DOCKER).
-      #- /dev/sdY:/disk2 # Uncomment to mount a disk directly within the Windows VM (Note: 'disk2' and higher will be mounted as secondary drives. THIS DISK WILL NOT BE FORMATTED).
-    #group_add:      # uncomment this line and the next one for using rootless podman containers
-    #  - keep-groups # to make /dev/kvm work with podman. needs "crun" installed, "runc" will not work! Add your user to the 'kvm' group or another that can access /dev/kvm.
+      # Uncomment to mount a disk directly within the Windows VM.
+      # WARNING: /dev/sdX paths may change after reboot. Use persistent identifiers!
+      # NOTE: 'disk1' will be mounted as the main drive. THIS DISK WILL BE FORMATTED BY DOCKER.
+      # All following disks (disk2, ...) WILL NOT BE FORMATTED.
+      # - /dev/disk/by-id/<id>:/disk1
+      # - dev/disk/by-id/<id>:/disk2 
+    # group_add:      # uncomment this line and the next one for using rootless podman containers
+    #   - keep-groups # to make /dev/kvm work with podman. needs "crun" installed, "runc" will not work! Add your user to the 'kvm' group or another that can access /dev/kvm.
