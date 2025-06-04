@@ -988,7 +988,7 @@ function waCheckPortOpen() {
     fi
 
     # Check for an open RDP port.
-    if ! timeout 5 nc -z "$RDP_IP" "$RDP_PORT" &>/dev/null; then
+    if ! timeout 10 nc -z "$RDP_IP" "$RDP_PORT" &>/dev/null; then
         # Complete the previous line.
         echo -e "${FAIL_TEXT}Failed!${CLEAR_TEXT}\n"
 
@@ -1055,8 +1055,8 @@ function waCheckRDPAccess() {
     # Initialise the time counter.
     ELAPSED_TIME=0
 
-    # Wait a maximum of 30 seconds for the background process to complete.
-    while [ "$ELAPSED_TIME" -lt 30 ]; do
+    # Wait a maximum of 120 seconds for the background process to complete.
+    while [ "$ELAPSED_TIME" -lt 120 ]; do
         # Check if the FreeRDP process is complete or if the test file exists.
         if ! ps -p "$FREERDP_PROC" &>/dev/null || [ -f "$TEST_PATH" ]; then
             break
@@ -1184,8 +1184,8 @@ function waFindInstalled() {
     # Initialise the time counter.
     ELAPSED_TIME=0
 
-    # Wait a maximum of 60 seconds for the batch script to finish running.
-    while [ $ELAPSED_TIME -lt 60 ]; do
+    # Wait a maximum of 120 seconds for the batch script to finish running.
+    while [ $ELAPSED_TIME -lt 120 ]; do
         # Check if the FreeRDP process is complete or if the 'installed' file exists.
         if ! ps -p "$FREERDP_PROC" &>/dev/null || [ -f "$INST_FILE_PATH" ]; then
             break
