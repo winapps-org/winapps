@@ -452,6 +452,31 @@ AUTOPAUSE_TIME="300"
 # DEFAULT VALUE: '' (BLANK)
 # VALID VALUES: The command required to run FreeRDPv3 on your system (e.g., 'xfreerdp', 'xfreerdp3', etc.).
 FREERDP_COMMAND=""
+
+# [TIMEOUTS]
+# NOTES:
+# - These settings control various timeout durations within the WinApps setup. 
+# - Increasing the timeouts is only necessary if the corresponding errors occur. 
+# - Ensure you have followed all the Troubleshooting Tips in the error message first.
+
+# PORT CHECK
+# - The maximum time (in seconds) to wait when checking if the RDP port on Windows is open.
+# - Corresponding error: "NETWORK CONFIGURATION ERROR" (exit status 13).
+# DEFAULT VALUE: '5'
+PORT_TIMEOUT="5"
+
+# RDP CONNECTION TEST
+# - The maximum time (in seconds) to wait when testing the initial RDP connection to Windows.
+# - Corresponding error: "REMOTE DESKTOP PROTOCOL FAILURE" (exit status 14).
+# DEFAULT VALUE: '30'
+RDP_TIMEOUT="30"
+
+# APPLICATION SCAN
+# - The maximum time (in seconds) to wait for the script that scans for installed applications on Windows to complete.
+# - Corresponding error: "APPLICATION QUERY FAILURE" (exit status 15).
+# DEFAULT VALUE: '60'
+APP_SCAN_TIMEOUT="60"
+
 ```
 
 > [!IMPORTANT]

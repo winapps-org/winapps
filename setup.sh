@@ -96,6 +96,9 @@ MULTIMON="false"     # Imported variable.
 DEBUG="true"         # Imported variable.
 FREERDP_COMMAND=""   # Imported variable.
 MULTI_FLAG=""        # Set based on value of $MULTIMON.
+PORT_TIMEOUT=5      # Default port check timeout.
+RDP_TIMEOUT=30      # Default RDP connection test timeout.
+APP_SCAN_TIMEOUT=60 # Default application scan timeout.
 
 # PERMISSIONS AND DIRECTORIES
 SUDO=""         # Set to "sudo" if the user specifies '--system', or "" if the user specifies '--user'.
@@ -988,7 +991,7 @@ function waCheckPortOpen() {
     fi
 
     # Check for an open RDP port.
-    if ! timeout 10 nc -z "$RDP_IP" "$RDP_PORT" &>/dev/null; then
+    if ! timeout "$PORT_TIMEOUT" nc -z "$RDP_IP" "$RDP_PORT" &>/dev/null; then
         # Complete the previous line.
         echo -e "${FAIL_TEXT}Failed!${CLEAR_TEXT}\n"
 
@@ -1001,6 +1004,7 @@ function waCheckPortOpen() {
         # Display the suggested action(s).
         echo "--------------------------------------------------------------------------------"
         echo "Please ensure Remote Desktop is configured on Windows as per the WinApps README."
+        echo -e "Then you can try increasing the ${COMMAND_TEXT}PORT_TIMEOUT${CLEAR_TEXT} in ${COMMAND_TEXT}${CONFIG_PATH}${CLEAR_TEXT}."
         echo "--------------------------------------------------------------------------------"
 
         # Terminate the script.
@@ -1055,8 +1059,8 @@ function waCheckRDPAccess() {
     # Initialise the time counter.
     ELAPSED_TIME=0
 
-    # Wait a maximum of 120 seconds for the background process to complete.
-    while [ "$ELAPSED_TIME" -lt 120 ]; do
+    # Wait a maximum of $RDP_TIMEOUT seconds for the background process to complete.
+    while [ "$ELAPSED_TIME" -lt "$RDP_TIMEOUT" ]; do
         # Check if the FreeRDP process is complete or if the test file exists.
         if ! ps -p "$FREERDP_PROC" &>/dev/null || [ -f "$TEST_PATH" ]; then
             break
@@ -1091,6 +1095,7 @@ function waCheckRDPAccess() {
         echo "  - Ensure the user is logged out of Windows prior to initiating the WinApps installation."
         echo "  - Ensure the credentials within the WinApps configuration file are correct."
         echo -e "  - Utilise a new certificate by removing relevant certificate(s) in ${COMMAND_TEXT}${HOME}/.config/freerdp/server${CLEAR_TEXT}."
+        echo -e "  - Try increasing the ${COMMAND_TEXT}RDP_TIMEOUT${CLEAR_TEXT} in ${COMMAND_TEXT}${CONFIG_PATH}${CLEAR_TEXT}."
         echo "  - If using 'libvirt', ensure the Windows VM is correctly named as specified within the README."
         echo "  - If using 'libvirt', ensure 'Remote Desktop' is enabled within the Windows VM."
         echo "  - If using 'libvirt', ensure you have merged 'RDPApps.reg' into the Windows VM's registry."
@@ -1184,8 +1189,8 @@ function waFindInstalled() {
     # Initialise the time counter.
     ELAPSED_TIME=0
 
-    # Wait a maximum of 120 seconds for the batch script to finish running.
-    while [ $ELAPSED_TIME -lt 120 ]; do
+    # Wait a maximum of $APP_SCAN_TIMEOUT seconds for the batch script to finish running.
+    while [ $ELAPSED_TIME -lt "$APP_SCAN_TIMEOUT" ]; do
         # Check if the FreeRDP process is complete or if the 'installed' file exists.
         if ! ps -p "$FREERDP_PROC" &>/dev/null || [ -f "$INST_FILE_PATH" ]; then
             break
@@ -1216,6 +1221,7 @@ function waFindInstalled() {
         # Display the suggested action(s).
         echo "--------------------------------------------------------------------------------"
         echo -e "Please view the log at ${COMMAND_TEXT}${FREERDP_LOG}${CLEAR_TEXT}."
+        echo -e "You can try increasing the ${COMMAND_TEXT}APP_SCAN_TIMEOUT${CLEAR_TEXT} in ${COMMAND_TEXT}${CONFIG_PATH}${CLEAR_TEXT}."
         echo "--------------------------------------------------------------------------------"
 
         # Terminate the script.
