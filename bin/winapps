@@ -49,9 +49,7 @@ REMOVABLE_MEDIA=""
 RDP_SCALE=100
 AUTOPAUSE="off"
 AUTOPAUSE_TIME="300"
-MULTIMON="false"
 DEBUG="true"
-MULTI_FLAG=""
 
 # OTHER
 FREERDP_PID=-1
@@ -211,9 +209,6 @@ function waLoadConfig() {
     else
         waThrowExit $EC_MISSING_CONFIG
     fi
-
-    # Update 'MULTI_FLAG' based on 'MULTIMON'.
-    MULTI_FLAG=$([[ $MULTIMON == "true" ]] && echo "/multimon" || echo "+span")
 
     # Update $RDP_SCALE.
     waFixScale
@@ -521,11 +516,7 @@ function waRunCommand() {
             /u:"$RDP_USER" \
             /p:"$RDP_PASS" \
             /scale:"$RDP_SCALE" \
-            +dynamic-resolution \
             +auto-reconnect \
-            +home-drive \
-            +clipboard \
-            -wallpaper \
             /wm-class:"Microsoft Windows" \
             /t:"Windows RDP Session [$RDP_IP]" \
             /v:"$RDP_IP" &>/dev/null &
@@ -540,12 +531,7 @@ function waRunCommand() {
             /u:"$RDP_USER" \
             /p:"$RDP_PASS" \
             /scale:"$RDP_SCALE" \
-            +dynamic-resolution \
             +auto-reconnect \
-            +home-drive \
-            +clipboard \
-            -wallpaper \
-            "$MULTI_FLAG" \
             /app:program:"$2" \
             /v:"$RDP_IP" &>/dev/null &
 
@@ -577,12 +563,7 @@ function waRunCommand() {
                 /u:"$RDP_USER" \
                 /p:"$RDP_PASS" \
                 /scale:"$RDP_SCALE" \
-                +dynamic-resolution \
                 +auto-reconnect \
-                +home-drive \
-                +clipboard \
-                -wallpaper \
-                "$MULTI_FLAG" \
                 /wm-class:"$FULL_NAME" \
                 /app:program:"$WIN_EXECUTABLE",icon:"$ICON",name:"$FULL_NAME" \
                 /v:"$RDP_IP" &>/dev/null &
@@ -603,13 +584,8 @@ function waRunCommand() {
                 /u:"$RDP_USER" \
                 /p:"$RDP_PASS" \
                 /scale:"$RDP_SCALE" \
-                +dynamic-resolution \
                 +auto-reconnect \
-                +home-drive \
-                +clipboard \
                 /drive:media,"$REMOVABLE_MEDIA" \
-                -wallpaper \
-                "$MULTI_FLAG" \
                 /wm-class:"$FULL_NAME" \
                 /app:program:"$WIN_EXECUTABLE",icon:"$ICON",name:$"FULL_NAME",cmd:\""$FILE_PATH"\" \
                 /v:"$RDP_IP" &>/dev/null &
