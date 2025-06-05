@@ -403,18 +403,9 @@ REMOVABLE_MEDIA="/run/media"
 # [ADDITIONAL FREERDP FLAGS & ARGUMENTS]
 # NOTES:
 # - You can try adding /network:lan to these flags in order to increase performance, however, some users have faced issues with this.
-# DEFAULT VALUE: '/cert:tofu /sound /microphone'
+# DEFAULT VALUE: '/cert:tofu /sound /microphone +home-drive'
 # VALID VALUES: See https://github.com/awakecoding/FreeRDP-Manuals/blob/master/User/FreeRDP-User-Manual.markdown
-RDP_FLAGS="/cert:tofu /sound /microphone"
-
-# [MULTIPLE MONITORS]
-# NOTES:
-# - If enabled, a FreeRDP bug *might* produce a black screen.
-# DEFAULT VALUE: 'false'
-# VALID VALUES:
-# - 'true'
-# - 'false'
-MULTIMON="false"
+RDP_FLAGS="/cert:tofu /sound /microphone +home-drive"
 
 # [DEBUG WINAPPS]
 # NOTES:
@@ -466,7 +457,7 @@ FREERDP_COMMAND=""
 - For domain users, you can uncomment and change `RDP_DOMAIN`.
 - On high-resolution (UHD) displays, you can set `RDP_SCALE` to the scale you would like to use (100, 140 or 180).
 - To add additional flags to the FreeRDP call (e.g. `/prevent-session-lock 120`), uncomment and use the `RDP_FLAGS` configuration option.
-- For multi-monitor setups, you can try enabling `MULTIMON`. A FreeRDP bug may result in a black screen however, in which case you should revert this change.
+- For multi-monitor setups, you can try adding `/multimon` to `RDP_FLAGS`. A FreeRDP bug may result in a black screen however, in which case you should revert this change.
 - If you enable `DEBUG`, a log will be created on each application start in `~/.local/share/winapps/winapps.log`.
 - If using a system on which the FreeRDP command is not `xfreerdp` or `xfreerdp3`, the correct command can be specified using `FREERDP_COMMAND`.
 

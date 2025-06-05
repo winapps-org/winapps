@@ -92,10 +92,8 @@ VM_NAME="RDPWindows" # Name of the Windows VM (FOR 'libvirt' ONLY).
 WAFLAVOR="docker"    # Imported variable.
 RDP_SCALE=100        # Imported variable.
 RDP_FLAGS=""         # Imported variable.
-MULTIMON="false"     # Imported variable.
 DEBUG="true"         # Imported variable.
 FREERDP_COMMAND=""   # Imported variable.
-MULTI_FLAG=""        # Set based on value of $MULTIMON.
 
 # PERMISSIONS AND DIRECTORIES
 SUDO=""         # Set to "sudo" if the user specifies '--system', or "" if the user specifies '--user'.
@@ -1043,9 +1041,6 @@ function waCheckRDPAccess() {
         /p:"$RDP_PASS" \
         /scale:"$RDP_SCALE" \
         +auto-reconnect \
-        +home-drive \
-        -wallpaper \
-        +dynamic-resolution \
         /app:program:"C:\Windows\System32\cmd.exe",cmd:"/C type NUL > $TEST_PATH_WIN && tsdiscon" \
         /v:"$RDP_IP" &>"$FREERDP_LOG" &
 
@@ -1172,9 +1167,6 @@ function waFindInstalled() {
         /p:"$RDP_PASS" \
         /scale:"$RDP_SCALE" \
         +auto-reconnect \
-        +home-drive \
-        -wallpaper \
-        +dynamic-resolution \
         /app:program:"C:\Windows\System32\cmd.exe",cmd:"/C "$BATCH_SCRIPT_PATH_WIN"" \
         /v:"$RDP_IP" &>"$FREERDP_LOG" &
 
@@ -1557,13 +1549,6 @@ function waInstall() {
 
     # Check for missing dependencies.
     waCheckInstallDependencies
-
-    # Update $MULTI_FLAG.
-    if [[ $MULTIMON == "true" ]]; then
-        MULTI_FLAG="/multimon"
-    else
-        MULTI_FLAG="+span"
-    fi
 
     # Update $RDP_SCALE.
     waFixScale
