@@ -455,8 +455,8 @@ FREERDP_COMMAND=""
 
 # [TIMEOUTS]
 # NOTES:
-# - These settings control various timeout durations within the WinApps setup. 
-# - Increasing the timeouts is only necessary if the corresponding errors occur. 
+# - These settings control various timeout durations within the WinApps setup.
+# - Increasing the timeouts is only necessary if the corresponding errors occur.
 # - Ensure you have followed all the Troubleshooting Tips in the error message first.
 
 # PORT CHECK
