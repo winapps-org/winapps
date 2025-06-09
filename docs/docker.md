@@ -20,6 +20,8 @@ Although WinApps supports using `QEMU+KVM+libvirt` as a backend for running Wind
 ### Installation
 You can find a guide for installing `Docker Engine` [here](https://docs.docker.com/engine/install/).
 
+Or you need to have at least `docker` and `docker-compose` packages installed via your package manager.
+
 ### Setup `Docker` Container
 WinApps utilises `docker compose` to configure Windows VMs. A template [`compose.yaml`](../compose.yaml) is provided.
 
@@ -38,10 +40,17 @@ Please refer to the [original GitHub repository](https://github.com/dockur/windo
 ### Installing Windows
 You can initiate the Windows installation using `docker compose`.
 ```bash
+git clone https://github.com/winapps-org/winapps.git
 cd winapps
 docker compose --file ./compose.yaml up
 ```
 
+> [!NOTE]
+> If you encounter "Cannot connect to the Docker daemon". You need to start daemon 
+> ```bash
+> sudo systemctl start docker
+> ```
+> 
 You can then access the Windows virtual machine via a VNC connection to complete the Windows setup by navigating to http://127.0.0.1:8006 in your web browser.
 
 ### Changing `compose.yaml`
