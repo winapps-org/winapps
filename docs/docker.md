@@ -46,11 +46,11 @@ docker compose --file ./compose.yaml up
 ```
 
 > [!NOTE]
-> If you encounter "Cannot connect to the Docker daemon". You need to start daemon 
+> If you encounter "Cannot connect to the Docker daemon". You need to start daemon
 > ```bash
 > sudo systemctl start docker
 > ```
-> 
+>
 You can then access the Windows virtual machine via a VNC connection to complete the Windows setup by navigating to http://127.0.0.1:8006 in your web browser.
 
 ### Changing `compose.yaml`
