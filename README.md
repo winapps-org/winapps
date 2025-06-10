@@ -48,31 +48,42 @@ Contributing to the list of supported applications is encouraged through submiss
     flex-wrap: wrap;
     gap: 2rem;
   }
+
   .app-item {
     display: flex;
     align-items: center;
     gap: 1rem;
     min-width: 320px;
   }
+
   .app-item img {
-    width: 60px;
-    height: auto;
-    display: block;
+    width: 80px;           /* fixed width */
+    height: 80px;          /* fixed height */
+    object-fit: contain;   /* maintain aspect ratio */
+    flex-shrink: 0;        /* prevent shrinking if container is tight */
   }
+
   .app-info {
     max-width: 220px;
   }
+
   .app-info b {
     display: block;
     font-size: 1.1rem;
     margin-bottom: 0.25rem;
   }
+
+  .app-info div {
+    margin-bottom: 0.5rem;
+  }
+
   .app-info i a {
     color: #555;
     text-decoration: none;
     font-style: italic;
     font-size: 0.875rem;
   }
+
   .app-info i a:hover {
     text-decoration: underline;
   }
