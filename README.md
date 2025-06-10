@@ -1,10 +1,12 @@
 <p align="center">
 
 ![Banner Dark](icons/banner_dark.svg#gh-dark-mode-only)
+![Banner Light](icons/banner_light.svg#gh-light-mode-only)
 
 </p>
 
-![Banner Light](icons/banner_light.svg#gh-light-mode-only)
+---
+
 
 <p><img width="700"
         src="./icons/banner_dark.svg#gh-dark-mode-only"
