@@ -1,5 +1,5 @@
-<div style="display: grid;
-            place-items: center">
+<div style="display: block;
+            margin: auto">
 
 <p><img width="700"
         src="./icons/banner_dark.svg#gh-dark-mode-only"
