@@ -1,5 +1,10 @@
-<div style="display: block;
-            margin: auto">
+<p align="center">
+
+![Banner Dark](icons/banner_dark.svg#gh-dark-mode-only)
+
+</p>
+
+![Banner Light](icons/banner_light.svg#gh-light-mode-only)
 
 <p><img width="700"
         src="./icons/banner_dark.svg#gh-dark-mode-only"
@@ -8,7 +13,6 @@
         src="./icons/banner_light.svg#gh-light-mode-only"
         alt=""/></p>
 <hr>
-</div>
 
 Run Windows applications (including [Microsoft 365](https://www.microsoft365.com/) and [Adobe Creative Cloud](https://www.adobe.com/creativecloud.html)) on GNU/Linux with `KDE Plasma`, `GNOME` or `XFCE`, integrated seamlessly as if they were native to the OS.
 
