@@ -1186,7 +1186,7 @@ bash <(curl https://raw.githubusercontent.com/winapps-org/winapps/main/setup.sh)
 
 Once WinApps is installed, a list of additional arguments can be accessed by running `winapps-setup --help`.
 
-<img src="./demo/installer.gif" width=1898 alt="WinApps Installer Animation.">
+<img src="./winapps_installer_images/installer.gif" width=1898 alt="WinApps Installer Animation.">
 </details>
 
 
