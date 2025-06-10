@@ -26,6 +26,7 @@ WinApps works by:
 - The GNU/Linux `/home` directory is accessible within Windows via the `\\tsclient\home` mount.
 - Integration with `Nautilus`, allowing you to right-click files to open them with specific Windows applications based on the file MIME type.
 - The [official taskbar widget](https://github.com/winapps-org/WinApps-Launcher) enables seamless administration of the Windows subsystem and offers an easy way to launch Windows applications.
+- Microsoft Office links (e.g. ms-word://) from the host system are automatically opened in the Windows subsystem. (Note: You may need to use an [User Agent switcher](https://github.com/ray-lothian/UserAgent-Switcher/) Browser Extension and set the User-Agent to Windows, as as the Office webapps typically hide the "Open in Desktop App" option for Linux users.)
 
 ## Supported Applications
 **WinApps supports <u>*ALL*</u> Windows applications.**
