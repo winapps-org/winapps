@@ -62,4 +62,3 @@ Contributing to the list of supported applications is encouraged through submiss
 ## Star History
 [![Star History Chart](https://api.star-history.com/svg?repos=winapps-org/winapps&type=Date#gh-light-mode-only)](https://star-history.com/#winapps-org/winapps&Date)
 [![Star History Chart](https://api.star-history.com/svg?repos=winapps-org/winapps&type=Date&theme=dark#gh-dark-mode-only)](https://star-history.com/#winapps-org/winapps&Date)
-
