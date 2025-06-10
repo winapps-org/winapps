@@ -13,6 +13,9 @@ WinApps works by:
 3. Creating shortcuts to selected Windows applications on the host GNU/Linux OS.
 4. Using [`FreeRDP`](https://www.freerdp.com/) as a backend to seamlessly render Windows applications alongside GNU/Linux applications.
 
+## Instalaiton
+ For a compleate Intsallation guide, please reffer to the [INSTALL.md](INSTALL.md)
+
 ## Additional Features
 - The GNU/Linux `/home` directory is accessible within Windows via the `\\tsclient\home` mount.
 - Integration with `Nautilus`, allowing you to right-click files to open them with specific Windows applications based on the file MIME type.
@@ -284,8 +287,6 @@ Contributing to the list of supported applications is encouraged through submiss
     </tr>
 </table>
 
-## Instalaiton
-For a compleate Intsallation guide, please reffer to the [INSTALL.md](INSTALL.md)
 ## Star History
 <a href="https://star-history.com/#winapps-org/winapps&Date">
  <picture>
