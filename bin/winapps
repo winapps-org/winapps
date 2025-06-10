@@ -517,6 +517,7 @@ function waRunCommand() {
             /p:"$RDP_PASS" \
             /scale:"$RDP_SCALE" \
             +auto-reconnect \
+            +dynamic-resolution \
             /wm-class:"Microsoft Windows" \
             /t:"Windows RDP Session [$RDP_IP]" \
             /v:"$RDP_IP" &>/dev/null &
