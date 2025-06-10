@@ -1,4 +1,4 @@
-<p align="center"><img 
+<p align="center"><img
                        width="700"
                        src="./icons/banner_dark.svg#gh-dark-mode-only"
                        alt=""/></p>
