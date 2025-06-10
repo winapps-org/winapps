@@ -14,7 +14,7 @@ WinApps works by:
 4. Using [`FreeRDP`](https://www.freerdp.com/) as a backend to seamlessly render Windows applications alongside GNU/Linux applications.
 
 ## Installaiton
- For a compleate Intsallation guide, please reffer to the [INSTALL.md](INSTALL.md)
+ For a complete Intsallation guide, please reffer to the [INSTALL.md](INSTALL.md)
 
 ## Additional Features
 - The GNU/Linux `/home` directory is accessible within Windows via the `\\tsclient\home` mount.
