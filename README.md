@@ -13,7 +13,7 @@ WinApps works by:
 3. Creating shortcuts to selected Windows applications on the host GNU/Linux OS.
 4. Using [`FreeRDP`](https://www.freerdp.com/) as a backend to seamlessly render Windows applications alongside GNU/Linux applications.
 
-## Instalaiton
+## Installaiton
  For a compleate Intsallation guide, please reffer to the [INSTALL.md](INSTALL.md)
 
 ## Additional Features
