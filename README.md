@@ -1,4 +1,5 @@
-<div style="text-align: center">
+<div style="align: center">
+
 <p><img width="700"
         src="./icons/banner_dark.svg#gh-dark-mode-only"
         alt=""/></p>
