@@ -55,7 +55,7 @@ Contributing to the list of supported applications is encouraged through submiss
     min-width: 320px;
   }
   .app-item img {
-    width: 100px;
+    width: 60px;
     height: auto;
     display: block;
   }
