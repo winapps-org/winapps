@@ -10,9 +10,7 @@
 
 Run Windows applications (including [Microsoft 365](https://www.microsoft365.com/) and [Adobe Creative Cloud](https://www.adobe.com/creativecloud.html)) on GNU/Linux with `KDE Plasma`, `GNOME` or `XFCE`, integrated seamlessly as if they were native to the OS.
 
-<p><img src="docs/readme_images/demo.png"
-        width=1920
-        alt="WinApps Demonstration."></p>
+![WinApps Demonstration](docs/readme_images/demo.png)
 
 ## Underlying Mechanism
 WinApps works by:
