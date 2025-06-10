@@ -7,7 +7,6 @@ Both `Docker` and `Podman` are recommended backends for running the Windows virt
 <details>
 <summary>Creating a Windows VM with Docker or Podman</summary>
 
-# Creating a Windows VM in `Docker` or `Podman`
 Although WinApps supports using `QEMU+KVM+libvirt` as a backend for running Windows virtual machines, it is recommended to use `Docker` or `Podman`. These backends automate the setup process, eliminating the need for manual configuration and optimisation of the Windows virtual machine.
 
 > [!IMPORTANT]
@@ -20,25 +19,54 @@ Although WinApps supports using `QEMU+KVM+libvirt` as a backend for running Wind
 > - It is recommended to edit the initial `compose.yaml` file to keep your required username and password from the beginning.
 > - It is recommended to not use `sudo` to force commands to run. Add your user to the relevant permissions group wherever possible.
 
-> [!IMPORTANT]
-> The iptables kernel module must be loaded for folder sharing with the host to work.
-> Check that the output of `lsmod | grep ip_tables` and `lsmod | grep iptable_nat` is non empty.
-> If the output of one of the previous command is empty, run `echo -e "ip_tables\niptable_nat" | sudo tee /etc/modules-load.d/iptables.conf` and reboot.
+## `Docker` Installation
+You can find a full guide for installing `Docker Engine` and list of supported Linux distros [here](https://docs.docker.com/engine/install/).
 
-## `Docker`
-### Installation
-You can find a guide for installing `Docker Engine` [here](https://docs.docker.com/engine/install/).
-
-Or you need to have at least `docker` and `docker-compose` packages installed via your package manager.
+> [!Note]
+> If you don't see your Linux distro in list of supported platforms, you should install docker from [binaries](https://docs.docker.com/engine/install/binaries/)
 
 ### Setup `Docker` Container
-WinApps utilises `docker compose` to configure Windows VMs. A template [`compose.yaml`](../compose.yaml) is provided.
+WinApps utilises `docker compose` to configure Windows VMs. You can find Docker Compose Plugin installation guide [here](https://docs.docker.com/compose/install/linux/)
+
+> [!Note]
+> If you don't see your Linux distro in list of supported platforms, you should install Docker Compose Plugin [manually](https://docs.docker.com/compose/install/linux/#install-the-plugin-manually)
+
+A template [`compose.yaml`](../compose.yaml) is provided by WinApps.
 
 Prior to installing Windows, you can modify the RAM and number of CPU cores available to the Windows VM by changing `RAM_SIZE` and `CPU_CORES` within `compose.yaml`.
-
 It is also possible to specify the version of Windows you wish to install within `compose.yaml` by modifying `VERSION`.
 
-Please refer to the [original GitHub repository](https://github.com/dockur/windows) for more information on additional configuration options.
+#### Minimal compose.yaml setup
+To start configuring it we need to clone git repository of WinApps. And edit compose.yaml. We will use `nano` for purposes of this guide, while you can use any text editor of your liking
+
+```bash
+git clone https://github.com/winapps-org/winapps.git
+cd winapps
+nano compose.yaml
+```
+>[!IMPORTANT]
+>In `nano`
+>Use arrow keys to move in text
+>Use Ctrl+O to save file, you will be proposed to rename file
+>Leave the name as it is and just press Enter
+>Use Ctrl+X to close file.
+>
+>Now we are interested in VERSION, RAM_SIZE, CPU_CORES, DISK_SIZE, USERNAME, and PASSWORD
+>Set VERSION to 11 or 10. This will change which windows docker needs to download. Windows 11 Professional or Windows 10 Proffesional.
+>In RAM_SIZE and CPU_CORES set the value you are ready to give to VM. Please note it will be used in background, so no need to go all in.
+>To see your RAM you can open another terminal and use:
+>```bash
+>free -h
+>```
+>For CPU Cores use:
+>```bash
+>nproc
+>```
+>In DISK_SIZE set ammount of disc space you expect to be used by apps you want to have.
+>And finally we need to set USERNAME and PASSWORD. Set your own values here BUT they should not be empty or else you won't be able to login.
+
+
+Please refer to the [original GitHub repository](https://github.com/dockur/windows?tab=readme-ov-file#faq-) for more information on additional configuration options.
 
 > [!NOTE]
 > If you want to undo all your changes and start from scratch, run the following. For `podman`, replace `docker compose` with `podman-compose`.
@@ -47,6 +75,11 @@ Please refer to the [original GitHub repository](https://github.com/dockur/windo
 > ```
 
 ### Installing Windows
+> [!IMPORTANT]
+> The iptables kernel module must be loaded for folder sharing with the host to work.
+> Check that the output of `lsmod | grep ip_tables` and `lsmod | grep iptable_nat` is non empty.
+> If the output of one of the previous command is empty, run `echo -e "ip_tables\niptable_nat" | sudo tee /etc/modules-load.d/iptables.conf` and reboot.
+
 You can initiate the Windows installation using `docker compose`.
 ```bash
 git clone https://github.com/winapps-org/winapps.git
