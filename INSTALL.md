@@ -408,4 +408,3 @@ However, if you still don't want to use flakes, you can use WinApps with flake-c
     ];
 }
 ```
-
