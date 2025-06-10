@@ -77,13 +77,21 @@ Please refer to the [original GitHub repository](https://github.com/dockur/windo
 ### Installing Windows
 > [!IMPORTANT]
 > The iptables kernel module must be loaded for folder sharing with the host to work.
-> Check that the output of `lsmod | grep ip_tables` and `lsmod | grep iptable_nat` is non empty.
-> If the output of one of the previous command is empty, run `echo -e "ip_tables\niptable_nat" | sudo tee /etc/modules-load.d/iptables.conf` and reboot.
+> Check that the output of this command isn't empty.
+> ```bash
+> lsmod | grep ip_tables; lsmod | grep iptable_nat
+>```
+>
+> If the output of one of the previous command is empty, run
+> ```bash
+> echo -e "ip_tables\niptable_nat" | sudo tee /etc/modules-load.d/iptables.conf
+> ```
+> and reboot.
 
 You can initiate the Windows installation using `docker compose`.
+Make sure you are inside of winapps folder
 ```bash
-git clone https://github.com/winapps-org/winapps.git
-cd winapps
+cd ; cd winapps
 docker compose --file ./compose.yaml up
 ```
 
@@ -93,19 +101,21 @@ docker compose --file ./compose.yaml up
 > sudo systemctl start docker
 > ```
 >
-You can then access the Windows virtual machine via a VNC connection to complete the Windows setup by navigating to http://127.0.0.1:8006 in your web browser.
+>You can then access the Windows virtual machine via a VNC connection to complete the Windows setup by navigating to http://127.0.0.1:8006 in your web browser.
 
 ### Changing `compose.yaml`
-Changes to `compose.yaml` require the container to be removed and re-created. This should __NOT__ affect your data.
+Changes to `compose.yaml` require the container to be removed and re-created. This should __NOT__ affect your data. This is done every time you want to change values. e.g. RAM_SIZE, add new drive, etc.
 
 ```bash
 # Stop and remove the existing container.
 docker compose --file ~/.config/winapps/compose.yaml down
-
+```
+```bash
 # Remove the existing FreeRDP certificate (if required).
 # Note: A new certificate will be created when connecting via RDP for the first time.
 rm ~/.config/freerdp/server/127.0.0.1_3389.pem
-
+```
+```bash
 # Re-create the container with the updated configuration.
 # Add the -d flag at the end to run the container in the background.
 docker compose --file ~/.config/winapps/compose.yaml up
@@ -141,7 +151,7 @@ Please follow the [`docker` instructions](#setup-docker-container).
 ### Installing Windows
 You can initiate the Windows installation using `podman-compose`.
 ```bash
-cd winapps
+cd ; cd winapps
 podman-compose --file ./compose.yaml up
 ```
 
@@ -153,11 +163,13 @@ Changes to `compose.yaml` require the container to be removed and re-created. Th
 ```bash
 # Stop and remove the existing container.
 podman-compose --file ~/.config/winapps/compose.yaml down
-
+```
+```bash
 # Remove the existing FreeRDP certificate (if required).
 # Note: A new certificate will be created when connecting via RDP for the first time.
 rm ~/.config/freerdp/server/127.0.0.1_3389.pem
-
+```
+```bash
 # Re-create the container with the updated configuration.
 podman-compose --file ~/.config/winapps/compose.yaml up
 ```
