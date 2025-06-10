@@ -36,6 +36,12 @@ A template [`compose.yaml`](../compose.yaml) is provided by WinApps.
 Prior to installing Windows, you can modify the RAM and number of CPU cores available to the Windows VM by changing `RAM_SIZE` and `CPU_CORES` within `compose.yaml`.
 It is also possible to specify the version of Windows you wish to install within `compose.yaml` by modifying `VERSION`.
 
+> [!Note]
+> You need to give your user permission to use docker.sock. Plaes change `<user name or ID>` to your user name
+> ```bash
+> sudo setfacl --modify user:<user name or ID>:rw /var/run/docker.sock
+> ```
+
 #### Minimal compose.yaml setup
 To start configuring it we need to clone git repository of WinApps. And edit compose.yaml. We will use `nano` for purposes of this guide, while you can use any text editor of your liking
 
@@ -188,7 +194,7 @@ podman-compose --file ~/.config/winapps/compose.yaml kill # Force shut down the 
 
 <details>
 <summary>Creating a Windosw VM with libvirt</summary>
-# Creating a `libvirt` Windows VM
+
 ## Understanding The Virtualisation Stack
 This method of configuring a Windows virtual machine for use with WinApps is significantly more involved than utilising `Docker` or `Podman`. Nevertheless, expert users may prefer this method due to its greater flexibility and wider range of customisation options.
 
@@ -784,7 +790,7 @@ Once you get to the point of selecting the location for installation, you will s
 </p>
 
 The next hurdle will be bypassing the network selection screen. As the `VirtIO` drivers for networking have not yet been loaded, the virtual machine will not be able to be connected to the internet.
-- For Windows 11: When prompted to select your country or region, press "Shift + F10" to open the command prompt. Enter `OOBE\BYPASSNRO` and press Enter. The system will restart, allowing you to select "I don't have internet" later on. It is crucial to run this command as soon as possible, as doing so later in the installation process will not work, and you may be required to create a Microsoft account despite not having an internet connection.
+- For Windows 11: When prompted to select your country or region, press "Shift + F10" to open the command prompt. Enter `OOBE\BYPASSNRO` or `start ms-cxh:localonly` and press Enter. The system will restart, allowing you to select "I don't have internet" later on. It is crucial to run this command as soon as possible, as doing so later in the installation process will not work, and you may be required to create a Microsoft account despite not having an internet connection.
 
 <p align="center">
     <img src="./libvirt_images/21.png" width="700px"/>
@@ -802,8 +808,27 @@ Following the above, choose to "Continue with limited setup".
     <img src="./libvirt_images/23.png" width="700px"/>
 </p>
 
-## Final Configuration Steps
-Open `File Explorer` and navigate to the drive where the `VirtIO` driver `.ISO` is mounted. Run `virtio-win-gt-x64.exe` to launch the `VirtIO` driver installer.
+</details>
+
+</details>
+
+<details>
+<summary>Final Configuration Steps</summary>
+
+> [!Note]
+> For those who followed libvirt:
+> Open `File Explorer` and navigate to the drive where the `VirtIO` driver `.ISO` is mounted. Run `virtio-win-gt-x64.exe` to launch the `VirtIO` driver installer.
+
+> [!Note]
+> For those who followed Docker or Podman:
+> Download [VirtIO drivers](https://fedorapeople.org/groups/virt/virtio-win/direct-downloads/latest-virtio/virtio-win.iso) for the Windows virtual machine.
+> Press right click and seelct mount .iso file.
+> Open `File Explorer` and navigate to the drive where the `VirtIO` driver `.ISO` is mounted. Run `virtio-win-gt-x64.exe` to launch the `VirtIO` driver installer.
+
+
+> VirtIO drivers enhance system performance and minimize overhead by enabling the Windows virtual machine to use specialised network and disk device drivers. These drivers are aware that they are operating inside a virtual machine, and cooperate with the hypervisor. This approach eliminates the need for the hypervisor to emulate physical hardware devices, which is a computationally expensive process. This setup allows guests to achieve high-performance network and disk operations, leveraging the benefits of paravirtualisation.
+> The above link contains the latest release of the `VirtIO` drivers for Windows, compiled and signed by Red Hat. Older versions of the `VirtIO` drivers can be downloaded [here](https://fedorapeople.org/groups/virt/virtio-win/direct-downloads/archive-virtio/?C=M;O=D).
+> You can read more about `VirtIO` [here](https://wiki.libvirt.org/Virtio.html) and [here](https://developer.ibm.com/articles/l-virtio/).
 
 <p align="center">
     <img src="./libvirt_images/24.png" width="700px"/>
@@ -939,7 +964,7 @@ You may now proceed to install other applications like 'Microsoft 365', 'Adobe C
 > You may also wish to install [Spice Guest Tools](https://www.spice-space.org/download/windows/spice-guest-tools/spice-guest-tools-latest.exe) inside the virtual machine, which enables features like auto-desktop resize and cut-and-paste when accessing the virtual machine through `virt-manager`. Since WinApps uses RDP, however, this is unnecessary if you don't plan to access the virtual machine via `virt-manager`.
 
 > [!IMPORTANT]
-> Ensure `WAFLAVOR` is set to `"libvirt"` in your `~/.config/winapps/winapps.conf` to prevent WinApps looking for a `Docker` installation instead.
+> If you installed VM via `virt-manager` look at Step 3 and Ensure `WAFLAVOR` is set to `"libvirt"` in your `~/.config/winapps/winapps.conf` to prevent WinApps looking for a `Docker` installation instead.
 
 Finally, restart the virtual machine, but **DO NOT** log in. Close the virtual machine viewer and proceed to run the WinApps installation.
 
@@ -947,15 +972,8 @@ Finally, restart the virtual machine, but **DO NOT** log in. Close the virtual m
 bash <(curl https://raw.githubusercontent.com/winapps-org/winapps/main/setup.sh)
 ```
 
+You can search Windows VM for Advanced System Properties and change Performance Settings. And configure pagefile.
 
-</details>
-
-[comment]: <> (Part bellow)
-[comment]: <> (Thsii  sbasically implying that we needt o make new part about installing guest os drievrs dan stuff)
-
-If you already have a Windows VM or server you wish to use with WinApps, you will still have to follow the [final steps described in the `libvirt` documentation](docs/libvirt.md#final-configuration-steps).
-
-[comment]: <> (Part higher)
 </details>
 
 <details>
@@ -1000,6 +1018,9 @@ Install the required dependencies.
 
 <details>
 <summary>Step 3: Create a WinApps Configuration File</summary>
+
+> [!IMPORTANT]
+> Make sure to change RDP_USER, RDP_PASS, RDP_IP to your previously configured values.
 
 Create a configuration file at `~/.config/winapps/winapps.conf` containing the following:
 ```bash
@@ -1377,4 +1398,5 @@ The installer can be run multiple times. To update your installation of WinApps:
 1. Run the WinApps installer to remove WinApps from your system.
 2. Pull the latest changes from the WinApps GitHub repository.
 3. Re-install WinApps using the WinApps installer by running `winapps-setup`.
+
 </details>
