@@ -1,7 +1,7 @@
 [Desktop Entry]
 Name=Microsoft Office Protocol Handler
 Comment=Handle Microsoft Office URI schemes via WinApps
-Exec=/usr/local/bin/winapps manual %u
+Exec=winapps manual %u
 Terminal=false
 Type=Application
 MimeType=x-scheme-handler/ms-word;x-scheme-handler/ms-excel;x-scheme-handler/ms-powerpoint;x-scheme-handler/ms-outlook;x-scheme-handler/ms-access;x-scheme-handler/ms-visio;x-scheme-handler/ms-project;x-scheme-handler/ms-teams;x-scheme-handler/ms-whiteboard;x-scheme-handler/ms-officeapp;
