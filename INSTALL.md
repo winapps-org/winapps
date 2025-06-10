@@ -51,7 +51,9 @@ Install the required dependencies.
 
 </details>
 
-## Step 3: Create a WinApps Configuration File
+<details>
+<summary>Step 3: Create a WinApps Configuration File</summary>
+
 Create a configuration file at `~/.config/winapps/winapps.conf` containing the following:
 ```bash
 ##################################
@@ -215,8 +217,11 @@ APP_SCAN_TIMEOUT="60"
 - For multi-monitor setups, you can try enabling `MULTIMON`. A FreeRDP bug may result in a black screen however, in which case you should revert this change.
 - If you enable `DEBUG`, a log will be created on each application start in `~/.local/share/winapps/winapps.log`.
 - If using a system on which the FreeRDP command is not `xfreerdp` or `xfreerdp3`, the correct command can be specified using `FREERDP_COMMAND`.
+</details>
 
-## Step 4: Test FreeRDP
+<details>
+<summary>Step 4: Test FreeRDP</summary>
+
 1. Test establishing an RDP session by running the following command, replacing the `/u:`, `/p:`, and `/v:` values with the correct values specified in `~/.config/winapps/winapps.conf`.
 
     ```bash
@@ -266,8 +271,11 @@ APP_SCAN_TIMEOUT="60"
     If you use FreeRDP for purposes other than WinApps, ensure you only remove certificates related to the relevant Windows VM. If no relevant certificates are found, no action is needed.
 
     Following deletion, re-attempt establishing an RDP session.
+</details>
 
-## Step 5: Run the WinApps Installer
+<details>
+<summary>Step 5: Run the WinApps Installer</summary>
+
 With Windows still powered on, run the WinApps installer.
 
 ```bash
@@ -277,28 +285,12 @@ bash <(curl https://raw.githubusercontent.com/winapps-org/winapps/main/setup.sh)
 Once WinApps is installed, a list of additional arguments can be accessed by running `winapps-setup --help`.
 
 <img src="./demo/installer.gif" width=1898 alt="WinApps Installer Animation.">
+</details>
 
-# Adding Additional Pre-defined Applications
-Adding your own applications with custom icons and MIME types to the installer is easy. Simply copy one of the application configurations in the `apps` folder located within the WinApps repository, and:
-1. Modify the name and variables to reflect the appropriate/desired values for your application.
-2. Replace `icon.svg` with an SVG for your application (ensuring the icon is appropriately licensed).
-3. Remove and reinstall WinApps.
-4. Submit a pull request to add your application to WinApps as an officially supported application once you have tested and verified your configuration (optional, but encouraged).
 
-# Running Applications Manually
-WinApps offers a manual mode for running applications that were not configured by the WinApps installer. This is completed with the `manual` flag. Executables that are in the Windows PATH do not require full path definition.
 
-```bash
-winapps manual "C:\my\directory\executableNotInPath.exe"
-winapps manual executableInPath.exe
-```
-
-# Updating WinApps
-The installer can be run multiple times. To update your installation of WinApps:
-1. Run the WinApps installer to remove WinApps from your system.
-2. Pull the latest changes from the WinApps GitHub repository.
-3. Re-install WinApps using the WinApps installer by running `winapps-setup`.
-
+<details>
+<summary>Nix & NixOs Specific Install</summary>
 # Installation using Nix
 
 First, follow Step 1 of the normal installation guide to create your VM.
@@ -413,3 +405,29 @@ However, if you still don't want to use flakes, you can use WinApps with flake-c
     ];
 }
 ```
+</details>
+
+<details>
+<summary>Post Install</summary>
+
+# Adding Additional Pre-defined Applications
+Adding your own applications with custom icons and MIME types to the installer is easy. Simply copy one of the application configurations in the `apps` folder located within the WinApps repository, and:
+1. Modify the name and variables to reflect the appropriate/desired values for your application.
+2. Replace `icon.svg` with an SVG for your application (ensuring the icon is appropriately licensed).
+3. Remove and reinstall WinApps.
+4. Submit a pull request to add your application to WinApps as an officially supported application once you have tested and verified your configuration (optional, but encouraged).
+
+# Running Applications Manually
+WinApps offers a manual mode for running applications that were not configured by the WinApps installer. This is completed with the `manual` flag. Executables that are in the Windows PATH do not require full path definition.
+
+```bash
+winapps manual "C:\my\directory\executableNotInPath.exe"
+winapps manual executableInPath.exe
+```
+
+# Updating WinApps
+The installer can be run multiple times. To update your installation of WinApps:
+1. Run the WinApps installer to remove WinApps from your system.
+2. Pull the latest changes from the WinApps GitHub repository.
+3. Re-install WinApps using the WinApps installer by running `winapps-setup`.
+</details>
