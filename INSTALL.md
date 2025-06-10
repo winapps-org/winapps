@@ -1,6 +1,7 @@
 # Installation
-<details>
-<summary>## Step 1: Configure a Windows VM</summary>
+<details open>
+<summary>Step 1: Configure a Windows VM </summary>
+
 Both `Docker` and `Podman` are recommended backends for running the Windows virtual machine, as they facilitate an automated Windows installation process. WinApps is also compatible with `libvirt`. While this method requires considerably more manual configuration, it also provides greater virtual machine customisation options. All three methods leverage the `KVM` hypervisor, ensuring excellent virtual machine performance. Ultimately, the choice of backend depends on your specific use case.
 
 The following guides are available:
@@ -10,7 +11,9 @@ The following guides are available:
 If you already have a Windows VM or server you wish to use with WinApps, you will still have to follow the [final steps described in the `libvirt` documentation](docs/libvirt.md#final-configuration-steps).
 </details>
 
-## Step 2: Install Dependencies
+<details>
+<summary>Step 2: Install Dependencies</summary>
+
 Install the required dependencies.
   - Debian/Ubuntu:
       ```bash
@@ -45,6 +48,8 @@ Install the required dependencies.
 > sudo flatpak override --filesystem=home com.freerdp.FreeRDP # To use `+home-drive`
 > ```
 > However, if you have weird issues like [#233](https://github.com/winapps-org/winapps/issues/233) when running Flatpak, please compile FreeRDP from source according to [this guide](https://github.com/FreeRDP/FreeRDP/wiki/Compilation).
+
+</details>
 
 ## Step 3: Create a WinApps Configuration File
 Create a configuration file at `~/.config/winapps/winapps.conf` containing the following:
@@ -271,7 +276,7 @@ bash <(curl https://raw.githubusercontent.com/winapps-org/winapps/main/setup.sh)
 
 Once WinApps is installed, a list of additional arguments can be accessed by running `winapps-setup --help`.
 
-<img src="./demo/installer.gif" width=1000 alt="WinApps Installer Animation.">
+<img src="./demo/installer.gif" width=1898 alt="WinApps Installer Animation.">
 
 # Adding Additional Pre-defined Applications
 Adding your own applications with custom icons and MIME types to the installer is easy. Simply copy one of the application configurations in the `apps` folder located within the WinApps repository, and:
