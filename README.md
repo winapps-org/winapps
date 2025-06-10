@@ -41,6 +41,269 @@ Contributing to the list of supported applications is encouraged through submiss
 *Please note that the provided list of officially supported applications is community-driven. As such, some applications may not be tested and verified by the WinApps team.*
 
 ### Officially Supported Applications
+
+<style>
+  .app-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2rem;
+  }
+  .app-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    min-width: 320px;
+  }
+  .app-item img {
+    width: 100px;
+    height: auto;
+    display: block;
+  }
+  .app-info {
+    max-width: 220px;
+  }
+  .app-info b {
+    display: block;
+    font-size: 1.1rem;
+    margin-bottom: 0.25rem;
+  }
+  .app-info i a {
+    color: #555;
+    text-decoration: none;
+    font-style: italic;
+    font-size: 0.875rem;
+  }
+  .app-info i a:hover {
+    text-decoration: underline;
+  }
+</style>
+
+<div class="app-grid">
+  <div class="app-item">
+    <img src="apps/acrobat-x-pro/icon.svg" alt="Adobe Acrobat Pro Icon" />
+    <div class="app-info">
+      <b>Adobe Acrobat Pro</b>
+      <div>(X)</div>
+      <i><a href="https://commons.wikimedia.org/wiki/File:Adobe_Acrobat_DC_logo_2020.svg" target="_blank" rel="noopener noreferrer">Icon</a> in the Public Domain.</i>
+    </div>
+  </div>
+
+  <div class="app-item">
+    <img src="apps/aftereffects-cc/icon.svg" alt="Adobe After Effects Icon" />
+    <div class="app-info">
+      <b>Adobe After Effects</b>
+      <div>(CC)</div>
+      <i><a href="https://commons.wikimedia.org/wiki/File:Adobe_After_Effects_CC_icon.svg" target="_blank" rel="noopener noreferrer">Icon</a> in the Public Domain.</i>
+    </div>
+  </div>
+
+  <div class="app-item">
+    <img src="apps/audition-cc/icon.svg" alt="Adobe Audition Icon" />
+    <div class="app-info">
+      <b>Adobe Audition</b>
+      <div>(CC)</div>
+      <i><a href="https://en.m.wikipedia.org/wiki/File:Adobe_Audition_CC_icon_%282020%29.svg" target="_blank" rel="noopener noreferrer">Icon</a> in the Public Domain.</i>
+    </div>
+  </div>
+
+  <div class="app-item">
+    <img src="apps/bridge-cs6/icon.svg" alt="Adobe Bridge Icon" />
+    <div class="app-info">
+      <b>Adobe Bridge</b>
+      <div>(CS6, CC)</div>
+      <i><a href="https://en.m.wikipedia.org/wiki/File:Adobe_Bridge_CC_icon.svg" target="_blank" rel="noopener noreferrer">Icon</a> in the Public Domain.</i>
+    </div>
+  </div>
+
+  <div class="app-item">
+    <img src="apps/adobe-cc/icon.svg" alt="Adobe Creative Cloud Icon" />
+    <div class="app-info">
+      <b>Adobe Creative Cloud</b>
+      <div>(CC)</div>
+      <i><a href="https://iconduck.com/icons/240218/adobe-creative-cloud" target="_blank" rel="noopener noreferrer">Icon</a> under <a href="https://iconduck.com/licenses/mit" target="_blank" rel="noopener noreferrer">MIT license</a>.</i>
+    </div>
+  </div>
+
+  <div class="app-item">
+    <img src="apps/illustrator-cc/icon.svg" alt="Adobe Illustrator Icon" />
+    <div class="app-info">
+      <b>Adobe Illustrator</b>
+      <div>(CC)</div>
+      <i><a href="https://commons.wikimedia.org/wiki/File:Adobe_Illustrator_CC_icon.svg" target="_blank" rel="noopener noreferrer">Icon</a> in the Public Domain.</i>
+    </div>
+  </div>
+
+  <div class="app-item">
+    <img src="apps/indesign-cc/icon.svg" alt="Adobe InDesign Icon" />
+    <div class="app-info">
+      <b>Adobe InDesign</b>
+      <div>(CC)</div>
+      <i><a href="https://commons.wikimedia.org/wiki/File:Adobe_InDesign_CC_icon.svg" target="_blank" rel="noopener noreferrer">Icon</a> in the Public Domain.</i>
+    </div>
+  </div>
+
+  <div class="app-item">
+    <img src="apps/lightroom-cc/icon.svg" alt="Adobe Lightroom Icon" />
+    <div class="app-info">
+      <b>Adobe Lightroom</b>
+      <div>(CC)</div>
+      <i><a href="https://commons.wikimedia.org/wiki/File:Adobe_Photoshop_Lightroom_CC_logo.svg" target="_blank" rel="noopener noreferrer">Icon</a> in the Public Domain.</i>
+    </div>
+  </div>
+
+  <div class="app-item">
+    <img src="apps/photoshop-cc/icon.svg" alt="Adobe Photoshop Icon" />
+    <div class="app-info">
+      <b>Adobe Photoshop</b>
+      <div>(CS6, CC, 2022)</div>
+      <i><a href="https://commons.wikimedia.org/wiki/File:Adobe_Photoshop_CC_icon.svg" target="_blank" rel="noopener noreferrer">Icon</a> in the Public Domain.</i>
+    </div>
+  </div>
+
+  <div class="app-item">
+    <img src="apps/cmd/icon.svg" alt="Command Prompt Icon" />
+    <div class="app-info">
+      <b>Command Prompt</b>
+      <div>(cmd.exe)</div>
+      <i><a href="https://github.com/microsoft/terminal/blob/main/res/terminal/Terminal.svg" target="_blank" rel="noopener noreferrer">Icon</a> under <a href="https://github.com/microsoft/terminal/blob/main/LICENSE" target="_blank" rel="noopener noreferrer">MIT license</a>.</i>
+    </div>
+  </div>
+
+  <div class="app-item">
+    <img src="apps/explorer/icon.svg" alt="File Explorer Icon" />
+    <div class="app-info">
+      <b>File Explorer</b>
+      <div>(Windows Explorer)</div>
+      <i><a href="https://commons.wikimedia.org/wiki/File:Windows_Explorer.svg" target="_blank" rel="noopener noreferrer">Icon</a> in the Public Domain.</i>
+    </div>
+  </div>
+
+  <div class="app-item">
+    <img src="apps/iexplorer/icon.svg" alt="Internet Explorer Icon" />
+    <div class="app-info">
+      <b>Internet Explorer</b>
+      <div>(11)</div>
+      <i><a href="https://commons.wikimedia.org/wiki/File:Internet_Explorer_10%2B11_logo.svg" target="_blank" rel="noopener noreferrer">Icon</a> in the Public Domain.</i>
+    </div>
+  </div>
+
+  <div class="app-item">
+    <img src="apps/access/icon.svg" alt="Microsoft Access Icon" />
+    <div class="app-info">
+      <b>Microsoft Access</b>
+      <div>(2016, 2019, o365)</div>
+      <i><a href="https://commons.wikimedia.org/wiki/File:Microsoft_Office_Access_(2019-present).svg" target="_blank" rel="noopener noreferrer">Icon</a> in the Public Domain.</i>
+    </div>
+  </div>
+
+  <div class="app-item">
+    <img src="apps/excel/icon.svg" alt="Microsoft Excel Icon" />
+    <div class="app-info">
+      <b>Microsoft Excel</b>
+      <div>(2016, 2019, o365)</div>
+      <i><a href="https://en.m.wikipedia.org/wiki/File:Microsoft_Office_Excel_(2019%E2%80%93present).svg" target="_blank" rel="noopener noreferrer">Icon</a> in the Public Domain.</i>
+    </div>
+  </div>
+
+  <div class="app-item">
+    <img src="apps/word/icon.svg" alt="Microsoft Word Icon" />
+    <div class="app-info">
+      <b>Microsoft Word</b>
+      <div>(2016, 2019, o365)</div>
+      <i><a href="https://en.m.wikipedia.org/wiki/File:Microsoft_Office_Word_(2019%E2%80%93present).svg" target="_blank" rel="noopener noreferrer">Icon</a> in the Public Domain.</i>
+    </div>
+  </div>
+
+  <div class="app-item">
+    <img src="apps/onenote/icon.svg" alt="Microsoft OneNote Icon" />
+    <div class="app-info">
+      <b>Microsoft OneNote</b>
+      <div>(2016, 2019, o365)</div>
+      <i><a href="https://en.m.wikipedia.org/wiki/File:Microsoft_Office_OneNote_(2019%E2%80%93present).svg" target="_blank" rel="noopener noreferrer">Icon</a> in the Public Domain.</i>
+    </div>
+  </div>
+
+  <div class="app-item">
+    <img src="apps/outlook/icon.svg" alt="Microsoft Outlook Icon" />
+    <div class="app-info">
+      <b>Microsoft Outlook</b>
+      <div>(2016, 2019, o365)</div>
+      <i><a href="https://en.m.wikipedia.org/wiki/File:Microsoft_Office_Outlook_(2018%E2%80%93present).svg" target="_blank" rel="noopener noreferrer">Icon</a> in the Public Domain.</i>
+    </div>
+  </div>
+
+  <div class="app-item">
+    <img src="apps/powerpoint/icon.svg" alt="Microsoft PowerPoint Icon" />
+    <div class="app-info">
+      <b>Microsoft PowerPoint</b>
+      <div>(2016, 2019, o365)</div>
+      <i><a href="https://en.m.wikipedia.org/wiki/File:Microsoft_Office_PowerPoint_(2019%E2%80%93present).svg" target="_blank" rel="noopener noreferrer">Icon</a> in the Public Domain.</i>
+    </div>
+  </div>
+
+  <div class="app-item">
+    <img src="apps/publisher/icon.svg" alt="Microsoft Publisher Icon" />
+    <div class="app-info">
+      <b>Microsoft Publisher</b>
+      <div>(2016, 2019, o365)</div>
+      <i><a href="https://en.m.wikipedia.org/wiki/File:Microsoft_Office_Publisher_(2019-present).svg" target="_blank" rel="noopener noreferrer">Icon</a> in the Public Domain.</i>
+    </div>
+  </div>
+
+  <div class="app-item">
+    <img src="apps/visio/icon.svg" alt="Microsoft Visio Icon" />
+    <div class="app-info">
+      <b>Microsoft Visio</b>
+      <div>(Standard/Pro. 2021, Plan 2)</div>
+      <i><a href="https://en.m.wikipedia.org/wiki/File:Microsoft_Office_Visio_(2019).svg" target="_blank" rel="noopener noreferrer">Icon</a> in the Public Domain.</i>
+    </div>
+  </div>
+
+  <div class="app-item">
+    <img src="apps/project/icon.svg" alt="Microsoft Project Icon" />
+    <div class="app-info">
+      <b>Microsoft Project</b>
+      <div>(Standard/Pro. 2021, Plan 3/5)</div>
+      <i><a href="https://en.m.wikipedia.org/wiki/File:Microsoft_Project_(2019–present).svg" target="_blank" rel="noopener noreferrer">Icon</a> in the Public Domain.</i>
+    </div>
+  </div>
+
+  <div class="app-item">
+    <img src="apps/visual-studio-pro/icon.svg" alt="Microsoft Visual Studio Icon" />
+    <div class="app-info">
+      <b>Microsoft Visual Studio</b>
+      <div>(Comm./Pro./Ent. 2022)</div>
+      <i><a href="https://en.m.wikipedia.org/wiki/File:Visual_Studio_Icon_2022.svg" target="_blank" rel="noopener noreferrer">Icon</a> in the Public Domain.</i>
+    </div>
+  </div>
+
+  <div class="app-item">
+    <img src="apps/mirc/icon.svg" alt="mIRC Icon" />
+    <div class="app-info">
+      <b>mIRC</b>
+      <i><a href="https://en.wikipedia.org/wiki/MIRC#/media/File:Mircnewlogo.png" target="_blank" rel="noopener noreferrer">Icon</a> in the Public Domain.</i>
+    </div>
+  </div>
+
+  <div class="app-item">
+    <img src="apps/powershell/icon.svg" alt="PowerShell Icon" />
+    <div class="app-info">
+      <b>PowerShell</b>
+      <i><a href="https://iconduck.com/icons/102322/file-type-powershell" target="_blank" rel="noopener noreferrer">Icon</a> under <a href="https://iconduck.com/licenses/mit" target="_blank" rel="noopener noreferrer">MIT license</a>.</i>
+    </div>
+  </div>
+
+  <div class="app-item">
+    <img src="icons/windows.svg" alt="Windows Icon" />
+    <div class="app-info">
+      <b>Windows</b>
+      <div>(Full RDP Session)</div>
+      <i><a href="url" target="_blank" rel="noopener noreferrer">Icon</a> in the Public Domain.</i>
+    </div>
+  </div>
+</div>
+
+
 <table cellpadding="10" cellspacing="0" border="0">
     <tr>
         <!-- Adobe Acrobat Pro -->
