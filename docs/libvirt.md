@@ -756,3 +756,7 @@ Finally, restart the virtual machine, but **DO NOT** log in. Close the virtual m
 ```bash
 bash <(curl https://raw.githubusercontent.com/winapps-org/winapps/main/setup.sh)
 ```
+For fish terminal:
+```fish
+bash (curl https://raw.githubusercontent.com/winapps-org/winapps/main/setup.sh | psub )
+```
