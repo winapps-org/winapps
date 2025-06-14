@@ -1096,7 +1096,7 @@ REMOVABLE_MEDIA="/run/media"
 # - You can try adding /network:lan to these flags in order to increase performance, however, some users have faced issues with this.
 # DEFAULT VALUE: '/cert:tofu /sound /microphone'
 # VALID VALUES: See https://github.com/awakecoding/FreeRDP-Manuals/blob/master/User/FreeRDP-User-Manual.markdown
-RDP_FLAGS="/cert:tofu /sound /microphone"
+RDP_FLAGS="/grab-keyboard /cert:tofu /sound /microphone"
 
 # [MULTIPLE MONITORS]
 # NOTES:
