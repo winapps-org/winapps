@@ -1174,6 +1174,9 @@ APP_SCAN_TIMEOUT="60"
 > `RDP_USER` and `RDP_PASS` must correspond to a complete Windows user account and password, such as those created during Windows setup or for a domain user. User/PIN combinations are not valid for RDP access.
 
 > [!IMPORTANT]
+> To switch keyboard layout you need to add new keyboard layout in Windows, and then you can switch it by using Shift+Alt
+
+> [!IMPORTANT]
 > If you wish to use an alternative WinApps backend (other than `Docker`), uncomment and change `WAFLAVOR="docker"` to `WAFLAVOR="podman"` or `WAFLAVOR="libvirt"`.
 
 ### Configuration Options Explained
