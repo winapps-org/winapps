@@ -5,6 +5,7 @@
       <map>
         <entry key="WinAppsInstaller/App.axaml" value="WinAppsInstaller/WinAppsInstaller.csproj" />
         <entry key="WinAppsInstaller/Views/DistroSelectionView.axaml" value="WinAppsInstaller/WinAppsInstaller.csproj" />
+        <entry key="WinAppsInstaller/Views/PkexecCheckView.axaml" value="WinAppsInstaller/WinAppsInstaller.csproj" />
         <entry key="WinAppsInstaller/Views/WelcomeView.axaml" value="WinAppsInstaller/WinAppsInstaller.csproj" />
       </map>
     </option>
