@@ -82,7 +82,7 @@ public partial class DistroSelectionViewModel : ViewModelBase
         // You can navigate to the next step here, for example:
         if (Application.Current is App { MainWindow.DataContext: MainWindowViewModel main })
         {
-            main.CurrentViewModel = new PkexecCheckViewModel(); // or whatever the next step is
+            main.CurrentViewModel = new PkexecCheckViewModel(main); // or whatever the next step is
         }
     }
 }

@@ -1,0 +1,33 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="clr-namespace:WinAppsInstaller.ViewModels"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="WinAppsInstaller.Views.DependencyInstallView"
+             x:DataType="vm:DependencyInstallViewModel">
+
+    <StackPanel Margin="20" Spacing="15">
+        <TextBlock Text="Installing Dependencies" FontSize="20" FontWeight="Bold" />
+
+        <Button Content="Install Dependencies"
+                Command="{Binding InstallDependenciesCommand}"
+                IsEnabled="{Binding IsInstallDone, Converter={StaticResource InverseBoolConverter}}" />
+
+        <ScrollViewer Height="250">
+            <TextBox Text="{Binding InstallOutput}"
+                     AcceptsReturn="True"
+                     IsReadOnly="True"
+                     FontFamily="monospace"
+                     Background="Black"
+                     Foreground="White"
+                     BorderThickness="1"
+                     Padding="5"
+                     TextWrapping="Wrap" />
+        </ScrollViewer>
+
+        <TextBlock Text="Dependencies installed."
+                   FontWeight="Bold"
+                   IsVisible="{Binding IsInstallDone}" />
+    </StackPanel>
+</UserControl>
