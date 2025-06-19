@@ -1,6 +1,15 @@
-﻿namespace WinAppsInstaller.ViewModels;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
+using WinAppsInstaller.ViewModels;
+
+namespace WinAppsInstaller.ViewModels;
 
 public partial class MainWindowViewModel : ViewModelBase
 {
-    public string Greeting { get; } = "Welcome to Avalonia!";
+    [ObservableProperty]
+    private ViewModelBase _currentViewModel;
+
+    public MainWindowViewModel()
+    {
+        CurrentViewModel = new WelcomeViewModel();
+    }
 }
