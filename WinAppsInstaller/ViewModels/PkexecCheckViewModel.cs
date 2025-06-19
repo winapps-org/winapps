@@ -1,6 +1,6 @@
 namespace WinAppsInstaller.ViewModels;
 
-public class PkexecCheckViewModel
+public class PkexecCheckViewModel : ViewModelBase
 {
     
 }
