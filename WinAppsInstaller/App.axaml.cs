@@ -16,21 +16,29 @@ public partial class App : Application
         AvaloniaXamlLoader.Load(this);
     }
 
+    public MainWindow? MainWindow { get; private set; }
+
     public override void OnFrameworkInitializationCompleted()
     {
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
-            // Avoid duplicate validations from both Avalonia and the CommunityToolkit. 
-            // More info: https://docs.avaloniaui.net/docs/guides/development-guides/data-validation#manage-validationplugins
-            DisableAvaloniaDataAnnotationValidation();
-            desktop.MainWindow = new MainWindow
+            var vm = new MainWindowViewModel();
+            var window = new MainWindow
             {
-                DataContext = new MainWindowViewModel(),
+                DataContext = vm
             };
+
+            MainWindow = window;
+
+            // Optional: disable Avalonia’s own validation if you're using CommunityToolkit
+            DisableAvaloniaDataAnnotationValidation();
+
+            desktop.MainWindow = window; // use the same instance
         }
 
         base.OnFrameworkInitializationCompleted();
     }
+
 
     private void DisableAvaloniaDataAnnotationValidation()
     {
