@@ -481,7 +481,7 @@ function waCheckContainerRunning() {
     if [[ "$CONTAINER_STATE" == "created" || "$CONTAINER_STATE" == "exited" || "$CONTAINER_STATE" == "dead" ]]; then
         dprint "WAITING FOR CONTAINER TO BE FULLY READY..."
         notify-send --expire-time=4000 --icon="dialog-info" --app-name="WinApps" --urgency="low" "WinApps" "Waiting for Windows to be ready..."
-        
+
         while (( WAIT_ELAPSED < MAX_WAIT_TIME )); do
             # Check if container is running
             if [[ $("$WAFLAVOR" inspect --format='{{.State.Status}}' "$CONTAINER_NAME") == "running" ]]; then
@@ -496,16 +496,16 @@ function waCheckContainerRunning() {
                     break
                 fi
             fi
-            
+
             sleep 5
             WAIT_ELAPSED=$((WAIT_ELAPSED + 5))
-            
+
             # Show progress every 30 seconds
             if (( WAIT_ELAPSED % 30 == 0 )); then
                 notify-send --expire-time=4000 --icon="dialog-info" --app-name="WinApps" --urgency="low" "WinApps" "Still waiting for Windows to be ready... ($((WAIT_ELAPSED/60)) minutes elapsed)"
             fi
         done
-        
+
         # If we timed out waiting for the container
         if (( WAIT_ELAPSED >= MAX_WAIT_TIME )); then
             dprint "TIMEOUT WAITING FOR CONTAINER TO BE READY"
