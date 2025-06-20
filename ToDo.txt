@@ -1,0 +1,15 @@
+1. Add font Unaego
+2. Add App icon
+3. Add App banner on welcome screen.
+4. Unify the style across all windows.
+5. Rename DistroSelection to DistroDetection
+
+Steps>
+Step 1: Welcome Screen
+Step 2: Distro Detection
+Step 3: Dependency Install
+Step 4: Create compose.yaml at ~/.config/winapps/compose.yaml
+Step 5: Create winapps.conf at ~/.config/winapps/winapps.conf
+Step 6: Select Installation backend `docker`, `podman`, `libvirt`
+Step 7: Install Windows
+Step 8: Configure Windows
