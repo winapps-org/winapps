@@ -1,126 +1,88 @@
-using System;
-using System.Diagnostics;
-using System.IO;
+using System.Text;
+using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
+using Avalonia.Threading;
 using WinAppsInstaller.Models;
 
 namespace WinAppsInstaller.ViewModels;
 
 public partial class DependencyInstallViewModel : ViewModelBase
 {
+    private readonly StringBuilder _outputBuilder = new();
+
     [ObservableProperty]
     private string? _installOutput;
 
     [ObservableProperty]
     private bool _isInstallDone;
 
-    // New property to control button enable state
     public bool CanInstall => !IsInstallDone;
 
-    // Notify UI that CanInstall changed when IsInstallDone changes
     partial void OnIsInstallDoneChanged(bool value)
     {
         OnPropertyChanged(nameof(CanInstall));
     }
 
-    [RelayCommand]
-    private void InstallDependencies()
+    public DependencyInstallViewModel()
+    {
+        // Show commands immediately on view model creation
+        _ = LoadInstallCommandsAsync();
+    }
+
+    private void AppendOutput(string text)
+    {
+        Dispatcher.UIThread.Post(() =>
+        {
+            _outputBuilder.AppendLine(text);
+            InstallOutput = _outputBuilder.ToString();
+        });
+    }
+
+    private Task LoadInstallCommandsAsync()
     {
         IsInstallDone = false;
-        InstallOutput = "";
+        _outputBuilder.Clear();
 
         var idLike = AppState.Instance.IdLike?.ToLowerInvariant() ?? "";
 
-        string? installCmd = idLike switch
+        string commands = idLike switch
         {
-            var s when s.Contains("debian") || s.Contains("ubuntu") =>
-                "sudo apt install -y curl dialog freerdp3-x11 git iproute2 libnotify-bin netcat-openbsd",
+            var s when s.Contains("debian") || s.Contains("ubuntu") => @"
+echo ""Checking if backports are enabled for freerdp3-x11...""
+if ! grep -r ""buster-backports"" /etc/apt/sources.list* > /dev/null; then
+  echo ""Backports not found. You might want to enable backports to get freerdp3-x11.""
+  echo ""See: https://backports.debian.org/Instructions/""
+fi
 
-            var s when s.Contains("fedora") || s.Contains("rhel") =>
-                "sudo dnf install -y curl dialog freerdp git iproute libnotify nmap-ncat",
+echo ""Updating package lists...""
+sudo apt update
 
-            var s when s.Contains("arch") =>
-                "sudo pacman -Syu --needed --noconfirm curl dialog freerdp git iproute2 libnotify openbsd-netcat",
+echo ""Installing packages...""
+sudo apt install -y curl dialog freerdp3-x11 git iproute2 libnotify-bin netcat-openbsd
+",
 
-            var s when s.Contains("opensuse") =>
-                "sudo zypper install -y curl dialog freerdp git iproute2 libnotify-tools netcat-openbsd",
+            var s when s.Contains("fedora") || s.Contains("rhel") => @"
+sudo dnf install -y curl dialog freerdp git iproute libnotify nmap-ncat
+",
 
-            var s when s.Contains("gentoo") =>
-                "sudo emerge --ask=n net-misc/curl dev-util/dialog net-misc/freerdp:3 dev-vcs/git sys-apps/iproute2 x11-libs/libnotify net-analyzer/openbsd-netcat",
+            var s when s.Contains("arch") => @"
+sudo pacman -Syu --needed -y curl dialog freerdp git iproute2 libnotify openbsd-netcat
+",
 
-            _ => null
+            var s when s.Contains("opensuse") => @"
+sudo zypper install -y curl dialog freerdp git iproute2 libnotify-tools netcat-openbsd
+",
+
+            var s when s.Contains("gentoo") => @"
+sudo emerge --ask=n net-misc/curl dev-util/dialog net-misc/freerdp:3 dev-vcs/git sys-apps/iproute2 x11-libs/libnotify net-analyzer/openbsd-netcat
+",
+
+            _ => "No install commands available for your Linux distribution."
         };
+        
+        AppendOutput(commands.Trim());
 
-        if (string.IsNullOrWhiteSpace(installCmd))
-        {
-            InstallOutput = "No install command available for this distribution.";
-            return;
-        }
-
-        string? terminal = DetectTerminal();
-
-        if (terminal == null)
-        {
-            InstallOutput = "No compatible terminal emulator found.";
-            return;
-        }
-
-        string terminalArgs = terminal switch
-        {
-            "gnome-terminal" => $"-- bash -c \"{installCmd}; echo; echo 'Press any key to exit...'; read -n 1\"",
-            "konsole"        => $"-e bash -c \"{installCmd}; echo; echo 'Press any key to exit...'; read -n 1\"",
-            "xterm"          => $"-e bash -c \"{installCmd}; echo; echo 'Press any key to exit...'; read -n 1\"",
-            "xfce4-terminal" => $"--hold -e bash -c \"{installCmd}\"",
-            "tilix"          => $"-- bash -c \"{installCmd}; echo; echo 'Press any key to exit...'; read -n 1\"",
-            "lxterminal"     => $"-e bash -c \"{installCmd}; echo; echo 'Press any key to exit...'; read -n 1\"",
-            "mate-terminal"  => $"-- bash -c \"{installCmd}; echo; echo 'Press any key to exit...'; read -n 1\"",
-            "alacritty"      => $"-e bash -c \"{installCmd}; echo; echo 'Press any key to exit...'; read -n 1\"",
-            _ => throw new ArgumentOutOfRangeException()
-        };
-
-        try
-        {
-            var process = new Process
-            {
-                StartInfo = new ProcessStartInfo
-                {
-                    FileName = terminal,
-                    Arguments = terminalArgs,
-                    UseShellExecute = false
-                }
-            };
-
-            process.Start();
-            InstallOutput = $"Launched terminal with command:\n{installCmd}";
-            IsInstallDone = true;
-        }
-        catch (Exception ex)
-        {
-            InstallOutput = $"Failed to launch terminal: {ex.Message}";
-        }
-    }
-
-    private string? DetectTerminal()
-    {
-        string[] terminals =
-        {
-            "gnome-terminal",
-            "xfce4-terminal",
-            "konsole",
-            "xterm",
-            "tilix",
-            "lxterminal",
-            "mate-terminal",
-            "alacritty"
-        };
-
-        foreach (var term in terminals)
-        {
-            if (File.Exists($"/usr/bin/{term}"))
-                return term;
-        }
-
-        return null;
+        IsInstallDone = true;
+        return Task.CompletedTask;
     }
 }

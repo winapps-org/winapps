@@ -3,35 +3,41 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:vm="clr-namespace:WinAppsInstaller.ViewModels"
-             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             mc:Ignorable="d"
+             d:DesignWidth="800" d:DesignHeight="450"
              x:Class="WinAppsInstaller.Views.DependencyInstallView"
              x:DataType="vm:DependencyInstallViewModel">
 
-    <StackPanel Margin="20" Spacing="15">
-        <TextBlock Text="Installing Dependencies" FontSize="20" FontWeight="Bold" />
-        
-        <TextBlock Text="A terminal will open to install dependencies with sudo."
-                   FontStyle="Italic"
-                   Foreground="Gray" />
+  <UserControl.Styles>
+    <Style Selector="TextBox">
+      <Setter Property="FontFamily" Value="Consolas, Courier New, monospace"/>
+      <Setter Property="FontSize" Value="13"/>
+      <Setter Property="Padding" Value="5"/>
+    </Style>
+  </UserControl.Styles>
 
-        <Button Content="Install Dependencies"
-                Command="{Binding InstallDependenciesCommand}"
-                IsEnabled="{Binding CanInstall}" />
 
-        <ScrollViewer Height="250">
-            <TextBox Text="{Binding InstallOutput}"
-                     AcceptsReturn="True"
-                     IsReadOnly="True"
-                     FontFamily="monospace"
-                     Background="Black"
-                     Foreground="White"
-                     BorderThickness="1"
-                     Padding="5"
-                     TextWrapping="Wrap" />
-        </ScrollViewer>
 
-        <TextBlock Text="Dependencies installed."
-                   FontWeight="Bold"
-                   IsVisible="{Binding IsInstallDone}" />
-    </StackPanel>
+  <StackPanel Margin="20" Spacing="15">
+
+    <TextBlock Text="Installing Dependencies" FontSize="20" FontWeight="Bold" />
+
+    <TextBlock Text="The commands below are detected for your Linux distribution. Copy and paste them into your terminal to install dependencies."
+               FontStyle="Italic"/>
+
+    <!-- Scrollable output console showing commands -->
+    <ScrollViewer MaxHeight="300" VerticalScrollBarVisibility="Auto">
+      <TextBox
+          Name="InstallOutputBox"
+          Text="{Binding InstallOutput, Mode=OneWay}"
+          IsReadOnly="True"
+          AcceptsReturn="True"
+          TextWrapping="Wrap" />
+    </ScrollViewer>
+
+    <TextBlock Text="Commands ready to be copied."
+               FontWeight="Bold"
+               IsVisible="{Binding IsInstallDone}" />
+
+  </StackPanel>
 </UserControl>
