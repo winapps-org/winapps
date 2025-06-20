@@ -80,7 +80,7 @@ sudo emerge --ask=n net-misc/curl dev-util/dialog net-misc/freerdp:3 dev-vcs/git
 
             _ => "No install commands available for your Linux distribution."
         };
-        
+
         AppendOutput(commands.Trim());
 
         IsInstallDone = true;
