@@ -1,5 +1,4 @@
 using CommunityToolkit.Mvvm.ComponentModel;
-using WinAppsInstaller.ViewModels;
 
 namespace WinAppsInstaller.ViewModels;
 
