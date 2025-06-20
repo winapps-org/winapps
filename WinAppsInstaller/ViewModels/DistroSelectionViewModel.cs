@@ -69,13 +69,13 @@ public partial class DistroSelectionViewModel : ViewModelBase
             StatusMessage = $"Detected unsupported distro: {raw}";
             IsSupported = false;
         }
-        
+
         // This saves value of ID_LIKE to AppState.cs Model.
         AppState.Instance.IdLike = IdLike;
         // You can access ID_LIKE value later by using code bellow in any ViewModel.
         // var idLike = AppState.Instance.IdLike;
     }
-    
+
     [RelayCommand]
     private void Continue()
     {
