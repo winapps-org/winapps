@@ -2,6 +2,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using System;
 using System.IO;
 using System.Linq;
+using Avalonia.Media;
 using Avalonia;
 using CommunityToolkit.Mvvm.Input;
 using WinAppsInstaller.Models;
@@ -24,6 +25,8 @@ public partial class DistroSelectionViewModel : ViewModelBase
     [ObservableProperty]
     private string? _statusMessage;
 
+    public IBrush StatusForeground => IsSupported ? Brushes.Green : Brushes.Red;
+
     public DistroSelectionViewModel()
     {
         LoadDistroInfo();
@@ -36,6 +39,7 @@ public partial class DistroSelectionViewModel : ViewModelBase
         {
             StatusMessage = "Cannot find /etc/os-release. Unsupported system.";
             IsSupported = false;
+            OnPropertyChanged(nameof(StatusForeground));
             return;
         }
 
@@ -54,6 +58,7 @@ public partial class DistroSelectionViewModel : ViewModelBase
         {
             StatusMessage = "Could not detect distro family.";
             IsSupported = false;
+            OnPropertyChanged(nameof(StatusForeground));
             return;
         }
 
@@ -74,19 +79,18 @@ public partial class DistroSelectionViewModel : ViewModelBase
             IsSupported = false;
         }
 
-        // This saves value of ID_LIKE to AppState.cs Model.
+        OnPropertyChanged(nameof(StatusForeground));
+
+        // Save detected family in AppState
         AppState.Instance.IdLike = IdLike;
-        // You can access ID_LIKE value later by using code bellow in any ViewModel.
-        // var idLike = AppState.Instance.IdLike;
     }
 
     [RelayCommand]
     private void Continue()
     {
-        // You can navigate to the next step here, for example:
         if (Application.Current is App { MainWindow.DataContext: MainWindowViewModel main })
         {
-            main.CurrentViewModel = new DependencyInstallViewModel(); // or whatever the next step is
+            main.CurrentViewModel = new DependencyInstallViewModel();
         }
     }
 }

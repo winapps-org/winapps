@@ -21,7 +21,7 @@
 
             <TextBlock Text="{Binding StatusMessage}"
                        TextWrapping="Wrap"
-                       Foreground="{Binding IsSupported, Converter={StaticResource BoolToBrushConverter}}" />
+                       Foreground="{Binding StatusForeground}" />
 
             <Button Content="Continue"
                     Command="{Binding ContinueCommand}"
