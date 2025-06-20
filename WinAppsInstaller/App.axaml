@@ -9,11 +9,11 @@
     <Application.DataTemplates>
         <local:ViewLocator/>
     </Application.DataTemplates>
-  
+
     <Application.Styles>
         <FluentTheme />
     </Application.Styles>
-             
+
     <Application.Resources>
         <converters:InverseBoolConverter x:Key="InverseBoolConverter" />
     </Application.Resources>
