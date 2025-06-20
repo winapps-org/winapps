@@ -10,7 +10,7 @@ Both `Docker` and `Podman` are recommended backends for running the Windows virt
 Although WinApps supports using `QEMU+KVM+libvirt` as a backend for running Windows virtual machines, it is recommended to use `Docker` or `Podman`. These backends automate the setup process, eliminating the need for manual configuration and optimisation of the Windows virtual machine.
 
 > [!IMPORTANT]
-> Running a Windows virtual machine using `Docker` or `Podman` as a backend is only possible on GNU/Linux systems. This is due to the necessity of kernel interfaces, such as the KVM hypervisor, for achieving acceptable performance. The performance of the virtual machine can vary based on the version of the Linux kernel, with newer releases generally offering better performance.
+> Running a Windows virtual machine using `Docker` or `Podman` as a backend is only possible on Linux systems. This is due to the necessity of kernel interfaces, such as the KVM hypervisor, for achieving acceptable performance. The performance of the virtual machine can vary based on the version of the Linux kernel, with newer releases generally offering better performance.
 
 > [!IMPORTANT]
 > WinApps does __NOT__ officially support versions of Windows prior to Windows 10. Despite this, it may be possible to achieve a successful installation with some additional experimentation. If you find a way to achieve this, please share your solution through a pull request for the benefit of other users.
@@ -37,9 +37,9 @@ Prior to installing Windows, you can modify the RAM and number of CPU cores avai
 It is also possible to specify the version of Windows you wish to install within `compose.yaml` by modifying `VERSION`.
 
 > [!Note]
-> You need to give your user permission to use docker.sock. Plaes change `<user name or ID>` to your user name
+> You need to give your user permission to use docker.sock.
 > ```bash
-> sudo setfacl --modify user:<user name or ID>:rw /var/run/docker.sock
+> sudo setfacl --modify user:$(whoami):rw /var/run/docker.sock
 > ```
 
 #### Minimal compose.yaml setup
@@ -51,15 +51,9 @@ cd winapps
 nano compose.yaml
 ```
 >[!IMPORTANT]
->In `nano`
->Use arrow keys to move in text
->Use Ctrl+O to save file, you will be proposed to rename file
->Leave the name as it is and just press Enter
->Use Ctrl+X to close file.
->
->Now we are interested in VERSION, RAM_SIZE, CPU_CORES, DISK_SIZE, USERNAME, and PASSWORD
->Set VERSION to 11 or 10. This will change which windows docker needs to download. Windows 11 Professional or Windows 10 Proffesional.
->In RAM_SIZE and CPU_CORES set the value you are ready to give to VM. Please note it will be used in background, so no need to go all in.
+>We are interested in VERSION, RAM_SIZE, CPU_CORES, DISK_SIZE, USERNAME, and PASSWORD
+>Set VERSION to 11 or 10. This will change which windows docker needs to download. Windows 11 Professional or Windows 10 Professional.
+>In RAM_SIZE and CPU_CORES set the value you are ready to give to VM. Please note that running a VM in the background can impact your system's performance heavily.
 >To see your RAM you can open another terminal and use:
 >```bash
 >free -h
@@ -68,8 +62,8 @@ nano compose.yaml
 >```bash
 >nproc
 >```
->In DISK_SIZE set ammount of disc space you expect to be used by apps you want to have.
->And finally we need to set USERNAME and PASSWORD. Set your own values here BUT they should not be empty or else you won't be able to login.
+>In DISK_SIZE set the amount of disc space you expect to be used by apps you want to have.
+>And finally we need to set USERNAME and PASSWORD. Set your own values here BUT they should not be empty or else you won't be able to log in.
 
 
 Please refer to the [original GitHub repository](https://github.com/dockur/windows?tab=readme-ov-file#faq-) for more information on additional configuration options.
@@ -98,11 +92,11 @@ You can initiate the Windows installation using `docker compose`.
 Make sure you are inside of winapps folder
 ```bash
 cd ; cd winapps
-docker compose --file ./compose.yaml up
+docker compose ./compose.yaml up
 ```
 
 > [!NOTE]
-> If you encounter "Cannot connect to the Docker daemon". You need to start daemon
+> If you encounter "Cannot connect to the Docker daemon". You need to start the daemon
 > ```bash
 > sudo systemctl start docker
 > ```
@@ -114,7 +108,7 @@ Changes to `compose.yaml` require the container to be removed and re-created. Th
 
 ```bash
 # Stop and remove the existing container.
-docker compose --file ~/.config/winapps/compose.yaml down
+docker compose ~/.config/winapps/compose.yaml down
 ```
 ```bash
 # Remove the existing FreeRDP certificate (if required).
@@ -124,17 +118,17 @@ rm ~/.config/freerdp/server/127.0.0.1_3389.pem
 ```bash
 # Re-create the container with the updated configuration.
 # Add the -d flag at the end to run the container in the background.
-docker compose --file ~/.config/winapps/compose.yaml up
+docker compose ~/.config/winapps/compose.yaml up
 ```
 
 ### Subsequent Use
 ```bash
-docker compose --file ~/.config/winapps/compose.yaml start # Power on the Windows VM
-docker compose --file ~/.config/winapps/compose.yaml pause # Pause the Windows VM
-docker compose --file ~/.config/winapps/compose.yaml unpause # Resume the Windows VM
-docker compose --file ~/.config/winapps/compose.yaml restart # Restart the Windows VM
-docker compose --file ~/.config/winapps/compose.yaml stop # Gracefully shut down the Windows VM
-docker compose --file ~/.config/winapps/compose.yaml kill # Force shut down the Windows VM
+docker compose ~/.config/winapps/compose.yaml start # Power on the Windows VM
+docker compose ~/.config/winapps/compose.yaml pause # Pause the Windows VM
+docker compose ~/.config/winapps/compose.yaml unpause # Resume the Windows VM
+docker compose ~/.config/winapps/compose.yaml restart # Restart the Windows VM
+docker compose ~/.config/winapps/compose.yaml stop # Gracefully shut down the Windows VM
+docker compose ~/.config/winapps/compose.yaml kill # Force shut down the Windows VM
 ```
 
 ## `Podman`
@@ -149,7 +143,7 @@ Please follow the [`docker` instructions](#setup-docker-container).
 > #### Rootless `podman` containers
 > If you are invoking podman as a user, your container will be "rootless". This can be desirable as a security feature. However, you may encounter an error about missing permissions to /dev/kvm as a consequence.
 >
-> For rootless podman to work, you need to add your user to the `kvm` group (depending on your distribution) to be able to access `/dev/kvm`. Make sure that you are using `crun` as your container runtime, not `runc`. Usually this is done by stopping all containers and (de-)installing the corresponding packages. Then either invoke podman-compose as `podman-compose --file ./compose.yaml --podman-create-args '--group-add keep-groups' up`. Or edit `compose.yaml` and uncomment the `group_add:` section at the end.
+> For rootless podman to work, you need to add your user to the `kvm` group (depending on your distribution) to be able to access `/dev/kvm`. Make sure that you are using `crun` as your container runtime, not `runc`. Usually this is done by stopping all containers and (de-)installing the corresponding packages. Then either invoke podman-compose as `podman-compose ./compose.yaml --podman-create-args '--group-add keep-groups' up`. Or edit `compose.yaml` and uncomment the `group_add:` section at the end.
 
 > [!IMPORTANT]
 > Ensure `WAFLAVOR` is set to `"podman"` in `~/.config/winapps/winapps.conf`.
@@ -158,7 +152,7 @@ Please follow the [`docker` instructions](#setup-docker-container).
 You can initiate the Windows installation using `podman-compose`.
 ```bash
 cd ; cd winapps
-podman-compose --file ./compose.yaml up
+podman-compose ./compose.yaml up
 ```
 
 You can then access the Windows virtual machine via a VNC connection to complete the Windows setup by navigating to http://127.0.0.1:8006 in your web browser.
@@ -168,7 +162,7 @@ Changes to `compose.yaml` require the container to be removed and re-created. Th
 
 ```bash
 # Stop and remove the existing container.
-podman-compose --file ~/.config/winapps/compose.yaml down
+podman-compose ~/.config/winapps/compose.yaml down
 ```
 ```bash
 # Remove the existing FreeRDP certificate (if required).
@@ -177,23 +171,23 @@ rm ~/.config/freerdp/server/127.0.0.1_3389.pem
 ```
 ```bash
 # Re-create the container with the updated configuration.
-podman-compose --file ~/.config/winapps/compose.yaml up
+podman-compose ~/.config/winapps/compose.yaml up
 ```
 
 ### Subsequent Use
 ```bash
-podman-compose --file ~/.config/winapps/compose.yaml start # Power on the Windows VM
-podman-compose --file ~/.config/winapps/compose.yaml pause # Pause the Windows VM
-podman-compose --file ~/.config/winapps/compose.yaml unpause # Resume the Windows VM
-podman-compose --file ~/.config/winapps/compose.yaml restart # Restart the Windows VM
-podman-compose --file ~/.config/winapps/compose.yaml stop # Gracefully shut down the Windows VM
-podman-compose --file ~/.config/winapps/compose.yaml kill # Force shut down the Windows VM
+podman-compose ~/.config/winapps/compose.yaml start # Power on the Windows VM
+podman-compose ~/.config/winapps/compose.yaml pause # Pause the Windows VM
+podman-compose ~/.config/winapps/compose.yaml unpause # Resume the Windows VM
+podman-compose ~/.config/winapps/compose.yaml restart # Restart the Windows VM
+podman-compose ~/.config/winapps/compose.yaml stop # Gracefully shut down the Windows VM
+podman-compose ~/.config/winapps/compose.yaml kill # Force shut down the Windows VM
 ```
 
 </details>
 
 <details>
-<summary>Creating a Windosw VM with libvirt</summary>
+<summary>Creating a Windows VM with libvirt</summary>
 
 ## Understanding The Virtualisation Stack
 This method of configuring a Windows virtual machine for use with WinApps is significantly more involved than utilising `Docker` or `Podman`. Nevertheless, expert users may prefer this method due to its greater flexibility and wider range of customisation options.
@@ -201,7 +195,7 @@ This method of configuring a Windows virtual machine for use with WinApps is sig
 Before beginning, it is important to have a basic understanding of the various components involved in this particular method.
 
 1. `QEMU` is a FOSS emulator that performs hardware virtualisation, enabling operating systems and applications designed for one architecture (e.g., aarch64) to run on systems with differing architectures (e.g., amd64). When used in conjunction with `KVM`, it can run virtual machines at near-native speed (provided the guest virtual machine matches the host architecture) by utilising hardware extensions like Intel VT-x or AMD-V.
-2. `KVM` is a Linux kernel module that enables the kernel to function as a type-1 hypervisor. `KVM` runs directly on the underlying hardware (as opposed to on top of the GNU/Linux host OS). For many workloads, the performance overhead is minimal, often in the range of 2-5%. `KVM` requires a CPU with hardware virtualisation extensions.
+2. `KVM` is a Linux kernel module that enables the kernel to function as a type-1 hypervisor. `KVM` runs directly on the underlying hardware (as opposed to on top of the Linux host OS). For many workloads, the performance overhead is minimal, often in the range of 2-5%. `KVM` requires a CPU with hardware virtualisation extensions.
 3. `libvirt` is an open-source API, daemon, and management tool for orchestrating platform virtualisation. It provides a consistent and stable interface for managing various virtualisation technologies, including `KVM` and `QEMU` (as well as others). `libvirt` offers a wide range of functionality to control the lifecycle of virtual machines, storage, networks, and interfaces, making it easier to interact with virtualisation capabilities programmatically or via command-line tools.
 4. `virt-manager` (Virtual Machine Manager) is a GUI desktop application that provides an easy-to-use interface for creating, configuring and controlling virtual machines. `virt-manager`  utilises `libvirt` as a backend.
 
@@ -279,7 +273,7 @@ Together, these components form a powerful and flexible virtualization stack, wi
 1. Open `virt-manager`.
 
 > [!NOTE]
-> The name given to the application can vary between GNU/Linux distributions (e.g., 'Virtual Machines', 'Virtual Machine Manager', etc.)
+> The name given to the application can vary between Linux distributions (e.g., 'Virtual Machines', 'Virtual Machine Manager', etc.)
 
 <p align="center">
     <img src="./libvirt_images/00.png" width="500px"/>
@@ -385,7 +379,7 @@ Together, these components form a powerful and flexible virtualization stack, wi
         - C<sub>4</sub> = T<sub>8</sub>+T<sub>9</sub> &rarr; L1<sub>4</sub>+L2<sub>4</sub>+L3<sub>1</sub>
         - C<sub>5</sub> = T<sub>10</sub>+T<sub>11</sub> &rarr; L1<sub>5</sub>+L2<sub>5</sub>+L3<sub>1</sub>
 
-    2. Select which CPU cores to 'pin'. You should aim to select a combination of CPU cores that minimises sharing of caches between Windows and GNU/Linux.
+    2. Select which CPU cores to 'pin'. You should aim to select a combination of CPU cores that minimises sharing of caches between Windows and Linux.
 
         Example 1:
         - CPU cores share the same singular L3 cache, so this cannot be optimised.
@@ -484,7 +478,7 @@ Together, these components form a powerful and flexible virtualization stack, wi
 > [!NOTE]
 > Hyper-V enlightenments make Windows (and other Hyper-V guests) think they are running on top of a Hyper-V compatible hypervisor. This enables use of Hyper-V specific features, allowing `KVM` to implement paravirtualised interfaces for improved virtual machine performance.
 
-13. Add the following XML snippet within the `<devices>` section to enable the GNU/Linux host to communicate with Windows using `QEMU Guest Agent`.
+13. Add the following XML snippet within the `<devices>` section to enable the Linux host to communicate with Windows using `QEMU Guest Agent`.
 
     ```xml
     <channel type='unix'>
@@ -840,7 +834,7 @@ Leave everything as default and click `Next` through the installer. This will in
     <img src="./libvirt_images/25.png" width="700px"/>
 </p>
 
-Next, install the `QEMU Guest Agent` within Windows. This agent allows the GNU/Linux host to request a graceful shutdown of the Windows system. To do this, either run `virtio-win-guest-tools.exe` or `guest-agent\qemu-ga-x86_64.msi`. You can confirm the guest agent was successfully installed by running `Get-Service QEMU-GA` within a PowerShell window. The output should resemble:
+Next, install the `QEMU Guest Agent` within Windows. This agent allows the Linux host to request a graceful shutdown of the Windows system. To do this, either run `virtio-win-guest-tools.exe` or `guest-agent\qemu-ga-x86_64.msi`. You can confirm the guest agent was successfully installed by running `Get-Service QEMU-GA` within a PowerShell window. The output should resemble:
 
 ```
 Status   Name               DisplayName
@@ -848,7 +842,7 @@ Status   Name               DisplayName
 Running  QEMU-GA            QEMU Guest Agent
 ```
 
-You can then test whether the host GNU/Linux system can communicate with Windows via `QEMU Guest Agent` by running `virsh qemu-agent-command RDPWindows '{"execute":"guest-get-osinfo"}' --pretty`. The output should resemble:
+You can then test whether the host Linux system can communicate with Windows via `QEMU Guest Agent` by running `virsh qemu-agent-command RDPWindows '{"execute":"guest-get-osinfo"}' --pretty`. The output should resemble:
 
 ```json
 {
@@ -1031,7 +1025,7 @@ Copy a configuration file `winapps.conf`  and paste at `~/.config/winapps/winapp
 > To switch keyboard layout you need to add new keyboard layout in Windows, and then you can switch it by using Shift+Alt
 
 > [!IMPORTANT]
-> If you wish to use an alternative WinApps backend (other than `Docker`), uncomment and change `WAFLAVOR="docker"` to `WAFLAVOR="podman"` or `WAFLAVOR="libvirt"`.
+> If you wish to use an alternative WinApps backend (other than `Docker`), uncomment and change `WAFLAVOR="docker"` to `WAFLAVOR="podman"` or `WAFLAVOR="libvirt"` or `WAFLAVOR="manual"`.
 
 ### Configuration Options Explained
 - If using a pre-existing Windows RDP server on your LAN, you must use `RDP_IP` to specify the location of the Windows server. You may also wish to configure a static IP address for this server.
