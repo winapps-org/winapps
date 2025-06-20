@@ -40,7 +40,7 @@ public partial class DependencyInstallViewModel : ViewModelBase
                     "dnf install -y curl dialog freerdp git iproute libnotify nmap-ncat",
 
                 var s when s.Contains("arch") =>
-                    "pacman -Syu --needed --noconfirm curl dialog freerdp git iproute2 libnotify gnu-netcat",
+                    "pacman -Syu --needed --noconfirm curl dialog freerdp git iproute2 libnotify openbsd-netcat",
 
                 var s when s.Contains("opensuse") =>
                     "zypper install -y curl dialog freerdp git iproute2 libnotify-tools netcat-openbsd",

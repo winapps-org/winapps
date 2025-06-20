@@ -995,7 +995,7 @@ Install the required dependencies.
       ```
   - Arch Linux:
       ```bash
-      sudo pacman -Syu --needed -y curl dialog freerdp git iproute2 libnotify gnu-netcat
+      sudo pacman -Syu --needed -y curl dialog freerdp git iproute2 libnotify openbsd-netcat
       ```
   - OpenSUSE:
       ```bash
