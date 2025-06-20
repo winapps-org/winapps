@@ -55,6 +55,7 @@ MULTI_FLAG=""
 
 # OTHER
 FREERDP_PID=-1
+NEEDED_BOOT=false
 
 ### TRAPS ###
 # Catch SIGINT (CTRL+C) to call 'waCleanUp'.
@@ -412,6 +413,8 @@ function waCheckContainerRunning() {
     local TIME_ELAPSED=0
     local TIME_LIMIT=60
     local TIME_INTERVAL=5
+    local MAX_WAIT_TIME=120
+    local WAIT_ELAPSED=0
 
     # Determine the state of the container.
     CONTAINER_STATE=$("$WAFLAVOR" inspect --format='{{.State.Status}}' "$CONTAINER_NAME")
@@ -431,6 +434,7 @@ function waCheckContainerRunning() {
             dprint "WINDOWS CREATED. BOOTING WINDOWS."
             notify-send --expire-time=4000 --icon="dialog-info" --app-name="WinApps" --urgency="low" "WinApps" "Booting Windows."
             $COMPOSE_COMMAND --file "$COMPOSE_PATH" start &>/dev/null
+            NEEDED_BOOT=true
             ;;
         "restarting")
             dprint "WINDOWS RESTARTING. WAITING."
@@ -441,6 +445,7 @@ function waCheckContainerRunning() {
                     EXIT_STATUS=0
                     dprint "WINDOWS RESTARTED."
                     notify-send --expire-time=4000 --icon="dialog-info" --app-name="WinApps" --urgency="low" "WinApps" "Restarted Windows."
+                    NEEDED_BOOT=true
                     break
                 fi
                 sleep $TIME_INTERVAL
@@ -456,11 +461,13 @@ function waCheckContainerRunning() {
             dprint "WINDOWS SHUT OFF. BOOTING WINDOWS."
             notify-send --expire-time=4000 --icon="dialog-info" --app-name="WinApps" --urgency="low" "WinApps" "Booting Windows."
             $COMPOSE_COMMAND --file "$COMPOSE_PATH" start &>/dev/null
+            NEEDED_BOOT=true
             ;;
         "dead")
             dprint "WINDOWS DEAD. RECREATING WINDOWS CONTAINER."
             notify-send --expire-time=4000 --icon="dialog-info" --app-name="WinApps" --urgency="low" "WinApps" "Re-creating and booting Windows."
             $COMPOSE_COMMAND --file "$COMPOSE_PATH" down &>/dev/null && $COMPOSE_COMMAND --file "$COMPOSE_PATH" up -d &>/dev/null
+            NEEDED_BOOT=true
             ;;
         "unknown")
             EXIT_STATUS=$EC_UNKNOWN
@@ -469,6 +476,43 @@ function waCheckContainerRunning() {
 
     # Handle non-zero exit statuses.
     [ "$EXIT_STATUS" -ne 0 ] && waThrowExit "$EXIT_STATUS"
+
+    # Wait for container to be fully ready
+    if [[ "$CONTAINER_STATE" == "created" || "$CONTAINER_STATE" == "exited" || "$CONTAINER_STATE" == "dead" ]]; then
+        dprint "WAITING FOR CONTAINER TO BE FULLY READY..."
+        notify-send --expire-time=4000 --icon="dialog-info" --app-name="WinApps" --urgency="low" "WinApps" "Waiting for Windows to be ready..."
+        
+        while (( WAIT_ELAPSED < MAX_WAIT_TIME )); do
+            # Check if container is running
+            if [[ $("$WAFLAVOR" inspect --format='{{.State.Status}}' "$CONTAINER_NAME") == "running" ]]; then
+                # Try to connect to RDP port to verify it's ready
+                if timeout 1 bash -c ">/dev/tcp/$RDP_IP/$RDP_PORT" 2>/dev/null; then
+                    dprint "CONTAINER IS READY"
+                    notify-send --expire-time=4000 --icon="dialog-info" --app-name="WinApps" --urgency="low" "WinApps" "Windows is ready."
+                    # Add a delay after Windows is ready
+                    if [ "$NEEDED_BOOT" = "true" ]; then
+                        sleep 10
+                    fi
+                    break
+                fi
+            fi
+            
+            sleep 5
+            WAIT_ELAPSED=$((WAIT_ELAPSED + 5))
+            
+            # Show progress every 30 seconds
+            if (( WAIT_ELAPSED % 30 == 0 )); then
+                notify-send --expire-time=4000 --icon="dialog-info" --app-name="WinApps" --urgency="low" "WinApps" "Still waiting for Windows to be ready... ($((WAIT_ELAPSED/60)) minutes elapsed)"
+            fi
+        done
+        
+        # If we timed out waiting for the container
+        if (( WAIT_ELAPSED >= MAX_WAIT_TIME )); then
+            dprint "TIMEOUT WAITING FOR CONTAINER TO BE READY"
+            notify-send --expire-time=4000 --icon="dialog-info" --app-name="WinApps" --urgency="low" "WinApps" "Timeout waiting for Windows to be ready. Please try again."
+            waThrowExit $EC_FAIL_START
+        fi
+    fi
 }
 
 # Name: 'waCheckPortOpen'
@@ -698,7 +742,12 @@ else
 fi
 
 waCheckPortOpen
-waRunCommand "$@"
+if [ "$NEEDED_BOOT" = "true" ]; then
+    sleep 10
+    waRunCommand "$@"
+else
+    waRunCommand "$@"
+fi
 
 if [[ "$AUTOPAUSE" == "on" ]]; then
     waCheckIdle
