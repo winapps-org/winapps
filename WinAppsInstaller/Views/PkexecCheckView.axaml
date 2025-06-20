@@ -1,0 +1,22 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="clr-namespace:WinAppsInstaller.ViewModels"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="WinAppsInstaller.Views.PkexecCheckView"
+             x:DataType="vm:PkexecCheckViewModel">
+    
+    <StackPanel Margin="30" Spacing="15" HorizontalAlignment="Center" VerticalAlignment="Center">
+        <TextBlock Text="pkexec Check" FontSize="22" FontWeight="Bold" />
+        <TextBlock Text="{Binding StatusMessage}" TextWrapping="Wrap" FontSize="14" />
+
+        <Button Content="Install pkexec"
+                Command="{Binding InstallPkexecCommand}"
+                IsVisible="{Binding ShowInstallButton}" />
+
+        <Button Content="Continue"
+                Command="{Binding ContinueAfterInstallCommand}"
+                IsVisible="{Binding ShowContinueButton}" />
+    </StackPanel>
+</UserControl>

@@ -1,0 +1,27 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="clr-namespace:WinAppsInstaller.ViewModels"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="WinAppsInstaller.Views.DistroSelectionView"
+             x:DataType="vm:DistroSelectionViewModel">
+
+    <StackPanel Margin="30" Spacing="15" HorizontalAlignment="Center" VerticalAlignment="Center">
+
+        <TextBlock Text="Distro Detection" FontSize="22" FontWeight="Bold" />
+
+        <TextBlock Text="ID_LIKE from /etc/os-release:" FontWeight="SemiBold" />
+        <TextBlock Text="{Binding IdLike}" FontStyle="Italic" Foreground="Gray" />
+
+        <TextBlock Text="{Binding StatusMessage}" TextWrapping="Wrap"
+                   Foreground="{Binding IsSupported}" />
+
+        <Button Content="Continue"
+                Command="{Binding ContinueCommand}"
+                IsVisible="{Binding IsSupported}"
+                Width="150"
+                HorizontalAlignment="Center" />
+
+    </StackPanel>
+</UserControl>

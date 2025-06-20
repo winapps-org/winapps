@@ -1,4 +1,200 @@
-# Creating a `libvirt` Windows VM
+# Installation
+<details open>
+<summary>Step 1: Configure a Windows VM </summary>
+
+Both `Docker` and `Podman` are recommended backends for running the Windows virtual machine, as they facilitate an automated Windows installation process. WinApps is also compatible with `libvirt`. While this method requires considerably more manual configuration, it also provides greater virtual machine customisation options. All three methods leverage the `KVM` hypervisor, ensuring excellent virtual machine performance. Ultimately, the choice of backend depends on your specific use case.
+
+<details>
+<summary>Creating a Windows VM with Docker or Podman</summary>
+
+Although WinApps supports using `QEMU+KVM+libvirt` as a backend for running Windows virtual machines, it is recommended to use `Docker` or `Podman`. These backends automate the setup process, eliminating the need for manual configuration and optimisation of the Windows virtual machine.
+
+> [!IMPORTANT]
+> Running a Windows virtual machine using `Docker` or `Podman` as a backend is only possible on GNU/Linux systems. This is due to the necessity of kernel interfaces, such as the KVM hypervisor, for achieving acceptable performance. The performance of the virtual machine can vary based on the version of the Linux kernel, with newer releases generally offering better performance.
+
+> [!IMPORTANT]
+> WinApps does __NOT__ officially support versions of Windows prior to Windows 10. Despite this, it may be possible to achieve a successful installation with some additional experimentation. If you find a way to achieve this, please share your solution through a pull request for the benefit of other users.
+> Possible setup instructions for Windows 10:
+> - 'Professional', 'Enterprise' or 'Server' editions of Windows are required to run RDP applications. Windows 'Home' will __NOT__ suffice.
+> - It is recommended to edit the initial `compose.yaml` file to keep your required username and password from the beginning.
+> - It is recommended to not use `sudo` to force commands to run. Add your user to the relevant permissions group wherever possible.
+
+## `Docker` Installation
+You can find a full guide for installing `Docker Engine` and list of supported Linux distros [here](https://docs.docker.com/engine/install/).
+
+> [!Note]
+> If you don't see your Linux distro in list of supported platforms, you should install docker from [binaries](https://docs.docker.com/engine/install/binaries/)
+
+### Setup `Docker` Container
+WinApps utilises `docker compose` to configure Windows VMs. You can find Docker Compose Plugin installation guide [here](https://docs.docker.com/compose/install/linux/)
+
+> [!Note]
+> If you don't see your Linux distro in list of supported platforms, you should install Docker Compose Plugin [manually](https://docs.docker.com/compose/install/linux/#install-the-plugin-manually)
+
+A template [`compose.yaml`](../compose.yaml) is provided by WinApps.
+
+Prior to installing Windows, you can modify the RAM and number of CPU cores available to the Windows VM by changing `RAM_SIZE` and `CPU_CORES` within `compose.yaml`.
+It is also possible to specify the version of Windows you wish to install within `compose.yaml` by modifying `VERSION`.
+
+> [!Note]
+> You need to give your user permission to use docker.sock. Plaes change `<user name or ID>` to your user name
+> ```bash
+> sudo setfacl --modify user:<user name or ID>:rw /var/run/docker.sock
+> ```
+
+#### Minimal compose.yaml setup
+To start configuring it we need to clone git repository of WinApps. And edit compose.yaml. We will use `nano` for purposes of this guide, while you can use any text editor of your liking
+
+```bash
+git clone https://github.com/winapps-org/winapps.git
+cd winapps
+nano compose.yaml
+```
+>[!IMPORTANT]
+>In `nano`
+>Use arrow keys to move in text
+>Use Ctrl+O to save file, you will be proposed to rename file
+>Leave the name as it is and just press Enter
+>Use Ctrl+X to close file.
+>
+>Now we are interested in VERSION, RAM_SIZE, CPU_CORES, DISK_SIZE, USERNAME, and PASSWORD
+>Set VERSION to 11 or 10. This will change which windows docker needs to download. Windows 11 Professional or Windows 10 Proffesional.
+>In RAM_SIZE and CPU_CORES set the value you are ready to give to VM. Please note it will be used in background, so no need to go all in.
+>To see your RAM you can open another terminal and use:
+>```bash
+>free -h
+>```
+>For CPU Cores use:
+>```bash
+>nproc
+>```
+>In DISK_SIZE set ammount of disc space you expect to be used by apps you want to have.
+>And finally we need to set USERNAME and PASSWORD. Set your own values here BUT they should not be empty or else you won't be able to login.
+
+
+Please refer to the [original GitHub repository](https://github.com/dockur/windows?tab=readme-ov-file#faq-) for more information on additional configuration options.
+
+> [!NOTE]
+> If you want to undo all your changes and start from scratch, run the following. For `podman`, replace `docker compose` with `podman-compose`.
+> ```bash
+> docker compose down --rmi=all --volumes
+> ```
+
+### Installing Windows
+> [!IMPORTANT]
+> The iptables kernel module must be loaded for folder sharing with the host to work.
+> Check that the output of this command isn't empty.
+> ```bash
+> lsmod | grep ip_tables; lsmod | grep iptable_nat
+>```
+>
+> If the output of one of the previous command is empty, run
+> ```bash
+> echo -e "ip_tables\niptable_nat" | sudo tee /etc/modules-load.d/iptables.conf
+> ```
+> and reboot.
+
+You can initiate the Windows installation using `docker compose`.
+Make sure you are inside of winapps folder
+```bash
+cd ; cd winapps
+docker compose --file ./compose.yaml up
+```
+
+> [!NOTE]
+> If you encounter "Cannot connect to the Docker daemon". You need to start daemon
+> ```bash
+> sudo systemctl start docker
+> ```
+>
+>You can then access the Windows virtual machine via a VNC connection to complete the Windows setup by navigating to http://127.0.0.1:8006 in your web browser.
+
+### Changing `compose.yaml`
+Changes to `compose.yaml` require the container to be removed and re-created. This should __NOT__ affect your data. This is done every time you want to change values. e.g. RAM_SIZE, add new drive, etc.
+
+```bash
+# Stop and remove the existing container.
+docker compose --file ~/.config/winapps/compose.yaml down
+```
+```bash
+# Remove the existing FreeRDP certificate (if required).
+# Note: A new certificate will be created when connecting via RDP for the first time.
+rm ~/.config/freerdp/server/127.0.0.1_3389.pem
+```
+```bash
+# Re-create the container with the updated configuration.
+# Add the -d flag at the end to run the container in the background.
+docker compose --file ~/.config/winapps/compose.yaml up
+```
+
+### Subsequent Use
+```bash
+docker compose --file ~/.config/winapps/compose.yaml start # Power on the Windows VM
+docker compose --file ~/.config/winapps/compose.yaml pause # Pause the Windows VM
+docker compose --file ~/.config/winapps/compose.yaml unpause # Resume the Windows VM
+docker compose --file ~/.config/winapps/compose.yaml restart # Restart the Windows VM
+docker compose --file ~/.config/winapps/compose.yaml stop # Gracefully shut down the Windows VM
+docker compose --file ~/.config/winapps/compose.yaml kill # Force shut down the Windows VM
+```
+
+## `Podman`
+### Installation
+1. Install `Podman` using [this guide](https://podman.io/docs/installation).
+2. Install `podman-compose` using [this guide](https://github.com/containers/podman-compose?tab=readme-ov-file#installation).
+
+### Setup `Podman` Container
+Please follow the [`docker` instructions](#setup-docker-container).
+
+> [!NOTE]
+> #### Rootless `podman` containers
+> If you are invoking podman as a user, your container will be "rootless". This can be desirable as a security feature. However, you may encounter an error about missing permissions to /dev/kvm as a consequence.
+>
+> For rootless podman to work, you need to add your user to the `kvm` group (depending on your distribution) to be able to access `/dev/kvm`. Make sure that you are using `crun` as your container runtime, not `runc`. Usually this is done by stopping all containers and (de-)installing the corresponding packages. Then either invoke podman-compose as `podman-compose --file ./compose.yaml --podman-create-args '--group-add keep-groups' up`. Or edit `compose.yaml` and uncomment the `group_add:` section at the end.
+
+> [!IMPORTANT]
+> Ensure `WAFLAVOR` is set to `"podman"` in `~/.config/winapps/winapps.conf`.
+
+### Installing Windows
+You can initiate the Windows installation using `podman-compose`.
+```bash
+cd ; cd winapps
+podman-compose --file ./compose.yaml up
+```
+
+You can then access the Windows virtual machine via a VNC connection to complete the Windows setup by navigating to http://127.0.0.1:8006 in your web browser.
+
+### Changing `compose.yaml`
+Changes to `compose.yaml` require the container to be removed and re-created. This should __NOT__ affect your data.
+
+```bash
+# Stop and remove the existing container.
+podman-compose --file ~/.config/winapps/compose.yaml down
+```
+```bash
+# Remove the existing FreeRDP certificate (if required).
+# Note: A new certificate will be created when connecting via RDP for the first time.
+rm ~/.config/freerdp/server/127.0.0.1_3389.pem
+```
+```bash
+# Re-create the container with the updated configuration.
+podman-compose --file ~/.config/winapps/compose.yaml up
+```
+
+### Subsequent Use
+```bash
+podman-compose --file ~/.config/winapps/compose.yaml start # Power on the Windows VM
+podman-compose --file ~/.config/winapps/compose.yaml pause # Pause the Windows VM
+podman-compose --file ~/.config/winapps/compose.yaml unpause # Resume the Windows VM
+podman-compose --file ~/.config/winapps/compose.yaml restart # Restart the Windows VM
+podman-compose --file ~/.config/winapps/compose.yaml stop # Gracefully shut down the Windows VM
+podman-compose --file ~/.config/winapps/compose.yaml kill # Force shut down the Windows VM
+```
+
+</details>
+
+<details>
+<summary>Creating a Windosw VM with libvirt</summary>
+
 ## Understanding The Virtualisation Stack
 This method of configuring a Windows virtual machine for use with WinApps is significantly more involved than utilising `Docker` or `Podman`. Nevertheless, expert users may prefer this method due to its greater flexibility and wider range of customisation options.
 
@@ -594,7 +790,7 @@ Once you get to the point of selecting the location for installation, you will s
 </p>
 
 The next hurdle will be bypassing the network selection screen. As the `VirtIO` drivers for networking have not yet been loaded, the virtual machine will not be able to be connected to the internet.
-- For Windows 11: When prompted to select your country or region, press "Shift + F10" to open the command prompt. Enter `OOBE\BYPASSNRO` and press Enter. The system will restart, allowing you to select "I don't have internet" later on. It is crucial to run this command as soon as possible, as doing so later in the installation process will not work, and you may be required to create a Microsoft account despite not having an internet connection.
+- For Windows 11: When prompted to select your country or region, press "Shift + F10" to open the command prompt. Enter `OOBE\BYPASSNRO` or `start ms-cxh:localonly` and press Enter. The system will restart, allowing you to select "I don't have internet" later on. It is crucial to run this command as soon as possible, as doing so later in the installation process will not work, and you may be required to create a Microsoft account despite not having an internet connection.
 
 <p align="center">
     <img src="./libvirt_images/21.png" width="700px"/>
@@ -612,8 +808,27 @@ Following the above, choose to "Continue with limited setup".
     <img src="./libvirt_images/23.png" width="700px"/>
 </p>
 
-## Final Configuration Steps
-Open `File Explorer` and navigate to the drive where the `VirtIO` driver `.ISO` is mounted. Run `virtio-win-gt-x64.exe` to launch the `VirtIO` driver installer.
+</details>
+
+</details>
+
+<details>
+<summary>Final Configuration Steps</summary>
+
+> [!Note]
+> For those who followed libvirt:
+> Open `File Explorer` and navigate to the drive where the `VirtIO` driver `.ISO` is mounted. Run `virtio-win-gt-x64.exe` to launch the `VirtIO` driver installer.
+
+> [!Note]
+> For those who followed Docker or Podman:
+> Download [VirtIO drivers](https://fedorapeople.org/groups/virt/virtio-win/direct-downloads/latest-virtio/virtio-win.iso) for the Windows virtual machine.
+> Press right click and seelct mount .iso file.
+> Open `File Explorer` and navigate to the drive where the `VirtIO` driver `.ISO` is mounted. Run `virtio-win-gt-x64.exe` to launch the `VirtIO` driver installer.
+
+
+> VirtIO drivers enhance system performance and minimize overhead by enabling the Windows virtual machine to use specialised network and disk device drivers. These drivers are aware that they are operating inside a virtual machine, and cooperate with the hypervisor. This approach eliminates the need for the hypervisor to emulate physical hardware devices, which is a computationally expensive process. This setup allows guests to achieve high-performance network and disk operations, leveraging the benefits of paravirtualisation.
+> The above link contains the latest release of the `VirtIO` drivers for Windows, compiled and signed by Red Hat. Older versions of the `VirtIO` drivers can be downloaded [here](https://fedorapeople.org/groups/virt/virtio-win/direct-downloads/archive-virtio/?C=M;O=D).
+> You can read more about `VirtIO` [here](https://wiki.libvirt.org/Virtio.html) and [here](https://developer.ibm.com/articles/l-virtio/).
 
 <p align="center">
     <img src="./libvirt_images/24.png" width="700px"/>
@@ -749,10 +964,296 @@ You may now proceed to install other applications like 'Microsoft 365', 'Adobe C
 > You may also wish to install [Spice Guest Tools](https://www.spice-space.org/download/windows/spice-guest-tools/spice-guest-tools-latest.exe) inside the virtual machine, which enables features like auto-desktop resize and cut-and-paste when accessing the virtual machine through `virt-manager`. Since WinApps uses RDP, however, this is unnecessary if you don't plan to access the virtual machine via `virt-manager`.
 
 > [!IMPORTANT]
-> Ensure `WAFLAVOR` is set to `"libvirt"` in your `~/.config/winapps/winapps.conf` to prevent WinApps looking for a `Docker` installation instead.
+> If you installed VM via `virt-manager` look at Step 3 and Ensure `WAFLAVOR` is set to `"libvirt"` in your `~/.config/winapps/winapps.conf` to prevent WinApps looking for a `Docker` installation instead.
 
 Finally, restart the virtual machine, but **DO NOT** log in. Close the virtual machine viewer and proceed to run the WinApps installation.
 
 ```bash
 bash <(curl https://raw.githubusercontent.com/winapps-org/winapps/main/setup.sh)
 ```
+
+You can search Windows VM for Advanced System Properties and change Performance Settings. And configure pagefile.
+
+</details>
+
+<details>
+<summary>Step 2: Install Dependencies</summary>
+
+Install the required dependencies.
+  - Debian/Ubuntu:
+      ```bash
+      sudo apt install -y curl dialog freerdp3-x11 git iproute2 libnotify-bin netcat-openbsd
+      ```
+
+> [!NOTE]
+> On Debian you need to enable the `backports` repository for the `freerdp3-x11` package to become available.
+> For instructions, see https://backports.debian.org/Instructions.
+
+  - Fedora/RHEL:
+      ```bash
+      sudo dnf install -y curl dialog freerdp git iproute libnotify nmap-ncat
+      ```
+  - Arch Linux:
+      ```bash
+      sudo pacman -Syu --needed -y curl dialog freerdp git iproute2 libnotify openbsd-netcat
+      ```
+  - OpenSUSE:
+      ```bash
+      sudo zypper install -y curl dialog freerdp git iproute2 libnotify-tools netcat-openbsd
+      ```
+  - Gentoo Linux:
+      ```bash
+      sudo emerge --ask=n net-misc/curl dev-util/dialog net-misc/freerdp:3 dev-vcs/git sys-apps/iproute2 x11-libs/libnotify net-analyzer/openbsd-netcat
+      ```
+
+> [!NOTE]
+> WinApps requires `FreeRDP` version 3 or later. If not available for your distribution through your package manager, you can install the [Flatpak](https://flathub.org/apps/com.freerdp.FreeRDP):
+> ```bash
+> flatpak install flathub com.freerdp.FreeRDP
+> sudo flatpak override --filesystem=home com.freerdp.FreeRDP # To use `+home-drive`
+> ```
+> However, if you have weird issues like [#233](https://github.com/winapps-org/winapps/issues/233) when running Flatpak, please compile FreeRDP from source according to [this guide](https://github.com/FreeRDP/FreeRDP/wiki/Compilation).
+
+</details>
+
+<details>
+<summary>Step 3: Create a WinApps Configuration File</summary>
+
+> [!IMPORTANT]
+> Make sure to change RDP_USER, RDP_PASS, RDP_IP to your previously configured values.
+
+Copy a configuration file `winapps.conf`  and paste at `~/.config/winapps/winapps.conf`
+
+> [!IMPORTANT]
+> `RDP_USER` and `RDP_PASS` must correspond to a complete Windows user account and password, such as those created during Windows setup or for a domain user. User/PIN combinations are not valid for RDP access.
+
+> [!IMPORTANT]
+> To switch keyboard layout you need to add new keyboard layout in Windows, and then you can switch it by using Shift+Alt
+
+> [!IMPORTANT]
+> If you wish to use an alternative WinApps backend (other than `Docker`), uncomment and change `WAFLAVOR="docker"` to `WAFLAVOR="podman"` or `WAFLAVOR="libvirt"`.
+
+### Configuration Options Explained
+- If using a pre-existing Windows RDP server on your LAN, you must use `RDP_IP` to specify the location of the Windows server. You may also wish to configure a static IP address for this server.
+- If running a Windows VM using `libvirt` with NAT enabled, leave `RDP_IP` commented out and WinApps will auto-detect the local IP address for the VM.
+- For domain users, you can uncomment and change `RDP_DOMAIN`.
+- On high-resolution (UHD) displays, you can set `RDP_SCALE` to the scale you would like to use (100, 140 or 180).
+- To add additional flags to the FreeRDP call (e.g. `/prevent-session-lock 120`), uncomment and use the `RDP_FLAGS` configuration option.
+- For multi-monitor setups, you can try enabling `MULTIMON`. A FreeRDP bug may result in a black screen however, in which case you should revert this change.
+- If you enable `DEBUG`, a log will be created on each application start in `~/.local/share/winapps/winapps.log`.
+- If using a system on which the FreeRDP command is not `xfreerdp` or `xfreerdp3`, the correct command can be specified using `FREERDP_COMMAND`.
+</details>
+
+<details>
+<summary>Step 4: Test FreeRDP</summary>
+
+1. Test establishing an RDP session by running the following command, replacing the `/u:`, `/p:`, and `/v:` values with the correct values specified in `~/.config/winapps/winapps.conf`.
+
+    ```bash
+    xfreerdp3 /u:"Your Windows Username" /p:"Your Windows Password" /v:192.168.122.2 /cert:tofu
+
+    # Or, if you installed FreeRDP using Flatpak
+    flatpak run --command=xfreerdp com.freerdp.FreeRDP /u:"Your Windows Username" /p:"Your Windows Password" /v:192.168.122.2 /cert:tofu
+    ```
+
+    - Please note that the correct `FreeRDP` command may vary depending on your system (e.g. `xfreerdp`, `xfreerdp3`, etc.).
+    - Ensure you use the correct IP address for your Windows instance in the above command.
+    - If prompted within the terminal window, choose to accept the certificate permanently.
+
+    If the Windows desktop appears in a `FreeRDP` window, the configuration was successful and the correct RDP TLS certificate was enrolled on the Linux host. Disconnect from the RDP session and skip the following debugging step.
+
+2. [DEBUGGING STEP] If an outdated or expired certificate is detected, the `FreeRDP` command will display output resembling the following. In this case, the old certificate will need to be removed and a new RDP TLS certificate installed.
+
+    ```
+    @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+    @           WARNING: CERTIFICATE NAME MISMATCH!           @
+    @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+    The hostname used for this connection (192.168.122.2:3389)
+    does not match the name given in the certificate:
+    Common Name (CN):
+            RDPWindows
+    A valid certificate for the wrong name should NOT be trusted!
+
+    The host key for 192.168.122.2:3389 has changed
+
+    @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+    @    WARNING: REMOTE HOST IDENTIFICATION HAS CHANGED!     @
+    @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+    IT IS POSSIBLE THAT SOMEONE IS DOING SOMETHING NASTY!
+    Someone could be eavesdropping on you right now (man-in-the-middle attack)!
+    It is also possible that a host key has just been changed.
+    The fingerprint for the host key sent by the remote host is 8e:b4:d2:8e:4e:14:e7:4e:82:9b:07:5b:e1:68:40:18:bc:db:5f:bc:29:0d:91:83:f9:17:f9:13:e6:51:dc:36
+    Please contact your system administrator.
+    Add correct host key in /home/rohanbarar/.config/freerdp/server/192.168.122.2_3389.pem to get rid of this message.
+    ```
+
+    If you experience the above error, delete any old or outdated RDP TLS certificates associated with Windows, as they can prevent `FreeRDP` from establishing a connection.
+
+    These certificates are located within `~/.config/freerdp/server/` and follow the naming format `<Windows-VM-IPv4-Address>_<RDP-Port>.pem` (e.g., `192.168.122.2_3389.pem`, `127.0.0.1_3389.pem`, etc.).
+
+    If you use FreeRDP for purposes other than WinApps, ensure you only remove certificates related to the relevant Windows VM. If no relevant certificates are found, no action is needed.
+
+    Following deletion, re-attempt establishing an RDP session.
+</details>
+
+<details>
+<summary>Step 5: Run the WinApps Installer</summary>
+
+With Windows still powered on, run the WinApps installer.
+
+```bash
+bash <(curl https://raw.githubusercontent.com/winapps-org/winapps/main/setup.sh)
+```
+
+Once WinApps is installed, a list of additional arguments can be accessed by running `winapps-setup --help`.
+
+<img src="./winapps_installer_images/installer.gif" width=1898 alt="WinApps Installer Animation.">
+</details>
+
+
+
+<details>
+<summary>Nix & NixOs Specific Install</summary>
+# Installation using Nix
+
+First, follow Step 1 of the normal installation guide to create your VM.
+Then, install WinApps according to the following instructions.
+
+After installation, it will be available under `winapps`, with the installer being available under `winapps-setup`
+and the optional launcher being available under `winapps-launcher.`
+
+## Using standalone Nix
+
+First, make sure Flakes and the `nix` command are enabled.
+In your `~/.config/nix/nix.conf`:
+```
+experimental-features = nix-command flakes
+# specify to use binary cache (optional)
+extra-substituters = https://winapps.cachix.org/
+extra-trusted-public-keys = winapps.cachix.org-1:HI82jWrXZsQRar/PChgIx1unmuEsiQMQq+zt05CD36g=
+extra-trusted-users = <your-username> # replace with your username
+```
+
+```bash
+nix profile install github:winapps-org/winapps#winapps
+nix profile install github:winapps-org/winapps#winapps-launcher # optional
+```
+
+## On NixOS using Flakes
+
+```nix
+# flake.nix
+{
+  description = "My configuration";
+
+  inputs = {
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+
+    winapps = {
+      url = "github:winapps-org/winapps";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+  };
+
+  outputs =
+    inputs@{
+      nixpkgs,
+      winapps,
+      ...
+    }:
+    {
+      nixosConfigurations.hostname = nixpkgs.lib.nixosSystem rec {
+        system = "x86_64-linux";
+
+        specialArgs = {
+          inherit inputs system;
+        };
+
+        modules = [
+          ./configuration.nix
+          (
+            {
+              pkgs,
+              system ? pkgs.system,
+              ...
+            }:
+            {
+              # set up binary cache (optional)
+              nix.settings = {
+                substituters = [ "https://winapps.cachix.org/" ];
+                trusted-public-keys = [ "winapps.cachix.org-1:HI82jWrXZsQRar/PChgIx1unmuEsiQMQq+zt05CD36g=" ];
+              };
+
+              environment.systemPackages = [
+                winapps.packages."${system}".winapps
+                winapps.packages."${system}".winapps-launcher # optional
+              ];
+            }
+          )
+        ];
+      };
+    };
+}
+```
+
+## On NixOS without Flakes
+
+[Flakes aren't real and they can't hurt you.](https://jade.fyi/blog/flakes-arent-real/).
+However, if you still don't want to use flakes, you can use WinApps with flake-compat like:
+
+```nix
+# configuration.nix
+{
+  pkgs,
+  system ? pkgs.system,
+  ...
+}:
+{
+  # set up binary cache (optional)
+  nix.settings = {
+    substituters = [ "https://winapps.cachix.org/" ];
+    trusted-public-keys = [ "winapps.cachix.org-1:HI82jWrXZsQRar/PChgIx1unmuEsiQMQq+zt05CD36g=" ];
+    trusted-users = [ "<your username>" ]; # replace with your username
+  };
+
+  environment.systemPackages =
+    let
+      winapps =
+        (import (builtins.fetchTarball "https://github.com/winapps-org/winapps/archive/main.tar.gz"))
+        .packages."${system}";
+    in
+    [
+      winapps.winapps
+      winapps.winapps-launcher # optional
+    ];
+}
+```
+</details>
+
+<details>
+<summary>Post Install</summary>
+
+# Adding Additional Pre-defined Applications
+Adding your own applications with custom icons and MIME types to the installer is easy. Simply copy one of the application configurations in the `apps` folder located within the WinApps repository, and:
+1. Modify the name and variables to reflect the appropriate/desired values for your application.
+2. Replace `icon.svg` with an SVG for your application (ensuring the icon is appropriately licensed).
+3. Remove and reinstall WinApps.
+4. Submit a pull request to add your application to WinApps as an officially supported application once you have tested and verified your configuration (optional, but encouraged).
+
+# Running Applications Manually
+WinApps offers a manual mode for running applications that were not configured by the WinApps installer. This is completed with the `manual` flag. Executables that are in the Windows PATH do not require full path definition.
+
+```bash
+winapps manual "C:\my\directory\executableNotInPath.exe"
+winapps manual executableInPath.exe
+```
+
+# Updating WinApps
+The installer can be run multiple times. To update your installation of WinApps:
+1. Run the WinApps installer to remove WinApps from your system.
+2. Pull the latest changes from the WinApps GitHub repository.
+3. Re-install WinApps using the WinApps installer by running `winapps-setup`.
+
+</details>

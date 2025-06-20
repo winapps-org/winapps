@@ -2,10 +2,10 @@
 /shelf/
 /workspace.xml
 # Rider ignored files
+/.idea.WinApps.iml
+/projectSettingsUpdater.xml
 /modules.xml
 /contentModel.xml
-/projectSettingsUpdater.xml
-/.idea.winapps.iml
 # Editor-based HTTP Client requests
 /httpRequests/
 # Datasource local storage ignored files
