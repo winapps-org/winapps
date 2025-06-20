@@ -9,7 +9,7 @@
 
     <StackPanel Margin="20" Spacing="15">
         <TextBlock Text="Installing Dependencies" FontSize="20" FontWeight="Bold" />
-        
+
         <TextBlock Text="A terminal will open to install dependencies with sudo."
                    FontStyle="Italic"
                    Foreground="Gray" />
