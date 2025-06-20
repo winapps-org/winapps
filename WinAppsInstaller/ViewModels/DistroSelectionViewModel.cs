@@ -1,6 +1,5 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Avalonia;
@@ -40,21 +39,26 @@ public partial class DistroSelectionViewModel : ViewModelBase
             return;
         }
 
-        var idLikeLine = File.ReadLines(path)
-            .FirstOrDefault(l => l.StartsWith("ID_LIKE="));
+        var lines = File.ReadLines(path).ToList();
+        var idLikeLine = lines.FirstOrDefault(l => l.StartsWith("ID_LIKE="));
+        var raw = idLikeLine?["ID_LIKE=".Length..]?.Trim('"');
 
-        if (idLikeLine == null)
+        if (string.IsNullOrWhiteSpace(raw))
+        {
+            // Fallback to ID=
+            var idLine = lines.FirstOrDefault(l => l.StartsWith("ID="));
+            raw = idLine?["ID=".Length..]?.Trim('"');
+        }
+
+        if (string.IsNullOrWhiteSpace(raw))
         {
             StatusMessage = "Could not detect distro family.";
             IsSupported = false;
             return;
         }
 
-        var raw = idLikeLine["ID_LIKE=".Length..].Trim('"');
         IdLike = raw;
-
         var detectedFamilies = raw.Split(' ', StringSplitOptions.RemoveEmptyEntries);
-
         var matched = detectedFamilies
             .Intersect(SupportedFamilies, StringComparer.OrdinalIgnoreCase)
             .FirstOrDefault();
@@ -82,7 +86,7 @@ public partial class DistroSelectionViewModel : ViewModelBase
         // You can navigate to the next step here, for example:
         if (Application.Current is App { MainWindow.DataContext: MainWindowViewModel main })
         {
-            main.CurrentViewModel = new PkexecCheckViewModel(main); // or whatever the next step is
+            main.CurrentViewModel = new DependencyInstallViewModel(); // or whatever the next step is
         }
     }
 }

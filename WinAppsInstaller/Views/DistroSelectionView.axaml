@@ -7,21 +7,28 @@
              x:Class="WinAppsInstaller.Views.DistroSelectionView"
              x:DataType="vm:DistroSelectionViewModel">
 
-    <StackPanel Margin="30" Spacing="15" HorizontalAlignment="Center" VerticalAlignment="Center">
+    <Border Padding="30"
+            Background="#FFF"
+            CornerRadius="12"
+            Width="500"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center">
+        <StackPanel Spacing="15">
+            <TextBlock Text="Distro Detection" FontSize="24" FontWeight="Bold" HorizontalAlignment="Center" />
 
-        <TextBlock Text="Distro Detection" FontSize="22" FontWeight="Bold" />
+            <TextBlock Text="Detected ID_LIKE from /etc/os-release:" FontWeight="SemiBold" />
+            <TextBlock Text="{Binding IdLike}" FontStyle="Italic" Foreground="Gray" />
 
-        <TextBlock Text="ID_LIKE from /etc/os-release:" FontWeight="SemiBold" />
-        <TextBlock Text="{Binding IdLike}" FontStyle="Italic" Foreground="Gray" />
+            <TextBlock Text="{Binding StatusMessage}"
+                       TextWrapping="Wrap"
+                       Foreground="{Binding IsSupported, Converter={StaticResource BoolToBrushConverter}}" />
 
-        <TextBlock Text="{Binding StatusMessage}" TextWrapping="Wrap"
-                   Foreground="{Binding IsSupported}" />
-
-        <Button Content="Continue"
-                Command="{Binding ContinueCommand}"
-                IsVisible="{Binding IsSupported}"
-                Width="150"
-                HorizontalAlignment="Center" />
-
-    </StackPanel>
+            <Button Content="Continue"
+                    Command="{Binding ContinueCommand}"
+                    IsVisible="{Binding IsSupported}"
+                    Width="150"
+                    HorizontalAlignment="Center"
+                    Margin="0,10,0,0" />
+        </StackPanel>
+    </Border>
 </UserControl>

@@ -15,6 +15,6 @@
     </Application.Styles>
 
     <Application.Resources>
-        <converters:InverseBoolConverter x:Key="InverseBoolConverter" />
+        <converters:BoolToBrushConverter x:Key="BoolToBrushConverter" />
     </Application.Resources>
 </Application>

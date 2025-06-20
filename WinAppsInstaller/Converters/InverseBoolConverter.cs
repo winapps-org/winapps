@@ -1,17 +1,21 @@
 using System;
 using System.Globalization;
 using Avalonia.Data.Converters;
+using Avalonia.Media;
 
 namespace WinAppsInstaller.Converters
 {
-    public class InverseBoolConverter : IValueConverter
+    public class BoolToBrushConverter : IValueConverter
     {
-        public static readonly InverseBoolConverter Instance = new();
+        public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
+        {
+            if (value is bool b)
+                return b ? Brushes.Green : Brushes.Red;
 
-        public object Convert(object value, Type targetType, object parameter, CultureInfo culture) =>
-            value is bool b ? !b : true;
+            return Brushes.Gray;
+        }
 
-        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) =>
+        public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture) =>
             throw new NotSupportedException();
     }
 }
