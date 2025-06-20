@@ -6,9 +6,33 @@
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="WinAppsInstaller.Views.WelcomeView"
              x:DataType="viewModels:WelcomeViewModel">
-        <StackPanel Margin="30" Spacing="20" HorizontalAlignment="Center" VerticalAlignment="Center">
-            <TextBlock Text="Welcome to WinApps Installer" FontSize="24" FontWeight="Bold"/>
-            <TextBlock Text="This app helps install Windows apps on Linux using WinApps." TextAlignment="Center" />
-            <Button Content="Start Installation" Command="{Binding StartInstallCommand}" Width="200" />
+
+    <Border Padding="30"
+            Background="#FFF"
+            CornerRadius="12"
+            Width="500"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center">
+        <StackPanel Spacing="20">
+            <TextBlock Text="Welcome to WinApps Installer"
+                       FontSize="28"
+                       FontWeight="Bold"
+                       TextAlignment="Center"
+                       HorizontalAlignment="Center" />
+
+            <TextBlock Text="Easily set up Windows applications on your Linux system with just a few steps."
+                       FontSize="16"
+                       TextAlignment="Center"
+                       TextWrapping="Wrap"
+                       MaxWidth="440"
+                       HorizontalAlignment="Center" />
+
+            <Button Content="Start Installation"
+                    Command="{Binding StartInstallCommand}"
+                    Width="220"
+                    HorizontalAlignment="Center"
+                    FontSize="16"
+                    Padding="10,6" />
         </StackPanel>
+    </Border>
 </UserControl>

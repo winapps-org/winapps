@@ -7,9 +7,8 @@ namespace WinAppsInstaller.ViewModels;
 public partial class WelcomeViewModel : ViewModelBase
 {
     [RelayCommand]
-    private void StartInstall()
+    private static void StartInstall()
     {
-        // Navigate to distro selection
         if (Application.Current is App { MainWindow.DataContext: MainWindowViewModel main })
         {
             main.CurrentViewModel = new DistroSelectionViewModel();
