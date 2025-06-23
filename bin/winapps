@@ -651,12 +651,15 @@ function waCheckIdle() {
 # Name: 'waTimeSync'
 # Role: Detect if system went to sleep by comparing uptime progression, then sync time in Windows VM
 function waTimeSync() {
-    local CURRENT_TIME=$(date +%s)
-    local CURRENT_UPTIME="$(awk '{print int($1)}' "/proc/uptime")"
+    local CURRENT_TIME
+    local CURRENT_UPTIME
     local STORED_TIME=0
     local STORED_UPTIME=0
     local EXPECTED_UPTIME=0
     local UPTIME_DIFF=0
+
+    CURRENT_TIME=$(date +%s)
+    CURRENT_UPTIME=$(awk '{print int($1)}' /proc/uptime)
 
     # Read stored values if file exists
     if [ -f "$SLEEP_DETECT_PATH" ]; then
