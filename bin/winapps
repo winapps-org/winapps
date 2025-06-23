@@ -50,7 +50,7 @@ RDP_SCALE=100
 AUTOPAUSE="off"
 AUTOPAUSE_TIME="300"
 DEBUG="true"
-BOOT_MAX_WAIT_TIME=120
+BOOT_TIMEOUT=120
 
 # OTHER
 FREERDP_PID=-1
@@ -477,7 +477,7 @@ function waCheckContainerRunning() {
         dprint "WAITING FOR CONTAINER TO BE FULLY READY..."
         notify-send --expire-time=4000 --icon="dialog-info" --app-name="WinApps" --urgency="low" "WinApps" "Waiting for Windows to be ready..."
 
-        while (( WAIT_ELAPSED < BOOT_MAX_WAIT_TIME )); do
+        while (( WAIT_ELAPSED < BOOT_TIMEOUT )); do
             # Check if container is running
             if [[ $("$WAFLAVOR" inspect --format='{{.State.Status}}' "$CONTAINER_NAME") == "running" ]]; then
                 # Try to connect to RDP port to verify it's ready
@@ -502,7 +502,7 @@ function waCheckContainerRunning() {
         done
 
         # If we timed out waiting for the container
-        if (( WAIT_ELAPSED >= BOOT_MAX_WAIT_TIME )); then
+        if (( WAIT_ELAPSED >= BOOT_TIMEOUT )); then
             dprint "TIMEOUT WAITING FOR CONTAINER TO BE READY"
             notify-send --expire-time=4000 --icon="dialog-info" --app-name="WinApps" --urgency="low" "WinApps" "Timeout waiting for Windows to be ready. Please try again."
             waThrowExit $EC_FAIL_START
