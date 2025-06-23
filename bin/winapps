@@ -674,7 +674,6 @@ function waTimeSync() {
         # If uptime is significantly less than expected, system likely slept
         if [[ "$UPTIME_DIFF" -gt 30 && ! -f "$SLEEP_MARKER" ]]; then
             dprint "DETECTED SLEEP/WAKE CYCLE (uptime gap: ${UPTIME_DIFF}s). CREATING SLEEP MARKER TO SYNC WINDOWS TIME."
-            echo -e "Detected system sleep/wake cycle. Creating sleep marker to sync Windows time..."
             
             # Create sleep marker which will be monitored by Windows VM to trigger time sync
             touch "$SLEEP_MARKER"
