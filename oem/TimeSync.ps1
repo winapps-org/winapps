@@ -14,7 +14,7 @@ function Monitor-File {
             if (Test-Path -Path $filePath) {
                 # Run time resync silently
                 w32tm /resync /quiet
-                
+
                 # Remove the file
                 Remove-Item -Path $filePath -Force
             }
@@ -22,7 +22,7 @@ function Monitor-File {
         catch {
             # Network location not available, continue monitoring silently
         }
-        
+
         # Wait 5 minutes before next check
         Start-Sleep -Seconds 3000
     }

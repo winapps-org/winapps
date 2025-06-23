@@ -31,9 +31,9 @@ set "command2=powershell.exe -WindowStyle Hidden -ExecutionPolicy Bypass -File \
 
 schtasks /query /tn "%taskname2%" >nul
 if %ERRORLEVEL% equ 0 (
-    echo %DATE% %TIME% Task "%taskname2%" already exists, skipping creation. 
+    echo %DATE% %TIME% Task "%taskname2%" already exists, skipping creation.
 ) else (
-    schtasks /create /tn "%taskname2%" /tr "%command2%" /sc onlogon /rl HIGHEST /f 
+    schtasks /create /tn "%taskname2%" /tr "%command2%" /sc onlogon /rl HIGHEST /f
     if %ERRORLEVEL% equ 0 (
         echo %DATE% %TIME% Scheduled task "%taskname2%" created successfully.
     ) else (

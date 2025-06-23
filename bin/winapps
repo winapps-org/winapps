@@ -648,7 +648,7 @@ function waCheckIdle() {
     fi
 }
 
-# Name: 'waTimeSync'  
+# Name: 'waTimeSync'
 # Role: Detect if system went to sleep by comparing uptime progression, then sync time in Windows VM
 function waTimeSync() {
     local CURRENT_TIME=$(date +%s)
@@ -657,31 +657,31 @@ function waTimeSync() {
     local STORED_UPTIME=0
     local EXPECTED_UPTIME=0
     local UPTIME_DIFF=0
-    
+
     # Read stored values if file exists
     if [ -f "$SLEEP_DETECT_PATH" ]; then
         STORED_TIME=$(head -n1 "$SLEEP_DETECT_PATH" 2>/dev/null || echo 0)
         STORED_UPTIME=$(tail -n1 "$SLEEP_DETECT_PATH" 2>/dev/null || echo 0)
     fi
-    
+
     if [ "$STORED_TIME" -gt 0 ] && [ "$STORED_UPTIME" -gt 0 ]; then
         # Calculate what uptime should be now
         EXPECTED_UPTIME=$((STORED_UPTIME + CURRENT_TIME - STORED_TIME))
         UPTIME_DIFF=$((EXPECTED_UPTIME - CURRENT_UPTIME))
-        
+
         dprint "UPTIME_DIFF: ${UPTIME_DIFF} seconds"
-        
+
         # If uptime is significantly less than expected, system likely slept
         if [[ "$UPTIME_DIFF" -gt 30 && ! -f "$SLEEP_MARKER" ]]; then
             dprint "DETECTED SLEEP/WAKE CYCLE (uptime gap: ${UPTIME_DIFF}s). CREATING SLEEP MARKER TO SYNC WINDOWS TIME."
-            
+
             # Create sleep marker which will be monitored by Windows VM to trigger time sync
             touch "$SLEEP_MARKER"
-            
+
             dprint "CREATED SLEEP MARKER"
         fi
     fi
-    
+
     # Store current values
     {
         echo "$CURRENT_TIME"
