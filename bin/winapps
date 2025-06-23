@@ -27,6 +27,8 @@ readonly CONFIG_PATH="${HOME}/.config/winapps/winapps.conf"
 readonly COMPOSE_PATH="${HOME}/.config/winapps/compose.yaml"
 # shellcheck disable=SC2155 # Silence warnings regarding masking return values through simultaneous declaration and assignment.
 readonly SCRIPT_DIR_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
+readonly SLEEP_DETECT_PATH="${APPDATA_PATH}/last_activity"
+readonly SLEEP_MARKER="${APPDATA_PATH}/sleep_marker"
 
 # OTHER
 readonly CONTAINER_NAME="WinApps" # FOR 'docker' AND 'podman' ONLY
@@ -646,6 +648,48 @@ function waCheckIdle() {
     fi
 }
 
+# Name: 'waTimeSync'  
+# Role: Detect if system went to sleep by comparing uptime progression, then sync time in Windows VM
+function waTimeSync() {
+    local CURRENT_TIME=$(date +%s)
+    local CURRENT_UPTIME="$(awk '{print int($1)}' "/proc/uptime")"
+    local STORED_TIME=0
+    local STORED_UPTIME=0
+    local EXPECTED_UPTIME=0
+    local UPTIME_DIFF=0
+    
+    # Read stored values if file exists
+    if [ -f "$SLEEP_DETECT_PATH" ]; then
+        STORED_TIME=$(head -n1 "$SLEEP_DETECT_PATH" 2>/dev/null || echo 0)
+        STORED_UPTIME=$(tail -n1 "$SLEEP_DETECT_PATH" 2>/dev/null || echo 0)
+    fi
+    
+    if [ "$STORED_TIME" -gt 0 ] && [ "$STORED_UPTIME" -gt 0 ]; then
+        # Calculate what uptime should be now
+        EXPECTED_UPTIME=$((STORED_UPTIME + CURRENT_TIME - STORED_TIME))
+        UPTIME_DIFF=$((EXPECTED_UPTIME - CURRENT_UPTIME))
+        
+        dprint "UPTIME_DIFF: ${UPTIME_DIFF} seconds"
+        
+        # If uptime is significantly less than expected, system likely slept
+        if [[ "$UPTIME_DIFF" -gt 30 && ! -f "$SLEEP_MARKER" ]]; then
+            dprint "DETECTED SLEEP/WAKE CYCLE (uptime gap: ${UPTIME_DIFF}s). CREATING SLEEP MARKER TO SYNC WINDOWS TIME."
+            echo -e "Detected system sleep/wake cycle. Creating sleep marker to sync Windows time..."
+            
+            # Create sleep marker which will be monitored by Windows VM to trigger time sync
+            touch "$SLEEP_MARKER"
+            
+            dprint "CREATED SLEEP MARKER"
+        fi
+    fi
+    
+    # Store current values
+    {
+        echo "$CURRENT_TIME"
+        echo "$CURRENT_UPTIME"
+    } > "$SLEEP_DETECT_PATH"
+}
+
 ### MAIN LOGIC ###
 #set -x # Enable for debugging.
 dprint "START"
@@ -675,6 +719,7 @@ else
 fi
 
 waCheckPortOpen
+waTimeSync
 waRunCommand "$@"
 
 if [[ "$AUTOPAUSE" == "on" ]]; then
