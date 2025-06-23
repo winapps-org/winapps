@@ -1,0 +1,17 @@
+# GNOME shortcut name
+NAME="Adobe Digital Editions"
+
+# Used for descriptions and window class
+FULL_NAME="Adobe Digital Editions"
+
+# The executable inside windows
+WIN_EXECUTABLE="C:\Program Files (x86)\Adobe\Adobe Digital Editions 4.5\DigitalEditions.exe"
+
+# GNOME categories
+CATEGORIES="WinApps;Adobe"
+
+# GNOME mimetypes
+MIME_TYPES="application/epub+zip;application/vnd.adobe.adept+xml;"
+
+# System Icon
+ICON="AdobeDigitalEditions"
