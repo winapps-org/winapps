@@ -1,0 +1,29 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:WinAppsInstaller.ViewModels"
+             xmlns:models="clr-namespace:WinAppsInstaller.Models"
+             x:Class="WinAppsInstaller.Views.TerminalView"
+             x:DataType="vm:TerminalViewModel">
+
+    <DockPanel Margin="10">
+        <!-- Terminal Output -->
+        <ScrollViewer DockPanel.Dock="Top" Height="380" VerticalScrollBarVisibility="Auto">
+            <ItemsControl ItemsSource="{Binding TerminalLines}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="models:StyledLine">
+                        <TextBlock Text="{Binding Text}" Foreground="{Binding Color}" FontFamily="Courier New"/>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </ScrollViewer>
+
+        <!-- Input and Send -->
+        <StackPanel Orientation="Horizontal" DockPanel.Dock="Bottom" Spacing="5">
+            <TextBox Width="700"
+                     Text="{Binding CurrentCommand, Mode=TwoWay}"
+                     KeyDown="TextBox_OnKeyDown"
+                     Watermark="Enter command..." />
+            <Button Content="Send" Command="{Binding SendCommandCommand}"/>
+        </StackPanel>
+    </DockPanel>
+</UserControl>

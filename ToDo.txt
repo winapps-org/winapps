@@ -13,3 +13,6 @@ Step 5: Create winapps.conf at ~/.config/winapps/winapps.conf
 Step 6: Select Installation backend `docker`, `podman`, `libvirt`
 Step 7: Install Windows
 Step 8: Configure Windows
+
+
+cat /proc/$PPID/comm so user can find terminal.

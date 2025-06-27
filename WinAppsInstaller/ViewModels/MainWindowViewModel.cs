@@ -9,6 +9,7 @@ public partial class MainWindowViewModel : ViewModelBase
 
     public MainWindowViewModel()
     {
-        CurrentViewModel = new WelcomeViewModel();
+        // Here is starting ViewModel that will be displayed first in MainWindow.
+        CurrentViewModel = new TerminalViewModel();
     }
 }
