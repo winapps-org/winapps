@@ -3,6 +3,10 @@ name: Build container image
 on:
   push:
     branches: [ "rewrite" ]
+    paths: [ "winapps-image/**" ]
+  schedule:
+    # See https://crontab.guru/monthly
+    - cron: 0 0 1 * *
 
 permissions:
   packages: write
