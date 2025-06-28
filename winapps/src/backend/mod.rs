@@ -4,6 +4,7 @@ use enum_dispatch::enum_dispatch;
 
 use crate::{
     backend::{container::Container, manual::Manual},
+    command::Command,
     Config, Result,
 };
 
@@ -15,6 +16,8 @@ pub trait Backend {
     fn check_depends(&self) -> Result<()>;
 
     fn get_host(&self) -> IpAddr;
+
+    fn get_remote_command(&self, command: Command) -> Command;
 }
 
 #[enum_dispatch(Backend)]
@@ -44,5 +47,9 @@ impl Config {
 
     pub fn get_host(&'static self) -> IpAddr {
         self.get_backend().get_host()
+    }
+
+    pub fn get_remote_command(&'static self, command: Command) -> Command {
+        self.get_backend().get_remote_command(command)
     }
 }

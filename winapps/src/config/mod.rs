@@ -24,10 +24,12 @@ pub struct Config {
 
 #[derive(new, Debug, Deserialize, Serialize, Clone)]
 pub struct AuthConfig {
-    #[new(value = "\"Docker\".to_string()")]
+    #[new(value = "\"MyWindowsUser\".to_string()")]
     pub username: String,
-    #[new(value = "\"\".to_string()")]
+    #[new(value = "\"MyWindowsPassword\".to_string()")]
     pub password: String,
+    #[new(value = "2222")]
+    pub ssh_port: u32,
     #[new(value = "\"\".to_string()")]
     pub domain: String,
 }
@@ -64,9 +66,7 @@ pub struct FreerdpConfig {
             "/cert:tofu".to_string(),
             "/sound".to_string(),
             "/microphone".to_string(),
-            "/dynamic-resolution".to_string(),
             "+auto-reconnect".to_string(),
-            "+clipboard".to_string(),
             "+home-drive".to_string(),
         ]"#)]
     pub extra_args: Vec<String>,

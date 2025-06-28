@@ -4,5 +4,10 @@ target/
 
 # We don't want to commit IDE configuration files.
 .idea/
+winapps.iml
 .vscode/
 .direnv
+.wakatime-project
+
+# User config
+compose.yaml

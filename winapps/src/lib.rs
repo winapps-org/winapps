@@ -1,7 +1,6 @@
 #![feature(decl_macro)]
 #![feature(exit_status_error)]
 #![feature(once_cell_try)]
-#![feature(once_wait)]
 
 pub use crate::{
     backend::{Backend, Backends},

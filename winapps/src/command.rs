@@ -7,8 +7,8 @@ use std::{
 use tracing::debug;
 
 pub struct Command {
-    exec: String,
-    args: Vec<String>,
+    pub exec: String,
+    pub args: Vec<String>,
     error_message: String,
     loud: bool,
 }
@@ -16,6 +16,7 @@ pub struct Command {
 impl Display for Command {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         f.write_str(self.exec.as_str())?;
+        f.write_str(" ")?;
         f.write_str(self.args.join(" ").as_str())
     }
 }
@@ -123,6 +124,12 @@ impl Command {
             source: source.into(),
             message: self.error_message.clone(),
         })?;
+
+        debug!(
+            "Child exit code is zero, returning output {} {}",
+            output.stdout.len(),
+            output.stderr.len()
+        );
 
         Ok(format!(
             "{}\n{}",

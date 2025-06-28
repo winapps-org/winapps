@@ -1,6 +1,6 @@
 use std::{net::IpAddr, str::FromStr};
 
-use crate::{ensure, Backend, Config, Error, Result};
+use crate::{command::Command, ensure, Backend, Config, Error, Result};
 
 #[derive(Debug)]
 pub struct Manual {
@@ -31,5 +31,17 @@ impl Backend for Manual {
 
     fn get_host(&self) -> IpAddr {
         IpAddr::from_str(&self.config.manual.host).unwrap()
+    }
+
+    fn get_remote_command(&self, command: Command) -> Command {
+        Command::new("sshpass")
+            .args(["-p", &*self.config.auth.password])
+            .args([
+                "ssh",
+                &*format!("{}@{}", self.config.auth.username, self.config.manual.host),
+                "-p",
+                &*self.config.auth.ssh_port.to_string(),
+            ])
+            .arg(format!("{} {}", command.exec, command.args.join(" ")))
     }
 }

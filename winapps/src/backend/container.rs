@@ -1,4 +1,7 @@
-use crate::{command::command, ensure, Backend, Config, Error, Result};
+use crate::{
+    command::{command, Command},
+    ensure, Backend, Config, Error, Result,
+};
 use std::net::{IpAddr, Ipv4Addr};
 use tracing::debug;
 
@@ -34,20 +37,31 @@ impl Backend for Container {
         };
 
         let state = command!(
-            r#"{command} ps --all --filter name="{}" --format '{{{{.State}}}}'"#,
+            r#"{command} ps --all --filter name={} --format {{{{.State}}}}"#,
             self.config.container.container_name
         )?
         .with_err("Could not get container status")
-        .wait_with_output()?
-        .to_lowercase();
+        .wait_with_output()?;
 
         debug!("{command} returned state: {state}");
-        ensure!(state == Self::STATE_RUNNING, Error::VmNotRunning);
+        ensure!(state.trim() == Self::STATE_RUNNING, Error::VmNotRunning);
 
         Ok(())
     }
 
     fn get_host(&self) -> IpAddr {
         Ipv4Addr::new(127, 0, 0, 1).into()
+    }
+
+    fn get_remote_command(&self, command: Command) -> Command {
+        Command::new("sshpass")
+            .args(["-p", &*self.config.auth.password])
+            .args([
+                "ssh",
+                &*format!("{}@localhost", self.config.auth.username),
+                "-p",
+                &*self.config.auth.ssh_port.to_string(),
+            ])
+            .arg(format!("{} {}", command.exec, command.args.join(" ")))
     }
 }

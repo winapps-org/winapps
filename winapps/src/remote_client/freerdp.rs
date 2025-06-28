@@ -4,7 +4,7 @@ use std::{
 };
 use tracing::info;
 
-use crate::{command::Command, Config, Error, RemoteClient, Result};
+use crate::{command::Command, config::App, Config, Error, RemoteClient, Result};
 
 pub struct Freerdp {
     config: &'static Config,
@@ -51,14 +51,29 @@ impl RemoteClient for Freerdp {
         Ok(())
     }
 
-    fn run_executable(&self, app: String) -> Result<()> {
+    fn run_app(&self, app_name: &str) -> Result<()> {
+        let path = self
+            .config
+            .installed_apps
+            .iter()
+            .filter_map(|app| app.id.eq(app_name).then_some(app.win_exec.clone()))
+            .next()
+            .unwrap_or(app_name.to_string());
+
         self.get_command()
-            .arg(format!("/app:program:{app}"))
+            .arg(format!("/app:program:{path}"))
             .spawn()
             .map(|_| ())
     }
 
-    fn run_windows(&self) -> Result<()> {
-        self.get_command().spawn().map(|_| ())
+    fn run_full_session(&self) -> Result<()> {
+        self.get_command()
+            .arg("+dynamic-resolution".to_string())
+            .spawn()
+            .map(|_| ())
+    }
+
+    fn get_installed_apps(&self) -> Result<Vec<App>> {
+        todo!()
     }
 }

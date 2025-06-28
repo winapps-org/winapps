@@ -84,6 +84,8 @@ impl<T> IntoResult<T> for &str {
     }
 }
 
+/// Return early if a condition isn't met, calling `bail!` with the second argument
+/// Basically like an assertion which doesn't panic
 pub macro ensure {
     ($cond:expr, $err:expr) => {
         if !$cond {
@@ -97,6 +99,8 @@ pub macro ensure {
     }
 }
 
+/// Return, converting the argument into an error
+/// Supports `format!` syntax
 pub macro bail {
     ($err:expr) => {
         return Err($err.into())

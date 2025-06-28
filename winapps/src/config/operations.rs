@@ -9,13 +9,13 @@ use tracing::warn;
 
 use crate::{bail, Config, Error, IntoResult, Result};
 
-static CONFIG: OnceLock<Config> = OnceLock::new();
-
 impl Config {
     /// Reads the config from disk.
     ///
     /// Panics if this is called a second time after already returning an `Ok`.
     pub fn load() -> Result<&'static Config> {
+        static CONFIG: OnceLock<Config> = OnceLock::new();
+
         CONFIG.get_or_try_init::<fn() -> Result<Config>, Error>(|| {
             let config = Config::new();
             let config_path = Self::get_path()?;
@@ -75,7 +75,7 @@ impl Config {
             Err(e) => Error::Io(e).into(),
         }?;
 
-        if let Err(e) = write!(config_file, "{}", serialized_config) {
+        if let Err(e) = write!(config_file, "{serialized_config}") {
             bail!(e);
         }
 

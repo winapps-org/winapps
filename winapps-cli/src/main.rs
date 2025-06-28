@@ -1,5 +1,5 @@
 use clap::{arg, Command};
-use miette::{bail, IntoDiagnostic, Result};
+use miette::{IntoDiagnostic, Result};
 use tracing::{info, Level};
 use tracing_subscriber::EnvFilter;
 use winapps::{Backend, Config, Freerdp, RemoteClient};
@@ -14,7 +14,7 @@ fn cli() -> Command {
         .subcommand(
             Command::new("run")
                 .about("Runs a configured app or an executable on the remote")
-                .arg(arg!(<NAME> "the name of the app/the path to the executable")),
+                .arg(arg!(NAME: "the name of the app/the path to the executable")),
         )
 }
 
@@ -43,16 +43,16 @@ fn main() -> Result<()> {
         Some(("connect", _)) => {
             info!("Connecting to remote");
 
-            client.run_windows()?;
+            client.run_full_session()?;
             Ok(())
         }
 
         Some(("run", sub_matches)) => {
             info!("Connecting to app on remote");
 
-            match sub_matches.get_one::<String>("NAME") {
-                None => bail!("App is required and should never be None here"),
-                Some(app) => client.run_executable(app.to_owned()),
+            match sub_matches.get_one::<String>("name") {
+                None => panic!("App is required and should never be None here"),
+                Some(app) => client.run_app(app),
             }?;
 
             Ok(())
