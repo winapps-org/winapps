@@ -1,0 +1,17 @@
+# GNOME shortcut name
+NAME="Paint.NET"
+
+# Used for descriptions and window class
+FULL_NAME="Paint.NET"
+
+# The executable inside windows
+WIN_EXECUTABLE="C:\Program Files\Paint.NET\paintdotnet.exe"
+
+# GNOME categories
+CATEGORIES="WinApps;Graphic;"
+
+# GNOME mimetypes
+MIME_TYPES=""
+
+# System Icon
+ICON="Paint.Net"
