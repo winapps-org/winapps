@@ -409,7 +409,6 @@ function waCheckContainerRunning() {
     local TIME_ELAPSED=0
     local TIME_LIMIT=60
     local TIME_INTERVAL=5
-    local WAIT_ELAPSED=0
 
     # Determine the state of the container.
     CONTAINER_STATE=$("$WAFLAVOR" inspect --format='{{.State.Status}}' "$CONTAINER_NAME")
@@ -477,7 +476,9 @@ function waCheckContainerRunning() {
         dprint "WAITING FOR CONTAINER TO BE FULLY READY..."
         notify-send --expire-time=4000 --icon="dialog-info" --app-name="WinApps" --urgency="low" "WinApps" "Waiting for Windows to be ready..."
 
-        while (( WAIT_ELAPSED < BOOT_TIMEOUT )); do
+        TIME_ELAPSED=0
+
+        while (( TIME_ELAPSED < BOOT_TIMEOUT )); do
             # Check if container is running
             if [[ $("$WAFLAVOR" inspect --format='{{.State.Status}}' "$CONTAINER_NAME") == "running" ]]; then
                 # Try to connect to RDP port to verify it's ready
@@ -493,16 +494,16 @@ function waCheckContainerRunning() {
             fi
 
             sleep 5
-            WAIT_ELAPSED=$((WAIT_ELAPSED + 5))
+            TIME_ELAPSED=$((TIME_ELAPSED + 5))
 
             # Show progress every 30 seconds
-            if (( WAIT_ELAPSED % 30 == 0 )); then
-                notify-send --expire-time=4000 --icon="dialog-info" --app-name="WinApps" --urgency="low" "WinApps" "Still waiting for Windows to be ready... ($((WAIT_ELAPSED/60)) minutes elapsed)"
+            if (( TIME_ELAPSED % 30 == 0 )); then
+                notify-send --expire-time=4000 --icon="dialog-info" --app-name="WinApps" --urgency="low" "WinApps" "Still waiting for Windows to be ready... ($TIME_ELAPSED seconds elapsed)"
             fi
         done
 
         # If we timed out waiting for the container
-        if (( WAIT_ELAPSED >= BOOT_TIMEOUT )); then
+        if (( TIME_ELAPSED >= BOOT_TIMEOUT )); then
             dprint "TIMEOUT WAITING FOR CONTAINER TO BE READY"
             notify-send --expire-time=4000 --icon="dialog-info" --app-name="WinApps" --urgency="low" "WinApps" "Timeout waiting for Windows to be ready. Please try again."
             waThrowExit $EC_FAIL_START
