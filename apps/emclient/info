@@ -1,0 +1,17 @@
+# GNOME shortcut name
+NAME="eM Client"
+
+# Used for descriptions and window class
+FULL_NAME="eM Client"
+
+# The executable inside windows
+WIN_EXECUTABLE="C:\Program Files (x86)\eM Client\mailclient.exe"
+
+# GNOME categories
+CATEGORIES="WinApps;Network;Office;"
+
+# GNOME mimetypes
+MIME_TYPES=""
+
+# System Icon
+ICON="eM Client"
