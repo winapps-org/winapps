@@ -473,7 +473,7 @@ function waCheckContainerRunning() {
     [ "$EXIT_STATUS" -ne 0 ] && waThrowExit "$EXIT_STATUS"
 
     # Wait for container to be fully ready
-    if [[ "$CONTAINER_STATE" == "created" || "$CONTAINER_STATE" == "exited" || "$CONTAINER_STATE" == "dead" ]]; then
+    if [[ "$CONTAINER_STATE" == "created" || "$CONTAINER_STATE" == "exited" || "$CONTAINER_STATE" == "dead" || "$CONTAINER_STATE" == "restarting" ]]; then
         dprint "WAITING FOR CONTAINER TO BE FULLY READY..."
         notify-send --expire-time=4000 --icon="dialog-info" --app-name="WinApps" --urgency="low" "WinApps" "Waiting for Windows to be ready..."
 
