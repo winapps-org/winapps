@@ -325,6 +325,7 @@ function waCheckVMRunning() {
         if (virsh list --state-shutoff --name | xargs | grep -wq "$VM_NAME"); then
             dprint "WINDOWS SHUT OFF. BOOTING WINDOWS."
             notify-send --expire-time=4000 --icon="dialog-info" --app-name="WinApps" --urgency="low" "WinApps" "Booting Windows."
+            NEEDED_BOOT=true
             virsh start "$VM_NAME" &>/dev/null || EXIT_STATUS=$EC_FAIL_START
             if (virsh list --state-paused --name | xargs | grep -wq "$VM_NAME"); then
                 dprint "WINDOWS PAUSED. RESUMING WINDOWS."
@@ -346,6 +347,7 @@ function waCheckVMRunning() {
                         dprint "WINDOWS SHUT OFF. BOOTING WINDOWS."
                         notify-send --expire-time=4000 --icon="dialog-info" --app-name="WinApps" --urgency="low" "WinApps" "Booting Windows."
                         virsh start "$VM_NAME" &>/dev/null || EXIT_STATUS=$EC_FAIL_START
+                        NEEDED_BOOT=true
                         break
                     fi
                     sleep $TIME_INTERVAL
@@ -359,6 +361,7 @@ function waCheckVMRunning() {
                     dprint "WINDOWS DESTROYED. BOOTING WINDOWS."
                     notify-send --expire-time=4000 --icon="dialog-info" --app-name="WinApps" --urgency="low" "WinApps" "Booting Windows."
                     virsh start "$VM_NAME" &>/dev/null || EXIT_STATUS=$EC_FAIL_START
+                    NEEDED_BOOT=true
                 fi
             elif (virsh domstate "$VM_NAME" | xargs | grep -wq "dying"); then
                 dprint "WINDOWS DYING. WAITING."
@@ -374,6 +377,7 @@ function waCheckVMRunning() {
                             dprint "WINDOWS DESTROYED. BOOTING WINDOWS."
                             notify-send --expire-time=4000 --icon="dialog-info" --app-name="WinApps" --urgency="low" "WinApps" "Booting Windows."
                             virsh start "$VM_NAME" &>/dev/null || EXIT_STATUS=$EC_FAIL_START
+                            NEEDED_BOOT=true
                         fi
                         break
                     elif (virsh list --state-shutoff --name | xargs | grep -wq "$VM_NAME"); then
@@ -381,6 +385,7 @@ function waCheckVMRunning() {
                         dprint "WINDOWS SHUT OFF. BOOTING WINDOWS."
                         notify-send --expire-time=4000 --icon="dialog-info" --app-name="WinApps" --urgency="low" "WinApps" "Booting Windows."
                         virsh start "$VM_NAME" &>/dev/null || EXIT_STATUS=$EC_FAIL_START
+                        NEEDED_BOOT=true
                         break
                     fi
                     sleep $TIME_INTERVAL
@@ -397,6 +402,45 @@ function waCheckVMRunning() {
 
     # Handle non-zero exit statuses.
     [ "$EXIT_STATUS" -ne 0 ] && waThrowExit "$EXIT_STATUS"
+
+    # Wait for VM to be fully ready
+    if [[ "$NEEDED_BOOT" == "true" ]]; then
+        dprint "WAITING FOR VM TO BE FULLY READY..."
+        notify-send --expire-time=4000 --icon="dialog-info" --app-name="WinApps" --urgency="low" "WinApps" "Waiting for Windows to be ready..."
+
+        TIME_ELAPSED=0
+
+        while (( TIME_ELAPSED < BOOT_TIMEOUT )); do
+            # Check if VM is running
+            if (virsh list --state-running --name | xargs | grep -wq "$VM_NAME"); then
+                # Try to connect to RDP port to verify it's ready
+                if timeout 1 bash -c ">/dev/tcp/$RDP_IP/$RDP_PORT" 2>/dev/null; then
+                    dprint "VM IS READY"
+                    notify-send --expire-time=4000 --icon="dialog-info" --app-name="WinApps" --urgency="low" "WinApps" "Windows is ready."
+                    # Add a delay after Windows is ready
+                    if [ "$NEEDED_BOOT" = "true" ]; then
+                        sleep 10
+                    fi
+                    break
+                fi
+            fi
+
+            sleep 5
+            TIME_ELAPSED=$((TIME_ELAPSED + 5))
+
+            # Show progress every 30 seconds
+            if (( TIME_ELAPSED % 30 == 0 )); then
+                notify-send --expire-time=4000 --icon="dialog-info" --app-name="WinApps" --urgency="low" "WinApps" "Still waiting for Windows to be ready... ($TIME_ELAPSED seconds elapsed)"
+            fi
+        done
+
+        # If we timed out waiting for the VM
+        if (( TIME_ELAPSED >= BOOT_TIMEOUT )); then
+            dprint "TIMEOUT WAITING FOR VM TO BE READY"
+            notify-send --expire-time=4000 --icon="dialog-info" --app-name="WinApps" --urgency="low" "WinApps" "Timeout waiting for Windows to be ready. Please try again."
+            waThrowExit $EC_FAIL_START
+        fi
+    fi
 }
 
 # Name: 'waCheckContainerRunning'
