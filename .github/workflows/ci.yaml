@@ -9,6 +9,7 @@ on:
 permissions:
   contents: write
   pull-requests: write
+  checks: write
 
 jobs:
   check:
@@ -19,7 +20,7 @@ jobs:
 
       - uses: dtolnay/rust-toolchain@nightly
         with:
-          components: clippy,rustfmt
+          components: clippy
 
       - uses: auguwu/clippy-action@1.4.0
         with:
