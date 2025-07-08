@@ -53,7 +53,7 @@ impl Backend for Container {
         Ipv4Addr::new(127, 0, 0, 1).into()
     }
 
-    fn get_remote_command(&self, command: Command) -> Command {
+    fn as_remote_command(&self, command: Command) -> Command {
         Command::new("sshpass")
             .args(["-p", &*self.config.auth.password])
             .args([

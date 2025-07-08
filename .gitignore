@@ -8,6 +8,4 @@ winapps.iml
 .vscode/
 .direnv
 .wakatime-project
-
-# User config
-compose.yaml
+.envrc

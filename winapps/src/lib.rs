@@ -15,3 +15,4 @@ mod errors;
 mod remote_client;
 
 pub mod config;
+mod dirs;

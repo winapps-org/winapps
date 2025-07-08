@@ -17,7 +17,7 @@ pub struct Config {
     #[new(value = "FreerdpConfig::new()")]
     pub freerdp: FreerdpConfig,
     #[new(value = "Vec::new()")]
-    pub installed_apps: Vec<App>,
+    pub linked_apps: Vec<App>,
     #[new(value = "false")]
     pub debug: bool,
 }
@@ -79,4 +79,6 @@ pub struct App {
     pub id: String,
     pub name: String,
     pub win_exec: String,
+    pub icon: Option<String>,
+    pub icon_path: Option<String>,
 }

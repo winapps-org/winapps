@@ -54,7 +54,7 @@ impl RemoteClient for Freerdp {
     fn run_app(&self, app_name: &str) -> Result<()> {
         let path = self
             .config
-            .installed_apps
+            .linked_apps
             .iter()
             .filter_map(|app| app.id.eq(app_name).then_some(app.win_exec.clone()))
             .next()
@@ -71,9 +71,5 @@ impl RemoteClient for Freerdp {
             .arg("+dynamic-resolution".to_string())
             .spawn()
             .map(|_| ())
-    }
-
-    fn get_installed_apps(&self) -> Result<Vec<App>> {
-        todo!()
     }
 }

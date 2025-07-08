@@ -53,6 +53,8 @@ function Install-NetworkProfileCleanup
 Set-ExecutionPolicy Unrestricted
 
 # Run functions
+Copy-Item -Path "$PSScriptRoot\ExtractPrograms.ps1" -Destination "$env:windir" -Force
+
 Load-Registry
 Install-NetworkProfileCleanup
 Install-OpenSSH

@@ -2,12 +2,14 @@ use std::{
     fs,
     fs::File,
     io::Write,
+    net::IpAddr,
     path::{Path, PathBuf},
+    str::FromStr,
     sync::OnceLock,
 };
 use tracing::warn;
 
-use crate::{bail, Config, Error, IntoResult, Result};
+use crate::{bail, dirs::path_ok, Config, Error, IntoResult, Result};
 
 impl Config {
     /// Reads the config from disk.
@@ -34,22 +36,12 @@ impl Config {
                 bail!(Error::Config("More than one backend enabled, please set only one of libvirt.enable, container.enable, and manual.enable"));
             }
 
+            if config.manual.enable && IpAddr::from_str(&config.manual.host).is_err() {
+                bail!(Error::Config("Please set manual.host to a valid IP address"));
+            }
+
             Ok(config)
         })
-    }
-
-    fn path_ok(path: &Path) -> Result<()> {
-        if let Ok(false) = path.try_exists() {
-            if let Err(e) = fs::create_dir_all(path) {
-                bail!(e);
-            }
-        }
-
-        if !path.is_dir() {
-            bail!("Config directory {:?} is not a directory", path);
-        }
-
-        Ok(())
     }
 
     fn get_path() -> Result<PathBuf> {
@@ -59,8 +51,9 @@ impl Config {
         }
         .map(|path| path.join("winapps").join("config.toml"))?;
 
+        // SAFETY: We just set the parent, so there will always be one
         let parent = path.parent().unwrap();
-        Self::path_ok(parent)?;
+        path_ok(parent)?;
 
         Ok(path)
     }
@@ -89,8 +82,9 @@ impl Config {
         }
         .map(|path| path.join("winapps"))?;
 
+        // SAFETY: We just set the parent, so there will always be one
         let parent = path.parent().unwrap();
-        Self::path_ok(parent)?;
+        path_ok(parent)?;
 
         Ok(path)
     }
