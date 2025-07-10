@@ -570,6 +570,11 @@ The installer can be run multiple times. To update your installation of WinApps:
 2. Pull the latest changes from the WinApps GitHub repository.
 3. Re-install WinApps using the WinApps installer by running `winapps-setup`.
 
+## WinApps Launcher (Optional)
+The [WinApps Launcher](https://github.com/winapps-org/winapps-launcher) provides a simple system tray menu that makes it easy to launch your installed Windows applications, open a full desktop RDP session, and control your Windows VM or container. You can start, stop, pause, reboot or hibernate Windows, as well as access your installed applications from a convenient list. This lightweight, optional tool helps streamline your overall WinApps experience.
+
+<img src="./demo/launcher.gif" width=1000 alt="WinApps Launcher Animation.">
+
 ## Installation using Nix
 
 First, follow Step 1 of the normal installation guide to create your VM.
