@@ -590,8 +590,8 @@ In your `~/.config/nix/nix.conf`:
 ```
 experimental-features = nix-command flakes
 # specify to use binary cache (optional)
-extra-substituters = https://winapps.cachix.org/
-extra-trusted-public-keys = winapps.cachix.org-1:HI82jWrXZsQRar/PChgIx1unmuEsiQMQq+zt05CD36g=
+extra-substituters = https://cache.garnix.io/
+extra-trusted-public-keys = cache.garnix.io:CTFPyKSLcx5RMJKfLo5EEPUObbA78b0YQ2DTCJXqr9g=
 extra-trusted-users = <your-username> # replace with your username
 ```
 
@@ -641,8 +641,8 @@ nix profile install github:winapps-org/winapps#winapps-launcher # optional
             {
               # set up binary cache (optional)
               nix.settings = {
-                substituters = [ "https://winapps.cachix.org/" ];
-                trusted-public-keys = [ "winapps.cachix.org-1:HI82jWrXZsQRar/PChgIx1unmuEsiQMQq+zt05CD36g=" ];
+                substituters = [ "https://cache.garnix.io/" ];
+                trusted-public-keys = [ "cache.garnix.io:CTFPyKSLcx5RMJKfLo5EEPUObbA78b0YQ2DTCJXqr9g=" ];
               };
 
               environment.systemPackages = [
