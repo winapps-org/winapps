@@ -469,6 +469,11 @@ RDP_TIMEOUT="30"
 # DEFAULT VALUE: '60'
 APP_SCAN_TIMEOUT="60"
 
+# WINDOWS BOOT
+# - The maximum time (in seconds) to wait for the Windows VM to boot if it is not running, before attempting to launch an application.
+# DEFAULT VALUE: '120'
+BOOT_TIMEOUT="120"
+
 ```
 
 > [!IMPORTANT]
