@@ -469,6 +469,11 @@ RDP_TIMEOUT="30"
 # DEFAULT VALUE: '60'
 APP_SCAN_TIMEOUT="60"
 
+# WINDOWS BOOT
+# - The maximum time (in seconds) to wait for the Windows VM to boot if it is not running, before attempting to launch an application.
+# DEFAULT VALUE: '120'
+BOOT_TIMEOUT="120"
+
 ```
 
 > [!IMPORTANT]
@@ -484,6 +489,7 @@ APP_SCAN_TIMEOUT="60"
 - On high-resolution (UHD) displays, you can set `RDP_SCALE` to the scale you would like to use (100, 140 or 180).
 - To add additional flags to the FreeRDP call (e.g. `/prevent-session-lock 120`), uncomment and use the `RDP_FLAGS` configuration option.
 - For multi-monitor setups, you can try adding `/multimon` to `RDP_FLAGS`. A FreeRDP bug may result in a black screen however, in which case you should revert this change.
+- To enable non-English input and seamless language switching, you can try adding `/kbd:unicode` to `RDP_FLAGS`. This ensures client inputs are sent as Unicode sequences.
 - If you enable `DEBUG`, a log will be created on each application start in `~/.local/share/winapps/winapps.log`.
 - If using a system on which the FreeRDP command is not `xfreerdp` or `xfreerdp3`, the correct command can be specified using `FREERDP_COMMAND`.
 
@@ -589,10 +595,6 @@ First, make sure Flakes and the `nix` command are enabled.
 In your `~/.config/nix/nix.conf`:
 ```
 experimental-features = nix-command flakes
-# specify to use binary cache (optional)
-extra-substituters = https://cache.garnix.io/
-extra-trusted-public-keys = cache.garnix.io:CTFPyKSLcx5RMJKfLo5EEPUObbA78b0YQ2DTCJXqr9g=
-extra-trusted-users = <your-username> # replace with your username
 ```
 
 ```bash
@@ -639,12 +641,6 @@ nix profile install github:winapps-org/winapps#winapps-launcher # optional
               ...
             }:
             {
-              # set up binary cache (optional)
-              nix.settings = {
-                substituters = [ "https://cache.garnix.io/" ];
-                trusted-public-keys = [ "cache.garnix.io:CTFPyKSLcx5RMJKfLo5EEPUObbA78b0YQ2DTCJXqr9g=" ];
-              };
-
               environment.systemPackages = [
                 winapps.packages."${system}".winapps
                 winapps.packages."${system}".winapps-launcher # optional
