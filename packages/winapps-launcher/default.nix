@@ -4,8 +4,8 @@
   fetchFromGitHub,
   makeWrapper,
   makeDesktopItem,
-  callPackage,
   yad,
+  winapps ? throw "Pass in the winapps package",
   ...
 }:
 let
@@ -26,7 +26,7 @@ stdenv.mkDerivation rec {
   nativeBuildInputs = [ makeWrapper ];
   buildInputs = [
     yad
-    (callPackage ../winapps { })
+    winapps
   ];
 
   patches = [ ./WinApps-Launcher.patch ];

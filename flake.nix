@@ -31,11 +31,13 @@
       let
         pkgs = import nixpkgs { inherit system; };
       in
-      {
+      rec {
         formatter = pkgs.nixfmt-rfc-style;
 
         packages.winapps = pkgs.callPackage ./packages/winapps { inherit nix-filter; };
-        packages.winapps-launcher = pkgs.callPackage ./packages/winapps-launcher { };
+        packages.winapps-launcher = pkgs.callPackage ./packages/winapps-launcher {
+          inherit (packages) winapps;
+        };
       }
     );
 }
