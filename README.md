@@ -398,7 +398,7 @@ RDP_SCALE="100"
 #   This improves compatibility with most desktop environments (DEs).
 # ATTENTION: The Filesystem Hierarchy Standard (FHS) recommends /media instead. Verify your system's configuration.
 # - To manually mount devices, you may optionally use /mnt.
-# REFERRENCE: https://wiki.archlinux.org/title/Udisks#Mount_to_/media
+# REFERENCE: https://wiki.archlinux.org/title/Udisks#Mount_to_/media
 REMOVABLE_MEDIA="/run/media"
 
 # [ADDITIONAL FREERDP FLAGS & ARGUMENTS]
