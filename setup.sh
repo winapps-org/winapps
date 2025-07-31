@@ -104,7 +104,7 @@ SUDO=""         # Set to "sudo" if the user specifies '--system', or "" if the u
 BIN_PATH=""     # Set to $SYS_BIN_PATH if the user specifies '--system', or $USER_BIN_PATH if the user specifies '--user'.
 APP_PATH=""     # Set to $SYS_APP_PATH if the user specifies '--system', or $USER_APP_PATH if the user specifies '--user'.
 APPDATA_PATH="" # Set to $SYS_APPDATA_PATH if the user specifies '--system', or $USER_APPDATA_PATH if the user specifies '--user'.
-SOURCE_PATH=""  # Set to $SYS_SOURCE_PATH if the user specifies '--user', or $USER_SOURCE_PATH if the user specifies '--user'.
+SOURCE_PATH=""  # Set to $SYS_SOURCE_PATH if the user specifies '--system', or $USER_SOURCE_PATH if the user specifies '--user'.
 
 # INSTALLATION PROCESS
 INSTALLED_EXES=() # List of executable file names of officially supported applications that have already been configured during the current installation process.
