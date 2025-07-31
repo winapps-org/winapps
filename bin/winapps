@@ -588,7 +588,7 @@ function waRunCommand() {
                 +auto-reconnect \
                 /drive:media,"$REMOVABLE_MEDIA" \
                 /wm-class:"$FULL_NAME" \
-                /app:program:"$WIN_EXECUTABLE",icon:"$ICON",name:$"FULL_NAME",cmd:\""$FILE_PATH"\" \
+                /app:program:"$WIN_EXECUTABLE",icon:"$ICON",name:"$FULL_NAME",cmd:\""$FILE_PATH"\" \
                 /v:"$RDP_IP" &>/dev/null &
 
             # Capture the process ID.
