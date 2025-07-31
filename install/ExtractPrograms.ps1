@@ -49,7 +49,7 @@ Function GetApplicationIcon {
 # Args:
 #    - 'Names': An array of application names.
 #    - 'Paths': An array of executable paths.
-#    - 'Source': The source of the applications (e.g. Windows Registry, Package manangers, Universal Windows Platform (UWP), etc.)
+#    - 'Source': The source of the applications (e.g. Windows Registry, Package managers, Universal Windows Platform (UWP), etc.)
 function PrintArrayData {
     param (
         [string[]]$Names,
