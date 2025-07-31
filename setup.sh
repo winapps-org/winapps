@@ -1279,7 +1279,7 @@ function waConfigureApp() {
 
     # Source 'Info' File Containing:
     # - The Application Name          (FULL_NAME)
-    # - The Shortcut Nsame            (NAME)
+    # - The Shortcut Name             (NAME)
     # - Application Categories        (CATEGORIES)
     # - Executable Path               (WIN_EXECUTABLE)
     # - Supported MIME Types          (MIME_TYPES)
@@ -1379,7 +1379,7 @@ function waConfigureApps() {
     for OSA in "${OSA_LIST[@]}"; do
         # Source 'Info' File Containing:
         # - The Application Name          (FULL_NAME)
-        # - The Shortcut Nsame            (NAME)
+        # - The Shortcut Name             (NAME)
         # - Application Categories        (CATEGORIES)
         # - Executable Path               (WIN_EXECUTABLE)
         # - Supported MIME Types          (MIME_TYPES)
