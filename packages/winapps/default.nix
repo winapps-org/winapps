@@ -21,6 +21,7 @@ stdenv.mkDerivation rec {
       "apps"
       "install"
       "bin"
+      "icons"
       "LICENSE.md"
       "COPYRIGHT.md"
       "setup.sh"
