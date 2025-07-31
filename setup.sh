@@ -40,7 +40,7 @@ readonly USER_BIN_PATH="${HOME}/.local/bin"             # UNIX path to 'bin' dir
 readonly USER_BIN_PATH_WIN='\\tsclient\home\.local\bin' # WINDOWS path to 'bin' directory for a '--user' WinApps installation.
 # 'SOURCE'
 readonly SYS_SOURCE_PATH="${SYS_BIN_PATH}/winapps-src" # UNIX path to WinApps source directory for a '--system' WinApps installation.
-readonly USER_SOURCE_PATH="${USER_BIN_PATH}/winapps-src" # UNIX path to WinApps source directory for a '--system' WinApps installation.
+readonly USER_SOURCE_PATH="${USER_BIN_PATH}/winapps-src" # UNIX path to WinApps source directory for a '--user' WinApps installation.
 # 'APP'
 readonly SYS_APP_PATH="/usr/share/applications"                        # UNIX path to 'applications' directory for a '--system' WinApps installation.
 readonly USER_APP_PATH="${HOME}/.local/share/applications"             # UNIX path to 'applications' directory for a '--user' WinApps installation.
@@ -104,7 +104,7 @@ SUDO=""         # Set to "sudo" if the user specifies '--system', or "" if the u
 BIN_PATH=""     # Set to $SYS_BIN_PATH if the user specifies '--system', or $USER_BIN_PATH if the user specifies '--user'.
 APP_PATH=""     # Set to $SYS_APP_PATH if the user specifies '--system', or $USER_APP_PATH if the user specifies '--user'.
 APPDATA_PATH="" # Set to $SYS_APPDATA_PATH if the user specifies '--system', or $USER_APPDATA_PATH if the user specifies '--user'.
-SOURCE_PATH=""  # Set to $SYS_SOURCE_PATH if the user specifies '--system', or $USER_SOURCE_PATH if the user specifies '--user'.
+SOURCE_PATH=""  # Set to $SYS_SOURCE_PATH if the user specifies '--user', or $USER_SOURCE_PATH if the user specifies '--user'.
 
 # INSTALLATION PROCESS
 INSTALLED_EXES=() # List of executable file names of officially supported applications that have already been configured during the current installation process.
