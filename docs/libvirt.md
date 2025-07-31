@@ -193,7 +193,7 @@ Together, these components form a powerful and flexible virtualization stack, wi
 
         Example 1:
         - CPU cores share the same singular L3 cache, so this cannot be optimised.
-        - CPU cores utilise different L1 and L2 caches, so isolatng corresponding thread pairs will help improve performance.
+        - CPU cores utilise different L1 and L2 caches, so isolating corresponding thread pairs will help improve performance.
         - Thus, if limiting the virtual machine to a maximum of 4 threads, there are 10 possible optimal configurations:
             - T<sub>0</sub>+T<sub>4</sub>
             - T<sub>1</sub>+T<sub>5</sub>
