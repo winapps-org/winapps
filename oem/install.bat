@@ -2,7 +2,7 @@
 
 reg import %~dp0\RDPApps.reg
 
-if exists %~dp0\Container.reg (
+if exist %~dp0\Container.reg (
     reg import %~dp0\Container.reg
 )
 
