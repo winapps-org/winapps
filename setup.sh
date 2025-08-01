@@ -151,7 +151,7 @@ function waGetSourceCode() {
     SCRIPT_DIR_PATH=$(readlink -f "$(dirname "${BASH_SOURCE[0]}")")
 
     # Check if winapps is currently installed on $SOURCE_PATH
-    if [[ -f "$SCRIPT_DIR_PATH/winapps" && "$SCRIPT_DIR_PATH" -ne "$SOURCE_PATH" ]]; then
+    if [[ -f "$SCRIPT_DIR_PATH/winapps" && "$SCRIPT_DIR_PATH" != "$SOURCE_PATH" ]]; then
         # Display a warning.
         echo -e "${WARNING_TEXT}[WARNING]${CLEAR_TEXT} You are running a WinApps installation located outside of default location '${SOURCE_PATH}'. A new installation will be created."
         echo -e "${WARNING_TEXT}[WARNING]${CLEAR_TEXT} You might want to remove your old installation on '${SCRIPT_DIR_PATH}'."
