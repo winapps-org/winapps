@@ -107,15 +107,15 @@ Please run:
         notify-send --expire-time=8000 --icon="dialog-error" --app-name="WinApps" --urgency="low" "WinApps" "Windows failed to resume."
         ;;
     "$EC_FAIL_DESTROY")
-        dprint "ERROR: WINDOWS FAILED TO IMMEDIATELY UNGRACEFULLY SHUT DOWN WINDOWS. EXITING."
-        notify-send --expire-time=8000 --icon="dialog-error" --app-name="WinApps" --urgency="low" "WinApps" "Failed to ungracefully shut down Windows."
+        dprint "ERROR: FAILED TO FORCE STOP WINDOWS. EXITING."
+        notify-send --expire-time=8000 --icon="dialog-error" --app-name="WinApps" --urgency="low" "WinApps" "Failed to forcibly stop Windows."
         ;;
     "$EC_SD_TIMEOUT")
         dprint "ERROR: WINDOWS TOOK TOO LONG TO SHUT DOWN. EXITING."
         notify-send --expire-time=8000 --icon="dialog-error" --app-name="WinApps" --urgency="low" "WinApps" "Windows took too long to shut down."
         ;;
     "$EC_DIE_TIMEOUT")
-        dprint "ERROR: WINDOWS TOOK TOO LONG TO SHUT DOWN. EXITING."
+        dprint "ERROR: WINDOWS TOOK TOO LONG TO DIE. EXITING."
         notify-send --expire-time=8000 --icon="dialog-error" --app-name="WinApps" --urgency="low" "WinApps" "Windows took too long to die."
         ;;
     "$EC_RESTART_TIMEOUT")
