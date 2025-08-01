@@ -1156,7 +1156,7 @@ function waFindInstalled() {
         echo "IF EXIST \"${WIN_EXECUTABLE}\" ECHO ${APPLICATION} >> ${TMP_INST_FILE_PATH_WIN}" >>"$BATCH_SCRIPT_PATH"
     done
 
-    # Append a command to the batch script to run the PowerShell script and store it's output in the 'detected' file.
+    # Append a command to the batch script to run the PowerShell script and store its output in the 'detected' file.
     # shellcheck disable=SC2129 # Silence warning regarding repeated redirects.
     echo "powershell.exe -ExecutionPolicy Bypass -File ${PS_SCRIPT_HOME_PATH_WIN} > ${DETECTED_FILE_PATH_WIN}" >>"$BATCH_SCRIPT_PATH"
 
