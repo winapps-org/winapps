@@ -13,8 +13,8 @@ Although WinApps supports using `QEMU+KVM+libvirt` as a backend for running Wind
 
 > [!IMPORTANT]
 > The iptables kernel module must be loaded for folder sharing with the host to work.
-> Check that the output of `lsmod | grep ip_tables` and `lsmod | grep iptable_nat` is non empty.
-> If the output of one of the previous command is empty, run `echo -e "ip_tables\niptable_nat" | sudo tee /etc/modules-load.d/iptables.conf` and reboot.
+> Check that the output of `lsmod | grep ip_tables` and `lsmod | grep iptable_nat` is non-empty.
+> If the output of one of the previous commands is empty, run `echo -e "ip_tables\niptable_nat" | sudo tee /etc/modules-load.d/iptables.conf` and reboot.
 
 ## `Docker`
 ### Installation
