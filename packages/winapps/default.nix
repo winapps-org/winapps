@@ -37,7 +37,6 @@ stdenv.mkDerivation rec {
   ];
 
   patches = [
-    ./winapps.patch
     ./setup.patch
   ];
 

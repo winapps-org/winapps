@@ -46,6 +46,8 @@ Together, these components form a powerful and flexible virtualization stack, wi
     sudo reboot # Reboot the system to ensure the user is added to the relevant groups.
     ```
 
+    Note: On NixOS, the group name for libvirt is `libvirtd` and not `libvirt`. In addition, user and group management on NixOS is handled through the Nix configuration files and not via traditional tools like `usermod`. Please see "Adding User to a group" on [this NixOS Wiki page](https://wiki.nixos.org/wiki/User_management).
+
     Note: Due to a known bug in `rpm-ostree`, which affects various distributions such as Silverblue, Bazzite, Bluefin, Kinoite, Aurora, UCore, and others, the commands provided earlier may not properly add your user to all required groups. If the `groups $USER` command does not show your user as being part of the necessary groups, you'll need to manually add these groups to `/etc/group` if they are present in `/usr/lib/group`.
 
     To resolve this:

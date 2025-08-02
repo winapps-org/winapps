@@ -301,9 +301,10 @@ function waGetFreeRDPCommand() {
 function waCheckGroupMembership() {
     # Identify groups the current user belongs to.
     # shellcheck disable=SC2155 # Silence warnings regarding masking return values through simultaneous declaration and assignment.
-    local USER_GROUPS=$(groups "$(whoami)")
+    local USER_GROUPS=$(id -nG "$(whoami)")
 
-    if ! (echo "$USER_GROUPS" | grep -q -E "\blibvirt\b") || ! (echo "$USER_GROUPS" | grep -q -E "\bkvm\b"); then
+    if ! echo "$USER_GROUPS" | grep -qE '\b(libvirt|libvirtd)\b' || \
+       ! echo "$USER_GROUPS" | grep -qE '\bkvm\b'; then
         waThrowExit "$EC_NOT_IN_GROUP"
     fi
 }
