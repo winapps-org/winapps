@@ -107,15 +107,15 @@ Please run:
         notify-send --expire-time=8000 --icon="dialog-error" --app-name="WinApps" --urgency="low" "WinApps" "Windows failed to resume."
         ;;
     "$EC_FAIL_DESTROY")
-        dprint "ERROR: WINDOWS FAILED TO IMMEDIATELY UNGRACEFULLY SHUT DOWN WINDOWS. EXITING."
-        notify-send --expire-time=8000 --icon="dialog-error" --app-name="WinApps" --urgency="low" "WinApps" "Failed to ungracefully shut down Windows."
+        dprint "ERROR: FAILED TO FORCE STOP WINDOWS. EXITING."
+        notify-send --expire-time=8000 --icon="dialog-error" --app-name="WinApps" --urgency="low" "WinApps" "Failed to forcibly stop Windows."
         ;;
     "$EC_SD_TIMEOUT")
         dprint "ERROR: WINDOWS TOOK TOO LONG TO SHUT DOWN. EXITING."
         notify-send --expire-time=8000 --icon="dialog-error" --app-name="WinApps" --urgency="low" "WinApps" "Windows took too long to shut down."
         ;;
     "$EC_DIE_TIMEOUT")
-        dprint "ERROR: WINDOWS TOOK TOO LONG TO SHUT DOWN. EXITING."
+        dprint "ERROR: WINDOWS TOOK TOO LONG TO DIE. EXITING."
         notify-send --expire-time=8000 --icon="dialog-error" --app-name="WinApps" --urgency="low" "WinApps" "Windows took too long to die."
         ;;
     "$EC_RESTART_TIMEOUT")
@@ -158,7 +158,7 @@ function dprint() {
     [ "$DEBUG" = "true" ] && echo "[$(date)-$RUNID] $1" >>"$LOG_PATH"
 }
 # Name: 'waFixRemovableMedia'
-# Role: If user left REMOVABLE_MEDIA config null,fallback to /run/media for udisks defaults ,warning.
+# Role: If REMOVABLE_MEDIA is empty, default to /run/media (udisks default) and show a warning.
 function waFixRemovableMedia() {
     if [ -z "$REMOVABLE_MEDIA" ]; then
         REMOVABLE_MEDIA="/run/media"  # Default for udisks
@@ -301,9 +301,10 @@ function waGetFreeRDPCommand() {
 function waCheckGroupMembership() {
     # Identify groups the current user belongs to.
     # shellcheck disable=SC2155 # Silence warnings regarding masking return values through simultaneous declaration and assignment.
-    local USER_GROUPS=$(groups "$(whoami)")
+    local USER_GROUPS=$(id -nG "$(whoami)")
 
-    if ! (echo "$USER_GROUPS" | grep -q -E "\blibvirt\b") || ! (echo "$USER_GROUPS" | grep -q -E "\bkvm\b"); then
+    if ! echo "$USER_GROUPS" | grep -qE '\b(libvirt|libvirtd)\b' || \
+       ! echo "$USER_GROUPS" | grep -qE '\bkvm\b'; then
         waThrowExit "$EC_NOT_IN_GROUP"
     fi
 }
@@ -677,7 +678,7 @@ function waRunCommand() {
                 +auto-reconnect \
                 /drive:media,"$REMOVABLE_MEDIA" \
                 /wm-class:"$FULL_NAME" \
-                /app:program:"$WIN_EXECUTABLE",icon:"$ICON",name:$"FULL_NAME",cmd:\""$FILE_PATH"\" \
+                /app:program:"$WIN_EXECUTABLE",icon:"$ICON",name:"$FULL_NAME",cmd:\""$FILE_PATH"\" \
                 /v:"$RDP_IP" &>/dev/null &
 
             # Capture the process ID.

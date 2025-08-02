@@ -21,7 +21,7 @@ readonly EC_BAD_ARGUMENT="2"     # Unsupported argument passed to script.
 readonly EC_EXISTING_INSTALL="3" # Existing conflicting WinApps installation.
 readonly EC_NO_CONFIG="4"        # Absence of a valid WinApps configuration file.
 readonly EC_MISSING_DEPS="5"     # Missing dependencies.
-readonly EC_NO_SUDO="6"          # Insufficient privilages to invoke superuser access.
+readonly EC_NO_SUDO="6"          # Insufficient privileges to invoke superuser access.
 readonly EC_NOT_IN_GROUP="7"     # Current user not in group 'libvirt' and/or 'kvm'.
 readonly EC_VM_OFF="8"           # Windows 'libvirt' VM powered off.
 readonly EC_VM_PAUSED="9"        # Windows 'libvirt' VM paused.
@@ -40,7 +40,7 @@ readonly USER_BIN_PATH="${HOME}/.local/bin"             # UNIX path to 'bin' dir
 readonly USER_BIN_PATH_WIN='\\tsclient\home\.local\bin' # WINDOWS path to 'bin' directory for a '--user' WinApps installation.
 # 'SOURCE'
 readonly SYS_SOURCE_PATH="${SYS_BIN_PATH}/winapps-src" # UNIX path to WinApps source directory for a '--system' WinApps installation.
-readonly USER_SOURCE_PATH="${USER_BIN_PATH}/winapps-src" # UNIX path to WinApps source directory for a '--system' WinApps installation.
+readonly USER_SOURCE_PATH="${USER_BIN_PATH}/winapps-src" # UNIX path to WinApps source directory for a '--user' WinApps installation.
 # 'APP'
 readonly SYS_APP_PATH="/usr/share/applications"                        # UNIX path to 'applications' directory for a '--system' WinApps installation.
 readonly USER_APP_PATH="${HOME}/.local/share/applications"             # UNIX path to 'applications' directory for a '--user' WinApps installation.
@@ -151,7 +151,7 @@ function waGetSourceCode() {
     SCRIPT_DIR_PATH=$(readlink -f "$(dirname "${BASH_SOURCE[0]}")")
 
     # Check if winapps is currently installed on $SOURCE_PATH
-    if [[ -f "$SCRIPT_DIR_PATH/winapps" && "$SCRIPT_DIR_PATH" -ne "$SOURCE_PATH" ]]; then
+    if [[ -f "$SCRIPT_DIR_PATH/winapps" && "$SCRIPT_DIR_PATH" != "$SOURCE_PATH" ]]; then
         # Display a warning.
         echo -e "${WARNING_TEXT}[WARNING]${CLEAR_TEXT} You are running a WinApps installation located outside of default location '${SOURCE_PATH}'. A new installation will be created."
         echo -e "${WARNING_TEXT}[WARNING]${CLEAR_TEXT} You might want to remove your old installation on '${SCRIPT_DIR_PATH}'."
@@ -1156,7 +1156,7 @@ function waFindInstalled() {
         echo "IF EXIST \"${WIN_EXECUTABLE}\" ECHO ${APPLICATION} >> ${TMP_INST_FILE_PATH_WIN}" >>"$BATCH_SCRIPT_PATH"
     done
 
-    # Append a command to the batch script to run the PowerShell script and store it's output in the 'detected' file.
+    # Append a command to the batch script to run the PowerShell script and store its output in the 'detected' file.
     # shellcheck disable=SC2129 # Silence warning regarding repeated redirects.
     echo "powershell.exe -ExecutionPolicy Bypass -File ${PS_SCRIPT_HOME_PATH_WIN} > ${DETECTED_FILE_PATH_WIN}" >>"$BATCH_SCRIPT_PATH"
 
@@ -1279,7 +1279,7 @@ function waConfigureApp() {
 
     # Source 'Info' File Containing:
     # - The Application Name          (FULL_NAME)
-    # - The Shortcut Nsame            (NAME)
+    # - The Shortcut Name             (NAME)
     # - Application Categories        (CATEGORIES)
     # - Executable Path               (WIN_EXECUTABLE)
     # - Supported MIME Types          (MIME_TYPES)
@@ -1379,7 +1379,7 @@ function waConfigureApps() {
     for OSA in "${OSA_LIST[@]}"; do
         # Source 'Info' File Containing:
         # - The Application Name          (FULL_NAME)
-        # - The Shortcut Nsame            (NAME)
+        # - The Shortcut Name             (NAME)
         # - Application Categories        (CATEGORIES)
         # - Executable Path               (WIN_EXECUTABLE)
         # - Supported MIME Types          (MIME_TYPES)
