@@ -240,7 +240,7 @@ function AppSearchUWP {
     PrintArrayData -Names $exeNames -Paths $exePaths -Source "uwp"
 }
 
-# Name: 'AppSearchWinReg'
+# Name: 'AppSearchChocolatey'
 # Role: Search for chocolatey shims.
 function AppSearchChocolatey {
     # Initialise empty arrays.
@@ -272,7 +272,7 @@ function AppSearchChocolatey {
     }
 }
 
-# Name: 'AppSearchWinReg'
+# Name: 'AppSearchScoop'
 # Role: Search for scoop shims.
 function AppSearchScoop {
     # Initialise empty arrays.
