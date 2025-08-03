@@ -473,8 +473,14 @@ APP_SCAN_TIMEOUT="60"
 # - The maximum time (in seconds) to wait for the Windows VM to boot if it is not running, before attempting to launch an application.
 # DEFAULT VALUE: '120'
 BOOT_TIMEOUT="120"
-
 ```
+
+> [!IMPORTANT]
+> To safeguard your Windows password, ensure `~/.config/winapps/winapps.conf` is accessible only by your user account.
+> ```bash
+> chown $(whoami):$(whoami) ~/.config/winapps/winapps.conf
+> chmod 600 ~/.config/winapps/winapps.conf
+> ```
 
 > [!IMPORTANT]
 > `RDP_USER` and `RDP_PASS` must correspond to a complete Windows user account and password, such as those created during Windows setup or for a domain user. User/PIN combinations are not valid for RDP access.
