@@ -684,12 +684,6 @@ Rename the PC to `RDPWindows`, but **DO NOT** restart the virtual machine.
     <img src="./libvirt_images/30.png" width="700px"/>
 </p>
 
-Scroll down to `Remote Desktop`, and enable `Enable Remote Desktop`.
-
-<p align="center">
-    <img src="./libvirt_images/31.png" width="700px"/>
-</p>
-
 At this point, you will need to restart the Windows virtual machine.
 
 ## (Optional) Configuring a Fallback Shared Folder
