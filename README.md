@@ -419,8 +419,7 @@ DEBUG="true"
 
 # [AUTOMATICALLY PAUSE WINDOWS]
 # NOTES:
-# - This is currently INCOMPATIBLE with 'docker' and 'manual'.
-# - See https://github.com/dockur/windows/issues/674
+# - This is currently INCOMPATIBLE with 'manual'.
 # DEFAULT VALUE: 'off'
 # VALID VALUES:
 # - 'on'

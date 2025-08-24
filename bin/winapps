@@ -707,7 +707,7 @@ function waCheckIdle() {
     local SUSPEND_WINDOWS=0
 
     # Prevent 'autopause' functionality with unsupported Windows backends.
-    if [ "$WAFLAVOR" != "manual" ] && [ "$WAFLAVOR" != "docker" ]; then
+    if [ "$WAFLAVOR" != "manual" ]; then
         # Check if there are no WinApps-related FreeRDP processes running.
         if ! ls "$APPDATA_PATH"/FreeRDP_Process_*.cproc &>/dev/null; then
             SUSPEND_WINDOWS=1
