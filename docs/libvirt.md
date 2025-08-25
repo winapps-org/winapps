@@ -666,24 +666,6 @@ Once you have downloaded all three files, right-click the install.bat and select
     <img src="./libvirt_images/27.png" width="700px"/>
 </p>
 
-Rename the Windows virtual machine so that WinApps can locate it by navigating to the start menu and typing `About` to bring up the `About your PC` settings.
-
-<p align="center">
-    <img src="./libvirt_images/28.png" width="700px"/>
-</p>
-
-Scroll down and click on `Rename this PC`.
-
-<p align="center">
-    <img src="./libvirt_images/29.png" width="700px"/>
-</p>
-
-Rename the PC to `RDPWindows`, but **DO NOT** restart the virtual machine.
-
-<p align="center">
-    <img src="./libvirt_images/30.png" width="700px"/>
-</p>
-
 At this point, you will need to restart the Windows virtual machine.
 
 ## (Optional) Configuring a Fallback Shared Folder
