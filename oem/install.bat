@@ -13,8 +13,12 @@ echo ============================================
 echo             WinApps Setup Wizard
 echo ============================================
 echo.
-echo Press any key to continue or close this window to cancel...
-pause >nul
+echo Waiting 5 seconds before starting...
+for /l %%i in (5,-1,1) do (
+    <nul set /p="%%i... "
+    timeout /t 1 >nul
+)
+echo.
 echo.
 echo [INFO] Starting setup...
 
@@ -83,5 +87,9 @@ if %ERRORLEVEL% neq 0 (
 )
 
 echo.
-echo Press any key to exit...
-pause >nul
+echo Exiting in 10 seconds...
+echo Press Ctrl+C to pause.
+for /l %%i in (10,-1,1) do (
+    <nul set /p="%%i... "
+    timeout /t 1 >nul
+)
