@@ -8,17 +8,9 @@ fltmc >nul 2>&1 || (
     exit /b
 )
 
-:: Confirm the user wants to proceed with setup
 echo ============================================
 echo             WinApps Setup Wizard
 echo ============================================
-echo.
-echo Waiting 5 seconds before starting...
-for /l %%i in (5,-1,1) do (
-    <nul set /p="%%i... "
-    timeout /t 1 >nul
-)
-echo.
 echo.
 echo [INFO] Starting setup...
 
