@@ -1,5 +1,17 @@
 Windows Registry Editor Version 5.00
 
+    ; Enable Remote Desktop
+    ; NOTE: The relevant firewall rule must be added separately with either:
+    ;   Enable-NetFirewallRule -DisplayGroup "Remote Desktop"
+    ;   or
+    ;   netsh advfirewall firewall set rule group="remote desktop" new enable=Yes
+    [HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Terminal Server]
+    "fDenyTSConnections"=dword:00000000
+
+    ; Require Network Level Authentication (NLA) for Remote Desktop
+    [HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp]
+    "UserAuthentication"=dword:00000001
+
     ; Disable RemoteApp allowlist so all applications can be used in Remote Desktop sessions
     [HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Terminal Server\TSAppAllowList]
     "fDisabledAllowList"=dword:00000001

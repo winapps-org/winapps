@@ -1,6 +1,8 @@
 # Creating a `libvirt` Windows VM
-## Understanding The Virtualisation Stack
-This method of configuring a Windows virtual machine for use with WinApps is significantly more involved than utilising `Docker` or `Podman`. Nevertheless, expert users may prefer this method due to its greater flexibility and wider range of customisation options.
+This method of configuring a Windows virtual machine for use with WinApps is significantly more involved than utilising `Docker` or `Podman`. Nevertheless, expert users may prefer this method due to its greater flexibility and wider range of customisation options (e.g. GPU passthrough).
+
+<details>
+<summary><strong>Understanding The Virtualisation Stack</strong></summary>
 
 Before beginning, it is important to have a basic understanding of the various components involved in this particular method.
 
@@ -14,6 +16,8 @@ Together, these components form a powerful and flexible virtualization stack, wi
 <p align="center">
     <img src="./libvirt_images/Virtualisation_Stack.svg" width="500px"/>
 </p>
+
+</details>
 
 ## Prerequisites
 1. Ensure your CPU supports hardware virtualisation extensions by [reading this article](https://wiki.archlinux.org/title/KVM).
@@ -146,113 +150,7 @@ Together, these components form a powerful and flexible virtualization stack, wi
     <img src="./libvirt_images/08.png" width="700px"/>
 </p>
 
-10. (Optional) Assign specific physical CPU cores to the virtual machine. This can improve performance by reducing context switching and ensuring that the virtual machine's workload consistently uses the same cores, leading to better CPU cache utilisation.
-    1. Run `lscpu -e` to determine which L1, L2 and L3 caches are associated with which CPU cores.
-
-        Example 1 (Intel 11th Gen Core i7-1185G7):
-        ```
-        CPU NODE SOCKET CORE L1d:L1i:L2:L3 ONLINE    MAXMHZ   MINMHZ
-          0    0      0    0 0:0:0:0          yes 4800.0000 400.0000
-          1    0      0    1 1:1:1:0          yes 4800.0000 400.0000
-          2    0      0    2 2:2:2:0          yes 4800.0000 400.0000
-          3    0      0    3 3:3:3:0          yes 4800.0000 400.0000
-          4    0      0    0 0:0:0:0          yes 4800.0000 400.0000
-          5    0      0    1 1:1:1:0          yes 4800.0000 400.0000
-          6    0      0    2 2:2:2:0          yes 4800.0000 400.0000
-          7    0      0    3 3:3:3:0          yes 4800.0000 400.0000
-        ```
-
-        - C<sub>0</sub> = T<sub>0</sub>+T<sub>4</sub> &rarr; L1<sub>0</sub>+L2<sub>0</sub>+L3<sub>0</sub>
-        - C<sub>1</sub> = T<sub>1</sub>+T<sub>5</sub> &rarr; L1<sub>1</sub>+L2<sub>1</sub>+L3<sub>0</sub>
-        - C<sub>2</sub> = T<sub>2</sub>+T<sub>6</sub> &rarr; L1<sub>2</sub>+L2<sub>2</sub>+L3<sub>0</sub>
-        - C<sub>3</sub> = T<sub>3</sub>+T<sub>7</sub> &rarr; L1<sub>3</sub>+L2<sub>3</sub>+L3<sub>0</sub>
-
-        Example 2 (AMD Ryzen 5 1600):
-        ```
-        CPU NODE SOCKET CORE L1d:L1i:L2:L3 ONLINE MAXMHZ    MINMHZ
-        0   0    0      0    0:0:0:0       yes    3800.0000 1550.0000
-        1   0    0      0    0:0:0:0       yes    3800.0000 1550.0000
-        2   0    0      1    1:1:1:0       yes    3800.0000 1550.0000
-        3   0    0      1    1:1:1:0       yes    3800.0000 1550.0000
-        4   0    0      2    2:2:2:0       yes    3800.0000 1550.0000
-        5   0    0      2    2:2:2:0       yes    3800.0000 1550.0000
-        6   0    0      3    3:3:3:1       yes    3800.0000 1550.0000
-        7   0    0      3    3:3:3:1       yes    3800.0000 1550.0000
-        8   0    0      4    4:4:4:1       yes    3800.0000 1550.0000
-        9   0    0      4    4:4:4:1       yes    3800.0000 1550.0000
-        10  0    0      5    5:5:5:1       yes    3800.0000 1550.0000
-        11  0    0      5    5:5:5:1       yes    3800.0000 1550.0000
-        ```
-
-        - C<sub>0</sub> = T<sub>0</sub>+T<sub>1</sub> &rarr; L1<sub>0</sub>+L2<sub>0</sub>+L3<sub>0</sub>
-        - C<sub>1</sub> = T<sub>2</sub>+T<sub>3</sub> &rarr; L1<sub>1</sub>+L2<sub>1</sub>+L3<sub>0</sub>
-        - C<sub>2</sub> = T<sub>4</sub>+T<sub>5</sub> &rarr; L1<sub>2</sub>+L2<sub>2</sub>+L3<sub>0</sub>
-        - C<sub>3</sub> = T<sub>6</sub>+T<sub>7</sub> &rarr; L1<sub>3</sub>+L2<sub>3</sub>+L3<sub>1</sub>
-        - C<sub>4</sub> = T<sub>8</sub>+T<sub>9</sub> &rarr; L1<sub>4</sub>+L2<sub>4</sub>+L3<sub>1</sub>
-        - C<sub>5</sub> = T<sub>10</sub>+T<sub>11</sub> &rarr; L1<sub>5</sub>+L2<sub>5</sub>+L3<sub>1</sub>
-
-    2. Select which CPU cores to 'pin'. You should aim to select a combination of CPU cores that minimises sharing of caches between Windows and GNU/Linux.
-
-        Example 1:
-        - CPU cores share the same singular L3 cache, so this cannot be optimised.
-        - CPU cores utilise different L1 and L2 caches, so isolating corresponding thread pairs will help improve performance.
-        - Thus, if limiting the virtual machine to a maximum of 4 threads, there are 10 possible optimal configurations:
-            - T<sub>0</sub>+T<sub>4</sub>
-            - T<sub>1</sub>+T<sub>5</sub>
-            - T<sub>2</sub>+T<sub>6</sub>
-            - T<sub>3</sub>+T<sub>7</sub>
-            - T<sub>0</sub>+T<sub>4</sub>+T<sub>1</sub>+T<sub>5</sub>
-            - T<sub>0</sub>+T<sub>4</sub>+T<sub>2</sub>+T<sub>6</sub>
-            - T<sub>0</sub>+T<sub>4</sub>+T<sub>3</sub>+T<sub>7</sub>
-            - T<sub>1</sub>+T<sub>5</sub>+T<sub>2</sub>+T<sub>6</sub>
-            - T<sub>1</sub>+T<sub>5</sub>+T<sub>3</sub>+T<sub>7</sub>
-            - T<sub>2</sub>+T<sub>6</sub>+T<sub>3</sub>+T<sub>7</sub>
-
-        Example 2:
-        - Threads 0-5 utilise one L3 cache whereas threads 6-11 utilise a different L3 cache. Thus, one of these two sets of threads should be pinned to the virtual machine.
-        - Pinning and isolating fewer than these (e.g. threads 8-11) would result in the host system making use of the L3 cache in threads 6 and 7, resulting in cache evictions and therefore bad performance.
-        - Thus, there are only two possible optimal configurations:
-            - T<sub>0</sub>+T<sub>1</sub>+T<sub>2</sub>+T<sub>3</sub>+T<sub>4</sub>+T<sub>5</sub>
-            - T<sub>6</sub>+T<sub>7</sub>+T<sub>8</sub>+T<sub>9</sub>+T<sub>10</sub>+T<sub>11</sub>
-
-    3. Prepare and add/modify the following to the `<vcpu>`, `<cputune>` and `<cpu>` sections, adjusting the values to match your selected threads.
-
-        Example 1: The following selects 'T<sub>2</sub>+T<sub>6</sub>+T<sub>3</sub>+T<sub>7</sub>'.
-
-        ```xml
-        <vcpu placement="static">4</vcpu>
-        <cputune>
-            <vcpupin vcpu="0" cpuset="2"/>
-            <vcpupin vcpu="1" cpuset="6"/>
-            <vcpupin vcpu="2" cpuset="3"/>
-            <vcpupin vcpu="3" cpuset="7"/>
-        </cputune>
-        <cpu mode="host-passthrough" check="none" migratable="on">
-            <topology sockets="1" dies="1" clusters="1" cores="2" threads="2"/>
-        </cpu>
-        ```
-
-        Example 2: The following selects 'T<sub>6</sub>+T<sub>7</sub>+T<sub>8</sub>+T<sub>9</sub>+T<sub>10</sub>+T<sub>11</sub>'.
-
-        ```xml
-        <vcpu placement="static">6</vcpu>
-        <cputune>
-            <vcpupin vcpu="0" cpuset="6"/>
-            <vcpupin vcpu="1" cpuset="7"/>
-            <vcpupin vcpu="2" cpuset="8"/>
-            <vcpupin vcpu="3" cpuset="9"/>
-            <vcpupin vcpu="4" cpuset="10"/>
-            <vcpupin vcpu="5" cpuset="11"/>
-        </cputune>
-        <cpu mode="host-passthrough" check="none" migratable="on">
-            <topology sockets="1" dies="1" clusters="1" cores="3" threads="2"/>
-        </cpu>
-        ```
-
-> [!NOTE]
-> More information on configuring CPU pinning can be found in [this excellent guide](https://wiki.archlinux.org/title/PCI_passthrough_via_OVMF#CPU_pinning).
-
-11. Navigate to the `XML` tab, and edit the `<clock>` section to disable all timers except for the hypervclock, thereby drastically reducing idle CPU usage. Once changed, click `Apply`.
+10. Navigate to the `XML` tab, and edit the `<clock>` section to disable all timers except for the hypervclock, thereby drastically reducing idle CPU usage. Once changed, click `Apply`.
     ```xml
     <clock offset='localtime'>
       <timer name='rtc' present='no' tickpolicy='catchup'/>
@@ -267,7 +165,7 @@ Together, these components form a powerful and flexible virtualization stack, wi
     <img src="./libvirt_images/09.png" width="700px"/>
 </p>
 
-12. Enable Hyper-V enlightenments by adding the following to the `<hyperv>` section. Once changed, click `Apply`.
+11. Enable Hyper-V enlightenments by adding the following to the `<hyperv>` section. Once changed, click `Apply`.
 
     ```xml
     <hyperv>
@@ -290,7 +188,7 @@ Together, these components form a powerful and flexible virtualization stack, wi
 > [!NOTE]
 > Hyper-V enlightenments make Windows (and other Hyper-V guests) think they are running on top of a Hyper-V compatible hypervisor. This enables use of Hyper-V specific features, allowing `KVM` to implement paravirtualised interfaces for improved virtual machine performance.
 
-13. Add the following XML snippet within the `<devices>` section to enable the GNU/Linux host to communicate with Windows using `QEMU Guest Agent`.
+12. Add the following XML snippet within the `<devices>` section to enable the GNU/Linux host to communicate with Windows using `QEMU Guest Agent`.
 
     ```xml
     <channel type='unix'>
@@ -300,31 +198,31 @@ Together, these components form a powerful and flexible virtualization stack, wi
     </channel>
     ```
 
-14. In the 'Memory' section, set the `Current allocation` to the minimum amount of memory you want the virtual machine to use, with a recommended value of `1024MB`.
+13. In the 'Memory' section, set the `Current allocation` to the minimum amount of memory you want the virtual machine to use, with a recommended value of `1024MB`.
 
 <p align="center">
     <img src="./libvirt_images/10.png" width="500px"/>
 </p>
 
-15. (Optional) Under `Boot Options`, enable `Start virtual machine on host boot up`.
+14. (Optional) Under `Boot Options`, enable `Start virtual machine on host boot up`.
 
 <p align="center">
     <img src="./libvirt_images/11.png" width="500px"/>
 </p>
 
-16. Navigate to 'SATA Disk 1' and set the `Disk bus` type to `VirtIO`. This allows disk access to be paravirtualised, improving virtual machine performance.
+15. Navigate to 'SATA Disk 1' and set the `Disk bus` type to `VirtIO`. This allows disk access to be paravirtualised, improving virtual machine performance.
 
 <p align="center">
     <img src="./libvirt_images/12.png" width="500px"/>
 </p>
 
-17. Navigate to 'NIC' and set the `Device model` type to `virtio` to enable paravirtualised networking.
+16. Navigate to 'NIC' and set the `Device model` type to `virtio` to enable paravirtualised networking.
 
 <p align="center">
     <img src="./libvirt_images/13.png" width="500px"/>
 </p>
 
-18. Click the `Add Hardware` button in the lower left, and choose `Storage`. For `Device type`, select `CDROM device` and choose the VirtIO driver `.ISO` you downloaded earlier. Click `Finish` to add the new CD-ROM device.
+17. Click the `Add Hardware` button in the lower left, and choose `Storage`. For `Device type`, select `CDROM device` and choose the VirtIO driver `.ISO` you downloaded earlier. Click `Finish` to add the new CD-ROM device.
 
 > [!IMPORTANT]
 > If you skip this step, the Windows installer will fail to recognise and list the virtual hard drive you created earlier.
@@ -333,14 +231,121 @@ Together, these components form a powerful and flexible virtualization stack, wi
     <img src="./libvirt_images/14.png" width="500px"/>
 </p>
 
-19. Click `Begin Installation` in the top left.
+<details>
+<summary><strong>(Optional) Assign Specific Physical CPU Cores</strong></summary>
 
-<p align="center">
-    <img src="./libvirt_images/15.png" width="700px"/>
-</p>
+Assigning specific physical CPU cores to the virtual machine can improve performance by reducing context switching and ensuring that the virtual machine's workload consistently uses the same cores, leading to better CPU cache utilisation. This is an optional step.
 
-### Example `.XML` File
+1. Run `lscpu -e` to determine which L1, L2 and L3 caches are associated with which CPU cores.
+
+    Example 1 (Intel 11th Gen Core i7-1185G7):
+    ```
+    CPU NODE SOCKET CORE L1d:L1i:L2:L3 ONLINE    MAXMHZ   MINMHZ
+      0    0      0    0 0:0:0:0          yes 4800.0000 400.0000
+      1    0      0    1 1:1:1:0          yes 4800.0000 400.0000
+      2    0      0    2 2:2:2:0          yes 4800.0000 400.0000
+      3    0      0    3 3:3:3:0          yes 4800.0000 400.0000
+      4    0      0    0 0:0:0:0          yes 4800.0000 400.0000
+      5    0      0    1 1:1:1:0          yes 4800.0000 400.0000
+      6    0      0    2 2:2:2:0          yes 4800.0000 400.0000
+      7    0      0    3 3:3:3:0          yes 4800.0000 400.0000
+    ```
+
+    - C<sub>0</sub> = T<sub>0</sub>+T<sub>4</sub> &rarr; L1<sub>0</sub>+L2<sub>0</sub>+L3<sub>0</sub>
+    - C<sub>1</sub> = T<sub>1</sub>+T<sub>5</sub> &rarr; L1<sub>1</sub>+L2<sub>1</sub>+L3<sub>0</sub>
+    - C<sub>2</sub> = T<sub>2</sub>+T<sub>6</sub> &rarr; L1<sub>2</sub>+L2<sub>2</sub>+L3<sub>0</sub>
+    - C<sub>3</sub> = T<sub>3</sub>+T<sub>7</sub> &rarr; L1<sub>3</sub>+L2<sub>3</sub>+L3<sub>0</sub>
+
+    Example 2 (AMD Ryzen 5 1600):
+    ```
+    CPU NODE SOCKET CORE L1d:L1i:L2:L3 ONLINE MAXMHZ    MINMHZ
+    0   0    0      0    0:0:0:0       yes    3800.0000 1550.0000
+    1   0    0      0    0:0:0:0       yes    3800.0000 1550.0000
+    2   0    0      1    1:1:1:0       yes    3800.0000 1550.0000
+    3   0    0      1    1:1:1:0       yes    3800.0000 1550.0000
+    4   0    0      2    2:2:2:0       yes    3800.0000 1550.0000
+    5   0    0      2    2:2:2:0       yes    3800.0000 1550.0000
+    6   0    0      3    3:3:3:1       yes    3800.0000 1550.0000
+    7   0    0      3    3:3:3:1       yes    3800.0000 1550.0000
+    8   0    0      4    4:4:4:1       yes    3800.0000 1550.0000
+    9   0    0      4    4:4:4:1       yes    3800.0000 1550.0000
+    10  0    0      5    5:5:5:1       yes    3800.0000 1550.0000
+    11  0    0      5    5:5:5:1       yes    3800.0000 1550.0000
+    ```
+
+    - C<sub>0</sub> = T<sub>0</sub>+T<sub>1</sub> &rarr; L1<sub>0</sub>+L2<sub>0</sub>+L3<sub>0</sub>
+    - C<sub>1</sub> = T<sub>2</sub>+T<sub>3</sub> &rarr; L1<sub>1</sub>+L2<sub>1</sub>+L3<sub>0</sub>
+    - C<sub>2</sub> = T<sub>4</sub>+T<sub>5</sub> &rarr; L1<sub>2</sub>+L2<sub>2</sub>+L3<sub>0</sub>
+    - C<sub>3</sub> = T<sub>6</sub>+T<sub>7</sub> &rarr; L1<sub>3</sub>+L2<sub>3</sub>+L3<sub>1</sub>
+    - C<sub>4</sub> = T<sub>8</sub>+T<sub>9</sub> &rarr; L1<sub>4</sub>+L2<sub>4</sub>+L3<sub>1</sub>
+    - C<sub>5</sub> = T<sub>10</sub>+T<sub>11</sub> &rarr; L1<sub>5</sub>+L2<sub>5</sub>+L3<sub>1</sub>
+
+2. Select which CPU cores to 'pin'. You should aim to select a combination of CPU cores that minimises sharing of caches between Windows and GNU/Linux.
+
+    Example 1:
+    - CPU cores share the same singular L3 cache, so this cannot be optimised.
+    - CPU cores utilise different L1 and L2 caches, so isolating corresponding thread pairs will help improve performance.
+    - Thus, if limiting the virtual machine to a maximum of 4 threads, there are 10 possible optimal configurations:
+        - T<sub>0</sub>+T<sub>4</sub>
+        - T<sub>1</sub>+T<sub>5</sub>
+        - T<sub>2</sub>+T<sub>6</sub>
+        - T<sub>3</sub>+T<sub>7</sub>
+        - T<sub>0</sub>+T<sub>4</sub>+T<sub>1</sub>+T<sub>5</sub>
+        - T<sub>0</sub>+T<sub>4</sub>+T<sub>2</sub>+T<sub>6</sub>
+        - T<sub>0</sub>+T<sub>4</sub>+T<sub>3</sub>+T<sub>7</sub>
+        - T<sub>1</sub>+T<sub>5</sub>+T<sub>2</sub>+T<sub>6</sub>
+        - T<sub>1</sub>+T<sub>5</sub>+T<sub>3</sub>+T<sub>7</sub>
+        - T<sub>2</sub>+T<sub>6</sub>+T<sub>3</sub>+T<sub>7</sub>
+
+    Example 2:
+    - Threads 0-5 utilise one L3 cache whereas threads 6-11 utilise a different L3 cache. Thus, one of these two sets of threads should be pinned to the virtual machine.
+    - Pinning and isolating fewer than these (e.g. threads 8-11) would result in the host system making use of the L3 cache in threads 6 and 7, resulting in cache evictions and therefore bad performance.
+    - Thus, there are only two possible optimal configurations:
+        - T<sub>0</sub>+T<sub>1</sub>+T<sub>2</sub>+T<sub>3</sub>+T<sub>4</sub>+T<sub>5</sub>
+        - T<sub>6</sub>+T<sub>7</sub>+T<sub>8</sub>+T<sub>9</sub>+T<sub>10</sub>+T<sub>11</sub>
+
+3. Prepare and add/modify the following to the `<vcpu>`, `<cputune>` and `<cpu>` sections, adjusting the values to match your selected threads.
+
+    Example 1: The following selects 'T<sub>2</sub>+T<sub>6</sub>+T<sub>3</sub>+T<sub>7</sub>'.
+
+    ```xml
+    <vcpu placement="static">4</vcpu>
+    <cputune>
+        <vcpupin vcpu="0" cpuset="2"/>
+        <vcpupin vcpu="1" cpuset="6"/>
+        <vcpupin vcpu="2" cpuset="3"/>
+        <vcpupin vcpu="3" cpuset="7"/>
+    </cputune>
+    <cpu mode="host-passthrough" check="none" migratable="on">
+        <topology sockets="1" dies="1" clusters="1" cores="2" threads="2"/>
+    </cpu>
+    ```
+
+    Example 2: The following selects 'T<sub>6</sub>+T<sub>7</sub>+T<sub>8</sub>+T<sub>9</sub>+T<sub>10</sub>+T<sub>11</sub>'.
+
+    ```xml
+    <vcpu placement="static">6</vcpu>
+    <cputune>
+        <vcpupin vcpu="0" cpuset="6"/>
+        <vcpupin vcpu="1" cpuset="7"/>
+        <vcpupin vcpu="2" cpuset="8"/>
+        <vcpupin vcpu="3" cpuset="9"/>
+        <vcpupin vcpu="4" cpuset="10"/>
+        <vcpupin vcpu="5" cpuset="11"/>
+    </cputune>
+    <cpu mode="host-passthrough" check="none" migratable="on">
+        <topology sockets="1" dies="1" clusters="1" cores="3" threads="2"/>
+    </cpu>
+    ```
+
+> [!NOTE]
+> More information on configuring CPU pinning can be found in [this excellent guide](https://wiki.archlinux.org/title/PCI_passthrough_via_OVMF#CPU_pinning).
+
+</details>
+
 Below is an example `.XML` file that describes a Windows 11 virtual machine.
+<details>
+<summary><strong>Example .XML File</strong></summary>
 
 ```xml
 <domain type="kvm">
@@ -563,14 +568,21 @@ Below is an example `.XML` file that describes a Windows 11 virtual machine.
 </domain>
 ```
 
+</details>
+
 ## Install Windows
-Install Windows as you would on any other machine.
+Click `Begin Installation` in the top left.
+
+<p align="center">
+    <img src="./libvirt_images/15.png" width="700px"/>
+</p>
 
 <p align="center">
     <img src="./libvirt_images/16.png" width="700px"/>
 </p>
 
 Once you get to the point of selecting the location for installation, you will see there are no disks available. This is because the `VirtIO driver` needs to be specified manually.
+
 1. Select `Load driver`.
 
 <p align="center">
@@ -615,19 +627,17 @@ Following the above, choose to "Continue with limited setup".
 </p>
 
 ## Final Configuration Steps
-Open `File Explorer` and navigate to the drive where the `VirtIO` driver `.ISO` is mounted. Run `virtio-win-gt-x64.exe` to launch the `VirtIO` driver installer.
+Open `File Explorer` and navigate to the drive where the "virtio-win" `.iso` is mounted. Run `virtio-win-guest-tools.exe` to install all necessary drivers as well as `QEMU Guest Agent`. Leave everything as default and click `Next` through the installer.
 
 <p align="center">
     <img src="./libvirt_images/24.png" width="700px"/>
 </p>
 
-Leave everything as default and click `Next` through the installer. This will install all required device drivers as well as the 'Memory Ballooning' service.
-
 <p align="center">
     <img src="./libvirt_images/25.png" width="700px"/>
 </p>
 
-Next, install the `QEMU Guest Agent` within Windows. This agent allows the GNU/Linux host to request a graceful shutdown of the Windows system. To do this, either run `virtio-win-guest-tools.exe` or `guest-agent\qemu-ga-x86_64.msi`. You can confirm the guest agent was successfully installed by running `Get-Service QEMU-GA` within a PowerShell window. The output should resemble:
+Confirm `QEMU Guest Agent` was successfully installed by running `Get-Service QEMU-GA` within a PowerShell window. The output should resemble:
 
 ```
 Status   Name               DisplayName
@@ -654,7 +664,7 @@ You can then test whether the host GNU/Linux system can communicate with Windows
 }
 ```
 
-Next, you will need to make some registry changes to enable RDP Applications to run on the system. Start by downloading the [RDPApps.reg](../oem/RDPApps.reg) file, right-clicking on the `Raw` button, and clicking on `Save target as`. Repeat the same thing for the [install.bat](../oem/install.bat) and the [NetProfileCleanup.ps1](../oem/NetProfileCleanup.ps1). **Do not download the Container.reg.**
+Next, you will need to make some registry changes to enable RDP Applications to run on the system. Start by downloading the [RDPApps.reg](../oem/RDPApps.reg) file, right-clicking on the `Raw` button, and clicking on `Save target as`. Repeat the same thing for the [install.bat](../oem/install.bat) and the [NetProfileCleanup.ps1](../oem/NetProfileCleanup.ps1). **Do not download 'Container.reg'** - this file is only required for users using docker or podman.
 
 <p align="center">
     <img src="./libvirt_images/26.png" width="700px"/>
@@ -666,33 +676,11 @@ Once you have downloaded all three files, right-click the install.bat and select
     <img src="./libvirt_images/27.png" width="700px"/>
 </p>
 
-Rename the Windows virtual machine so that WinApps can locate it by navigating to the start menu and typing `About` to bring up the `About your PC` settings.
+Once this is complete, restart the Windows virtual machine.
 
-<p align="center">
-    <img src="./libvirt_images/28.png" width="700px"/>
-</p>
+<details>
+<summary><strong>(Optional) Configuring a Fallback Shared Folder</strong></summary>
 
-Scroll down and click on `Rename this PC`.
-
-<p align="center">
-    <img src="./libvirt_images/29.png" width="700px"/>
-</p>
-
-Rename the PC to `RDPWindows`, but **DO NOT** restart the virtual machine.
-
-<p align="center">
-    <img src="./libvirt_images/30.png" width="700px"/>
-</p>
-
-Scroll down to `Remote Desktop`, and enable `Enable Remote Desktop`.
-
-<p align="center">
-    <img src="./libvirt_images/31.png" width="700px"/>
-</p>
-
-At this point, you will need to restart the Windows virtual machine.
-
-## (Optional) Configuring a Fallback Shared Folder
 When connecting to Windows through FreeRDP, your home folder will be shared automatically. However, this sharing setup does not apply when using Windows via virt-manager. To configure a fallback shared folder, follow these steps:
 
 1. Navigate to "Virtual Hardware Details", then "Memory" and then check the box for "Enable shared memory".
@@ -709,7 +697,11 @@ When connecting to Windows through FreeRDP, your home folder will be shared auto
 
 5. Reboot Windows.
 
-## (Optional) Configuring a Static IP Address
+</details>
+
+<details>
+<summary><strong>(Optional) Configuring a Static IP Address</strong></summary>
+
 1. Identify the Windows MAC address.
     ```bash
     virsh dumpxml "RDPWindows" | grep "mac address"
@@ -744,11 +736,17 @@ When connecting to Windows through FreeRDP, your home folder will be shared auto
 
     5. Reboot Windows.
 
+</details>
+
+<details>
+<summary><strong>(Optional) Installing Spice Guest Tools</strong></summary>
+
+You may also wish to install [Spice Guest Tools](https://www.spice-space.org/download/windows/spice-guest-tools/spice-guest-tools-latest.exe) inside the virtual machine, which enables features like auto-desktop resize and cut-and-paste when accessing the virtual machine through `virt-manager`. Since WinApps uses RDP, however, this is unnecessary if you don't plan to access the virtual machine via `virt-manager`.
+
+</details>
+
 ## Installing Windows Software and Configuring WinApps
 You may now proceed to install other applications like 'Microsoft 365', 'Adobe Creative Cloud' or any other applications you would like to use through WinApps.
-
-> [!NOTE]
-> You may also wish to install [Spice Guest Tools](https://www.spice-space.org/download/windows/spice-guest-tools/spice-guest-tools-latest.exe) inside the virtual machine, which enables features like auto-desktop resize and cut-and-paste when accessing the virtual machine through `virt-manager`. Since WinApps uses RDP, however, this is unnecessary if you don't plan to access the virtual machine via `virt-manager`.
 
 > [!IMPORTANT]
 > Ensure `WAFLAVOR` is set to `"libvirt"` in your `~/.config/winapps/winapps.conf` to prevent WinApps looking for a `Docker` installation instead.
