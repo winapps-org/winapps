@@ -20,19 +20,19 @@ WinApps works by:
 - Microsoft Office links (e.g. ms-word://) from the host system are automatically opened in the Windows subsystem. (Note: You may need to use a [User Agent Switcher](https://github.com/ray-lothian/UserAgent-Switcher/) browser extension and set the User-Agent to Windows, as the Office webapps typically hide the "Open in Desktop App" option for Linux users.)
 
 ## Supported Applications
-**WinApps supports <u>*ALL*</u> Windows applications.**
+**WinApps supports <u>*ALL*</u> Windows applications.** Support does not, however, extend to kernel-level anti-cheat systems (e.g. Riot Vanguard).
 
 Universal application support is achieved by:
-1. Scanning Windows for any officially supported applications (list below).
+1. Scanning Windows for any community tested applications (list below).
 2. Scanning Windows for any other `.exe` files listed within the Windows Registry.
 
-Officially supported applications benefit from high-resolution icons and pre-populated MIME types. This enables file managers to determine which Windows applications should open files based on file extensions. Icons for other detected applications are pulled from `.exe` files.
+Community tested applications benefit from high-resolution icons and pre-populated MIME types. This enables file managers to determine which Windows applications should open files based on file extensions. Icons for other detected applications are pulled from `.exe` files.
 
 Contributing to the list of supported applications is encouraged through submission of pull requests! Please help us grow the WinApps community.
 
-*Please note that the provided list of officially supported applications is community-driven. As such, some applications may not be tested and verified by the WinApps team.*
+*Please note that the provided list of community tested applications is community-driven. As such, some applications may not be tested and verified by the WinApps team.*
 
-### Officially Supported Applications
+### Community Tested Applications
 <table cellpadding="10" cellspacing="0" border="0">
     <tr>
         <!-- Adobe Acrobat Pro -->
@@ -566,7 +566,7 @@ Adding your own applications with custom icons and MIME types to the installer i
 1. Modify the name and variables to reflect the appropriate/desired values for your application.
 2. Replace `icon.svg` with an SVG for your application (ensuring the icon is appropriately licensed).
 3. Remove and reinstall WinApps.
-4. Submit a pull request to add your application to WinApps as an officially supported application once you have tested and verified your configuration (optional, but encouraged).
+4. Submit a pull request to add your application to WinApps as a community tested application once you have tested and verified your configuration (optional, but encouraged).
 
 ## Running Applications Manually
 WinApps offers a manual mode for running applications that were not configured by the WinApps installer. This is completed with the `manual` flag. Executables that are in the Windows PATH do not require full path definition.
