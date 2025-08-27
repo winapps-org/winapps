@@ -1,0 +1,22 @@
+# Copyright (c) 2024 Fmstrat
+# All rights reserved.
+#
+# SPDX-License-Identifier: Proprietary
+
+# GNOME shortcut name
+NAME="After Effects 2024"
+
+# Used for descriptions and window class
+FULL_NAME="Adobe After Effects 2024"
+
+# The executable inside windows
+WIN_EXECUTABLE="C:\Program Files\Adobe\Adobe After Effects 2024\Support Files\AfterFX.exe"
+
+# GNOME categories
+CATEGORIES="WinApps;Adobe"
+
+# GNOME mimetypes
+MIME_TYPES="application/vnd.adobe.aftereffects.project;application/vnd.adobe.aftereffects.template;"
+
+# System Icon
+ICON="AdobeAfterEffects"
