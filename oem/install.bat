@@ -77,11 +77,3 @@ if %ERRORLEVEL% neq 0 (
         echo [ERROR] Failed to create scheduled task "%taskname%".
     )
 )
-
-echo.
-echo Exiting in 10 seconds...
-echo Press Ctrl+C to pause.
-for /l %%i in (10,-1,1) do (
-    <nul set /p="%%i... "
-    timeout /t 1 >nul
-)
