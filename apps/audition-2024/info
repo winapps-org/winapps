@@ -1,0 +1,17 @@
+# GNOME shortcut name
+NAME="Audition 2024"
+
+# Used for descriptions and window class
+FULL_NAME="Adobe Audition 2024"
+
+# The executable inside windows
+WIN_EXECUTABLE="C:\Program Files\Adobe\Adobe Audition 2024\Adobe Audition.exe"
+
+# GNOME categories
+CATEGORIES="WinApps;Adobe"
+
+# GNOME mimetypes
+MIME_TYPES=""
+
+# System Icon
+ICON="AdobeAudition"
