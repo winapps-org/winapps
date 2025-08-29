@@ -1,5 +1,5 @@
 diff --git a/setup.sh b/setup.sh
-index 0debe4d..6aeea08 100755
+index d514bcc..ff53ead 100755
 --- a/setup.sh
 +++ b/setup.sh
 @@ -39,8 +39,8 @@ readonly SYS_BIN_PATH="/usr/local/bin"                  # UNIX path to 'bin' dir
@@ -22,7 +22,7 @@ index 0debe4d..6aeea08 100755
  
  # REMOTE DESKTOP CONFIGURATION
  readonly RDP_PORT=3389         # Port used for RDP on Windows.
-@@ -155,13 +155,6 @@ function waGetSourceCode() {
+@@ -157,13 +157,6 @@ function waGetSourceCode() {
          echo -e "${WARNING_TEXT}[WARNING]${CLEAR_TEXT} You might want to remove your old installation on '${SCRIPT_DIR_PATH}'."
      fi
  
@@ -36,7 +36,7 @@ index 0debe4d..6aeea08 100755
      # Silently change the working directory.
      if ! cd "$SOURCE_PATH" &>/dev/null; then
          # Display the error type.
-@@ -186,21 +179,8 @@ function waGetSourceCode() {
+@@ -188,21 +181,8 @@ function waGetSourceCode() {
  # Name: 'waGetInquirer'
  # Role: Loads the inquirer script, even if the source isn't cloned yet
  function waGetInquirer() {
@@ -59,7 +59,7 @@ index 0debe4d..6aeea08 100755
  }
  
  # Name: 'waCheckInput'
-@@ -805,7 +785,7 @@ function waCheckGroupMembership() {
+@@ -807,7 +787,7 @@ function waCheckGroupMembership() {
      # Identify groups the current user belongs to.
      USER_GROUPS=$(groups "$(whoami)")
  
@@ -68,7 +68,7 @@ index 0debe4d..6aeea08 100755
          # Complete the previous line.
          echo -e "${FAIL_TEXT}Failed!${CLEAR_TEXT}\n"
  
-@@ -1239,11 +1219,11 @@ function waConfigureWindows() {
+@@ -1242,11 +1222,11 @@ function waConfigureWindows() {
      # Populate variables.
      WIN_BASH="\
  #!/usr/bin/env bash
@@ -82,7 +82,7 @@ index 0debe4d..6aeea08 100755
  Terminal=false
  Type=Application
  Icon=${APPDATA_PATH}/icons/windows.svg
-@@ -1290,13 +1270,13 @@ function waConfigureApp() {
+@@ -1293,13 +1273,13 @@ function waConfigureApp() {
      # Determine the content of the bash script for the application.
      APP_BASH="\
  #!/usr/bin/env bash
@@ -98,7 +98,16 @@ index 0debe4d..6aeea08 100755
  Terminal=false
  Type=Application
  Icon=${APP_ICON}
-@@ -1550,7 +1530,7 @@ function waInstall() {
+@@ -1349,6 +1329,8 @@ function waConfigureOfficiallySupported() {
+             fi
+ 
+             # Copy the protocol handler to the appropriate directory.
++            # Fix permissions for nix.
++            $SUDO chmod u+w "$TARGET_DIR/ms-office-protocol-handler.desktop"
+             $SUDO cp "./apps/ms-office-protocol-handler.desktop" "$TARGET_DIR/ms-office-protocol-handler.desktop"
+         fi
+ 
+@@ -1566,7 +1548,7 @@ function waInstall() {
      echo -e "${BOLD_TEXT}Installing WinApps.${CLEAR_TEXT}"
  
      # Check for existing conflicting WinApps installations.
@@ -107,7 +116,7 @@ index 0debe4d..6aeea08 100755
  
      # Load the WinApps configuration file.
      waLoadConfig
-@@ -1626,8 +1606,8 @@ function waInstall() {
+@@ -1635,8 +1617,11 @@ function waInstall() {
      waFindInstalled
  
      # Install the WinApps bash scripts.
@@ -115,10 +124,13 @@ index 0debe4d..6aeea08 100755
 -    $SUDO ln -sf "${SOURCE_PATH}/setup.sh" "${BIN_PATH}/winapps-setup"
 +
 +
++
++    # Fix permissions for nix.
++    $SUDO chmod u+w -R "${APPDATA_PATH}"
  
      # Configure the Windows RDP session application launcher.
      waConfigureWindows
-@@ -1677,18 +1657,15 @@ function waUninstall() {
+@@ -1697,18 +1682,15 @@ function waUninstall() {
      local DESKTOP_FILE_NAME=""        # Stores the name of the '.desktop' file for the application.
      local BASH_SCRIPT_NAME=""         # Stores the name of the application.
  
@@ -139,7 +151,7 @@ index 0debe4d..6aeea08 100755
  
      # Remove each '.desktop' file.
      for DESKTOP_FILE_PATH in "${WINAPPS_DESKTOP_FILES[@]}"; do
-@@ -1709,7 +1686,7 @@ function waUninstall() {
+@@ -1729,7 +1711,7 @@ function waUninstall() {
      done
  
      # Store the paths of bash scripts calling 'WinApps' to launch specific applications in an array, returning an empty array if no such files exist.
@@ -148,7 +160,7 @@ index 0debe4d..6aeea08 100755
  
      # Remove each bash script.
      for BASH_SCRIPT_PATH in "${WINAPPS_APP_BASH_SCRIPTS[@]}"; do
-@@ -1730,10 +1707,9 @@ function waUninstall() {
+@@ -1750,10 +1732,9 @@ function waUninstall() {
      done
  
      # Print caveats.
