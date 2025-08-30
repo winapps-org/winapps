@@ -1,0 +1,22 @@
+# Copyright (c) 2024 Fmstrat
+# All rights reserved.
+#
+# SPDX-License-Identifier: Proprietary
+
+# GNOME shortcut name
+NAME="Power BI Desktop (Traditional)"
+
+# Used for descriptions and window class
+FULL_NAME="Microsoft Power BI Desktop"
+
+# The executable inside windows
+WIN_EXECUTABLE="C:\Program Files\Microsoft Power BI Desktop\bin\PBIDesktop.exe"
+
+# GNOME categories
+CATEGORIES="WinApps;Office"
+
+# GNOME mimetypes
+MIME_TYPES="application/x-powerbi;application/vnd.ms-powerbi;application/powerbi;application/x-pbix;application/vnd.powerbi.pbix"
+
+# System Icon
+ICON="ms-powerbi"
