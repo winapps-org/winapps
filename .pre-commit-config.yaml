@@ -1,6 +1,3 @@
-ci:
-  autoupdate_branch: "rewrite"
-
 exclude: ^(.+)\.patch$
 
 repos:
