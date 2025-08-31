@@ -1,0 +1,58 @@
+name: Bug Report
+description: File a bug report.
+title: ""
+labels: ["triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        We cannot fix nor support all bugs caused by FreeRDP, especially on Wayland.  
+        If you experience visual bugs, please open a discussion instead. 
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: Also tell us, what did you expect to happen?
+      placeholder: Tell us what you see!
+      value: "A bug happened!"
+    validations:
+      required: true
+
+  - type: input
+    id: distro
+    attributes:
+      label: Your Linux distribution and version
+      placeholder: "Ubuntu 22.04"
+    validations:
+      required: true
+
+  - type: textarea
+    id: config
+    attributes:
+      label: Your `winapps.conf`
+      description: Please copy and paste your `winapps.conf`. Make sure to not include any sensible data. This will be automatically formatted into code, so no need for backticks.
+      render: shell
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs
+      description: Give the output of WinApps, FreeRDP etc. where / if applicable.
+      render: shell
+
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Terms
+      options:
+        - label: I am running the latest version.
+          required: true
+        - label: To the best of my knowledge, this is a bug and not a setup nor a FreeRDP problem.
+          required: true
+        - label: I have checked for duplicate issues.
+          required: true
+        - label: I agree to follow this project's Code of Conduct.
+          required: true
