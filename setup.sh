@@ -1254,7 +1254,7 @@ StartupWMClass=Microsoft Windows
 Comment=Microsoft Windows RDP Session"
 
     # Copy the 'Windows' icon.
-    $SUDO cp "./icons/windows.svg" "${APPDATA_PATH}/icons/windows.svg"
+    $SUDO cp "./install/windows.svg" "${APPDATA_PATH}/icons/windows.svg"
 
     # Write the desktop entry content to a file.
     echo "$WIN_DESKTOP" | $SUDO tee "${APP_PATH}/windows.desktop" &>/dev/null
