@@ -1,10 +1,10 @@
-<p align="center"><img align="center" width="700" src="./icons/banner_dark.svg#gh-dark-mode-only"/></p>
-<p align="center"><img align="center" width="700" src="./icons/banner_light.svg#gh-light-mode-only"/></p>
+<p align="center"><img align="center" width="700" src="./docs/readme/banner_dark.svg#gh-dark-mode-only"/></p>
+<p align="center"><img align="center" width="700" src="./docs/readme/banner_light.svg#gh-light-mode-only"/></p>
 <hr>
 
 Run Windows applications (including [Microsoft 365](https://www.microsoft365.com/) and [Adobe Creative Cloud](https://www.adobe.com/creativecloud.html)) on GNU/Linux with `KDE Plasma`, `GNOME` or `XFCE`, integrated seamlessly as if they were native to the OS.
 
-<p align="center"><img src="./demo/demo.png" width=1000 alt="WinApps Demonstration."></p>
+<p align="center"><img src="./docs/readme/demo.png" width=1000 alt="WinApps Demonstration."></p>
 
 ## Underlying Mechanism
 WinApps works by:
@@ -275,7 +275,7 @@ Contributing to the list of supported applications is encouraged through submiss
     <tr>
         <!-- Windows -->
         <td>
-            <img src="icons/windows.svg" width="100">
+            <img src="install/windows.svg" width="100">
         </td>
         <td>
             <b>Windows</b><br>
@@ -558,7 +558,7 @@ bash <(curl https://raw.githubusercontent.com/winapps-org/winapps/main/setup.sh)
 
 Once WinApps is installed, a list of additional arguments can be accessed by running `winapps-setup --help`.
 
-<img src="./demo/installer.gif" width=1000 alt="WinApps Installer Animation.">
+<img src="./docs/readme/installer.gif" width=1000 alt="WinApps Installer Animation.">
 
 ## Adding Additional Pre-defined Applications
 Adding your own applications with custom icons and MIME types to the installer is easy. Simply copy one of the application configurations in the `apps` folder located within the WinApps repository, and:
@@ -584,7 +584,7 @@ The installer can be run multiple times. To update your installation of WinApps:
 ## WinApps Launcher (Optional)
 The [WinApps Launcher](https://github.com/winapps-org/winapps-launcher) provides a simple system tray menu that makes it easy to launch your installed Windows applications, open a full desktop RDP session, and control your Windows VM or container. You can start, stop, pause, reboot or hibernate Windows, as well as access your installed applications from a convenient list. This lightweight, optional tool helps streamline your overall WinApps experience.
 
-<img src="./demo/launcher.gif" width=1000 alt="WinApps Launcher Animation.">
+<img src="./docs/readme/launcher.gif" width=1000 alt="WinApps Launcher Animation.">
 
 ## Installation using Nix
 
