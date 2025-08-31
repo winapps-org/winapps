@@ -10,7 +10,7 @@ NAME="Lightroom Classic"
 FULL_NAME="Adobe Lightroom Classic"
 
 # The executable inside windows
-WIN_EXECUTABLE="C:\Program Files\Adobe\Adobe Lightroom Classic\lightroom.exe"
+WIN_EXECUTABLE="C:\Program Files\Adobe\Adobe Lightroom Classic\Lightroom.exe"
 
 # GNOME categories
 CATEGORIES="WinApps;Adobe"
