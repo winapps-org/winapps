@@ -18,7 +18,7 @@ Some pre-defined applications contain a header like:
 # SPDX-License-Identifier: Proprietary
 ```
 
-This is for historic reasons, see [LICENSE.md](../LICENSE.md) and [COPYRIGHT.md](../COPYRIGHT.md).  
+This is for historic reasons, see [LICENSE.md](../LICENSE.md) and [COPYRIGHT.md](../COPYRIGHT.md).
 When contributing new applications, please *do not* include such a header.
 
 ## Developer Certificate of Origin
@@ -57,4 +57,3 @@ By making a contribution to this project, I certify that:
     personal information I submit with it, including my sign-off) is
     maintained indefinitely and may be redistributed consistent with
     this project or the open source license(s) involved.
-

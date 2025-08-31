@@ -6,8 +6,8 @@ body:
   - type: markdown
     attributes:
       value: |
-        We cannot fix nor support all bugs caused by FreeRDP, especially on Wayland.  
-        If you experience visual bugs, please open a discussion instead. 
+        We cannot fix nor support all bugs caused by FreeRDP, especially on Wayland.
+        If you experience visual bugs, please open a discussion instead.
 
   - type: textarea
     id: what-happened
