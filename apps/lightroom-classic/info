@@ -1,0 +1,22 @@
+# Copyright (c) 2024 Fmstrat
+# All rights reserved.
+#
+# SPDX-License-Identifier: Proprietary
+
+# GNOME shortcut name
+NAME="Lightroom Classic"
+
+# Used for descriptions and window class
+FULL_NAME="Adobe Lightroom Classic"
+
+# The executable inside windows
+WIN_EXECUTABLE="C:\Program Files\Adobe\Adobe Lightroom Classic\lightroom.exe"
+
+# GNOME categories
+CATEGORIES="WinApps;Adobe"
+
+# GNOME mimetypes
+MIME_TYPES=""
+
+# System Icon
+ICON="AdobeLightroom"
