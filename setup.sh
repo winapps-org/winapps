@@ -1153,7 +1153,7 @@ function waFindInstalled() {
         source "./apps/${APPLICATION}/info"
 
         # Append commands to batch file.
-        echo "IF EXIST \"${WIN_EXECUTABLE}\" ECHO ${APPLICATION} >> ${TMP_INST_FILE_PATH_WIN}" >>"$BATCH_SCRIPT_PATH"
+        echo "IF EXIST \"${WIN_EXECUTABLE}\" ECHO ${APPLICATION}^|^|^|${WIN_EXECUTABLE} >> ${TMP_INST_FILE_PATH_WIN}" >>"$BATCH_SCRIPT_PATH"
     done
 
     # Append a command to the batch script to run the PowerShell script and store its output in the 'detected' file.
@@ -1330,17 +1330,35 @@ function waConfigureOfficiallySupported() {
 
     # Create application entries for each officially supported application.
     for OSA in "${OSA_LIST[@]}"; do
-        # Print feedback.
-        echo -n "Creating an application entry for ${OSA}... "
+        # Split the line by the '|||' delimiter
+        local APP_NAME="${OSA%%|||*}"
+        local ACTUAL_WIN_EXECUTABLE="${OSA##*|||}"
 
-        # Copy application icon and information.
-        $SUDO cp -r "./apps/${OSA}" "${APPDATA_PATH}/apps"
+        # If splitting failed for some reason, skip this line to be safe.
+        if [[ -z "$APP_NAME" || -z "$ACTUAL_WIN_EXECUTABLE" ]]; then
+            continue
+        fi
 
-        # Configure the application.
-        waConfigureApp "$OSA" svg
+        # Print feedback using the clean application name.
+        echo -n "Creating an application entry for ${APP_NAME}... "
+
+        # Copy the original, unmodified application assets.
+        $SUDO cp -r "./apps/${APP_NAME}" "${APPDATA_PATH}/apps"
+
+        local DESTINATION_INFO_FILE="${APPDATA_PATH}/apps/${APP_NAME}/info"
+
+        # Sanitize the string using pure Bash. This is fast and safe.
+        local SED_SAFE_PATH="${ACTUAL_WIN_EXECUTABLE//&/\\&}"
+        SED_SAFE_PATH="${SED_SAFE_PATH//\\/\\\\}"
+
+        # Use the sanitized string to safely edit the file.
+        $SUDO sed -i "s|^WIN_EXECUTABLE=.*|WIN_EXECUTABLE=\"${SED_SAFE_PATH}\"|" "$DESTINATION_INFO_FILE"
+
+        # Configure the application using the clean name.
+        waConfigureApp "$APP_NAME" svg
 
         # Check if the application is an Office app and copy the protocol handler.
-        if [[ " ${OFFICE_APPS[*]} " == *" $OSA "* ]]; then
+        if [[ " ${OFFICE_APPS[*]} " == *" $APP_NAME "* ]]; then
             # Determine the target directory based on whether the installation is for the system or user.
             if [[ "$OPT_SYSTEM" -eq 1 ]]; then
                 TARGET_DIR="$SYS_APP_PATH"
@@ -1370,6 +1388,7 @@ function waConfigureApps() {
     local APP_INSTALL=""   # Stores the option selected by the user.
     local SELECTED_APPS=() # Stores the officially supported applications selected by the user.
     local TEMP_ARRAY=()    # Temporary array used for sorting elements of an array.
+    declare -A APP_DATA_MAP # Associative array to map short names back to their full data line.
 
     # Read the list of officially supported applications that are installed on Windows into an array, returning an empty array if no such files exist.
     # This will remove leading and trailing whitespace characters as well as ignore empty lines.
@@ -1384,14 +1403,28 @@ function waConfigureApps() {
         # - Executable Path               (WIN_EXECUTABLE)
         # - Supported MIME Types          (MIME_TYPES)
         # - Application Icon              (ICON)
+
+        # Split the line to get the clean application name
+        local APP_NAME="${OSA%%|||*}"
+        local ACTUAL_WIN_EXECUTABLE="${OSA##*|||*}"
+
+        # If splitting failed, skip this entry.
+        if [[ -z "$APP_NAME" ]]; then
+            continue
+        fi
+
+        # Use the clean APP_NAME to source the info file
         # shellcheck source=/dev/null # Exclude this file from being checked by ShellCheck.
-        source "./apps/${OSA}/info"
+        source "./apps/${APP_NAME}/info"
 
         # Add both the simplified and full name of the application to an array.
-        APPS+=("${FULL_NAME} (${OSA})")
+        APPS+=("${FULL_NAME} (${APP_NAME})")
+
+        # Store the original data line in our map so we can retrieve it later.
+        APP_DATA_MAP["$APP_NAME"]="$OSA"
 
         # Extract the executable file name (e.g. 'MyApp.exe') from the absolute path.
-        WIN_EXECUTABLE="${WIN_EXECUTABLE##*\\}"
+        WIN_EXECUTABLE="${ACTUAL_WIN_EXECUTABLE##*\\}"
 
         # Trim any leading or trailing whitespace characters from the executable file name.
         read -r WIN_EXECUTABLE <<<"$(echo "$WIN_EXECUTABLE" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')"
@@ -1426,11 +1459,11 @@ function waConfigureApps() {
         for SELECTED_APP in "${SELECTED_APPS[@]}"; do
             # Capture the substring within (but not including) the parentheses.
             # This substring represents the officially supported application name (see above loop).
-            SELECTED_APP="${SELECTED_APP##*(}"
-            SELECTED_APP="${SELECTED_APP%%)}"
+            local SHORT_NAME="${SELECTED_APP##*(}"
+            SHORT_NAME="${SHORT_NAME%%)}"
 
-            # Add the substring back to the 'install' file.
-            echo "$SELECTED_APP" >>"$INST_FILE_PATH"
+            # Use the map to find the original data line (e.g., "word|||C:\...") and write it back.
+            echo "${APP_DATA_MAP[$SHORT_NAME]}" >>"$INST_FILE_PATH"
         done
     fi
 
