@@ -20,10 +20,18 @@ body:
       required: true
 
   - type: input
+    id: freerdp
+    attributes:
+      label: Your FreeRDP version and where you got it from
+      placeholder: "FreeRDP 3.10 (Debian Backports)"
+    validations:
+      required: true
+  
+  - type: input
     id: distro
     attributes:
       label: Your Linux distribution and version
-      placeholder: "Ubuntu 22.04"
+      placeholder: "Debian Trixie"
     validations:
       required: true
 

@@ -6,7 +6,7 @@ The original project by Fmstrat <https://github.com/Fmstrat/winapps/> is not fre
 Due to lack of a license, it is All Rights Reserved by the original author.
 
 We have tried contacting Fmstrat about this, but they abandoned the project and did not reply nor apply an open-source license to the project.
-However, almost all parts of the codebase have been rewritten and all new contributions require signing a Developer Certificate of Origin (or historically, a CLA; see [CONTRIBUTING.md](./CONTRIBUTING.md)), making most parts of the codebase AGPLv3.
+However, almost all parts of the codebase have been rewritten and all new contributions require signing a Developer Certificate of Origin (or historically, a CLA; see [CONTRIBUTING.md](./docs/CONTRIBUTING.md)), making most parts of the codebase AGPLv3.
 
 Refer to a specific file for its respective license.
 
