@@ -840,11 +840,11 @@ function waCheckVMRunning() {
 
     # Obtain VM Status
     VM_PAUSED=0
-    virsh list --state-paused --name | grep -Fxq "$VM_NAME" || VM_PAUSED="$?"
+    virsh list --state-paused --name | grep -Fxq -- "$VM_NAME" || VM_PAUSED="$?"
     VM_RUNNING=0
-    virsh list --state-running --name | grep -Fxq "$VM_NAME" || VM_RUNNING="$?"
+    virsh list --state-running --name | grep -Fxq -- "$VM_NAME" || VM_RUNNING="$?"
     VM_SHUTOFF=0
-    virsh list --state-shutoff --name | grep -Fxq "$VM_NAME" || VM_SHUTOFF="$?"
+    virsh list --state-shutoff --name | grep -Fxq -- "$VM_NAME" || VM_SHUTOFF="$?"
 
     if [[ $VM_SHUTOFF == "0" ]]; then
         # Complete the previous line.
