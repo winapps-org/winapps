@@ -324,28 +324,28 @@ function waCheckVMRunning() {
 
     # Attempt to run the Windows virtual machine.
     # Note: States 'running' and 'idle' do not require intervention, and are not checked for.
-    if (virsh list --all --name | xargs | grep -wq "$VM_NAME"); then
-        if (virsh list --state-shutoff --name | xargs | grep -wq "$VM_NAME"); then
+    if (virsh list --all --name | grep -Fxq -- "$VM_NAME"); then
+        if (virsh list --state-shutoff --name | grep -Fxq -- "$VM_NAME"); then
             dprint "WINDOWS SHUT OFF. BOOTING WINDOWS."
             notify-send --expire-time=4000 --icon="dialog-info" --app-name="WinApps" --urgency="low" "WinApps" "Booting Windows."
             NEEDED_BOOT=true
             virsh start "$VM_NAME" &>/dev/null || EXIT_STATUS=$EC_FAIL_START
-            if (virsh list --state-paused --name | xargs | grep -wq "$VM_NAME"); then
+            if (virsh list --state-paused --name | grep -Fxq -- "$VM_NAME"); then
                 dprint "WINDOWS PAUSED. RESUMING WINDOWS."
                 notify-send --expire-time=4000 --icon="dialog-info" --app-name="WinApps" --urgency="low" "WinApps" "Resuming Windows."
                 virsh resume "$VM_NAME" &>/dev/null || EXIT_STATUS=$EC_FAIL_RESUME
             fi
-        elif (virsh list --state-paused --name | xargs | grep -wq "$VM_NAME"); then
+        elif (virsh list --state-paused --name | grep -Fxq -- "$VM_NAME"); then
             dprint "WINDOWS PAUSED. RESUMING WINDOWS."
             notify-send --expire-time=4000 --icon="dialog-info" --app-name="WinApps" --urgency="low" "WinApps" "Resuming Windows."
             virsh resume "$VM_NAME" &>/dev/null || EXIT_STATUS=$EC_FAIL_RESUME
-        elif (virsh list --state-other --name | xargs | grep -wq "$VM_NAME"); then
-            if (virsh domstate "$VM_NAME" | xargs | grep -wq "shutdown"); then
+        elif (virsh list --state-other --name | grep -Fxq -- "$VM_NAME"); then
+            if (virsh domstate "$VM_NAME" | grep -Fxq "in shutdown"); then
                 dprint "WINDOWS SHUTTING DOWN. WAITING."
                 notify-send --expire-time=4000 --icon="dialog-info" --app-name="WinApps" --urgency="low" "WinApps" "Windows is currently shutting down.\nIt will automatically restart once the shutdown process is complete."
                 EXIT_STATUS=$EC_SD_TIMEOUT
                 while (( TIME_ELAPSED < TIME_LIMIT )); do
-                    if (virsh list --state-shutoff --name | xargs | grep -wq "$VM_NAME"); then
+                    if (virsh list --state-shutoff --name | grep -Fxq -- "$VM_NAME"); then
                         EXIT_STATUS=0
                         dprint "WINDOWS SHUT OFF. BOOTING WINDOWS."
                         notify-send --expire-time=4000 --icon="dialog-info" --app-name="WinApps" --urgency="low" "WinApps" "Booting Windows."
@@ -356,7 +356,7 @@ function waCheckVMRunning() {
                     sleep $TIME_INTERVAL
                     TIME_ELAPSED=$((TIME_ELAPSED + TIME_INTERVAL))
                 done
-            elif (virsh domstate "$VM_NAME" | xargs | grep -wq "crashed"); then
+            elif (virsh domstate "$VM_NAME" | grep -Fxq "crashed"); then
                 dprint "WINDOWS CRASHED. DESTROYING WINDOWS."
                 notify-send --expire-time=4000 --icon="dialog-info" --app-name="WinApps" --urgency="low" "WinApps" "Windows experienced an unexpected crash.\nAttempting to restart Windows."
                 virsh destroy "$VM_NAME" &>/dev/null || EXIT_STATUS=$EC_FAIL_DESTROY
@@ -366,12 +366,12 @@ function waCheckVMRunning() {
                     virsh start "$VM_NAME" &>/dev/null || EXIT_STATUS=$EC_FAIL_START
                     NEEDED_BOOT=true
                 fi
-            elif (virsh domstate "$VM_NAME" | xargs | grep -wq "dying"); then
+            elif (virsh domstate "$VM_NAME" | grep -Fxq "dying"); then
                 dprint "WINDOWS DYING. WAITING."
                 notify-send --expire-time=4000 --icon="dialog-info" --app-name="WinApps" --urgency="low" "WinApps" "Windows is currently shutting down unexpectedly.\nIt will try to restart once the shutdown process finishes."
                 EXIT_STATUS=$EC_DIE_TIMEOUT
                 while (( TIME_ELAPSED < TIME_LIMIT )); do
-                    if (virsh domstate "$VM_NAME" | xargs | grep -wq "crashed"); then
+                    if (virsh domstate "$VM_NAME" | grep -Fxq "crashed"); then
                         EXIT_STATUS=0
                         dprint "WINDOWS CRASHED. DESTROYING WINDOWS."
                         notify-send --expire-time=4000 --icon="dialog-info" --app-name="WinApps" --urgency="low" "WinApps" "Windows experienced an unexpected crash.\nAttempting to restart Windows."
@@ -383,7 +383,7 @@ function waCheckVMRunning() {
                             NEEDED_BOOT=true
                         fi
                         break
-                    elif (virsh list --state-shutoff --name | xargs | grep -wq "$VM_NAME"); then
+                    elif (virsh list --state-shutoff --name | grep -Fxq -- "$VM_NAME"); then
                         EXIT_STATUS=0
                         dprint "WINDOWS SHUT OFF. BOOTING WINDOWS."
                         notify-send --expire-time=4000 --icon="dialog-info" --app-name="WinApps" --urgency="low" "WinApps" "Booting Windows."
@@ -394,7 +394,7 @@ function waCheckVMRunning() {
                     sleep $TIME_INTERVAL
                     TIME_ELAPSED=$((TIME_ELAPSED + TIME_INTERVAL))
                 done
-            elif (virsh domstate "$VM_NAME" | xargs | grep -wq "pmsuspended" ); then
+            elif (virsh domstate "$VM_NAME" | grep -Fxq "pmsuspended" ); then
                 dprint "WINDOWS SUSPENDED. RESUMING WINDOWS."
                 virsh resume "$VM_NAME" &>/dev/null || EXIT_STATUS=$EC_FAIL_RESUME
             fi
@@ -415,7 +415,7 @@ function waCheckVMRunning() {
 
         while (( TIME_ELAPSED < BOOT_TIMEOUT )); do
             # Check if VM is running
-            if (virsh list --state-running --name | xargs | grep -wq "$VM_NAME"); then
+            if (virsh list --state-running --name | grep -Fxq -- "$VM_NAME"); then
                 # Try to connect to RDP port to verify it's ready
                 if timeout 1 bash -c ">/dev/tcp/$RDP_IP/$RDP_PORT" 2>/dev/null; then
                     dprint "VM IS READY"

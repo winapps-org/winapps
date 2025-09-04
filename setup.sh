@@ -838,16 +838,13 @@ function waCheckVMRunning() {
     # Print feedback.
     echo -n "Checking the status of the Windows VM... "
 
-    # Declare variables.
-    local VM_STATE="" # Stores the state of the Windows VM.
-
     # Obtain VM Status
     VM_PAUSED=0
-    virsh list --state-paused | grep -wq "$VM_NAME" || VM_PAUSED="$?"
+    virsh list --state-paused --name | grep -Fxq -- "$VM_NAME" || VM_PAUSED="$?"
     VM_RUNNING=0
-    virsh list --state-running | grep -wq "$VM_NAME" || VM_RUNNING="$?"
+    virsh list --state-running --name | grep -Fxq -- "$VM_NAME" || VM_RUNNING="$?"
     VM_SHUTOFF=0
-    virsh list --state-shutoff | grep -wq "$VM_NAME" || VM_SHUTOFF="$?"
+    virsh list --state-shutoff --name | grep -Fxq -- "$VM_NAME" || VM_SHUTOFF="$?"
 
     if [[ $VM_SHUTOFF == "0" ]]; then
         # Complete the previous line.
@@ -1254,7 +1251,7 @@ StartupWMClass=Microsoft Windows
 Comment=Microsoft Windows RDP Session"
 
     # Copy the 'Windows' icon.
-    $SUDO cp "./icons/windows.svg" "${APPDATA_PATH}/icons/windows.svg"
+    $SUDO cp "./install/windows.svg" "${APPDATA_PATH}/icons/windows.svg"
 
     # Write the desktop entry content to a file.
     echo "$WIN_DESKTOP" | $SUDO tee "${APP_PATH}/windows.desktop" &>/dev/null
