@@ -17,22 +17,22 @@ WinApps works by:
 - The GNU/Linux `/home` directory is accessible within Windows via the `\\tsclient\home` mount.
 - Integration with `Nautilus`, allowing you to right-click files to open them with specific Windows applications based on the file MIME type.
 - The [official taskbar widget](https://github.com/winapps-org/WinApps-Launcher) enables seamless administration of the Windows subsystem and offers an easy way to launch Windows applications.
-- Microsoft Office links (e.g. ms-word://) from the host system are automatically opened in the Windows subsystem. (Note: You may need to use an [User Agent switcher](https://github.com/ray-lothian/UserAgent-Switcher/) Browser Extension and set the User-Agent to Windows, as as the Office webapps typically hide the "Open in Desktop App" option for Linux users.)
+- Microsoft Office links (e.g. ms-word://) from the host system are automatically opened in the Windows subsystem. (Note: You may need to use a [User Agent Switcher](https://github.com/ray-lothian/UserAgent-Switcher/) browser extension and set the User-Agent to Windows, as the Office webapps typically hide the "Open in Desktop App" option for Linux users.)
 
 ## Supported Applications
-**WinApps supports <u>*ALL*</u> Windows applications.**
+**WinApps supports <u>*ALL*</u> Windows applications.** Support does not, however, extend to kernel-level anti-cheat systems (e.g. Riot Vanguard).
 
 Universal application support is achieved by:
-1. Scanning Windows for any officially supported applications (list below).
+1. Scanning Windows for any community tested applications (list below).
 2. Scanning Windows for any other `.exe` files listed within the Windows Registry.
 
-Officially supported applications benefit from high-resolution icons and pre-populated MIME types. This enables file managers to determine which Windows applications should open files based on file extensions. Icons for other detected applications are pulled from `.exe` files.
+Community tested applications benefit from high-resolution icons and pre-populated MIME types. This enables file managers to determine which Windows applications should open files based on file extensions. Icons for other detected applications are pulled from `.exe` files.
 
 Contributing to the list of supported applications is encouraged through submission of pull requests! Please help us grow the WinApps community.
 
-*Please note that the provided list of officially supported applications is community-driven. As such, some applications may not be tested and verified by the WinApps team.*
+*Please note that the provided list of community tested applications is community-driven. As such, some applications may not be tested and verified by the WinApps team.*
 
-### Officially Supported Applications
+### Community Tested Applications
 <table cellpadding="10" cellspacing="0" border="0">
     <tr>
         <!-- Adobe Acrobat Pro -->
@@ -124,6 +124,16 @@ Contributing to the list of supported applications is encouraged through submiss
             (CS6, CC, 2022)<br>
             <i><a href="https://commons.wikimedia.org/wiki/File:Adobe_Photoshop_CC_icon.svg">Icon</a> in the Public Domain.</i>
         </td>
+        <!-- Autodesk Fusion 360 -->
+        <td>
+            <img src="apps/fusion-360/icon.svg" width="100">
+        </td>
+        <td>
+            <b>Autodesk Fusion 360</b><br>
+            <i><a href="https://commons.wikimedia.org/wiki/File:Fusion360_Logo.svg">Icon</a> in the Public Domain.</i>
+        </td>
+    </tr>
+    <tr>
         <!-- Command Prompt -->
         <td>
             <img src="apps/cmd/icon.svg" width="100">
@@ -133,8 +143,6 @@ Contributing to the list of supported applications is encouraged through submiss
             (cmd.exe)<br>
             <i><a href="https://github.com/microsoft/terminal/blob/main/res/terminal/Terminal.svg">Icon</a> under <a href="https://github.com/microsoft/terminal/blob/main/LICENSE">MIT license</a>.</i>
         </td>
-    </tr>
-    <tr>
         <!-- File Explorer -->
         <td>
             <img src="apps/explorer/icon.svg" width="100">
@@ -144,6 +152,8 @@ Contributing to the list of supported applications is encouraged through submiss
             (Windows Explorer)<br>
             <i><a href="https://commons.wikimedia.org/wiki/File:Windows_Explorer.svg">Icon</a> in the Public Domain.</i>
         </td>
+    </tr>
+    <tr>
         <!-- Internet Explorer -->
         <td>
             <img src="apps/iexplorer/icon.svg" width="100">
@@ -153,8 +163,6 @@ Contributing to the list of supported applications is encouraged through submiss
             (11)<br>
             <i><a href="https://commons.wikimedia.org/wiki/File:Internet_Explorer_10%2B11_logo.svg">Icon</a> in the Public Domain.</i>
         </td>
-    </tr>
-    <tr>
          <!-- Microsoft Access -->
         <td>
             <img src="apps/access/icon.svg" width="100">
@@ -164,6 +172,8 @@ Contributing to the list of supported applications is encouraged through submiss
             (2016, 2019, o365)<br>
             <i><a href="https://commons.wikimedia.org/wiki/File:Microsoft_Office_Access_(2019-present).svg">Icon</a> in the Public Domain.</i>
         </td>
+    </tr>
+    <tr>
         <!-- Microsoft Excel -->
         <td>
             <img src="apps/excel/icon.svg" width="100">
@@ -173,8 +183,6 @@ Contributing to the list of supported applications is encouraged through submiss
             (2016, 2019, o365)<br>
             <i><a href="https://en.m.wikipedia.org/wiki/File:Microsoft_Office_Excel_(2019%E2%80%93present).svg">Icon</a> in the Public Domain.</i>
         </td>
-    </tr>
-    <tr>
         <!-- Microsoft Word -->
         <td>
             <img src="apps/word/icon.svg" width="100">
@@ -184,6 +192,8 @@ Contributing to the list of supported applications is encouraged through submiss
             (2016, 2019, o365)<br>
             <i><a href="https://en.m.wikipedia.org/wiki/File:Microsoft_Office_Word_(2019%E2%80%93present).svg">Icon</a> in the Public Domain.</i>
         </td>
+    </tr>
+    <tr>
         <!-- Microsoft OneNote -->
         <td>
             <img src="apps/onenote/icon.svg" width="100">
@@ -193,8 +203,6 @@ Contributing to the list of supported applications is encouraged through submiss
             (2016, 2019, o365)<br>
             <i><a href="https://en.m.wikipedia.org/wiki/File:Microsoft_Office_OneNote_(2019%E2%80%93present).svg">Icon</a> in the Public Domain.</i>
         </td>
-    </tr>
-    <tr>
         <!-- Microsoft Outlook -->
         <td>
             <img src="apps/outlook/icon.svg" width="100">
@@ -204,6 +212,8 @@ Contributing to the list of supported applications is encouraged through submiss
             (2016, 2019, o365)<br>
             <i><a href="https://en.m.wikipedia.org/wiki/File:Microsoft_Office_Outlook_(2018%E2%80%93present).svg">Icon</a> in the Public Domain.</i>
         </td>
+    </tr>
+    <tr>
         <!-- Microsoft PowerPoint -->
         <td>
             <img src="apps/powerpoint/icon.svg" width="100">
@@ -213,8 +223,6 @@ Contributing to the list of supported applications is encouraged through submiss
             (2016, 2019, o365)<br>
             <i><a href="https://en.m.wikipedia.org/wiki/File:Microsoft_Office_PowerPoint_(2019%E2%80%93present).svg">Icon</a> in the Public Domain.</i>
             </td>
-    </tr>
-    <tr>
         <!-- Microsoft Publisher -->
         <td>
             <img src="apps/publisher/icon.svg" width="100">
@@ -224,6 +232,8 @@ Contributing to the list of supported applications is encouraged through submiss
             (2016, 2019, o365)<br>
             <i><a href="https://en.m.wikipedia.org/wiki/File:Microsoft_Office_Publisher_(2019-present).svg">Icon</a> in the Public Domain.</i>
         </td>
+    </tr>
+    <tr>
         <!-- Microsoft Visio -->
         <td>
             <img src="apps/visio/icon.svg" width="100">
@@ -233,8 +243,6 @@ Contributing to the list of supported applications is encouraged through submiss
             (Standard/Pro. 2021, Plan 2)<br>
             <i><a href="https://en.m.wikipedia.org/wiki/File:Microsoft_Office_Visio_(2019).svg">Icon</a> in the Public Domain.</i>
         </td>
-    </tr>
-    <tr>
         <!-- Microsoft Project -->
         <td>
             <img src="apps/project/icon.svg" width="100">
@@ -244,6 +252,8 @@ Contributing to the list of supported applications is encouraged through submiss
             (Standard/Pro. 2021, Plan 3/5)<br>
             <i><a href="https://en.m.wikipedia.org/wiki/File:Microsoft_Project_(2019–present).svg">Icon</a> in the Public Domain.</i>
         </td>
+    </tr>
+    <tr>
         <!-- Microsoft Visual Studio -->
         <td>
             <img src="apps/visual-studio-pro/icon.svg" width="100">
@@ -253,8 +263,6 @@ Contributing to the list of supported applications is encouraged through submiss
             (Comm./Pro./Ent. 2022)<br>
             <i><a href="https://en.m.wikipedia.org/wiki/File:Visual_Studio_Icon_2022.svg">Icon</a> in the Public Domain.</i>
         </td>
-    </tr>
-    <tr>
         <!-- mIRC -->
         <td>
             <img src="apps/mirc/icon.svg" width="100">
@@ -263,6 +271,8 @@ Contributing to the list of supported applications is encouraged through submiss
             <b>mIRC</b><br>
             <i><a href="https://en.wikipedia.org/wiki/MIRC#/media/File:Mircnewlogo.png">Icon</a> in the Public Domain.</i>
         </td>
+    </tr>
+    <tr>
         <!-- PowerShell -->
         <td>
             <img src="apps/powershell/icon.svg" width="100">
@@ -271,8 +281,6 @@ Contributing to the list of supported applications is encouraged through submiss
             <b>PowerShell</b><br>
             <i><a href="https://iconduck.com/icons/102322/file-type-powershell">Icon</a> under <a href="https://iconduck.com/licenses/mit">MIT license</a>.</i>
         </td>
-    </tr>
-    <tr>
         <!-- Windows -->
         <td>
             <img src="icons/windows.svg" width="100">
@@ -303,7 +311,7 @@ Install the required dependencies.
       ```
 
 > [!NOTE]
-> On Debian you need to enable the `backports` repository for the `freerdp3-x11` package to become available.
+> On Debian 12 (_"bookworm"_), you need to enable the `backports` repository for the `freerdp3-x11` package to become available.
 > For instructions, see https://backports.debian.org/Instructions.
 
   - Fedora/RHEL:
@@ -314,7 +322,7 @@ Install the required dependencies.
       ```bash
       sudo pacman -Syu --needed -y curl dialog freerdp git iproute2 libnotify openbsd-netcat
       ```
-  - OpenSUSE:
+  - openSUSE:
       ```bash
       sudo zypper install -y curl dialog freerdp git iproute2 libnotify-tools netcat-openbsd
       ```
@@ -398,7 +406,7 @@ RDP_SCALE="100"
 #   This improves compatibility with most desktop environments (DEs).
 # ATTENTION: The Filesystem Hierarchy Standard (FHS) recommends /media instead. Verify your system's configuration.
 # - To manually mount devices, you may optionally use /mnt.
-# REFERRENCE: https://wiki.archlinux.org/title/Udisks#Mount_to_/media
+# REFERENCE: https://wiki.archlinux.org/title/Udisks#Mount_to_/media
 REMOVABLE_MEDIA="/run/media"
 
 # [ADDITIONAL FREERDP FLAGS & ARGUMENTS]
@@ -419,8 +427,7 @@ DEBUG="true"
 
 # [AUTOMATICALLY PAUSE WINDOWS]
 # NOTES:
-# - This is currently INCOMPATIBLE with 'docker' and 'manual'.
-# - See https://github.com/dockur/windows/issues/674
+# - This is currently INCOMPATIBLE with 'manual'.
 # DEFAULT VALUE: 'off'
 # VALID VALUES:
 # - 'on'
@@ -469,7 +476,18 @@ RDP_TIMEOUT="30"
 # DEFAULT VALUE: '60'
 APP_SCAN_TIMEOUT="60"
 
+# WINDOWS BOOT
+# - The maximum time (in seconds) to wait for the Windows VM to boot if it is not running, before attempting to launch an application.
+# DEFAULT VALUE: '120'
+BOOT_TIMEOUT="120"
 ```
+
+> [!IMPORTANT]
+> To safeguard your Windows password, ensure `~/.config/winapps/winapps.conf` is accessible only by your user account.
+> ```bash
+> chown $(whoami):$(whoami) ~/.config/winapps/winapps.conf
+> chmod 600 ~/.config/winapps/winapps.conf
+> ```
 
 > [!IMPORTANT]
 > `RDP_USER` and `RDP_PASS` must correspond to a complete Windows user account and password, such as those created during Windows setup or for a domain user. User/PIN combinations are not valid for RDP access.
@@ -484,6 +502,7 @@ APP_SCAN_TIMEOUT="60"
 - On high-resolution (UHD) displays, you can set `RDP_SCALE` to the scale you would like to use (100, 140 or 180).
 - To add additional flags to the FreeRDP call (e.g. `/prevent-session-lock 120`), uncomment and use the `RDP_FLAGS` configuration option.
 - For multi-monitor setups, you can try adding `/multimon` to `RDP_FLAGS`. A FreeRDP bug may result in a black screen however, in which case you should revert this change.
+- To enable non-English input and seamless language switching, you can try adding `/kbd:unicode` to `RDP_FLAGS`. This ensures client inputs are sent as Unicode sequences.
 - If you enable `DEBUG`, a log will be created on each application start in `~/.local/share/winapps/winapps.log`.
 - If using a system on which the FreeRDP command is not `xfreerdp` or `xfreerdp3`, the correct command can be specified using `FREERDP_COMMAND`.
 
@@ -554,7 +573,7 @@ Adding your own applications with custom icons and MIME types to the installer i
 1. Modify the name and variables to reflect the appropriate/desired values for your application.
 2. Replace `icon.svg` with an SVG for your application (ensuring the icon is appropriately licensed).
 3. Remove and reinstall WinApps.
-4. Submit a pull request to add your application to WinApps as an officially supported application once you have tested and verified your configuration (optional, but encouraged).
+4. Submit a pull request to add your application to WinApps as a community tested application once you have tested and verified your configuration (optional, but encouraged).
 
 ## Running Applications Manually
 WinApps offers a manual mode for running applications that were not configured by the WinApps installer. This is completed with the `manual` flag. Executables that are in the Windows PATH do not require full path definition.
@@ -570,6 +589,11 @@ The installer can be run multiple times. To update your installation of WinApps:
 2. Pull the latest changes from the WinApps GitHub repository.
 3. Re-install WinApps using the WinApps installer by running `winapps-setup`.
 
+## WinApps Launcher (Optional)
+The [WinApps Launcher](https://github.com/winapps-org/winapps-launcher) provides a simple system tray menu that makes it easy to launch your installed Windows applications, open a full desktop RDP session, and control your Windows VM or container. You can start, stop, pause, reboot or hibernate Windows, as well as access your installed applications from a convenient list. This lightweight, optional tool helps streamline your overall WinApps experience.
+
+<img src="./demo/launcher.gif" width=1000 alt="WinApps Launcher Animation.">
+
 ## Installation using Nix
 
 First, follow Step 1 of the normal installation guide to create your VM.
@@ -584,10 +608,6 @@ First, make sure Flakes and the `nix` command are enabled.
 In your `~/.config/nix/nix.conf`:
 ```
 experimental-features = nix-command flakes
-# specify to use binary cache (optional)
-extra-substituters = https://winapps.cachix.org/
-extra-trusted-public-keys = winapps.cachix.org-1:HI82jWrXZsQRar/PChgIx1unmuEsiQMQq+zt05CD36g=
-extra-trusted-users = <your-username> # replace with your username
 ```
 
 ```bash
@@ -634,12 +654,6 @@ nix profile install github:winapps-org/winapps#winapps-launcher # optional
               ...
             }:
             {
-              # set up binary cache (optional)
-              nix.settings = {
-                substituters = [ "https://winapps.cachix.org/" ];
-                trusted-public-keys = [ "winapps.cachix.org-1:HI82jWrXZsQRar/PChgIx1unmuEsiQMQq+zt05CD36g=" ];
-              };
-
               environment.systemPackages = [
                 winapps.packages."${system}".winapps
                 winapps.packages."${system}".winapps-launcher # optional

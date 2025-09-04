@@ -52,9 +52,11 @@ RDP_SCALE=100
 AUTOPAUSE="off"
 AUTOPAUSE_TIME="300"
 DEBUG="true"
+BOOT_TIMEOUT=120
 
 # OTHER
 FREERDP_PID=-1
+NEEDED_BOOT=false
 
 ### TRAPS ###
 # Catch SIGINT (CTRL+C) to call 'waCleanUp'.
@@ -107,15 +109,15 @@ Please run:
         notify-send --expire-time=8000 --icon="dialog-error" --app-name="WinApps" --urgency="low" "WinApps" "Windows failed to resume."
         ;;
     "$EC_FAIL_DESTROY")
-        dprint "ERROR: WINDOWS FAILED TO IMMEDIATELY UNGRACEFULLY SHUT DOWN WINDOWS. EXITING."
-        notify-send --expire-time=8000 --icon="dialog-error" --app-name="WinApps" --urgency="low" "WinApps" "Failed to ungracefully shut down Windows."
+        dprint "ERROR: FAILED TO FORCE STOP WINDOWS. EXITING."
+        notify-send --expire-time=8000 --icon="dialog-error" --app-name="WinApps" --urgency="low" "WinApps" "Failed to forcibly stop Windows."
         ;;
     "$EC_SD_TIMEOUT")
         dprint "ERROR: WINDOWS TOOK TOO LONG TO SHUT DOWN. EXITING."
         notify-send --expire-time=8000 --icon="dialog-error" --app-name="WinApps" --urgency="low" "WinApps" "Windows took too long to shut down."
         ;;
     "$EC_DIE_TIMEOUT")
-        dprint "ERROR: WINDOWS TOOK TOO LONG TO SHUT DOWN. EXITING."
+        dprint "ERROR: WINDOWS TOOK TOO LONG TO DIE. EXITING."
         notify-send --expire-time=8000 --icon="dialog-error" --app-name="WinApps" --urgency="low" "WinApps" "Windows took too long to die."
         ;;
     "$EC_RESTART_TIMEOUT")
@@ -158,7 +160,7 @@ function dprint() {
     [ "$DEBUG" = "true" ] && echo "[$(date)-$RUNID] $1" >>"$LOG_PATH"
 }
 # Name: 'waFixRemovableMedia'
-# Role: If user left REMOVABLE_MEDIA config null,fallback to /run/media for udisks defaults ,warning.
+# Role: If REMOVABLE_MEDIA is empty, default to /run/media (udisks default) and show a warning.
 function waFixRemovableMedia() {
     if [ -z "$REMOVABLE_MEDIA" ]; then
         REMOVABLE_MEDIA="/run/media"  # Default for udisks
@@ -301,9 +303,10 @@ function waGetFreeRDPCommand() {
 function waCheckGroupMembership() {
     # Identify groups the current user belongs to.
     # shellcheck disable=SC2155 # Silence warnings regarding masking return values through simultaneous declaration and assignment.
-    local USER_GROUPS=$(groups "$(whoami)")
+    local USER_GROUPS=$(id -nG "$(whoami)")
 
-    if ! (echo "$USER_GROUPS" | grep -q -E "\blibvirt\b") || ! (echo "$USER_GROUPS" | grep -q -E "\bkvm\b"); then
+    if ! echo "$USER_GROUPS" | grep -qE '\b(libvirt|libvirtd)\b' || \
+       ! echo "$USER_GROUPS" | grep -qE '\bkvm\b'; then
         waThrowExit "$EC_NOT_IN_GROUP"
     fi
 }
@@ -325,6 +328,7 @@ function waCheckVMRunning() {
         if (virsh list --state-shutoff --name | xargs | grep -wq "$VM_NAME"); then
             dprint "WINDOWS SHUT OFF. BOOTING WINDOWS."
             notify-send --expire-time=4000 --icon="dialog-info" --app-name="WinApps" --urgency="low" "WinApps" "Booting Windows."
+            NEEDED_BOOT=true
             virsh start "$VM_NAME" &>/dev/null || EXIT_STATUS=$EC_FAIL_START
             if (virsh list --state-paused --name | xargs | grep -wq "$VM_NAME"); then
                 dprint "WINDOWS PAUSED. RESUMING WINDOWS."
@@ -346,6 +350,7 @@ function waCheckVMRunning() {
                         dprint "WINDOWS SHUT OFF. BOOTING WINDOWS."
                         notify-send --expire-time=4000 --icon="dialog-info" --app-name="WinApps" --urgency="low" "WinApps" "Booting Windows."
                         virsh start "$VM_NAME" &>/dev/null || EXIT_STATUS=$EC_FAIL_START
+                        NEEDED_BOOT=true
                         break
                     fi
                     sleep $TIME_INTERVAL
@@ -359,6 +364,7 @@ function waCheckVMRunning() {
                     dprint "WINDOWS DESTROYED. BOOTING WINDOWS."
                     notify-send --expire-time=4000 --icon="dialog-info" --app-name="WinApps" --urgency="low" "WinApps" "Booting Windows."
                     virsh start "$VM_NAME" &>/dev/null || EXIT_STATUS=$EC_FAIL_START
+                    NEEDED_BOOT=true
                 fi
             elif (virsh domstate "$VM_NAME" | xargs | grep -wq "dying"); then
                 dprint "WINDOWS DYING. WAITING."
@@ -374,6 +380,7 @@ function waCheckVMRunning() {
                             dprint "WINDOWS DESTROYED. BOOTING WINDOWS."
                             notify-send --expire-time=4000 --icon="dialog-info" --app-name="WinApps" --urgency="low" "WinApps" "Booting Windows."
                             virsh start "$VM_NAME" &>/dev/null || EXIT_STATUS=$EC_FAIL_START
+                            NEEDED_BOOT=true
                         fi
                         break
                     elif (virsh list --state-shutoff --name | xargs | grep -wq "$VM_NAME"); then
@@ -381,6 +388,7 @@ function waCheckVMRunning() {
                         dprint "WINDOWS SHUT OFF. BOOTING WINDOWS."
                         notify-send --expire-time=4000 --icon="dialog-info" --app-name="WinApps" --urgency="low" "WinApps" "Booting Windows."
                         virsh start "$VM_NAME" &>/dev/null || EXIT_STATUS=$EC_FAIL_START
+                        NEEDED_BOOT=true
                         break
                     fi
                     sleep $TIME_INTERVAL
@@ -397,6 +405,45 @@ function waCheckVMRunning() {
 
     # Handle non-zero exit statuses.
     [ "$EXIT_STATUS" -ne 0 ] && waThrowExit "$EXIT_STATUS"
+
+    # Wait for VM to be fully ready
+    if [[ "$NEEDED_BOOT" == "true" ]]; then
+        dprint "WAITING FOR VM TO BE FULLY READY..."
+        notify-send --expire-time=4000 --icon="dialog-info" --app-name="WinApps" --urgency="low" "WinApps" "Waiting for Windows to be ready..."
+
+        TIME_ELAPSED=0
+
+        while (( TIME_ELAPSED < BOOT_TIMEOUT )); do
+            # Check if VM is running
+            if (virsh list --state-running --name | xargs | grep -wq "$VM_NAME"); then
+                # Try to connect to RDP port to verify it's ready
+                if timeout 1 bash -c ">/dev/tcp/$RDP_IP/$RDP_PORT" 2>/dev/null; then
+                    dprint "VM IS READY"
+                    notify-send --expire-time=4000 --icon="dialog-info" --app-name="WinApps" --urgency="low" "WinApps" "Windows is ready."
+                    # Add a delay after Windows is ready
+                    if [ "$NEEDED_BOOT" = "true" ]; then
+                        sleep 10
+                    fi
+                    break
+                fi
+            fi
+
+            sleep 5
+            TIME_ELAPSED=$((TIME_ELAPSED + 5))
+
+            # Show progress every 30 seconds
+            if (( TIME_ELAPSED % 30 == 0 )); then
+                notify-send --expire-time=4000 --icon="dialog-info" --app-name="WinApps" --urgency="low" "WinApps" "Still waiting for Windows to be ready... ($TIME_ELAPSED seconds elapsed)"
+            fi
+        done
+
+        # If we timed out waiting for the VM
+        if (( TIME_ELAPSED >= BOOT_TIMEOUT )); then
+            dprint "TIMEOUT WAITING FOR VM TO BE READY"
+            notify-send --expire-time=4000 --icon="dialog-info" --app-name="WinApps" --urgency="low" "WinApps" "Timeout waiting for Windows to be ready. Please try again."
+            waThrowExit $EC_FAIL_START
+        fi
+    fi
 }
 
 # Name: 'waCheckContainerRunning'
@@ -428,6 +475,7 @@ function waCheckContainerRunning() {
             dprint "WINDOWS CREATED. BOOTING WINDOWS."
             notify-send --expire-time=4000 --icon="dialog-info" --app-name="WinApps" --urgency="low" "WinApps" "Booting Windows."
             $COMPOSE_COMMAND --file "$COMPOSE_PATH" start &>/dev/null
+            NEEDED_BOOT=true
             ;;
         "restarting")
             dprint "WINDOWS RESTARTING. WAITING."
@@ -438,6 +486,7 @@ function waCheckContainerRunning() {
                     EXIT_STATUS=0
                     dprint "WINDOWS RESTARTED."
                     notify-send --expire-time=4000 --icon="dialog-info" --app-name="WinApps" --urgency="low" "WinApps" "Restarted Windows."
+                    NEEDED_BOOT=true
                     break
                 fi
                 sleep $TIME_INTERVAL
@@ -453,11 +502,13 @@ function waCheckContainerRunning() {
             dprint "WINDOWS SHUT OFF. BOOTING WINDOWS."
             notify-send --expire-time=4000 --icon="dialog-info" --app-name="WinApps" --urgency="low" "WinApps" "Booting Windows."
             $COMPOSE_COMMAND --file "$COMPOSE_PATH" start &>/dev/null
+            NEEDED_BOOT=true
             ;;
         "dead")
             dprint "WINDOWS DEAD. RECREATING WINDOWS CONTAINER."
             notify-send --expire-time=4000 --icon="dialog-info" --app-name="WinApps" --urgency="low" "WinApps" "Re-creating and booting Windows."
             $COMPOSE_COMMAND --file "$COMPOSE_PATH" down &>/dev/null && $COMPOSE_COMMAND --file "$COMPOSE_PATH" up -d &>/dev/null
+            NEEDED_BOOT=true
             ;;
         "unknown")
             EXIT_STATUS=$EC_UNKNOWN
@@ -466,6 +517,45 @@ function waCheckContainerRunning() {
 
     # Handle non-zero exit statuses.
     [ "$EXIT_STATUS" -ne 0 ] && waThrowExit "$EXIT_STATUS"
+
+    # Wait for container to be fully ready
+    if [[ "$CONTAINER_STATE" == "created" || "$CONTAINER_STATE" == "exited" || "$CONTAINER_STATE" == "dead" || "$CONTAINER_STATE" == "restarting" ]]; then
+        dprint "WAITING FOR CONTAINER TO BE FULLY READY..."
+        notify-send --expire-time=4000 --icon="dialog-info" --app-name="WinApps" --urgency="low" "WinApps" "Waiting for Windows to be ready..."
+
+        TIME_ELAPSED=0
+
+        while (( TIME_ELAPSED < BOOT_TIMEOUT )); do
+            # Check if container is running
+            if [[ $("$WAFLAVOR" inspect --format='{{.State.Status}}' "$CONTAINER_NAME") == "running" ]]; then
+                # Try to connect to RDP port to verify it's ready
+                if timeout 1 bash -c ">/dev/tcp/$RDP_IP/$RDP_PORT" 2>/dev/null; then
+                    dprint "CONTAINER IS READY"
+                    notify-send --expire-time=4000 --icon="dialog-info" --app-name="WinApps" --urgency="low" "WinApps" "Windows is ready."
+                    # Add a delay after Windows is ready
+                    if [ "$NEEDED_BOOT" = "true" ]; then
+                        sleep 10
+                    fi
+                    break
+                fi
+            fi
+
+            sleep 5
+            TIME_ELAPSED=$((TIME_ELAPSED + 5))
+
+            # Show progress every 30 seconds
+            if (( TIME_ELAPSED % 30 == 0 )); then
+                notify-send --expire-time=4000 --icon="dialog-info" --app-name="WinApps" --urgency="low" "WinApps" "Still waiting for Windows to be ready... ($TIME_ELAPSED seconds elapsed)"
+            fi
+        done
+
+        # If we timed out waiting for the container
+        if (( TIME_ELAPSED >= BOOT_TIMEOUT )); then
+            dprint "TIMEOUT WAITING FOR CONTAINER TO BE READY"
+            notify-send --expire-time=4000 --icon="dialog-info" --app-name="WinApps" --urgency="low" "WinApps" "Timeout waiting for Windows to be ready. Please try again."
+            waThrowExit $EC_FAIL_START
+        fi
+    fi
 }
 
 # Name: 'waCheckPortOpen'
@@ -577,7 +667,7 @@ function waRunCommand() {
             # Convert path from UNIX to Windows style.
             FILE_PATH=$(echo "$2" | sed \
                 -e 's|^'"${HOME}"'|\\\\tsclient\\home|' \
-                -e 's|^\('"${REMOVABLE_MEDIA//|/\\|}"'\)/[^/]*|\\\\tsclient\\media|' \
+                -e 's|^'"${REMOVABLE_MEDIA}"'|\\\\tsclient\\media|' \
                 -e 's|/|\\|g')
             dprint "UNIX_FILE_PATH: ${2}"
             dprint "WINDOWS_FILE_PATH: ${FILE_PATH}"
@@ -590,7 +680,7 @@ function waRunCommand() {
                 +auto-reconnect \
                 /drive:media,"$REMOVABLE_MEDIA" \
                 /wm-class:"$FULL_NAME" \
-                /app:program:"$WIN_EXECUTABLE",icon:"$ICON",name:$"FULL_NAME",cmd:\""$FILE_PATH"\" \
+                /app:program:"$WIN_EXECUTABLE",icon:"$ICON",name:"$FULL_NAME",cmd:\""$FILE_PATH"\" \
                 /v:"$RDP_IP" &>/dev/null &
 
             # Capture the process ID.
@@ -619,7 +709,7 @@ function waCheckIdle() {
     local SUSPEND_WINDOWS=0
 
     # Prevent 'autopause' functionality with unsupported Windows backends.
-    if [ "$WAFLAVOR" != "manual" ] && [ "$WAFLAVOR" != "docker" ]; then
+    if [ "$WAFLAVOR" != "manual" ]; then
         # Check if there are no WinApps-related FreeRDP processes running.
         if ! ls "$APPDATA_PATH"/FreeRDP_Process_*.cproc &>/dev/null; then
             SUSPEND_WINDOWS=1

@@ -1,33 +1,36 @@
 {
   stdenv,
   lib,
-  fetchFromGitHub,
   makeWrapper,
-  freerdp3,
+  freerdp,
   dialog,
   libnotify,
   netcat,
   iproute2,
+  writeShellScriptBin,
+  nix-filter ? throw "Pass github:numtide/nix-filter as an argument!",
   ...
 }:
-let
-  rev = "aa5b3e945526800da1b8891fd8b38272a4a6189d";
-  hash = "sha256-nB56x76W+eyMqIturj26zDbKEMvp/IgDud/twz6pwCY=";
-in
 stdenv.mkDerivation rec {
   pname = "winapps";
-  version = "0-unstable-2025-06-20";
+  version = "0-unstable-2025-07-02";
 
-  src = fetchFromGitHub {
-    owner = "winapps-org";
-    repo = "winapps";
-
-    inherit rev hash;
+  src = nix-filter {
+    root = ./../..;
+    include = [
+      "apps"
+      "install"
+      "bin"
+      "icons"
+      "LICENSE.md"
+      "COPYRIGHT.md"
+      "setup.sh"
+    ];
   };
 
   nativeBuildInputs = [ makeWrapper ];
   buildInputs = [
-    freerdp3
+    (writeShellScriptBin "xfreerdp3" ''${lib.getExe' freerdp "xfreerdp"} "$@"'')
     libnotify
     dialog
     netcat
@@ -35,7 +38,6 @@ stdenv.mkDerivation rec {
   ];
 
   patches = [
-    ./winapps.patch
     ./setup.patch
   ];
 

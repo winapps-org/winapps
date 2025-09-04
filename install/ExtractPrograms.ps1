@@ -49,7 +49,7 @@ Function GetApplicationIcon {
 # Args:
 #    - 'Names': An array of application names.
 #    - 'Paths': An array of executable paths.
-#    - 'Source': The source of the applications (e.g. Windows Registry, Package manangers, Universal Windows Platform (UWP), etc.)
+#    - 'Source': The source of the applications (e.g. Windows Registry, Package managers, Universal Windows Platform (UWP), etc.)
 function PrintArrayData {
     param (
         [string[]]$Names,
@@ -240,7 +240,7 @@ function AppSearchUWP {
     PrintArrayData -Names $exeNames -Paths $exePaths -Source "uwp"
 }
 
-# Name: 'AppSearchWinReg'
+# Name: 'AppSearchChocolatey'
 # Role: Search for chocolatey shims.
 function AppSearchChocolatey {
     # Initialise empty arrays.
@@ -272,7 +272,7 @@ function AppSearchChocolatey {
     }
 }
 
-# Name: 'AppSearchWinReg'
+# Name: 'AppSearchScoop'
 # Role: Search for scoop shims.
 function AppSearchScoop {
     # Initialise empty arrays.

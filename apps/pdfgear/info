@@ -1,0 +1,14 @@
+# GNOME shortcut name
+NAME="pdfgear"
+
+# Used for descriptions and window class
+FULL_NAME="PDF Gear"
+
+# The executable inside windows
+WIN_EXECUTABLE="C:\Program Files\PDFgear\PDFLauncher.exe"
+
+# GNOME categories
+CATEGORIES="Office;Viewer;Graphics;pdf"
+
+# GNOME mimetypes
+MIME_TYPES="application/pdf;"

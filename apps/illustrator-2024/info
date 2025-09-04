@@ -1,0 +1,17 @@
+# GNOME shortcut name
+NAME="Illustrator 2024"
+
+# Used for descriptions and window class
+FULL_NAME="Adobe Illustrator 2024"
+
+# The executable inside windows
+WIN_EXECUTABLE="C:\Program Files\Adobe\Adobe Illustrator 2024\Support Files\Contents\Windows\Illustrator.exe"
+
+# GNOME categories
+CATEGORIES="WinApps;Adobe"
+
+# GNOME mimetypes
+MIME_TYPES="application/illustrator;"
+
+# System Icon
+ICON="AdobeIllustrator"

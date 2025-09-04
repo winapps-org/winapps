@@ -1,0 +1,14 @@
+# GNOME shortcut name
+NAME="Fusion 360"
+
+# Used for descriptions and window class
+FULL_NAME="Autodesk Fusion 360"
+
+# The executable inside windows
+WIN_EXECUTABLE="C:\Users\%USERNAME%\AppData\Local\Autodesk\webdeploy\production\6a0c9611291d45bb9226980209917c3d\FusionLauncher.exe"
+
+# GNOME categories
+CATEGORIES="WinApps;Graphics;3DGraphics"
+
+# GNOME mimetypes
+MIME_TYPES="application/fusion"
