@@ -1,12 +1,15 @@
 {
   nixpkgs ? fetchTarball "https://github.com/NixOS/nixpkgs/archive/nixos-25.05.tar.gz",
-  pkgs ? import nixpkgs { },
-  fenix ?
-    (import (fetchTarball "https://github.com/nix-community/fenix/archive/monthly.tar.gz") {
-      inherit pkgs;
-    }).complete,
+  fenix-src ? fetchTarball "https://github.com/nix-community/fenix/archive/monthly.tar.gz",
+
+  mkToolchain ? fenix: fenix.complete,
   isIdea ? false,
 }:
+let
+  pkgs = import nixpkgs { };
+  fenix = import fenix-src { inherit pkgs; };
+  toolchain = mkToolchain fenix;
+in
 pkgs.mkShell rec {
   buildInputs = with pkgs; [
     nixfmt-rfc-style
@@ -17,11 +20,11 @@ pkgs.mkShell rec {
 
     openssl
     pkg-config
-    fenix.toolchain
+    toolchain.toolchain
   ];
 
   RUST_BACKTRACE = 1;
-  RUST_SRC_PATH = "${fenix.rust-src}/lib/rustlib/src/rust/library";
+  RUST_SRC_PATH = "${toolchain.rust-src}/lib/rustlib/src/rust/library";
 
   shellHook =
     let
@@ -31,7 +34,7 @@ pkgs.mkShell rec {
     pkgs.lib.optionalString isIdea ''
       sed -i \
         -e "s|$(${xidel} .idea/workspace.xml -e '${pathFor "explicitPathToStdlib"}')|${RUST_SRC_PATH}|" \
-        -e "s|$(${xidel} .idea/workspace.xml -e '${pathFor "toolchainHomeDirectory"}')|${fenix.toolchain}/bin|" \
+        -e "s|$(${xidel} .idea/workspace.xml -e '${pathFor "toolchainHomeDirectory"}')|${toolchain.toolchain}/bin|" \
         .idea/workspace.xml
     '';
 }

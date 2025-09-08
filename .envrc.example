@@ -1,1 +1,7 @@
-use nix # --arg isIdea true --arg nixpkgs '<nixpkgs>'
+# isIdea: whether to write the current rust toolchain into `.idea/workspace.xml`, defaults to false
+# nixpkgs: the path to a nixpkgs checkout, defaults to a pinned version
+# mkToolchain: a function taking a fenix instance and returning a toolchain, defaults to `fenix: fenix.complete`
+use nix # \
+  # --arg isIdea true \
+  # --arg nixpkgs '<nixpkgs>' \
+  # --arg mkToolchain 'fenix: fenix.beta'
