@@ -37,8 +37,7 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           context: winapps-image
-          containerfiles: |
-            Containerfile
+          containerfiles: winapps-image/Containerfile
 
       - name: Push image to GHCR
         uses: redhat-actions/push-to-registry@v2

@@ -6,11 +6,6 @@ on:
   pull_request:
     branches: [ "rewrite" ]
 
-permissions:
-  contents: write
-  pull-requests: write
-  checks: write
-
 jobs:
   check:
     runs-on: ubuntu-latest
@@ -22,6 +17,4 @@ jobs:
         with:
           components: clippy
 
-      - uses: auguwu/clippy-action@1.4.0
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+      - uses: crusty-pie/clippy@v1
