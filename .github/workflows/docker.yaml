@@ -4,6 +4,7 @@ on:
   push:
     branches: [ "rewrite" ]
     paths: [ "winapps-image/**" ]
+  workflow_dispatch:
   schedule:
     # See https://crontab.guru/monthly
     - cron: 0 0 1 * *
