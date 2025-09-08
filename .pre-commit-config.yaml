@@ -14,7 +14,7 @@ repos:
         args: [ --whitespaces-count, "4" ]
 
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.6.0
+    rev: v6.0.0
     hooks:
       - id: check-added-large-files
       - id: check-case-conflict
@@ -38,12 +38,12 @@ repos:
       - id: trailing-whitespace
 
   - repo: https://github.com/scop/pre-commit-shfmt
-    rev: v3.8.0-1
+    rev: v3.12.0-2
     hooks:
       - id: shfmt
         args: ["-i", "4", "-ci", "-s"]
 
   - repo: https://github.com/shellcheck-py/shellcheck-py
-    rev: v0.10.0.1
+    rev: v0.11.0.1
     hooks:
       - id: shellcheck
