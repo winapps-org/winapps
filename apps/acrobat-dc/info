@@ -1,0 +1,14 @@
+# GNOME shortcut name
+NAME="Acrobat DC"
+
+# Used for descriptions and window class
+FULL_NAME="Acrobat DC"
+
+# The executable inside windows
+WIN_EXECUTABLE="C:\Program Files\Adobe\Acrobat DC\Acrobat\Acrobat.exe"
+
+# GNOME categories
+CATEGORIES="WinApps;Documents"
+
+# GNOME mimetypes
+MIME_TYPES="application/pdf;"
