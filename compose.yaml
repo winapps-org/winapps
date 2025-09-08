@@ -1,0 +1,31 @@
+name: "winapps"
+
+volumes:
+  data:
+
+services:
+  windows:
+    build:
+      context: winapps-image
+      dockerfile: Containerfile
+    container_name: WinApps
+    environment:
+      VERSION: "11"
+      RAM_SIZE: "8G"
+      CPU_CORES: "4"
+      DISK_SIZE: "64G"
+      HOME: "${HOME}"
+    ports:
+      - "8006:8006"
+      - "2222:22"
+      - "3389:3389/tcp"
+      - "3389:3389/udp"
+    cap_add:
+      - NET_ADMIN
+    stop_grace_period: 120s
+    restart: on-failure
+    volumes:
+      - data:/storage
+    devices:
+      - /dev/kvm
+      - /dev/net/tun

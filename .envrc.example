@@ -1,0 +1,1 @@
+use nix # --arg isIdea true --arg nixpkgs '<nixpkgs>'
