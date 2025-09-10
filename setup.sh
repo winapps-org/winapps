@@ -1043,6 +1043,7 @@ function waCheckRDPAccess() {
         /p:"$RDP_PASS" \
         /scale:"$RDP_SCALE" \
         +auto-reconnect \
+        +home-drive \
         /app:program:"C:\Windows\System32\cmd.exe",cmd:"/C type NUL > $TEST_PATH_WIN && tsdiscon" \
         /v:"$RDP_IP" &>"$FREERDP_LOG" &
 
@@ -1174,6 +1175,7 @@ function waFindInstalled() {
         /p:"$RDP_PASS" \
         /scale:"$RDP_SCALE" \
         +auto-reconnect \
+        +home-drive \
         /app:program:"C:\Windows\System32\cmd.exe",cmd:"/C "$BATCH_SCRIPT_PATH_WIN"" \
         /v:"$RDP_IP" &>"$FREERDP_LOG" &
 
