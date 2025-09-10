@@ -116,7 +116,7 @@ trap "waTerminateScript" ERR # Catch non-zero return values.
 ### FUNCTIONS ###
 # Name: 'waTerminateScript'
 # Role: Terminates the script when a non-zero return value is encountered.
-# shellcheck disable=SC2317 # Silence warning regarding this function being unreachable.
+# shellcheck disable=SC2329 # Silence warning regarding this function never being invoked (shellCheck is currently bad at figuring out functions that are invoked via trap).
 function waTerminateScript() {
     # Store the non-zero exit status received by the trap.
     local EXIT_STATUS=$?
