@@ -53,6 +53,7 @@ AUTOPAUSE="off"
 AUTOPAUSE_TIME="300"
 DEBUG="true"
 BOOT_TIMEOUT=120
+HIDEF="on"
 
 # OTHER
 FREERDP_PID=-1
@@ -625,7 +626,7 @@ function waRunCommand() {
             /p:"$RDP_PASS" \
             /scale:"$RDP_SCALE" \
             +auto-reconnect \
-            /app:program:"$2" \
+            /app:program:"$2",hidef:"$HIDEF" \
             /v:"$RDP_IP" &>/dev/null &
 
         # Capture the process ID.
@@ -658,7 +659,7 @@ function waRunCommand() {
                 /scale:"$RDP_SCALE" \
                 +auto-reconnect \
                 /wm-class:"$FULL_NAME" \
-                /app:program:"$WIN_EXECUTABLE",icon:"$ICON",name:"$FULL_NAME" \
+                /app:program:"$WIN_EXECUTABLE",icon:"$ICON",name:"$FULL_NAME",hidef:"$HIDEF" \
                 /v:"$RDP_IP" &>/dev/null &
 
             # Capture the process ID.
@@ -680,7 +681,7 @@ function waRunCommand() {
                 +auto-reconnect \
                 /drive:media,"$REMOVABLE_MEDIA" \
                 /wm-class:"$FULL_NAME" \
-                /app:program:"$WIN_EXECUTABLE",icon:"$ICON",name:"$FULL_NAME",cmd:\""$FILE_PATH"\" \
+                /app:program:"$WIN_EXECUTABLE",icon:"$ICON",name:"$FULL_NAME",cmd:\""$FILE_PATH"\",hidef:"$HIDEF" \
                 /v:"$RDP_IP" &>/dev/null &
 
             # Capture the process ID.
