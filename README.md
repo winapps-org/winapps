@@ -480,6 +480,12 @@ APP_SCAN_TIMEOUT="60"
 # - The maximum time (in seconds) to wait for the Windows VM to boot if it is not running, before attempting to launch an application.
 # DEFAULT VALUE: '120'
 BOOT_TIMEOUT="120"
+
+# FREERDP RAIL HIDEF
+# - This option controls the value of the `hidef` option passed to the /app parameter of the FreeRDP command.
+# - Setting this option to 'off' may resolve window misalignment issues related to maximized windows.
+# DEFAULT VALUE: 'on'
+HIDEF="on"
 ```
 
 > [!IMPORTANT]
