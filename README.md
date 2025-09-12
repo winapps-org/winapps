@@ -518,6 +518,9 @@ HIDEF="on"
     ```bash
     xfreerdp3 /u:"Your Windows Username" /p:"Your Windows Password" /v:192.168.122.2 /cert:tofu
 
+    # Or, if you are using Podman
+    podman unshare --rootless-netns xfreerdp3 /u:"Your Windows Username" /p:"Your Windows Password" /v:127.0.0.1 /cert:tofu
+
     # Or, if you installed FreeRDP using Flatpak
     flatpak run --command=xfreerdp com.freerdp.FreeRDP /u:"Your Windows Username" /p:"Your Windows Password" /v:192.168.122.2 /cert:tofu
     ```

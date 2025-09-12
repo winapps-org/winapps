@@ -116,7 +116,7 @@ trap "waTerminateScript" ERR # Catch non-zero return values.
 ### FUNCTIONS ###
 # Name: 'waTerminateScript'
 # Role: Terminates the script when a non-zero return value is encountered.
-# shellcheck disable=SC2317 # Silence warning regarding this function being unreachable.
+# shellcheck disable=SC2329 # Silence warning regarding this function never being invoked (shellCheck is currently bad at figuring out functions that are invoked via trap).
 function waTerminateScript() {
     # Store the non-zero exit status received by the trap.
     local EXIT_STATUS=$?
@@ -1043,6 +1043,7 @@ function waCheckRDPAccess() {
         /p:"$RDP_PASS" \
         /scale:"$RDP_SCALE" \
         +auto-reconnect \
+        +home-drive \
         /app:program:"C:\Windows\System32\cmd.exe",cmd:"/C type NUL > $TEST_PATH_WIN && tsdiscon" \
         /v:"$RDP_IP" &>"$FREERDP_LOG" &
 
@@ -1174,6 +1175,7 @@ function waFindInstalled() {
         /p:"$RDP_PASS" \
         /scale:"$RDP_SCALE" \
         +auto-reconnect \
+        +home-drive \
         /app:program:"C:\Windows\System32\cmd.exe",cmd:"/C "$BATCH_SCRIPT_PATH_WIN"" \
         /v:"$RDP_IP" &>"$FREERDP_LOG" &
 
