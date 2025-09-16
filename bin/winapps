@@ -659,7 +659,7 @@ function waRunCommand() {
                 /scale:"$RDP_SCALE" \
                 +auto-reconnect \
                 /wm-class:"$FULL_NAME" \
-                /app:program:"$WIN_EXECUTABLE",icon:"$ICON",name:"$FULL_NAME",hidef:"$HIDEF" \
+                /app:program:"$WIN_EXECUTABLE",hidef:"$HIDEF",icon:"$ICON",name:"$FULL_NAME" \
                 /v:"$RDP_IP" &>/dev/null &
 
             # Capture the process ID.
@@ -681,7 +681,7 @@ function waRunCommand() {
                 +auto-reconnect \
                 /drive:media,"$REMOVABLE_MEDIA" \
                 /wm-class:"$FULL_NAME" \
-                /app:program:"$WIN_EXECUTABLE",icon:"$ICON",name:"$FULL_NAME",cmd:\""$FILE_PATH"\",hidef:"$HIDEF" \
+                /app:program:"$WIN_EXECUTABLE",hidef:"$HIDEF",icon:"$ICON",name:"$FULL_NAME",cmd:\""$FILE_PATH"\" \
                 /v:"$RDP_IP" &>/dev/null &
 
             # Capture the process ID.
