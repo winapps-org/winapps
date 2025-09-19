@@ -1,0 +1,4 @@
+# Ensure Windows-friendly line endings and encoding for batch and registry files
+*.bat text eol=crlf
+*.cmd text eol=crlf
+*.reg text eol=crlf working-tree-encoding=UTF-16LE-BOM
