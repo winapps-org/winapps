@@ -40,7 +40,7 @@ if %ERRORLEVEL% equ 0 (
         echo [SUCCESS] Firewall changes applied successfully.
     ) else (
         echo [ERROR] Failed to apply firewall changes.
-        echo         Please manually enable Remote Desktop via 'Settings ► System ► Remote Desktop'.
+        echo         Please manually enable Remote Desktop via 'Settings --> System --> Remote Desktop'.
     )
 )
 
