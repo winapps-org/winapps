@@ -8,7 +8,9 @@ repos:
         args: [ "775" ]
         files: (\.sh|winapps)$
       - id: forbid-crlf
+        exclude: '\.(bat|cmd|reg)$'
       - id: remove-crlf
+        exclude: '\.(bat|cmd|reg)$'
       - id: forbid-tabs
       - id: remove-tabs
         args: [ --whitespaces-count, "4" ]
@@ -32,6 +34,7 @@ repos:
       - id: end-of-file-fixer
       - id: fix-byte-order-marker
       - id: mixed-line-ending
+        exclude: '\.(bat|cmd|reg)$'
       - id: pretty-format-json
         args: [ "--autofix", "--no-sort-keys" ]
       - id: sort-simple-yaml
