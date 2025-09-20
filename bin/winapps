@@ -599,25 +599,31 @@ function waRunCommand() {
 
     # Run option.
     if [ "$1" = "windows" ]; then
-        # Update timeout (since there is no 'in-built' 20 second delay for full RDP sessions post-logout).
-        AUTOPAUSE_TIME=$((AUTOPAUSE_TIME + 20))
+            # Update timeout (since there is no 'in-built' 20 second delay for full RDP sessions post-logout).
+            AUTOPAUSE_TIME=$((AUTOPAUSE_TIME + 20))
 
-        # Open Windows RDP session.
-        dprint "WINDOWS"
-        $FREERDP_COMMAND \
-            /d:"$RDP_DOMAIN" \
-            /u:"$RDP_USER" \
-            /p:"$RDP_PASS" \
-            /scale:"$RDP_SCALE" \
-            +auto-reconnect \
-            +dynamic-resolution \
-            /wm-class:"Microsoft Windows" \
-            /t:"Windows RDP Session [$RDP_IP]" \
-            /v:"$RDP_IP" &>/dev/null &
+            # Update RDP certificate before launching FreeRDP
+            "${SCRIPT_DIR_PATH}/update-rdp-cert.sh"
 
-        # Capture the process ID.
-        FREERDP_PID=$!
+            # Open Windows RDP session.
+            dprint "WINDOWS"
+            $FREERDP_COMMAND \
+                /d:"$RDP_DOMAIN" \
+                /u:"$RDP_USER" \
+                /p:"$RDP_PASS" \
+                /scale:"$RDP_SCALE" \
+                +auto-reconnect \
+                +dynamic-resolution \
+                /wm-class:"Microsoft Windows" \
+                /t:"Windows RDP Session [$RDP_IP]" \
+                /v:"$RDP_IP" &>/dev/null &
+
+            # Capture the process ID.
+            FREERDP_PID=$!
     elif [ "$1" = "manual" ]; then
+        # Update RDP certificate before launching FreeRDP
+        "${SCRIPT_DIR_PATH}/update-rdp-cert.sh"
+
         # Open specified application.
         dprint "MANUAL: ${2}"
         $FREERDP_COMMAND \
@@ -651,6 +657,9 @@ function waRunCommand() {
 
         # Check if a file path was specified, and pass this to the application.
         if [ -z "$2" ]; then
+            # Update RDP certificate before launching FreeRDP
+            "${SCRIPT_DIR_PATH}/update-rdp-cert.sh"
+
             # No file path specified.
             $FREERDP_COMMAND \
                 /d:"$RDP_DOMAIN" \
