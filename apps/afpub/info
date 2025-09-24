@@ -1,0 +1,22 @@
+# Copyright (c) 2024 Fmstrat
+# All rights reserved.
+#
+# SPDX-License-Identifier: Proprietary
+
+# GNOME shortcut name
+NAME="Publisher"
+
+# Used for descriptions and window class
+FULL_NAME="Affinity Publisher"
+
+# The executable inside windows
+WIN_EXECUTABLE="C:\Program Files\Affinity\Publisher 2\Publisher.exe"
+
+# GNOME categories
+CATEGORIES="WinApps;Affinity"
+
+# GNOME mimetypes
+MIME_TYPES=""
+
+# System Icon
+ICON="AffinityPublisher"

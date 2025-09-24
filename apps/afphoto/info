@@ -1,0 +1,22 @@
+# Copyright (c) 2024 Fmstrat
+# All rights reserved.
+#
+# SPDX-License-Identifier: Proprietary
+
+# GNOME shortcut name
+NAME="Photo"
+
+# Used for descriptions and window class
+FULL_NAME="Affinity Photo"
+
+# The executable inside windows
+WIN_EXECUTABLE="C:\Program Files\Affinity\Photo 2\Photo.exe"
+
+# GNOME categories
+CATEGORIES="WinApps;Affinity"
+
+# GNOME mimetypes
+MIME_TYPES=""
+
+# System Icon
+ICON="AffinityPhoto"
