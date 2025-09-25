@@ -124,8 +124,6 @@ Contributing to the list of supported applications is encouraged through submiss
             (CS6, CC, 2022)<br>
             <i><a href="https://commons.wikimedia.org/wiki/File:Adobe_Photoshop_CC_icon.svg">Icon</a> in the Public Domain.</i>
         </td>
-    </tr>
-    <tr>
         <!-- Affinity Designer 2 -->
         <td>
             <img src="apps/afdesign/icon.svg" width="100">
@@ -150,21 +148,11 @@ Contributing to the list of supported applications is encouraged through submiss
         <td>
             <img src="apps/afpub/icon.svg" width="100">
         </td>
-    </tr>
         <td>
             <b>Affinity Publisher 2</b><br>
             (X)<br>
             <i><a href="https://commons.wikimedia.org/wiki/File:Affinity_Publisher_V2_icon.svg">Icon</a> under CC-BY-SA 4.0 via Serif Ltd.</i>
         </td>
-        <!-- Autodesk Fusion 360 -->
-        <td>
-            <img src="apps/fusion-360/icon.svg" width="100">
-        </td>
-        <td>
-            <b>Autodesk Fusion 360</b><br>
-            <i><a href="https://commons.wikimedia.org/wiki/File:Fusion360_Logo.svg">Icon</a> in the Public Domain.</i>
-        </td>
-    </tr>
     <tr>
         <!-- Command Prompt -->
         <td>
@@ -321,6 +309,16 @@ Contributing to the list of supported applications is encouraged through submiss
             <b>Windows</b><br>
             (Full RDP Session)<br>
             <i><a href="url">Icon</a> in the Public Domain.</i>
+        </td>
+    </tr>
+    <tr>
+        <!-- Autodesk Fusion 360 -->
+        <td>
+            <img src="apps/fusion-360/icon.svg" width="100">
+        </td>
+        <td>
+            <b>Autodesk Fusion 360</b><br>
+            <i><a href="https://commons.wikimedia.org/wiki/File:Fusion360_Logo.svg">Icon</a> in the Public Domain.</i>
         </td>
     </tr>
 </table>
