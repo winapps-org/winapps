@@ -1,0 +1,22 @@
+# Copyright (c) 2024 Fmstrat
+# All rights reserved.
+#
+# SPDX-License-Identifier: Proprietary
+
+# GNOME shortcut name
+NAME="Designer"
+
+# Used for descriptions and window class
+FULL_NAME="Affinity Designer"
+
+# The executable inside windows
+WIN_EXECUTABLE="C:\Program Files\Affinity\Designer 2\Designer.exe"
+
+# GNOME categories
+CATEGORIES="WinApps;Affinity"
+
+# GNOME mimetypes
+MIME_TYPES=""
+
+# System Icon
+ICON="AffinityDesigner"
