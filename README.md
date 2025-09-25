@@ -124,6 +124,8 @@ Contributing to the list of supported applications is encouraged through submiss
             (CS6, CC, 2022)<br>
             <i><a href="https://commons.wikimedia.org/wiki/File:Adobe_Photoshop_CC_icon.svg">Icon</a> in the Public Domain.</i>
         </td>
+    </tr>
+    <tr>
         <!-- Affinity Designer 2 -->
         <td>
             <img src="apps/afdesign/icon.svg" width="100">
@@ -133,6 +135,8 @@ Contributing to the list of supported applications is encouraged through submiss
             (X)<br>
             <i><a href="https://commons.wikimedia.org/wiki/File:Affinity_Designer_V2_icon.svg">Icon</a> under CC-BY-SA 4.0 via Serif Ltd.</i>
         </td>
+    </tr>
+    <tr>
         <!-- Affinity Photo 2 -->
         <td>
             <img src="apps/afphoto/icon.svg" width="100">
@@ -146,6 +150,7 @@ Contributing to the list of supported applications is encouraged through submiss
         <td>
             <img src="apps/afpub/icon.svg" width="100">
         </td>
+    </tr>
         <td>
             <b>Affinity Publisher 2</b><br>
             (X)<br>
