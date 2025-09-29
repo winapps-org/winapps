@@ -1,0 +1,17 @@
+# GNOME shortcut name
+NAME="SolidWorks"
+
+# Used for descriptions and window class
+FULL_NAME="SolidWorks 2024"
+
+# The executable inside windows
+WIN_EXECUTABLE="C:\Program Files\SOLIDWORKS Corp\SOLIDWORKS\SLDWORKS.exe"
+
+# GNOME categories
+CATEGORIES="WinApps;Solidworks"
+
+# GNOME mimetypes
+MIME_TYPES="application/sldworks;application/sldasm;application/slddrw;application/sldprt"
+
+# System Icon
+ICON="solidworks"
