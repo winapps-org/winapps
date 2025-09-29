@@ -2,7 +2,7 @@
 NAME="SolidWorks"
 
 # Used for descriptions and window class
-FULL_NAME="SolidWorks 2024"
+FULL_NAME="SolidWorks 2025"
 
 # The executable inside windows
 WIN_EXECUTABLE="C:\Program Files\SOLIDWORKS Corp\SOLIDWORKS\SLDWORKS.exe"
