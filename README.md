@@ -124,15 +124,35 @@ Contributing to the list of supported applications is encouraged through submiss
             (CS6, CC, 2022)<br>
             <i><a href="https://commons.wikimedia.org/wiki/File:Adobe_Photoshop_CC_icon.svg">Icon</a> in the Public Domain.</i>
         </td>
-        <!-- Autodesk Fusion 360 -->
+        <!-- Affinity Designer 2 -->
         <td>
-            <img src="apps/fusion-360/icon.svg" width="100">
+            <img src="apps/afdesign/icon.svg" width="100">
         </td>
         <td>
-            <b>Autodesk Fusion 360</b><br>
-            <i><a href="https://commons.wikimedia.org/wiki/File:Fusion360_Logo.svg">Icon</a> in the Public Domain.</i>
+            <b>Affinity Designer 2</b><br>
+            (X)<br>
+            <i><a href="https://commons.wikimedia.org/wiki/File:Affinity_Designer_V2_icon.svg">Icon</a> under CC-BY-SA 4.0 via Serif Ltd.</i>
         </td>
     </tr>
+    <tr>
+        <!-- Affinity Photo 2 -->
+        <td>
+            <img src="apps/afphoto/icon.svg" width="100">
+        </td>
+        <td>
+            <b>Affinity Photo 2</b><br>
+            (X)<br>
+            <i><a href="https://commons.wikimedia.org/wiki/File:Affinity_Photo_V2_icon.svg">Icon</a> under CC-BY-SA 4.0 via Serif Ltd.</i>
+        </td>
+        <!-- Affinity Publisher 2 -->
+        <td>
+            <img src="apps/afpub/icon.svg" width="100">
+        </td>
+        <td>
+            <b>Affinity Publisher 2</b><br>
+            (X)<br>
+            <i><a href="https://commons.wikimedia.org/wiki/File:Affinity_Publisher_V2_icon.svg">Icon</a> under CC-BY-SA 4.0 via Serif Ltd.</i>
+        </td>
     <tr>
         <!-- Command Prompt -->
         <td>
@@ -263,6 +283,16 @@ Contributing to the list of supported applications is encouraged through submiss
             (Comm./Pro./Ent. 2022)<br>
             <i><a href="https://en.m.wikipedia.org/wiki/File:Visual_Studio_Icon_2022.svg">Icon</a> in the Public Domain.</i>
         </td>
+        <!-- Autodesk Fusion 360 -->
+        <td>
+            <img src="apps/fusion-360/icon.svg" width="100">
+        </td>
+        <td>
+            <b>Autodesk Fusion 360</b><br>
+            <i><a href="https://commons.wikimedia.org/wiki/File:Fusion360_Logo.svg">Icon</a> in the Public Domain.</i>
+        </td>
+    </tr>
+    <tr>
         <!-- mIRC -->
         <td>
             <img src="apps/mirc/icon.svg" width="100">
@@ -271,8 +301,6 @@ Contributing to the list of supported applications is encouraged through submiss
             <b>mIRC</b><br>
             <i><a href="https://en.wikipedia.org/wiki/MIRC#/media/File:Mircnewlogo.png">Icon</a> in the Public Domain.</i>
         </td>
-    </tr>
-    <tr>
         <!-- PowerShell -->
         <td>
             <img src="apps/powershell/icon.svg" width="100">
@@ -281,6 +309,8 @@ Contributing to the list of supported applications is encouraged through submiss
             <b>PowerShell</b><br>
             <i><a href="https://iconduck.com/icons/102322/file-type-powershell">Icon</a> under <a href="https://iconduck.com/licenses/mit">MIT license</a>.</i>
         </td>
+    </tr>
+    <tr>
         <!-- Windows -->
         <td>
             <img src="install/windows.svg" width="100">
@@ -291,7 +321,7 @@ Contributing to the list of supported applications is encouraged through submiss
             <i><a href="url">Icon</a> in the Public Domain.</i>
         </td>
     </tr>
-</table>
+        </table>
 
 ## Installation
 ### Step 1: Configure a Windows VM
