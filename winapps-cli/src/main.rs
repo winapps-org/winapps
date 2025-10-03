@@ -41,16 +41,12 @@ fn cli() -> Command {
 
 fn main() -> Result<()> {
     tracing_subscriber::fmt()
-        // .with_timer(tracing_subscriber::fmt::time::uptime())
         .without_time()
         .with_target(false)
         .with_level(true)
         .with_max_level(Level::INFO)
         .with_env_filter(EnvFilter::from_default_env())
         .init();
-
-    let cli = cli();
-    let matches = cli.clone().get_matches();
 
     let config = Config::load()?;
 
@@ -60,7 +56,9 @@ fn main() -> Result<()> {
     client.check_depends()?;
     backend.check_depends()?;
 
-    match matches.subcommand() {
+    let cli = cli();
+
+    match cli.clone().get_matches().subcommand() {
         Some(("setup", _)) => {
             info!("Running setup");
             todo!()

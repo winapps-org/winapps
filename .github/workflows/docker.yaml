@@ -4,6 +4,7 @@ on:
   push:
     branches: [ "rewrite" ]
     paths: [ "winapps-image/**" ]
+  workflow_dispatch:
   schedule:
     # See https://crontab.guru/monthly
     - cron: 0 0 1 * *
@@ -37,8 +38,7 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           context: winapps-image
-          containerfiles: |
-            Containerfile
+          containerfiles: winapps-image/Containerfile
 
       - name: Push image to GHCR
         uses: redhat-actions/push-to-registry@v2
