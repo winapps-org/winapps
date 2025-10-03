@@ -129,8 +129,8 @@ Contributing to the list of supported applications is encouraged through submiss
             <img src="apps/afdesign/icon.svg" width="100">
         </td>
         <td>
-            <b>Affinity Designer 2</b><br>
-            (X)<br>
+            <b>Affinity Designer</b><br>
+            (2)<br>
             <i><a href="https://commons.wikimedia.org/wiki/File:Affinity_Designer_V2_icon.svg">Icon</a> under CC-BY-SA 4.0 via Serif Ltd.</i>
         </td>
     </tr>
@@ -140,8 +140,8 @@ Contributing to the list of supported applications is encouraged through submiss
             <img src="apps/afphoto/icon.svg" width="100">
         </td>
         <td>
-            <b>Affinity Photo 2</b><br>
-            (X)<br>
+            <b>Affinity Photo</b><br>
+            (2)<br>
             <i><a href="https://commons.wikimedia.org/wiki/File:Affinity_Photo_V2_icon.svg">Icon</a> under CC-BY-SA 4.0 via Serif Ltd.</i>
         </td>
         <!-- Affinity Publisher 2 -->
@@ -149,8 +149,8 @@ Contributing to the list of supported applications is encouraged through submiss
             <img src="apps/afpub/icon.svg" width="100">
         </td>
         <td>
-            <b>Affinity Publisher 2</b><br>
-            (X)<br>
+            <b>Affinity Publisher</b><br>
+            (2)<br>
             <i><a href="https://commons.wikimedia.org/wiki/File:Affinity_Publisher_V2_icon.svg">Icon</a> under CC-BY-SA 4.0 via Serif Ltd.</i>
         </td>
     <tr>
