@@ -1,0 +1,14 @@
+# GNOME shortcut name
+NAME="Comet"
+
+# Used for descriptions and window class
+FULL_NAME="Perplexity Comet"
+
+# The executable inside windows
+WIN_EXECUTABLE="C:\Users\MyWindowsUser\AppData\Local\Perplexity\Comet\Application\comet.exe"
+
+# GNOME categories
+CATEGORIES="WinApps;Network;WebBrowser;"
+
+# GNOME mimetypes
+MIME_TYPES="text/html;text/xml;application/xhtml+xml;application/xml;application/rss+xml;application/rdf+xml;image/gif;image/jpeg;image/png;x-scheme-handler/http;x-scheme-handler/https;x-scheme-handler/ftp;x-scheme-handler/chrome;video/webm;application/x-xpinstall;"
