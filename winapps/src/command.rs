@@ -51,16 +51,16 @@ impl FromStr for Command {
 }
 
 impl Command {
-    pub fn new(exec: &'static str) -> Self {
+    pub fn new<T: Into<String>>(exec: T) -> Self {
         Self {
-            exec: exec.to_string(),
+            exec: exec.into(),
             args: Vec::new(),
             error_message: String::from("Error running child command"),
             loud: false,
         }
     }
 
-    pub fn into_remote(mut self, config: &'static Config) -> Self {
+    pub fn into_remote(mut self, config: &Config) -> Self {
         let prev = format!("{} {}", self.exec, self.args.join(" "));
 
         self.exec = "sshpass".to_string();

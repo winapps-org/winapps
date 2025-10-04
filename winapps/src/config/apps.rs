@@ -1,10 +1,10 @@
 use crate::{
-    config::App,
+    config::{App, AppKind},
     dirs::{desktop_dir, icons_dir},
     Config, Result,
 };
 use base64::{prelude::BASE64_STANDARD, Engine};
-use std::fs::write;
+use std::{fmt::Display, fs::write};
 
 impl PartialEq for App {
     fn eq(&self, other: &Self) -> bool {
@@ -12,14 +12,32 @@ impl PartialEq for App {
     }
 }
 
+impl Display for App {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_fmt(format_args!("{} ({})", self.name, self.win_exec))
+    }
+}
+
 impl App {
-    /// Panics: If `self.icon_path` is `None`
-    /// Make sure to write the icon to a file by now
-    /// and populate `icon_path`
-    /// This should be normally done by now
-    fn as_desktop_file(&self, exec: String) -> String {
-        format!(
-            "[Desktop Entry]
+    fn try_as_existing(&mut self) -> Result<&mut Self> {
+        match self.kind.clone() {
+            AppKind::Detected(base64) => {
+                let path = icons_dir()?.join(format!("{}.png", self.id));
+                write(path.clone(), BASE64_STANDARD.decode(base64)?)?;
+
+                self.kind = AppKind::Existing(path);
+
+                Ok(self)
+            }
+            AppKind::Existing(_) => Ok(self),
+        }
+    }
+
+    fn try_as_desktop_file(&mut self, exec: String) -> Result<String> {
+        match &self.kind {
+            AppKind::Detected(_) => self.try_as_existing()?.try_as_desktop_file(exec),
+            AppKind::Existing(path) => Ok(format!(
+                "[Desktop Entry]
 Name={}
 Exec={exec}
 Terminal=false
@@ -27,26 +45,20 @@ Type=Application
 Icon={}
 StartupWMClass={}
 Comment={}",
-            self.name,
-            self.icon_path.clone().unwrap(),
-            self.id,
-            self.name
-        )
+                self.name,
+                path.to_string_lossy(),
+                self.id,
+                self.name
+            )),
+        }
     }
 
-    /// Panics: If `self.icon` is `None` and `write_icon` is `true` OR if `self.icon_path` is `None` and `write_icon` is `false` (or if both are `None`)
-    /// At this point in the program, that shouldn't normally be the case
-    pub fn link(self, config: &mut Config, exec: String, write_icon: bool) -> Result<()> {
-        if write_icon {
-            write(
-                icons_dir()?.join(format!("{}.png", self.id)),
-                BASE64_STANDARD.decode(self.icon.clone().unwrap())?,
-            )?;
-        }
+    pub fn link(mut self, config: &mut Config, exec: String) -> Result<()> {
+        self.try_as_existing()?;
 
         write(
             desktop_dir()?.join(format!("{}.desktop", self.id)),
-            self.as_desktop_file(exec),
+            self.try_as_desktop_file(exec)?,
         )?;
 
         if !config.linked_apps.contains(&self) {

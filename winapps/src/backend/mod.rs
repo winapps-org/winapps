@@ -5,7 +5,7 @@ use enum_dispatch::enum_dispatch;
 use crate::{
     backend::{container::Container, manual::Manual},
     command::Command,
-    config::App,
+    config::{App, AppKind::Detected},
     Config, Result,
 };
 
@@ -27,7 +27,7 @@ pub enum Backends {
 }
 
 impl Config {
-    pub fn get_backend(&'static self) -> &'static Backends {
+    pub fn get_backend(&self) -> &Backends {
         self.backend.get_or_init(|| {
             match (
                 self.libvirt.enable,
@@ -35,19 +35,18 @@ impl Config {
                 self.manual.enable,
             ) {
                 (true, _, _) => todo!(),
-                (_, true, _) => Container::new(self).into(),
-                (_, _, true) => Manual::new(self).into(),
+                (_, true, _) => Container::new().into(),
+                (_, _, true) => Manual::new().into(),
                 _ => unreachable!(),
             }
         })
     }
 
-    pub fn get_host(&'static self) -> IpAddr {
+    pub fn get_host(&self) -> IpAddr {
         self.get_backend().get_host()
     }
 
-    #[allow(dead_code)]
-    fn get_installed_apps(&'static self) -> Result<Vec<App>> {
+    pub fn get_available_apps(&self) -> Result<Vec<App>> {
         let apps = Command::new("C:\\ExtractPrograms.ps1")
             .into_remote(self)
             .wait_with_output()?
@@ -60,8 +59,7 @@ impl Config {
                         id: id.to_string(),
                         name: name.to_string(),
                         win_exec: path.to_string(),
-                        icon: Some(icon.to_string()),
-                        icon_path: None,
+                        kind: Detected(icon.to_string()),
                     }),
                     _ => None,
                 }

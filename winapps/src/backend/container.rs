@@ -1,10 +1,11 @@
 use crate::{command::command, ensure, Backend, Config, Error, Result};
+use parking_lot::RwLock;
 use std::net::{IpAddr, Ipv4Addr};
 use tracing::debug;
 
 #[derive(Debug, Clone)]
 pub struct Container {
-    config: &'static Config,
+    config: &'static RwLock<Config>,
 }
 
 impl Container {
@@ -13,21 +14,24 @@ impl Container {
     const DEFAULT_COMMAND: &'static str = "docker";
     const PODMAN_COMMAND: &'static str = "podman";
 
-    pub(crate) fn new(config: &'static Config) -> Self {
-        Self { config }
+    pub(crate) fn new() -> Self {
+        Self {
+            config: Config::get_lock(),
+        }
     }
 }
 
 impl Backend for Container {
     fn check_depends(&self) -> Result<()> {
-        assert!(self.config.container.enable);
+        let config = self.config.read();
+        assert!(config.container.enable);
 
         ensure!(
-            !self.config.container.container_name.is_empty(),
+            !config.container.container_name.is_empty(),
             Error::Config("Container name shouldn't be empty")
         );
 
-        let command = if self.config.container.enable_podman {
+        let command = if config.container.enable_podman {
             Self::PODMAN_COMMAND
         } else {
             Self::DEFAULT_COMMAND
@@ -35,7 +39,7 @@ impl Backend for Container {
 
         let state = command!(
             r#"{command} ps --all --filter name={} --format {{{{.State}}}}"#,
-            self.config.container.container_name
+            config.container.container_name
         )?
         .with_err("Could not get container status")
         .wait_with_output()?;

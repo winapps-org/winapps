@@ -48,9 +48,10 @@ fn main() -> Result<()> {
         .with_env_filter(EnvFilter::from_default_env())
         .init();
 
-    let config = Config::load()?;
+    let config_lock = Config::try_get_lock()?;
+    let config = config_lock.read();
 
-    let client = Freerdp::new(config);
+    let client = Freerdp::new();
     let backend = config.get_backend();
 
     client.check_depends()?;
@@ -61,7 +62,20 @@ fn main() -> Result<()> {
     match cli.clone().get_matches().subcommand() {
         Some(("setup", _)) => {
             info!("Running setup");
-            todo!()
+
+            match inquire::MultiSelect::new("Select apps to link", config.get_available_apps()?)
+                .prompt_skippable()
+                .map_err(|e| winapps::Error::Command {
+                    message: "Failed to display selection dialog".into(),
+                    source: e.into(),
+                })? {
+                Some(apps) => apps
+                    .into_iter()
+                    .try_for_each(|app| app.link(&mut config_lock.write(), "".into()))?,
+                None => info!("No apps selected, skipping setup..."),
+            };
+
+            Ok(())
         }
 
         Some(("connect", _)) => {

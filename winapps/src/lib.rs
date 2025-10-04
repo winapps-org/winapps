@@ -1,3 +1,4 @@
+#![allow(clippy::new_without_default)]
 #![feature(decl_macro)]
 #![feature(exit_status_error)]
 #![feature(once_cell_try)]

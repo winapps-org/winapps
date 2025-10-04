@@ -1,4 +1,5 @@
 use crate::{bail, command::Command, Config, Error, RemoteClient, Result};
+use parking_lot::RwLock;
 use regex::Regex;
 use std::{
     net::{SocketAddr, TcpStream},
@@ -7,7 +8,7 @@ use std::{
 use tracing::info;
 
 pub struct Freerdp {
-    config: &'static Config,
+    config: &'static RwLock<Config>,
 }
 
 impl Freerdp {
@@ -15,20 +16,24 @@ impl Freerdp {
     const RDP_PORT: u16 = 3389;
 
     fn get_command(&self) -> Command {
-        Command::new(self.config.freerdp.executable.as_str())
+        let config = self.config.read();
+
+        Command::new(config.freerdp.executable.to_owned())
             .with_err("Freerdp execution failed, check logs above!")
             .args(vec![
-                format!("/d:{}", &self.config.auth.domain),
-                format!("/u:{}", &self.config.auth.username),
-                format!("/p:{}", &self.config.auth.password),
-                format!("/v:{}", &self.config.get_host()),
+                format!("/d:{}", &config.auth.domain),
+                format!("/u:{}", &config.auth.username),
+                format!("/p:{}", &config.auth.password),
+                format!("/v:{}", &config.get_host()),
             ])
-            .args(self.config.freerdp.extra_args.iter().cloned())
-            .loud(self.config.debug)
+            .args(config.freerdp.extra_args.iter().cloned())
+            .loud(config.debug)
     }
 
-    pub fn new(config: &'static Config) -> Self {
-        Self { config }
+    pub fn new() -> Self {
+        Self {
+            config: Config::get_lock(),
+        }
     }
 }
 
@@ -42,7 +47,7 @@ impl RemoteClient for Freerdp {
         info!("Freerdp found!");
         info!("Checking whether host is reachable..");
 
-        let socket_address = SocketAddr::new(self.config.get_host(), Self::RDP_PORT);
+        let socket_address = SocketAddr::new(self.config.read().get_host(), Self::RDP_PORT);
 
         TcpStream::connect_timeout(&socket_address, Self::TIMEOUT)
             .map(|_| ())
@@ -54,6 +59,7 @@ impl RemoteClient for Freerdp {
     fn run_app(&self, app_name: String, args: Vec<String>) -> Result<()> {
         let path = self
             .config
+            .read()
             .linked_apps
             .iter()
             .filter_map(|app| app.id.eq(&app_name).then_some(app.win_exec.clone()))

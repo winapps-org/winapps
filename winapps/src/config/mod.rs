@@ -1,7 +1,7 @@
 use crate::Backends;
 use derive_new::new;
 use serde::{Deserialize, Serialize};
-use std::sync::OnceLock;
+use std::{path::PathBuf, sync::OnceLock};
 
 mod apps;
 mod operations;
@@ -80,10 +80,15 @@ pub struct FreerdpConfig {
 }
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
+pub enum AppKind {
+    Detected(String),
+    Existing(PathBuf),
+}
+
+#[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct App {
     pub id: String,
     pub name: String,
     pub win_exec: String,
-    pub icon: Option<String>,
-    pub icon_path: Option<String>,
+    pub kind: AppKind,
 }
