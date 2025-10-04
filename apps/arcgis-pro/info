@@ -1,0 +1,14 @@
+# GNOME shortcut name
+NAME="ArcGIS Pro"
+
+# Used for descriptions and window class
+FULL_NAME="Esri ArcGIS Pro"
+
+# The executable inside windows
+WIN_EXECUTABLE="C:\Program Files\ArcGIS\Pro\bin\ArcGISPro.exe"
+
+# GNOME categories
+CATEGORIES="WinApps;GIS"
+
+# GNOME mimetypes
+MIME_TYPES=""
