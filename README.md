@@ -317,6 +317,15 @@ Contributing to the list of supported applications is encouraged through submiss
             (Full RDP Session)<br>
             <i><a href="url">Icon</a> in the Public Domain.</i>
         </td>
+        <!-- Perplexity Comet -->
+        <td>
+            <img src="apps/perplexity-comet/icon.svg" width="100">
+        </td>
+        <td>
+            <b>Comet</b><br>
+            (Browser by Perplexity)<br>
+            </a>Icon was derived from a PNG in the application’s installation directory.</i>
+        </td>
     </tr>
         </table>
 
