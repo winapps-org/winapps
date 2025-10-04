@@ -6,6 +6,9 @@ on:
   pull_request:
     branches: [ "rewrite" ]
 
+permissions:
+  checks: write
+
 jobs:
   check:
     runs-on: ubuntu-latest
@@ -13,11 +16,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: crusty-pie/toolchain@v1
+      - uses: dtolnay/rust-toolchain@nightly
         with:
-          toolchain: nightly
           components: clippy
 
-      - uses: crusty-pie/clippy@v1
+      - uses: auguwu/clippy-action@1.4.0
         with:
-          args: --all-features
+          token: ${{ secrets.GITHUB_TOKEN }}
