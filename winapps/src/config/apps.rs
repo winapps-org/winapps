@@ -4,7 +4,12 @@ use crate::{
     Config, Result,
 };
 use base64::{prelude::BASE64_STANDARD, Engine};
-use std::{fmt::Display, fs::write};
+use std::{
+    fmt::Display,
+    fs::{set_permissions, write, Permissions},
+    os::unix::fs::PermissionsExt,
+};
+use tracing::debug;
 
 impl PartialEq for App {
     fn eq(&self, other: &Self) -> bool {
@@ -21,51 +26,57 @@ impl Display for App {
 impl App {
     fn try_as_existing(&mut self) -> Result<&mut Self> {
         match self.kind.clone() {
-            AppKind::Detected(base64) => {
+            AppKind::FromBase64(base64) => {
                 let path = icons_dir()?.join(format!("{}.png", self.id));
                 write(path.clone(), BASE64_STANDARD.decode(base64)?)?;
 
-                self.kind = AppKind::Existing(path);
+                self.kind = AppKind::Existing;
 
                 Ok(self)
             }
-            AppKind::Existing(_) => Ok(self),
+            AppKind::Existing => Ok(self),
         }
     }
 
-    fn try_as_desktop_file(&mut self, exec: String) -> Result<String> {
+    fn try_as_desktop_file(&mut self) -> Result<String> {
+        debug!("Writing desktop icon for {}", self.id);
+
         match &self.kind {
-            AppKind::Detected(_) => self.try_as_existing()?.try_as_desktop_file(exec),
-            AppKind::Existing(path) => Ok(format!(
+            AppKind::FromBase64(_) => self.try_as_existing()?.try_as_desktop_file(),
+            AppKind::Existing => Ok(format!(
                 "[Desktop Entry]
 Name={}
-Exec={exec}
+Exec=winapps run {}
 Terminal=false
 Type=Application
 Icon={}
 StartupWMClass={}
-Comment={}",
+Comment={} (WinApps)",
                 self.name,
-                path.to_string_lossy(),
+                self.id,
+                icons_dir()?
+                    .join(format!("{}.png", self.id))
+                    .to_string_lossy(),
                 self.id,
                 self.name
             )),
         }
     }
 
-    pub fn link(mut self, config: &mut Config, exec: String) -> Result<()> {
+    pub fn link(mut self, config: &mut Config) -> Result<()> {
         self.try_as_existing()?;
 
-        write(
-            desktop_dir()?.join(format!("{}.desktop", self.id)),
-            self.try_as_desktop_file(exec)?,
-        )?;
+        let path = desktop_dir()?.join(format!("{}.desktop", self.id));
+
+        write(&path, self.try_as_desktop_file()?)?;
+        set_permissions(&path, Permissions::from_mode(0o750))?;
 
         if !config.linked_apps.contains(&self) {
-            config.linked_apps.push(self)
-        }
+            debug!("Writing app {} to config", self.id);
 
-        config.save()?;
+            config.linked_apps.push(self);
+            config.save()?;
+        }
 
         Ok(())
     }

@@ -5,7 +5,7 @@ use enum_dispatch::enum_dispatch;
 use crate::{
     backend::{container::Container, manual::Manual},
     command::Command,
-    config::{App, AppKind::Detected},
+    config::{App, AppKind},
     Config, Result,
 };
 
@@ -59,7 +59,7 @@ impl Config {
                         id: id.to_string(),
                         name: name.to_string(),
                         win_exec: path.to_string(),
-                        kind: Detected(icon.to_string()),
+                        kind: AppKind::FromBase64(icon.to_string()),
                     }),
                     _ => None,
                 }

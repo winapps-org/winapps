@@ -34,13 +34,7 @@ fn main() -> Result<()> {
         .init();
 
     let config_lock = Config::try_get_lock()?;
-    let config = config_lock.read();
-
-    let client = Freerdp::new();
-    let backend = config.get_backend();
-
-    client.check_depends()?;
-    backend.check_depends()?;
+    config_lock.read().get_backend().check_depends()?;
 
     let cli = cli();
 
@@ -48,7 +42,11 @@ fn main() -> Result<()> {
         Some(("setup", _)) => {
             info!("Running setup");
 
-            match inquire::MultiSelect::new("Select apps to link", config.get_available_apps()?)
+            let apps = config_lock.read().get_available_apps()?;
+
+            // TODO: Allow deleting apps, maybe pass installed apps
+            // so they can be deselected?
+            match inquire::MultiSelect::new("Select apps to link", apps)
                 .prompt_skippable()
                 .map_err(|e| winapps::Error::Command {
                     message: "Failed to display selection dialog".into(),
@@ -56,7 +54,7 @@ fn main() -> Result<()> {
                 })? {
                 Some(apps) => apps
                     .into_iter()
-                    .try_for_each(|app| app.link(&mut config_lock.write(), "".into()))?,
+                    .try_for_each(|app| app.link(&mut config_lock.write()))?,
                 None => info!("No apps selected, skipping setup..."),
             };
 
@@ -66,6 +64,9 @@ fn main() -> Result<()> {
         Some(("connect", _)) => {
             info!("Connecting to remote");
 
+            let client = Freerdp::new();
+
+            client.check_depends()?;
             client.run_full_session()?;
             Ok(())
         }
@@ -73,11 +74,15 @@ fn main() -> Result<()> {
         Some(("run", sub_matches)) => {
             info!("Connecting to app on remote");
 
+            let client = Freerdp::new();
+
+            client.check_depends()?;
+
             let args = sub_matches
-                .get_many::<String>("args")
+                .get_many::<String>("ARGS")
                 .map_or(Vec::new(), |args| args.map(|v| v.to_owned()).collect());
 
-            match sub_matches.get_one::<String>("name") {
+            match sub_matches.get_one::<String>("NAME") {
                 None => panic!("App is required and should never be None here"),
                 Some(app) => client.run_app(app.to_owned(), args),
             }?;

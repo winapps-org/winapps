@@ -73,6 +73,7 @@ impl Command {
                     config.auth.username,
                     config.get_backend().get_host()
                 ),
+                "-oStrictHostKeyChecking=accept-new",
                 "-p",
                 &*config.auth.ssh_port.to_string(),
             ])

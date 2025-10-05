@@ -79,7 +79,7 @@ impl RemoteClient for Freerdp {
         };
 
         self.get_command()
-            .arg(format!("/app:program:{path}"))
+            .arg(format!("/app:program:{path},hidef:on"))
             .args(args.iter().map(|arg| {
                 if arg.contains("/") && home_regex.is_match(arg) {
                     home_regex
