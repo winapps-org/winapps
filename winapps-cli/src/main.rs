@@ -22,21 +22,6 @@ fn cli() -> Command {
                         .allow_hyphen_values(true),
                 ),
         )
-        .subcommand(
-            Command::new("vm")
-                .about("Manage a windows 10 vm using quickemu")
-                .subcommand_required(true)
-                .arg_required_else_help(true)
-                .allow_external_subcommands(true)
-                .subcommand(Command::new("create").about("Create a windows 10 vm using quickget"))
-                .subcommand(Command::new("start").about("Start the vm"))
-                .subcommand(Command::new("kill").about("Kill the running VM")),
-        )
-        .subcommand(
-            Command::new("app")
-                .about("Connects to app on remote")
-                .arg(arg!(<APP> "App to open")),
-        )
 }
 
 fn main() -> Result<()> {
