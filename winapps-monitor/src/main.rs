@@ -1,29 +1,29 @@
 use anyhow::Result;
 use chrono::Local;
+use std::cell::Cell;
 use std::collections::HashMap;
-use std::sync::{Mutex, MutexGuard, OnceLock};
 use std::ffi::OsString;
 use std::os::windows::ffi::OsStringExt;
-use std::cell::Cell;
-use tray_icon::{TrayIconBuilder, Icon};
+use std::sync::{Mutex, MutexGuard, OnceLock};
+use tray_icon::{Icon, TrayIconBuilder};
 use windows::{
-    core::BOOL,
     Win32::{
         Foundation::{HWND, LPARAM},
-        Graphics::Dwm::{DwmGetWindowAttribute, DWMWA_CLOAKED},
+        Graphics::Dwm::{DWMWA_CLOAKED, DwmGetWindowAttribute},
         UI::{
-            Accessibility::{SetWinEventHook, UnhookWinEvent, HWINEVENTHOOK},
+            Accessibility::{HWINEVENTHOOK, SetWinEventHook, UnhookWinEvent},
             WindowsAndMessaging::{
-                EnumWindows, GetAncestor, GetLastActivePopup, GetWindowLongPtrW,
+                DispatchMessageW, EVENT_OBJECT_CLOAKED, EVENT_OBJECT_CREATE, EVENT_OBJECT_DESTROY,
+                EVENT_OBJECT_HIDE, EVENT_OBJECT_NAMECHANGE, EVENT_OBJECT_SHOW,
+                EVENT_OBJECT_UNCLOAKED, EnumChildWindows, EnumWindows, GA_ROOTOWNER, GWL_EXSTYLE,
+                GetAncestor, GetClassNameW, GetLastActivePopup, GetMessageW, GetWindowLongPtrW,
                 GetWindowTextLengthW, GetWindowTextW, GetWindowThreadProcessId, IsWindowVisible,
-                GetClassNameW, EnumChildWindows, GetMessageW, TranslateMessage, DispatchMessageW,
-                GA_ROOTOWNER, GWL_EXSTYLE, WS_EX_TOOLWINDOW, WS_EX_APPWINDOW, EVENT_OBJECT_CREATE,
-                EVENT_OBJECT_DESTROY, EVENT_OBJECT_SHOW, EVENT_OBJECT_HIDE, EVENT_OBJECT_CLOAKED,
-                EVENT_OBJECT_UNCLOAKED, OBJID_WINDOW, EVENT_OBJECT_NAMECHANGE,
-                WINEVENT_OUTOFCONTEXT, WINEVENT_SKIPOWNPROCESS, OBJECT_IDENTIFIER, MSG
-            }
-        }
-    }
+                MSG, OBJECT_IDENTIFIER, OBJID_WINDOW, TranslateMessage, WINEVENT_OUTOFCONTEXT,
+                WINEVENT_SKIPOWNPROCESS, WS_EX_APPWINDOW, WS_EX_TOOLWINDOW,
+            },
+        },
+    },
+    core::BOOL,
 };
 
 type WindowKey = isize;
@@ -51,14 +51,14 @@ fn windows_map() -> &'static Mutex<HashMap<WindowKey, WindowEntry>> {
 /// - WINDOW APPEARED:        EVENT_OBJECT_CREATE, EVENT_OBJECT_SHOW, EVENT_OBJECT_UNCLOAKED
 /// - WINDOW DISAPPEARED:     EVENT_OBJECT_HIDE, EVENT_OBJECT_DESTROY, EVENT_OBJECT_CLOAKED
 /// - WINDOW NAME CHANGED:    EVENT_OBJECT_NAMECHANGE
-extern "system" fn on_win_event (
+extern "system" fn on_win_event(
     _hook: HWINEVENTHOOK,
     event: u32,
     hwnd: HWND,
     id_object: i32,
     _id_child: i32,
     _evt_thread: u32,
-    _evt_time: u32
+    _evt_time: u32,
 ) {
     // Debugging
     //println!("[evt {event:#x}] hwnd={:?} id_object={}", hwnd, id_object);
@@ -75,7 +75,10 @@ extern "system" fn on_win_event (
     }
 
     // Check if a window appeared or disappeared
-    if matches!(event, EVENT_OBJECT_CREATE | EVENT_OBJECT_SHOW | EVENT_OBJECT_UNCLOAKED) {
+    if matches!(
+        event,
+        EVENT_OBJECT_CREATE | EVENT_OBJECT_SHOW | EVENT_OBJECT_UNCLOAKED
+    ) {
         // Check the new window is a user-facing main/top-level application window
         if !is_candidate_window(hwnd) {
             return;
@@ -91,18 +94,17 @@ extern "system" fn on_win_event (
         */
 
         // Identify the process ID
-        let pid: u32 =
-            if is_application_frame_window(hwnd) {
-                // UWP
-                uwp_pid(hwnd)
-            } else {
-                // Win32
-                let mut p: u32 = 0u32;
-                unsafe {
-                    GetWindowThreadProcessId(hwnd, Some(&mut p));
-                }
-                p
-            };
+        let pid: u32 = if is_application_frame_window(hwnd) {
+            // UWP
+            uwp_pid(hwnd)
+        } else {
+            // Win32
+            let mut p: u32 = 0u32;
+            unsafe {
+                GetWindowThreadProcessId(hwnd, Some(&mut p));
+            }
+            p
+        };
 
         // Grab the current title (can empty on window creation)
         let title: String = window_title(hwnd);
@@ -115,7 +117,10 @@ extern "system" fn on_win_event (
         let title: String = window_title(hwnd);
         update_window_title(hwnd.0 as isize, title);
         debug_dump_windows();
-    } else if matches!(event, EVENT_OBJECT_HIDE | EVENT_OBJECT_DESTROY | EVENT_OBJECT_CLOAKED) {
+    } else if matches!(
+        event,
+        EVENT_OBJECT_HIDE | EVENT_OBJECT_DESTROY | EVENT_OBJECT_CLOAKED
+    ) {
         // Remove window
         remove_window(hwnd.0 as isize);
         debug_dump_windows();
@@ -216,21 +221,99 @@ fn main() -> Result<()> {
     let flags: u32 = WINEVENT_OUTOFCONTEXT | WINEVENT_SKIPOWNPROCESS;
 
     // Install hooks for the specific events we care about
-    let hook_create: HWINEVENTHOOK    = unsafe { SetWinEventHook(EVENT_OBJECT_CREATE,    EVENT_OBJECT_CREATE,    None, Some(on_win_event), 0, 0, flags) };
-    let hook_show: HWINEVENTHOOK      = unsafe { SetWinEventHook(EVENT_OBJECT_SHOW,      EVENT_OBJECT_SHOW,      None, Some(on_win_event), 0, 0, flags) };
-    let hook_hide: HWINEVENTHOOK      = unsafe { SetWinEventHook(EVENT_OBJECT_HIDE,      EVENT_OBJECT_HIDE,      None, Some(on_win_event), 0, 0, flags) };
-    let hook_destroy: HWINEVENTHOOK   = unsafe { SetWinEventHook(EVENT_OBJECT_DESTROY,   EVENT_OBJECT_DESTROY,   None, Some(on_win_event), 0, 0, flags) };
-    let hook_cloaked: HWINEVENTHOOK   = unsafe { SetWinEventHook(EVENT_OBJECT_CLOAKED,   EVENT_OBJECT_CLOAKED,   None, Some(on_win_event), 0, 0, flags) };
-    let hook_uncloaked: HWINEVENTHOOK = unsafe { SetWinEventHook(EVENT_OBJECT_UNCLOAKED, EVENT_OBJECT_UNCLOAKED, None, Some(on_win_event), 0, 0, flags) };
+    let hook_create: HWINEVENTHOOK = unsafe {
+        SetWinEventHook(
+            EVENT_OBJECT_CREATE,
+            EVENT_OBJECT_CREATE,
+            None,
+            Some(on_win_event),
+            0,
+            0,
+            flags,
+        )
+    };
+    let hook_show: HWINEVENTHOOK = unsafe {
+        SetWinEventHook(
+            EVENT_OBJECT_SHOW,
+            EVENT_OBJECT_SHOW,
+            None,
+            Some(on_win_event),
+            0,
+            0,
+            flags,
+        )
+    };
+    let hook_hide: HWINEVENTHOOK = unsafe {
+        SetWinEventHook(
+            EVENT_OBJECT_HIDE,
+            EVENT_OBJECT_HIDE,
+            None,
+            Some(on_win_event),
+            0,
+            0,
+            flags,
+        )
+    };
+    let hook_destroy: HWINEVENTHOOK = unsafe {
+        SetWinEventHook(
+            EVENT_OBJECT_DESTROY,
+            EVENT_OBJECT_DESTROY,
+            None,
+            Some(on_win_event),
+            0,
+            0,
+            flags,
+        )
+    };
+    let hook_cloaked: HWINEVENTHOOK = unsafe {
+        SetWinEventHook(
+            EVENT_OBJECT_CLOAKED,
+            EVENT_OBJECT_CLOAKED,
+            None,
+            Some(on_win_event),
+            0,
+            0,
+            flags,
+        )
+    };
+    let hook_uncloaked: HWINEVENTHOOK = unsafe {
+        SetWinEventHook(
+            EVENT_OBJECT_UNCLOAKED,
+            EVENT_OBJECT_UNCLOAKED,
+            None,
+            Some(on_win_event),
+            0,
+            0,
+            flags,
+        )
+    };
 
     // Hook verification (non-null handles mean success)
     println!("WINDOW HOOKS INSTALLED:");
-    println!("- CREATE    = {}", (!hook_create.0.is_null()).to_string().to_uppercase());
-    println!("- SHOW      = {}", (!hook_show.0.is_null()).to_string().to_uppercase());
-    println!("- HIDE      = {}", (!hook_hide.0.is_null()).to_string().to_uppercase());
-    println!("- DESTROY   = {}", (!hook_destroy.0.is_null()).to_string().to_uppercase());
-    println!("- CLOAKED   = {}", (!hook_cloaked.0.is_null()).to_string().to_uppercase());
-    println!("- UNCLOAKED = {}", (!hook_uncloaked.0.is_null()).to_string().to_uppercase());
+    println!(
+        "- CREATE    = {}",
+        (!hook_create.0.is_null()).to_string().to_uppercase()
+    );
+    println!(
+        "- SHOW      = {}",
+        (!hook_show.0.is_null()).to_string().to_uppercase()
+    );
+    println!(
+        "- HIDE      = {}",
+        (!hook_hide.0.is_null()).to_string().to_uppercase()
+    );
+    println!(
+        "- DESTROY   = {}",
+        (!hook_destroy.0.is_null()).to_string().to_uppercase()
+    );
+    println!(
+        "- CLOAKED   = {}",
+        (!hook_cloaked.0.is_null()).to_string().to_uppercase()
+    );
+    println!(
+        "- UNCLOAKED = {}",
+        (!hook_uncloaked.0.is_null()).to_string().to_uppercase()
+    );
     println!();
 
     // Seed the current state so already-open windows are present
@@ -252,12 +335,24 @@ fn main() -> Result<()> {
     // TODO Unreachable - Need to implement unhook on shutdown
     #[allow(unreachable_code)]
     unsafe {
-        if !hook_create.0.is_null()    { let _ = UnhookWinEvent(hook_create); }
-        if !hook_show.0.is_null()      { let _ = UnhookWinEvent(hook_show); }
-        if !hook_hide.0.is_null()      { let _ = UnhookWinEvent(hook_hide); }
-        if !hook_destroy.0.is_null()   { let _ = UnhookWinEvent(hook_destroy); }
-        if !hook_cloaked.0.is_null()   { let _ = UnhookWinEvent(hook_cloaked); }
-        if !hook_uncloaked.0.is_null() { let _ = UnhookWinEvent(hook_uncloaked); }
+        if !hook_create.0.is_null() {
+            let _ = UnhookWinEvent(hook_create);
+        }
+        if !hook_show.0.is_null() {
+            let _ = UnhookWinEvent(hook_show);
+        }
+        if !hook_hide.0.is_null() {
+            let _ = UnhookWinEvent(hook_hide);
+        }
+        if !hook_destroy.0.is_null() {
+            let _ = UnhookWinEvent(hook_destroy);
+        }
+        if !hook_cloaked.0.is_null() {
+            let _ = UnhookWinEvent(hook_cloaked);
+        }
+        if !hook_uncloaked.0.is_null() {
+            let _ = UnhookWinEvent(hook_uncloaked);
+        }
     }
 
     Ok(())
@@ -363,7 +458,9 @@ extern "system" fn enum_windows_seed_proc(hwnd: HWND, _lparam: LPARAM) -> BOOL {
         uwp_pid(hwnd)
     } else {
         let mut p = 0u32;
-        unsafe { GetWindowThreadProcessId(hwnd, Some(&mut p)); }
+        unsafe {
+            GetWindowThreadProcessId(hwnd, Some(&mut p));
+        }
         p
     };
     if pid == 0 {
@@ -439,7 +536,8 @@ fn icon_from_ico() -> Icon {
     // Process .ico file -> Pick the highest resolution -> Convert to RGBA
     let mut cursor = std::io::Cursor::new(&bytes[..]);
     let dir = ico::IconDir::read(&mut cursor).expect("Invalid .ico");
-    let best = dir.entries()
+    let best = dir
+        .entries()
         .iter()
         .max_by_key(|e| (e.width(), e.height(), e.bits_per_pixel()))
         .expect("No entries in .ico");
