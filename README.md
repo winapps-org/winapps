@@ -439,6 +439,7 @@ REMOVABLE_MEDIA="/run/media"
 # [ADDITIONAL FREERDP FLAGS & ARGUMENTS]
 # NOTES:
 # - You can try adding /network:lan to these flags in order to increase performance, however, some users have faced issues with this.
+#   If this does not work or if it does not work without the flag, you can try adding /nsc and /gfx.
 # DEFAULT VALUE: '/cert:tofu /sound /microphone +home-drive'
 # VALID VALUES: See https://github.com/awakecoding/FreeRDP-Manuals/blob/master/User/FreeRDP-User-Manual.markdown
 RDP_FLAGS="/cert:tofu /sound /microphone +home-drive"
