@@ -1,0 +1,17 @@
+# GNOME shortcut name
+NAME="InDesign 2025"
+
+# Used for descriptions and window class
+FULL_NAME="Adobe InDesign 2025"
+
+# The executable inside windows
+WIN_EXECUTABLE="C:\Program Files\Adobe\Adobe InDesign 2025\InDesign.exe"
+
+# GNOME categories
+CATEGORIES="WinApps;Adobe"
+
+# GNOME mimetypes
+MIME_TYPES="application/x-adobe-indesign-interchange;application/x-adobe-indesign;"
+
+# System Icon
+ICON="AdobeIndesign"
