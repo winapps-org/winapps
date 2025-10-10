@@ -1433,16 +1433,10 @@ function waConfigureApps() {
     done
 
     # Sort the 'APPS' array in alphabetical order.
-    IFS=$'\n'
-    # shellcheck disable=SC2207 # Silence warnings regarding preferred use of 'mapfile' or 'read -a'.
-    TEMP_ARRAY=($(sort <<<"${APPS[*]}"))
-    unset IFS
-    APPS=("${TEMP_ARRAY[@]}")
-
-    # Prompt user to select which officially supported applications to configure.
-    OPTIONS=(
-        "Set up all detected officially supported applications"
-        "Choose specific officially supported applications to set up"
+   RDP_IP="$(sed -n 's/^RDP_IP=//p' "${HOME}/.config/winapps/winapps.conf")"
+   RDP_USER="$(sed -n 's/^RDP_USER=//p' "${HOME}/.config/winapps/winapps.conf")"
+   RDP_PASS="$(sed -n 's/^RDP_PASS=//p' "${HOME}/.config/winapps/winapps.conf")"
+   RDP_DOMAIN="$(sed -n 's/^RDP_DOMAIN=//p' "${HOME}/.config/winapps/winapps.conf")"
         "Skip setting up any officially supported applications"
     )
     inqMenu "How would you like to handle officially supported applications?" OPTIONS APP_INSTALL
