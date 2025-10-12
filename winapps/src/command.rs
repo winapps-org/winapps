@@ -1,4 +1,4 @@
-use crate::{ensure, Backend, Config, Error, IntoResult, Result};
+use crate::{Backend, Config, Error, IntoResult, Result, ensure};
 use std::{
     fmt::{Display, Formatter},
     process::{Child, Command as StdCommand, Stdio},

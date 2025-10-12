@@ -1,6 +1,6 @@
-use clap::{arg, Command};
+use clap::{Command, arg};
 use miette::{IntoDiagnostic, Result};
-use tracing::{info, Level};
+use tracing::{Level, info};
 use tracing_subscriber::EnvFilter;
 use winapps::{Backend, Config, Freerdp, RemoteClient};
 

@@ -3,10 +3,10 @@ use std::net::IpAddr;
 use enum_dispatch::enum_dispatch;
 
 use crate::{
+    Config, Result,
     backend::{container::Container, manual::Manual},
     command::Command,
     config::{App, AppKind},
-    Config, Result,
 };
 
 mod container;

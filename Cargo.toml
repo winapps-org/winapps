@@ -3,4 +3,4 @@ members = [
     "winapps",
     "winapps-cli",
 ]
-resolver = "2"
+resolver = "3"

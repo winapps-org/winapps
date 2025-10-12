@@ -1,4 +1,4 @@
-use crate::{bail, command::Command, Config, Error, RemoteClient, Result};
+use crate::{Config, Error, RemoteClient, Result, bail, command::Command};
 use parking_lot::RwLock;
 use regex::Regex;
 use std::{

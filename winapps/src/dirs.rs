@@ -1,4 +1,4 @@
-use crate::{bail, Result};
+use crate::{Result, bail};
 use std::{
     fs,
     path::{Path, PathBuf},

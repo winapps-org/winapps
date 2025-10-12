@@ -47,15 +47,19 @@ pub enum Error {
     #[error("Icon is invalid base64")]
     #[diagnostic(
         code(winapps::setup_error),
-        help("Setup returned a badly formed base64 string, is your config correct and are apps correctly installed?")
+        help(
+            "Setup returned a badly formed base64 string, is your config correct and are apps correctly installed?"
+        )
     )]
     InvalidIcon(#[from] base64::DecodeError),
 
     #[error("RDP host is unreachable")]
     #[diagnostic(
         code(winapps::bad_vm_state),
-        help("Ensure that the VM or your Firewall doesn't block ping traffic. \
-        In case you're running a containerized VM, ensure the container runtime is properly configured.")
+        help(
+            "Ensure that the VM or your Firewall doesn't block ping traffic. \
+        In case you're running a containerized VM, ensure the container runtime is properly configured."
+        )
     )]
     HostUnreachable,
 

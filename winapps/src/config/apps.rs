@@ -1,9 +1,10 @@
 use crate::{
+    Config, Error, Result,
     config::{App, AppKind},
     dirs::{desktop_dir, icons_dir},
-    ensure, Config, Error, Result,
+    ensure,
 };
-use base64::{prelude::BASE64_STANDARD, Engine};
+use base64::{Engine, prelude::BASE64_STANDARD};
 use std::{fmt::Display, fs::write};
 use tracing::debug;
 

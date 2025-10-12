@@ -6,8 +6,8 @@
 pub use crate::{
     backend::{Backend, Backends},
     config::Config,
-    errors::{bail, ensure, Error, IntoResult, Result},
-    remote_client::{freerdp::Freerdp, RemoteClient},
+    errors::{Error, IntoResult, Result, bail, ensure},
+    remote_client::{RemoteClient, freerdp::Freerdp},
 };
 
 mod backend;

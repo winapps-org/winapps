@@ -1,4 +1,4 @@
-use crate::{command::command, ensure, Backend, Config, Error, Result};
+use crate::{Backend, Config, Error, Result, command::command, ensure};
 use parking_lot::RwLock;
 use std::net::{IpAddr, Ipv4Addr};
 use tracing::debug;

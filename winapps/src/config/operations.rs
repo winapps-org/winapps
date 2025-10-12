@@ -7,7 +7,7 @@ use std::{
 };
 use tracing::warn;
 
-use crate::{dirs::config_dir, ensure, Config, Error, IntoResult, Result};
+use crate::{Config, Error, IntoResult, Result, dirs::config_dir, ensure};
 
 static CONFIG: OnceLock<RwLock<Config>> = OnceLock::new();
 
@@ -39,11 +39,18 @@ impl Config {
         let config: Self = toml::from_str(config_file.as_str()).into_result()?;
 
         ensure!(
-            [config.libvirt.enable, config.container.enable, config.manual.enable]
-                .into_iter()
-                .filter(|enabled| *enabled)
-                .count() == 1,
-            Error::Config("More than one backend enabled, please set only one of libvirt.enable, container.enable, and manual.enable")
+            [
+                config.libvirt.enable,
+                config.container.enable,
+                config.manual.enable
+            ]
+            .into_iter()
+            .filter(|enabled| *enabled)
+            .count()
+                == 1,
+            Error::Config(
+                "More than one backend enabled, please set only one of libvirt.enable, container.enable, and manual.enable"
+            )
         );
 
         ensure!(

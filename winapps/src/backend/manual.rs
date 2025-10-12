@@ -1,7 +1,7 @@
 use parking_lot::RwLock;
 use std::{net::IpAddr, str::FromStr};
 
-use crate::{ensure, Backend, Config, Error, Result};
+use crate::{Backend, Config, Error, Result, ensure};
 
 #[derive(Debug, Clone)]
 pub struct Manual {
