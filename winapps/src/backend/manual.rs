@@ -20,7 +20,11 @@ impl Backend for Manual {
     fn check_depends(&self) -> Result<()> {
         let config = self.config.read();
 
-        assert!(config.manual.enable);
+        ensure!(
+            config.manual.enable,
+            Error::Config("Manual backend is not enabled")
+        );
+
         ensure!(
             !config.manual.host.is_empty(),
             Error::Config("Host shouldn't be empty")

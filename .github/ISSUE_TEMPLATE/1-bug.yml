@@ -38,7 +38,7 @@ body:
     id: config
     attributes:
       label: Your `winapps.conf`
-      description: Please copy and paste your `winapps.conf`. Make sure to not include any sensible data. This will be automatically formatted into code, so no need for backticks.
+      description: Please copy and paste your `winapps.conf`. Make sure to not include any sensitive data. This will be automatically formatted into code, so no need for backticks.
       render: shell
     validations:
       required: true

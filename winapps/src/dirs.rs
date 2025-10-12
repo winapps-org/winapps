@@ -30,7 +30,7 @@ pub fn data_dir() -> Result<PathBuf> {
     Ok(data_dir)
 }
 
-/// Get the data dir and validates it exists
+/// Get the config dir and validates it exists
 pub fn config_dir() -> Result<PathBuf> {
     let Some(config_dir) = dirs::config_dir().map(|path| path.join("winapps")) else {
         bail!("Could not determine $XDG_CONFIG_HOME")

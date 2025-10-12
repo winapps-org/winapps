@@ -2,9 +2,9 @@ name: Format and lint
 
 on:
   push:
-    branches: [ "rewrite" ]
+    branches: ["rewrite"]
   pull_request:
-    branches: [ "rewrite" ]
+    branches: ["rewrite"]
 
 permissions:
   checks: write

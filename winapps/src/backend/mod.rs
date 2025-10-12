@@ -52,7 +52,7 @@ impl Config {
             .wait_with_output()?
             .lines()
             .filter_map(|line| {
-                let mut split = line.split(";");
+                let mut split = line.split(";").map(|part| part.trim());
 
                 match (split.next(), split.next(), split.next(), split.next()) {
                     (Some(id), Some(name), Some(path), Some(icon)) => Some(App {

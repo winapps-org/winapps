@@ -1,14 +1,10 @@
 use crate::{
     config::{App, AppKind},
     dirs::{desktop_dir, icons_dir},
-    Config, Result,
+    ensure, Config, Error, Result,
 };
 use base64::{prelude::BASE64_STANDARD, Engine};
-use std::{
-    fmt::Display,
-    fs::{set_permissions, write, Permissions},
-    os::unix::fs::PermissionsExt,
-};
+use std::{fmt::Display, fs::write};
 use tracing::debug;
 
 impl PartialEq for App {
@@ -25,7 +21,14 @@ impl Display for App {
 
 impl App {
     fn try_as_existing(&mut self) -> Result<&mut Self> {
-        match self.kind.clone() {
+        ensure!(
+            self.id
+                .chars()
+                .all(|c| c.is_alphanumeric() || c == '-' || c == '_'),
+            Error::Message(format!("Invalid app ID: {}", self.id))
+        );
+
+        match &self.kind {
             AppKind::FromBase64(base64) => {
                 let path = icons_dir()?.join(format!("{}.png", self.id));
                 write(path.clone(), BASE64_STANDARD.decode(base64)?)?;
@@ -69,7 +72,6 @@ Comment={} (WinApps)",
         let path = desktop_dir()?.join(format!("{}.desktop", self.id));
 
         write(&path, self.try_as_desktop_file()?)?;
-        set_permissions(&path, Permissions::from_mode(0o750))?;
 
         if !config.linked_apps.contains(&self) {
             debug!("Writing app {} to config", self.id);

@@ -7,7 +7,7 @@ use std::{
 };
 use tracing::warn;
 
-use crate::{bail, dirs::config_dir, Config, Error, IntoResult, Result};
+use crate::{dirs::config_dir, ensure, Config, Error, IntoResult, Result};
 
 static CONFIG: OnceLock<RwLock<Config>> = OnceLock::new();
 
@@ -38,15 +38,18 @@ impl Config {
         let config_file = fs::read_to_string(config_path).into_result()?;
         let config: Self = toml::from_str(config_file.as_str()).into_result()?;
 
-        if !(config.libvirt.enable ^ config.container.enable ^ config.manual.enable) {
-            bail!(Error::Config("More than one backend enabled, please set only one of libvirt.enable, container.enable, and manual.enable"));
-        }
+        ensure!(
+            [config.libvirt.enable, config.container.enable, config.manual.enable]
+                .into_iter()
+                .filter(|enabled| *enabled)
+                .count() == 1,
+            Error::Config("More than one backend enabled, please set only one of libvirt.enable, container.enable, and manual.enable")
+        );
 
-        if config.manual.enable && IpAddr::from_str(&config.manual.host).is_err() {
-            bail!(Error::Config(
-                "Please set manual.host to a valid IP address"
-            ));
-        }
+        ensure!(
+            config.manual.enable && IpAddr::from_str(&config.manual.host).is_err(),
+            Error::Config("Please set manual.host to a valid IP address")
+        );
 
         Ok(config)
     }

@@ -69,9 +69,11 @@ impl RemoteClient for Freerdp {
         let Some(home_regex) = dirs::home_dir().map(|home| {
             Regex::new(&format!(
                 "^{}",
-                home.into_os_string()
-                    .into_string()
-                    .expect("$HOME should always be a valid string")
+                regex::escape(
+                    home.as_os_str()
+                        .to_str()
+                        .expect("$HOME should always be valid UTF-8")
+                )
             ))
             .expect("'^$HOME' should always be a valid regex")
         }) else {

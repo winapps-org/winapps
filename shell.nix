@@ -32,9 +32,11 @@ pkgs.mkShell rec {
       xidel = pkgs.lib.getExe pkgs.xidel;
     in
     pkgs.lib.optionalString isIdea ''
-      sed -i \
-        -e "s|$(${xidel} .idea/workspace.xml -e '${pathFor "explicitPathToStdlib"}')|${RUST_SRC_PATH}|" \
-        -e "s|$(${xidel} .idea/workspace.xml -e '${pathFor "toolchainHomeDirectory"}')|${toolchain.toolchain}/bin|" \
-        .idea/workspace.xml
+      if [ -f .idea/workspace.xml ]; then
+        sed -i \
+          -e "s|$(${xidel} .idea/workspace.xml -e '${pathFor "explicitPathToStdlib"}')|${RUST_SRC_PATH}|" \
+          -e "s|$(${xidel} .idea/workspace.xml -e '${pathFor "toolchainHomeDirectory"}')|${toolchain.toolchain}/bin|" \
+          .idea/workspace.xml
+      fi
     '';
 }
