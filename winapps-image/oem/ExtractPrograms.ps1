@@ -137,7 +137,8 @@ function GetApplicationName
 function GetUWPApplicationName
 {
     param (
-        [string]$exePath
+        [string]$exePath,
+        $app
     )
 
     # Query the application executable for the application name.
@@ -257,7 +258,7 @@ function AppSearchUWP
         # Proceed only if an executable path was identified.
         if ($exePath)
         {
-            $productName = GetUWPApplicationName -exePath $exePath
+            $productName = GetUWPApplicationName -exePath $exePath -app $app
 
             # Ignore UWP applications with no name, or those named 'Microsoft® Windows® Operating System'.
             if ($productName -ne "Microsoft® Windows® Operating System" -and [string]::IsNullOrEmpty($productName) -eq $false)
@@ -273,7 +274,7 @@ function AppSearchUWP
     PrintCSV -Names $exeNames -Paths $exePaths -Source "uwp"
 }
 
-# Name: 'AppSearchWinReg'
+# Name: 'AppSearchChocolatey'
 # Role: Search for chocolatey shims.
 function AppSearchChocolatey
 {
@@ -309,7 +310,7 @@ function AppSearchChocolatey
     }
 }
 
-# Name: 'AppSearchWinReg'
+# Name: 'AppSearchScoop'
 # Role: Search for scoop shims.
 function AppSearchScoop
 {

@@ -41,9 +41,7 @@ impl Backend for Manual {
     fn get_host(&self) -> IpAddr {
         let config = self.config.read();
 
-        // SAFETY: When the config is read, we check that this is a valid IP
-        // We assume that the program will never write this field,
-        // so it should always be valid at this point
-        IpAddr::from_str(&config.manual.host).unwrap()
+        IpAddr::from_str(&config.manual.host)
+            .expect("Manual host should be validated in check_depends")
     }
 }
