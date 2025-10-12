@@ -11,4 +11,4 @@ WIN_EXECUTABLE="C:\Program Files\ArcGIS\Pro\bin\ArcGISPro.exe"
 CATEGORIES="WinApps;GIS"
 
 # GNOME mimetypes
-MIME_TYPES=""
+MIME_TYPES=" "
