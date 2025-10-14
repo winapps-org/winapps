@@ -1,0 +1,17 @@
+# GNOME shortcut name
+NAME="Capture One"
+
+# Used for descriptions and window class
+FULL_NAME="Capture One"
+
+# The executable inside windows
+WIN_EXECUTABLE="C:\Program Files\Capture One\Capture One\CaptureOne.exe"
+
+# GNOME categories
+CATEGORIES="WinApps;Graphics"
+
+# GNOME mimetypes
+MIME_TYPES=""
+
+# System Icon
+ICON="CaptureOne"
