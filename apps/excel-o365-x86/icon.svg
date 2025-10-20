@@ -1,48 +1,106 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!-- Generator: Adobe Illustrator 23.0.1, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
-<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd" [
-    <!ENTITY ns_extend "http://ns.adobe.com/Extensibility/1.0/">
-    <!ENTITY ns_ai "http://ns.adobe.com/AdobeIllustrator/10.0/">
-    <!ENTITY ns_graphs "http://ns.adobe.com/Graphs/1.0/">
-    <!ENTITY ns_vars "http://ns.adobe.com/Variables/1.0/">
-    <!ENTITY ns_imrep "http://ns.adobe.com/ImageReplacement/1.0/">
-    <!ENTITY ns_sfw "http://ns.adobe.com/SaveForWeb/1.0/">
-    <!ENTITY ns_custom "http://ns.adobe.com/GenericCustomNamespace/1.0/">
-    <!ENTITY ns_adobe_xpath "http://ns.adobe.com/XPath/1.0/">
-]>
-<svg version="1.1" id="Livello_1" xmlns:x="&ns_extend;" xmlns:i="&ns_ai;" xmlns:graph="&ns_graphs;"
-     xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 2289.75 2130"
-     enable-background="new 0 0 2289.75 2130" xml:space="preserve">
-<metadata>
-    <sfw  xmlns="&ns_sfw;">
-        <slices></slices>
-        <sliceSourceBounds  bottomLeftOrigin="true" height="2130" width="2289.75" x="-1147.5" y="-1041"></sliceSourceBounds>
-    </sfw>
-</metadata>
-<path fill="#185C37" d="M1437.75,1011.75L532.5,852v1180.393c0,53.907,43.7,97.607,97.607,97.607l0,0h1562.036
-    c53.907,0,97.607-43.7,97.607-97.607l0,0V1597.5L1437.75,1011.75z"/>
-<path fill="#21A366" d="M1437.75,0H630.107C576.2,0,532.5,43.7,532.5,97.607c0,0,0,0,0,0V532.5l905.25,532.5L1917,1224.75
-    L2289.75,1065V532.5L1437.75,0z"/>
-<path fill="#107C41" d="M532.5,532.5h905.25V1065H532.5V532.5z"/>
-<path opacity="0.1" enable-background="new    " d="M1180.393,426H532.5v1331.25h647.893c53.834-0.175,97.432-43.773,97.607-97.607
-    V523.607C1277.825,469.773,1234.227,426.175,1180.393,426z"/>
-<path opacity="0.2" enable-background="new    " d="M1127.143,479.25H532.5V1810.5h594.643
-    c53.834-0.175,97.432-43.773,97.607-97.607V576.857C1224.575,523.023,1180.977,479.425,1127.143,479.25z"/>
-<path opacity="0.2" enable-background="new    " d="M1127.143,479.25H532.5V1704h594.643c53.834-0.175,97.432-43.773,97.607-97.607
-    V576.857C1224.575,523.023,1180.977,479.425,1127.143,479.25z"/>
-<path opacity="0.2" enable-background="new    " d="M1073.893,479.25H532.5V1704h541.393c53.834-0.175,97.432-43.773,97.607-97.607
-    V576.857C1171.325,523.023,1127.727,479.425,1073.893,479.25z"/>
-<linearGradient id="SVGID_1_" gradientUnits="userSpaceOnUse" x1="203.5132" y1="1729.0183" x2="967.9868" y2="404.9817" gradientTransform="matrix(1 0 0 -1 0 2132)">
-    <stop  offset="0" style="stop-color:#18884F"/>
-    <stop  offset="0.5" style="stop-color:#117E43"/>
-    <stop  offset="1" style="stop-color:#0B6631"/>
-</linearGradient>
-<path fill="url(#SVGID_1_)" d="M97.607,479.25h976.285c53.907,0,97.607,43.7,97.607,97.607v976.285
-    c0,53.907-43.7,97.607-97.607,97.607H97.607C43.7,1650.75,0,1607.05,0,1553.143V576.857C0,522.95,43.7,479.25,97.607,479.25z"/>
-<path fill="#FFFFFF" d="M302.3,1382.264l205.332-318.169L319.5,747.683h151.336l102.666,202.35
-    c9.479,19.223,15.975,33.494,19.49,42.919h1.331c6.745-15.336,13.845-30.228,21.3-44.677L725.371,747.79h138.929l-192.925,314.548
-    L869.2,1382.263H721.378L602.79,1160.158c-5.586-9.45-10.326-19.376-14.164-29.66h-1.757c-3.474,10.075-8.083,19.722-13.739,28.755
-    l-122.102,223.011H302.3z"/>
-<path fill="#33C481" d="M2192.143,0H1437.75v532.5h852V97.607C2289.75,43.7,2246.05,0,2192.143,0L2192.143,0z"/>
-<path fill="#107C41" d="M1437.75,1065h852v532.5h-852V1065z"/>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" id="a" data-name="Слой 1" width="486" height="500" viewBox="0 0 486 500">
+  <defs>
+    <style>
+      .l {
+        fill: #fff;
+      }
+
+      .m {
+        fill: url(#d);
+      }
+
+      .n {
+        fill: url(#h);
+      }
+
+      .o {
+        fill: url(#j);
+      }
+
+      .p {
+        fill: url(#g);
+      }
+
+      .q {
+        fill: url(#k);
+      }
+
+      .q, .r {
+        fill-opacity: .3;
+      }
+
+      .s {
+        fill: url(#i);
+      }
+
+      .t {
+        fill: url(#f);
+      }
+
+      .u {
+        fill: url(#b);
+      }
+
+      .r {
+        fill: url(#e);
+      }
+
+      .v {
+        fill: url(#c);
+        fill-opacity: .7;
+      }
+    </style>
+    <radialGradient id="b" data-name="Безымянный градиент" cx="-746.66" cy="781.44" fx="-746.66" fy="781.44" r="13.89" gradientTransform="translate(-2596.39 -38900.31) rotate(-133.54) scale(41.12 -31.9) skewX(-.01)" gradientUnits="userSpaceOnUse">
+      <stop offset=".06" stop-color="#379539"/>
+      <stop offset=".42" stop-color="#297c2d"/>
+      <stop offset=".7" stop-color="#15561c"/>
+    </radialGradient>
+    <radialGradient id="c" data-name="Безымянный градиент 2" cx="-773.19" cy="771.25" fx="-773.19" fy="771.25" r="13.89" gradientTransform="translate(-2155.12 -15858.88) rotate(-135.96) scale(16.66 -12.89) skewX(-.01)" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#073b10"/>
+      <stop offset=".99" stop-color="#084a13" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="d" data-name="Безымянный градиент 3" x1="69.43" y1="210.33" x2="260.84" y2="210.33" gradientTransform="translate(0 502) scale(1 -1)" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#52d17c"/>
+      <stop offset=".33" stop-color="#4aa647"/>
+    </linearGradient>
+    <linearGradient id="e" data-name="Безымянный градиент 4" x1="194.4" y1="335.33" x2="194.4" y2="161.68" gradientTransform="translate(0 502) scale(1 -1)" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#29852f"/>
+      <stop offset=".5" stop-color="#4aa647" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="f" data-name="Безымянный градиент 5" x1="80.49" y1="297.22" x2="311.45" y2="497.54" gradientTransform="translate(0 502) scale(1 -1)" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#66d052"/>
+      <stop offset="1" stop-color="#85e972"/>
+    </linearGradient>
+    <radialGradient id="g" data-name="Безымянный градиент 6" cx="-824.11" cy="810.99" fx="-824.11" fy="810.99" r="13.89" gradientTransform="translate(-7120.4 -15378.69) rotate(-180) scale(9.02 -19.09)" gradientUnits="userSpaceOnUse">
+      <stop offset=".29" stop-color="#4eb43b"/>
+      <stop offset="1" stop-color="#72cc61" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="h" data-name="Безымянный градиент 7" x1="182.11" y1="377" x2="69.43" y2="377" gradientTransform="translate(0 502) scale(1 -1)" gradientUnits="userSpaceOnUse">
+      <stop offset=".18" stop-color="#c0e075" stop-opacity="0"/>
+      <stop offset="1" stop-color="#d1eb95"/>
+    </linearGradient>
+    <radialGradient id="i" data-name="Безымянный градиент 8" cx="-769.14" cy="808.9" fx="-769.14" fy="808.9" r="13.89" gradientTransform="translate(-23523.37 3309.71) rotate(-141.02) scale(21.75 21.69) skewX(.01)" gradientUnits="userSpaceOnUse">
+      <stop offset=".44" stop-color="#79e96d"/>
+      <stop offset="1" stop-color="#d0eb76"/>
+    </radialGradient>
+    <radialGradient id="j" data-name="Безымянный градиент 9" cx="-675.64" cy="793.28" fx="-675.64" fy="793.28" r="13.89" gradientTransform="translate(-25315.85 47178.18) rotate(45.01) scale(22.62 -64.41) skewX(-.04)" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#20a85e"/>
+      <stop offset=".94" stop-color="#09442a"/>
+    </radialGradient>
+    <radialGradient id="k" data-name="Безымянный градиент 10" cx="-657.62" cy="853.99" fx="-657.62" fy="853.99" r="13.89" gradientTransform="translate(-10902.85 7734.8) rotate(90) scale(11.2 -12.9)" gradientUnits="userSpaceOnUse">
+      <stop offset=".58" stop-color="#33a662" stop-opacity="0"/>
+      <stop offset=".97" stop-color="#98f0b0"/>
+    </radialGradient>
+  </defs>
+  <path class="u" d="M69.43,159.72c0-34.52,27.98-62.5,62.49-62.5h354.09v361.11c0,23.01-18.65,41.67-41.66,41.67H152.74c-46.01,0-83.31-37.31-83.31-83.33V159.72Z"/>
+  <path class="v" d="M69.43,159.72c0-34.52,27.98-62.5,62.49-62.5h354.09v361.11c0,23.01-18.65,41.67-41.66,41.67H152.74c-46.01,0-83.31-37.31-83.31-83.33V159.72Z"/>
+  <path class="m" d="M69.43,229.17c0-34.52,27.98-62.5,62.49-62.5h187.46c-23.01,0-41.66,18.66-41.66,41.67v83.33c0,23.01-18.65,41.67-41.66,41.67h-83.31c-46.01,0-83.31,37.31-83.31,83.33v-187.5Z"/>
+  <path class="r" d="M69.43,229.17c0-34.52,27.98-62.5,62.49-62.5h187.46c-23.01,0-41.66,18.66-41.66,41.67v83.33c0,23.01-18.65,41.67-41.66,41.67h-83.31c-46.01,0-83.31,37.31-83.31,83.33v-187.5Z"/>
+  <path class="t" d="M69.43,83.33C69.43,37.31,106.73,0,152.74,0h166.63v166.67h-166.63c-46.01,0-83.31,37.31-83.31,83.33V83.33Z"/>
+  <path class="p" d="M69.43,83.33C69.43,37.31,106.73,0,152.74,0h166.63v166.67h-166.63c-46.01,0-83.31,37.31-83.31,83.33V83.33Z"/>
+  <path class="n" d="M69.43,83.33C69.43,37.31,106.73,0,152.74,0h166.63v166.67h-166.63c-46.01,0-83.31,37.31-83.31,83.33V83.33Z"/>
+  <rect class="s" x="277.71" width="208.29" height="166.67" rx="41.66" ry="41.66"/>
+  <rect class="o" y="236.11" width="222.17" height="222.22" rx="45.13" ry="45.13"/>
+  <rect class="q" y="236.11" width="222.17" height="222.22" rx="45.13" ry="45.13"/>
+  <path class="l" d="M169.48,410.71h-34.25l-21.5-40.47c-.77-1.42-1.36-2.54-1.77-3.37-.35-.88-.74-1.89-1.15-3.01h-.35c-.53,1.42-1.03,2.57-1.5,3.45-.47.89-1.03,1.98-1.68,3.28l-22.3,40.11h-32.3l38.76-63.58-36.1-63.4h33.8l19.11,36.13c.77,1.48,1.42,2.78,1.95,3.9.59,1.06,1.18,2.33,1.77,3.81h.35c.82-1.71,1.47-3.07,1.95-4.07.53-1,1.24-2.33,2.12-3.98l19.82-35.77h32.21l-36.63,62.43,37.7,64.55Z"/>
 </svg>
