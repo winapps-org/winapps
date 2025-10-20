@@ -167,7 +167,7 @@ Contributing to the list of supported applications is encouraged through submiss
         <td>
             <b>File Explorer</b><br>
             (Windows Explorer)<br>
-            <i><a href="https://commons.wikimedia.org/wiki/File:Windows_Explorer.svg">Icon</a> in the Public Domain.</i>
+            <i><a href="https://en.wikipedia.org/wiki/File:Microsoft_PowerToys-Logo_File_Explorer_Preview_02.svg">Icon</a> in the Public Domain.</i>
         </td>
     </tr>
     <tr>
