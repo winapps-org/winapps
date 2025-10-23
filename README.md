@@ -167,7 +167,7 @@ Contributing to the list of supported applications is encouraged through submiss
         <td>
             <b>File Explorer</b><br>
             (Windows Explorer)<br>
-            <i><a href="https://commons.wikimedia.org/wiki/File:Windows_Explorer.svg">Icon</a> in the Public Domain.</i>
+            <i><a href="https://en.wikipedia.org/wiki/File:Microsoft_PowerToys-Logo_File_Explorer_Preview_02.svg">Icon</a> in the Public Domain.</i>
         </td>
     </tr>
     <tr>
@@ -187,7 +187,7 @@ Contributing to the list of supported applications is encouraged through submiss
         <td>
             <b>Microsoft Access</b><br>
             (2016, 2019, o365)<br>
-            <i><a href="https://commons.wikimedia.org/wiki/File:Microsoft_Office_Access_(2019-present).svg">Icon</a> in the Public Domain.</i>
+            <i><a href="https://en.wikipedia.org/wiki/File:Microsoft_Office_Access_(2025-present).svg">Icon</a> in the Public Domain.</i>
         </td>
     </tr>
     <tr>
@@ -198,7 +198,7 @@ Contributing to the list of supported applications is encouraged through submiss
         <td>
             <b>Microsoft Excel</b><br>
             (2016, 2019, o365)<br>
-            <i><a href="https://en.m.wikipedia.org/wiki/File:Microsoft_Office_Excel_(2019%E2%80%93present).svg">Icon</a> in the Public Domain.</i>
+            <i><a href="https://en.wikipedia.org/wiki/File:Microsoft_Office_Excel_(2025–present).svg">Icon</a> in the Public Domain.</i>
         </td>
         <!-- Microsoft Word -->
         <td>
@@ -207,7 +207,7 @@ Contributing to the list of supported applications is encouraged through submiss
         <td>
             <b>Microsoft Word</b><br>
             (2016, 2019, o365)<br>
-            <i><a href="https://en.m.wikipedia.org/wiki/File:Microsoft_Office_Word_(2019%E2%80%93present).svg">Icon</a> in the Public Domain.</i>
+            <i><a href="https://en.wikipedia.org/wiki/File:Microsoft_Office_Word_(2025–present).svg">Icon</a> in the Public Domain.</i>
         </td>
     </tr>
     <tr>
@@ -218,7 +218,7 @@ Contributing to the list of supported applications is encouraged through submiss
         <td>
             <b>Microsoft OneNote</b><br>
             (2016, 2019, o365)<br>
-            <i><a href="https://en.m.wikipedia.org/wiki/File:Microsoft_Office_OneNote_(2019%E2%80%93present).svg">Icon</a> in the Public Domain.</i>
+            <i><a href="https://en.wikipedia.org/wiki/File:Microsoft_OneNote_Icon_(2025_-_present).svg">Icon</a> in the Public Domain.</i>
         </td>
         <!-- Microsoft Outlook -->
         <td>
@@ -227,7 +227,7 @@ Contributing to the list of supported applications is encouraged through submiss
         <td>
             <b>Microsoft Outlook</b><br>
             (2016, 2019, o365)<br>
-            <i><a href="https://en.m.wikipedia.org/wiki/File:Microsoft_Office_Outlook_(2018%E2%80%93present).svg">Icon</a> in the Public Domain.</i>
+            <i><a href="https://en.wikipedia.org/wiki/File:Microsoft_Outlook_Icon_(2025–present).svg">Icon</a> in the Public Domain.</i>
         </td>
     </tr>
     <tr>
@@ -238,7 +238,7 @@ Contributing to the list of supported applications is encouraged through submiss
         <td>
             <b>Microsoft PowerPoint</b><br>
             (2016, 2019, o365)<br>
-            <i><a href="https://en.m.wikipedia.org/wiki/File:Microsoft_Office_PowerPoint_(2019%E2%80%93present).svg">Icon</a> in the Public Domain.</i>
+            <i><a href="https://en.wikipedia.org/wiki/File:Microsoft_Office_PowerPoint_(2025–present).svg">Icon</a> in the Public Domain.</i>
             </td>
         <!-- Microsoft Publisher -->
         <td>
