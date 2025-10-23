@@ -23,7 +23,7 @@ However, we ask of you to not use it for PRs of which you are the authors unless
 
 ### AI "Art"
 
-We do not condone AI-generated "art", including AI-written and AI-produced tutorials, AI-generated icons for contributed applications.
+We do not condone AI-generated "art", including AI-written and AI-produced tutorials, as well as AI-generated icons for contributed applications.
 Additionally, please do not share these kinds of media on any official WinApps channel.
 
 ## Guidelines for pre-defined applications
