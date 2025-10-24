@@ -667,8 +667,8 @@ function waRunCommand() {
         else
             # Convert path from UNIX to Windows style.
             FILE_PATH=$(echo "$2" | sed \
-                -e 's|^'"${HOME}"'|\\\\tsclient\\home|' \
-                -e 's|^'"${REMOVABLE_MEDIA}"'|\\\\tsclient\\media|' \
+                -e 's|^'"${HOME}"'|\\\\tsclient\\home\\|' \
+                -e 's|^'"${REMOVABLE_MEDIA}"'|\\\\tsclient\\media\\|' \
                 -e 's|/|\\|g')
             dprint "UNIX_FILE_PATH: ${2}"
             dprint "WINDOWS_FILE_PATH: ${FILE_PATH}"
