@@ -1342,7 +1342,8 @@ function waConfigureOfficiallySupported() {
         echo -n "Creating an application entry for ${APP_NAME}... "
 
         # Copy the original, unmodified application assets.
-        $SUDO cp -r "./apps/${APP_NAME}" "${APPDATA_PATH}/apps"
+        # --no-preserve=mode is needed to avoid missing write permissions when copying from Nix store.
+        $SUDO cp -r --no-preserve=mode "./apps/${APP_NAME}" "${APPDATA_PATH}/apps"
 
         local DESTINATION_INFO_FILE="${APPDATA_PATH}/apps/${APP_NAME}/info"
 
