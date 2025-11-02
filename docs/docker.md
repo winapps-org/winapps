@@ -8,7 +8,7 @@ Although WinApps supports using `QEMU+KVM+libvirt` as a backend for running Wind
 > WinApps does __NOT__ officially support versions of Windows prior to Windows 10. Despite this, it may be possible to achieve a successful installation with some additional experimentation. If you find a way to achieve this, please share your solution through a pull request for the benefit of other users.
 > Possible setup instructions for Windows 10:
 > - 'Professional', 'Enterprise' or 'Server' editions of Windows are required to run RDP applications. Windows 'Home' will __NOT__ suffice.
-> - It is recommended to edit the initial `compose.yaml` file to keep your required username and password from the beginning.
+> - It is recommended to edit the initial `docker-compose.yml` file to keep your required username and password from the beginning.
 > - It is recommended to not use `sudo` to force commands to run. Add your user to the relevant permissions group wherever possible.
 
 > [!IMPORTANT]
@@ -21,11 +21,11 @@ Although WinApps supports using `QEMU+KVM+libvirt` as a backend for running Wind
 You can find a guide for installing `Docker Engine` [here](https://docs.docker.com/engine/install/).
 
 ### Setup `Docker` Container
-WinApps utilises `docker compose` to configure Windows VMs. A template [`compose.yaml`](../compose.yaml) is provided.
+WinApps utilises `docker compose` to configure Windows VMs. A template [`docker-compose.yml`](../docker-compose.yml) is provided.
 
-Prior to installing Windows, you can modify the RAM and number of CPU cores available to the Windows VM by changing `RAM_SIZE` and `CPU_CORES` within `compose.yaml`.
+Prior to installing Windows, you can modify the RAM and number of CPU cores available to the Windows VM by changing `RAM_SIZE` and `CPU_CORES` within `docker-compose.yml`.
 
-It is also possible to specify the version of Windows you wish to install within `compose.yaml` by modifying `VERSION`.
+It is also possible to specify the version of Windows you wish to install within `docker-compose.yml` by modifying `VERSION`.
 
 Please refer to the [original GitHub repository](https://github.com/dockur/windows) for more information on additional configuration options.
 
@@ -39,17 +39,17 @@ Please refer to the [original GitHub repository](https://github.com/dockur/windo
 You can initiate the Windows installation using `docker compose`.
 ```bash
 cd winapps
-docker compose --file ./compose.yaml up
+docker compose up
 ```
 
 You can then access the Windows virtual machine via a VNC connection to complete the Windows setup by navigating to http://127.0.0.1:8006 in your web browser.
 
-### Changing `compose.yaml`
-Changes to `compose.yaml` require the container to be removed and re-created. This should __NOT__ affect your data.
+### Changing `docker-compose.yml`
+Changes to `docker-compose.yml` require the container to be removed and re-created. This should __NOT__ affect your data.
 
 ```bash
 # Stop and remove the existing container.
-docker compose --file ~/.config/winapps/compose.yaml down
+docker compose --file ~/.config/winapps/docker-compose.yml down
 
 # Remove the existing FreeRDP certificate (if required).
 # Note: A new certificate will be created when connecting via RDP for the first time.
@@ -57,17 +57,17 @@ rm ~/.config/freerdp/server/127.0.0.1_3389.pem
 
 # Re-create the container with the updated configuration.
 # Add the -d flag at the end to run the container in the background.
-docker compose --file ~/.config/winapps/compose.yaml up
+docker compose --file ~/.config/winapps/docker-compose.yml up
 ```
 
 ### Subsequent Use
 ```bash
-docker compose --file ~/.config/winapps/compose.yaml start # Power on the Windows VM
-docker compose --file ~/.config/winapps/compose.yaml pause # Pause the Windows VM
-docker compose --file ~/.config/winapps/compose.yaml unpause # Resume the Windows VM
-docker compose --file ~/.config/winapps/compose.yaml restart # Restart the Windows VM
-docker compose --file ~/.config/winapps/compose.yaml stop # Gracefully shut down the Windows VM
-docker compose --file ~/.config/winapps/compose.yaml kill # Force shut down the Windows VM
+docker compose --file ~/.config/winapps/docker-compose.yml start # Power on the Windows VM
+docker compose --file ~/.config/winapps/docker-compose.yml pause # Pause the Windows VM
+docker compose --file ~/.config/winapps/docker-compose.yml unpause # Resume the Windows VM
+docker compose --file ~/.config/winapps/docker-compose.yml restart # Restart the Windows VM
+docker compose --file ~/.config/winapps/docker-compose.yml stop # Gracefully shut down the Windows VM
+docker compose --file ~/.config/winapps/docker-compose.yml kill # Force shut down the Windows VM
 ```
 
 ## `Podman`
@@ -82,7 +82,7 @@ Please follow the [`docker` instructions](#setup-docker-container).
 > #### Rootless `podman` containers
 > If you are invoking podman as a user, your container will be "rootless". This can be desirable as a security feature. However, you may encounter an error about missing permissions to /dev/kvm as a consequence.
 >
-> For rootless podman to work, you need to add your user to the `kvm` group (depending on your distribution) to be able to access `/dev/kvm`. Make sure that you are using `crun` as your container runtime, not `runc`. Usually this is done by stopping all containers and (de-)installing the corresponding packages. Then either invoke podman-compose as `podman-compose --file ./compose.yaml --podman-create-args '--group-add keep-groups' up`. Or edit `compose.yaml` and uncomment the `group_add:` section at the end, and add `[]`.
+> For rootless podman to work, you need to add your user to the `kvm` group (depending on your distribution) to be able to access `/dev/kvm`. Make sure that you are using `crun` as your container runtime, not `runc`. Usually this is done by stopping all containers and (de-)installing the corresponding packages. Then either invoke podman-compose as `podman-compose --file ./docker-compose.yml --podman-create-args '--group-add keep-groups' up`. Or edit `docker-compose.yml` and uncomment the `group_add:` section at the end, and add `[]`.
 
 > [!IMPORTANT]
 > Ensure `WAFLAVOR` is set to `"podman"` in `~/.config/winapps/winapps.conf`.
@@ -91,32 +91,32 @@ Please follow the [`docker` instructions](#setup-docker-container).
 You can initiate the Windows installation using `podman-compose`.
 ```bash
 cd winapps
-podman-compose --file ./compose.yaml up
+podman-compose --file ./docker-compose.yml up
 ```
 
 You can then access the Windows virtual machine via a VNC connection to complete the Windows setup by navigating to http://127.0.0.1:8006 in your web browser.
 
-### Changing `compose.yaml`
-Changes to `compose.yaml` require the container to be removed and re-created. This should __NOT__ affect your data.
+### Changing `docker-compose.yml`
+Changes to `docker-compose.yml` require the container to be removed and re-created. This should __NOT__ affect your data.
 
 ```bash
 # Stop and remove the existing container.
-podman-compose --file ~/.config/winapps/compose.yaml down
+podman-compose --file ~/.config/winapps/docker-compose.yml down
 
 # Remove the existing FreeRDP certificate (if required).
 # Note: A new certificate will be created when connecting via RDP for the first time.
 rm ~/.config/freerdp/server/127.0.0.1_3389.pem
 
 # Re-create the container with the updated configuration.
-podman-compose --file ~/.config/winapps/compose.yaml up
+podman-compose --file ~/.config/winapps/docker-compose.yml up
 ```
 
 ### Subsequent Use
 ```bash
-podman-compose --file ~/.config/winapps/compose.yaml start # Power on the Windows VM
-podman-compose --file ~/.config/winapps/compose.yaml pause # Pause the Windows VM
-podman-compose --file ~/.config/winapps/compose.yaml unpause # Resume the Windows VM
-podman-compose --file ~/.config/winapps/compose.yaml restart # Restart the Windows VM
-podman-compose --file ~/.config/winapps/compose.yaml stop # Gracefully shut down the Windows VM
-podman-compose --file ~/.config/winapps/compose.yaml kill # Force shut down the Windows VM
+podman-compose --file ~/.config/winapps/docker-compose.yml start # Power on the Windows VM
+podman-compose --file ~/.config/winapps/docker-compose.yml pause # Pause the Windows VM
+podman-compose --file ~/.config/winapps/docker-compose.yml unpause # Resume the Windows VM
+podman-compose --file ~/.config/winapps/docker-compose.yml restart # Restart the Windows VM
+podman-compose --file ~/.config/winapps/docker-compose.yml stop # Gracefully shut down the Windows VM
+podman-compose --file ~/.config/winapps/docker-compose.yml kill # Force shut down the Windows VM
 ```
