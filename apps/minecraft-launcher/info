@@ -1,0 +1,14 @@
+# GNOME shortcut name
+NAME="Minecraft Launcher"
+
+# Used for descriptions and window class
+FULL_NAME="Minecraft Launcher"
+
+# The executable inside windows
+WIN_EXECUTABLE="C:\XboxGames\Minecraft Launcher\Content\gamelaunchhelper.exe"
+
+# GNOME categories
+CATEGORIES="WinApps;Games"
+
+# GNOME mimetypes
+MIME_TYPES="image/png;image/bmp;image/jpeg;image/jpe;image/jpeg;image/tiff;image/tif;image/x-ms-bmp;image/dib;image/vnd.microsoft.icon;image/x-icon;image/ico;image/icon;text/ico;application/ico"

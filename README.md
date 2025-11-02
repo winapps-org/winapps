@@ -280,6 +280,16 @@ Contributing to the list of supported applications is encouraged through submiss
             (Comm./Pro./Ent. 2022)<br>
             <i><a href="https://en.m.wikipedia.org/wiki/File:Visual_Studio_Icon_2022.svg">Icon</a> in the Public Domain.</i>
         </td>
+    </tr>
+    <tr>
+        <!-- Minecraft Launcher -->
+        <td>
+            <img src="apps/minecraft-launcher/icon.svg" width="100">
+        </td>
+        <td>
+            <b>Minecraft Launcher</b><br>
+            <i><a href="https://minecraft.wiki/w/File:Minecraft_Launcher_MS_Icon.png">Icon</a> in the Public Domain.</i>
+        </td>
         <!-- Autodesk Fusion 360 -->
         <td>
             <img src="apps/fusion-360/icon.svg" width="100">
