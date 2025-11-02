@@ -1,0 +1,22 @@
+# Copyright (c) 2024 Fmstrat
+# All rights reserved.
+#
+# SPDX-License-Identifier: Proprietary
+
+# GNOME shortcut name
+NAME="Affinity"
+
+# Used for descriptions and window class
+FULL_NAME="Affinity by Canva"
+
+# The executable inside windows
+WIN_EXECUTABLE="C:\Program Files\Affinity\Affinity\Affinity.exe"
+
+# GNOME categories
+CATEGORIES="WinApps;Affinity"
+
+# GNOME mimetypes
+MIME_TYPES=""
+
+# System Icon
+ICON="Affinity"
