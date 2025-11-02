@@ -150,7 +150,15 @@ Contributing to the list of supported applications is encouraged through submiss
             <b>Affinity Publisher 2</b><br>
             <i><a href="https://commons.wikimedia.org/wiki/File:Affinity_Publisher_V2_icon.svg">Icon</a> under CC-BY-SA 4.0 via Serif Ltd.</i>
         </td>
-    <tr>
+      <tr>
+        <!-- Bedrock Minecraft -->
+        <td>
+            <img src="apps/bedrock-minecraft/icon.svg" width="100">
+        </td>
+        <td>
+            <b>Bedrock Minecraft</b><br>
+            <i><a href="https://minecraft.wiki/w/File:Bedrock_Edition_App_Store_icon_1.png">Icon</a> in the Public Domain.</i>
+        </td>
         <!-- Command Prompt -->
         <td>
             <img src="apps/cmd/icon.svg" width="100">
@@ -160,6 +168,7 @@ Contributing to the list of supported applications is encouraged through submiss
             (cmd.exe)<br>
             <i><a href="https://github.com/microsoft/terminal/blob/main/res/terminal/Terminal.svg">Icon</a> under <a href="https://github.com/microsoft/terminal/blob/main/LICENSE">MIT license</a>.</i>
         </td>
+    </tr>
         <!-- File Explorer -->
         <td>
             <img src="apps/explorer/icon.svg" width="100">
@@ -169,8 +178,6 @@ Contributing to the list of supported applications is encouraged through submiss
             (Windows Explorer)<br>
             <i><a href="https://en.wikipedia.org/wiki/File:Microsoft_PowerToys-Logo_File_Explorer_Preview_02.svg">Icon</a> in the Public Domain.</i>
         </td>
-    </tr>
-    <tr>
         <!-- Internet Explorer -->
         <td>
             <img src="apps/iexplorer/icon.svg" width="100">
@@ -180,7 +187,9 @@ Contributing to the list of supported applications is encouraged through submiss
             (11)<br>
             <i><a href="https://commons.wikimedia.org/wiki/File:Internet_Explorer_10%2B11_logo.svg">Icon</a> in the Public Domain.</i>
         </td>
-         <!-- Microsoft Access -->
+    </tr>
+    <tr>
+        <!-- Microsoft Access -->
         <td>
             <img src="apps/access/icon.svg" width="100">
         </td>
@@ -189,8 +198,6 @@ Contributing to the list of supported applications is encouraged through submiss
             (2016, 2019, o365)<br>
             <i><a href="https://en.wikipedia.org/wiki/File:Microsoft_Office_Access_(2025-present).svg">Icon</a> in the Public Domain.</i>
         </td>
-    </tr>
-    <tr>
         <!-- Microsoft Excel -->
         <td>
             <img src="apps/excel/icon.svg" width="100">
@@ -200,6 +207,8 @@ Contributing to the list of supported applications is encouraged through submiss
             (2016, 2019, o365)<br>
             <i><a href="https://en.wikipedia.org/wiki/File:Microsoft_Office_Excel_(2025–present).svg">Icon</a> in the Public Domain.</i>
         </td>
+    </tr>
+    <tr>
         <!-- Microsoft Word -->
         <td>
             <img src="apps/word/icon.svg" width="100">
@@ -209,8 +218,6 @@ Contributing to the list of supported applications is encouraged through submiss
             (2016, 2019, o365)<br>
             <i><a href="https://en.wikipedia.org/wiki/File:Microsoft_Office_Word_(2025–present).svg">Icon</a> in the Public Domain.</i>
         </td>
-    </tr>
-    <tr>
         <!-- Microsoft OneNote -->
         <td>
             <img src="apps/onenote/icon.svg" width="100">
@@ -220,6 +227,7 @@ Contributing to the list of supported applications is encouraged through submiss
             (2016, 2019, o365)<br>
             <i><a href="https://en.wikipedia.org/wiki/File:Microsoft_OneNote_Icon_(2025_-_present).svg">Icon</a> in the Public Domain.</i>
         </td>
+    <tr>
         <!-- Microsoft Outlook -->
         <td>
             <img src="apps/outlook/icon.svg" width="100">
@@ -229,8 +237,6 @@ Contributing to the list of supported applications is encouraged through submiss
             (2016, 2019, o365)<br>
             <i><a href="https://en.wikipedia.org/wiki/File:Microsoft_Outlook_Icon_(2025–present).svg">Icon</a> in the Public Domain.</i>
         </td>
-    </tr>
-    <tr>
         <!-- Microsoft PowerPoint -->
         <td>
             <img src="apps/powerpoint/icon.svg" width="100">
@@ -240,6 +246,8 @@ Contributing to the list of supported applications is encouraged through submiss
             (2016, 2019, o365)<br>
             <i><a href="https://en.wikipedia.org/wiki/File:Microsoft_Office_PowerPoint_(2025–present).svg">Icon</a> in the Public Domain.</i>
             </td>
+    </tr>
+    <tr>
         <!-- Microsoft Publisher -->
         <td>
             <img src="apps/publisher/icon.svg" width="100">
@@ -249,8 +257,6 @@ Contributing to the list of supported applications is encouraged through submiss
             (2016, 2019, o365)<br>
             <i><a href="https://en.m.wikipedia.org/wiki/File:Microsoft_Office_Publisher_(2019-present).svg">Icon</a> in the Public Domain.</i>
         </td>
-    </tr>
-    <tr>
         <!-- Microsoft Visio -->
         <td>
             <img src="apps/visio/icon.svg" width="100">
@@ -260,6 +266,7 @@ Contributing to the list of supported applications is encouraged through submiss
             (Standard/Pro. 2021, Plan 2)<br>
             <i><a href="https://en.m.wikipedia.org/wiki/File:Microsoft_Office_Visio_(2019).svg">Icon</a> in the Public Domain.</i>
         </td>
+      <tr>
         <!-- Microsoft Project -->
         <td>
             <img src="apps/project/icon.svg" width="100">
@@ -269,8 +276,6 @@ Contributing to the list of supported applications is encouraged through submiss
             (Standard/Pro. 2021, Plan 3/5)<br>
             <i><a href="https://en.m.wikipedia.org/wiki/File:Microsoft_Project_(2019–present).svg">Icon</a> in the Public Domain.</i>
         </td>
-    </tr>
-    <tr>
         <!-- Microsoft Visual Studio -->
         <td>
             <img src="apps/visual-studio-pro/icon.svg" width="100">
@@ -280,6 +285,7 @@ Contributing to the list of supported applications is encouraged through submiss
             (Comm./Pro./Ent. 2022)<br>
             <i><a href="https://en.m.wikipedia.org/wiki/File:Visual_Studio_Icon_2022.svg">Icon</a> in the Public Domain.</i>
         </td>
+    <tr>
         <!-- Autodesk Fusion 360 -->
         <td>
             <img src="apps/fusion-360/icon.svg" width="100">
@@ -288,8 +294,6 @@ Contributing to the list of supported applications is encouraged through submiss
             <b>Autodesk Fusion 360</b><br>
             <i><a href="https://commons.wikimedia.org/wiki/File:Fusion360_Logo.svg">Icon</a> in the Public Domain.</i>
         </td>
-    </tr>
-    <tr>
         <!-- mIRC -->
         <td>
             <img src="apps/mirc/icon.svg" width="100">
@@ -298,6 +302,7 @@ Contributing to the list of supported applications is encouraged through submiss
             <b>mIRC</b><br>
             <i><a href="https://en.wikipedia.org/wiki/MIRC#/media/File:Mircnewlogo.png">Icon</a> in the Public Domain.</i>
         </td>
+    <tr>
         <!-- PowerShell -->
         <td>
             <img src="apps/powershell/icon.svg" width="100">
@@ -306,8 +311,6 @@ Contributing to the list of supported applications is encouraged through submiss
             <b>PowerShell</b><br>
             <i><a href="https://iconduck.com/icons/102322/file-type-powershell">Icon</a> under <a href="https://iconduck.com/licenses/mit">MIT license</a>.</i>
         </td>
-    </tr>
-    <tr>
         <!-- Windows -->
         <td>
             <img src="install/windows.svg" width="100">
@@ -318,7 +321,7 @@ Contributing to the list of supported applications is encouraged through submiss
             <i><a href="url">Icon</a> in the Public Domain.</i>
         </td>
     </tr>
-        </table>
+  </table>
 
 ## Installation
 ### Step 1: Configure a Windows VM
