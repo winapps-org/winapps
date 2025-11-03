@@ -785,11 +785,11 @@ function waTimeSync() {
 
 ### MAIN LOGIC ###
 #set -x # Enable for debugging.
+mkdir -p "$APPDATA_PATH"
 dprint "START"
 dprint "SCRIPT_DIR: ${SCRIPT_DIR_PATH}"
 dprint "SCRIPT_ARGS: ${*}"
 dprint "HOME_DIR: ${HOME}"
-mkdir -p "$APPDATA_PATH"
 waLastRun
 waLoadConfig
 waGetFreeRDPCommand
