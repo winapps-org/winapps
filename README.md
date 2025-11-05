@@ -157,7 +157,7 @@ Contributing to the list of supported applications is encouraged through submiss
         </td>
             <td>
             <b>Affinity by Canva (v3)</b><br>
-            <i><a href="https://commons.wikimedia.org/wiki/File:Affinity_(App)_Logo.svg">Icon</a> in the Public Domain</i>
+            <i><a href="https://commons.wikimedia.org/wiki/File:Affinity_(App)_Logo.svg">Icon</a> in the Public Domain.</i>
         </td>
         <!-- Command Prompt -->
         <td>
