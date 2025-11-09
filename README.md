@@ -569,7 +569,7 @@ HIDEF="on"
 
 2. [DEBUGGING STEP] If an outdated or expired certificate is detected, the `FreeRDP` command will display output resembling the following. In this case, the old certificate will need to be removed and a new RDP TLS certificate installed.
 
-    ```
+    ```console
     @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
     @           WARNING: CERTIFICATE NAME MISMATCH!           @
     @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
@@ -635,7 +635,7 @@ The installer can be run multiple times. To update your installation of WinApps:
 3. Re-install WinApps using the WinApps installer by running `winapps-setup`.
 
 ## WinApps Launcher (Optional)
-The [WinApps Launcher](https://github.com/winapps-org/winapps-launcher) provides a simple system tray menu that makes it easy to launch your installed Windows applications, open a full desktop RDP session, and control your Windows VM or container. You can start, stop, pause, reboot or hibernate Windows, as well as access your installed applications from a convenient list. This lightweight, optional tool helps streamline your overall WinApps experience.
+The [WinApps Launcher](https://github.com/winapps-org/winapps-launcher) provides a simple system tray menu that makes it easy to launch your installed Windows applications, open a full desktop RDP session, and control your Windows VM or container. You can start, stop, pause, reboot, or hibernate Windows, as well as access your installed applications from a convenient list. This lightweight, optional tool helps streamline your overall WinApps experience.
 
 <img src="./docs/readme/launcher.gif" width=1000 alt="WinApps Launcher Animation.">
 
@@ -651,7 +651,8 @@ and the optional launcher being available under `winapps-launcher.`
 
 First, make sure Flakes and the `nix` command are enabled.
 In your `~/.config/nix/nix.conf`:
-```
+
+```nix
 experimental-features = nix-command flakes
 ```
 
