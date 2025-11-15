@@ -11,4 +11,4 @@ WIN_EXECUTABLE="C:\Program Files\RevvitySignalsSoftware\ChemDrawApplications_x64
 CATEGORIES="WinApps;Science"
 
 # GNOME mimetypes; file types: .cdxml .cdx .chm
-MIME_TYPES="chemical/x-cdx;application/vnd.chemdraw+xml;application/vnd.ms-htmlhelp;"
+MIME_TYPES="chemical/x-cdx;application/vnd.chemdraw+xml;chemical/x-chemdraw;"
