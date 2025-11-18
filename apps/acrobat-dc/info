@@ -1,0 +1,19 @@
+# Copyright (c) 2024 Fmstrat
+# All rights reserved.
+#
+# SPDX-License-Identifier: Proprietary
+
+# GNOME shortcut name
+NAME="Adobe Acrobat DC"
+
+# Used for descriptions and window class
+FULL_NAME="Adobe Acrobat DC"
+
+# The executable inside windows
+WIN_EXECUTABLE="C:\Program Files\Adobe\Acrobat DC\Acrobat\Acrobat.exe"
+
+# GNOME categories
+CATEGORIES="WinApps;Documents"
+
+# GNOME mimetypes
+MIME_TYPES="application/pdf;"
