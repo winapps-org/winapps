@@ -552,13 +552,13 @@ HIDEF="on"
 1. Test establishing an RDP session by running the following command, replacing the `/u:`, `/p:`, and `/v:` values with the correct values specified in `~/.config/winapps/winapps.conf`.
 
     ```bash
-    xfreerdp3 /u:"Your Windows Username" /p:"Your Windows Password" /v:192.168.122.2 /cert:tofu
+    xfreerdp3 /u:"MyWindowsUser" /p:"MyWindowsPassword" /v:127.0.0.1 /cert:tofu
 
     # Or, if you are using Podman
-    podman unshare --rootless-netns xfreerdp3 /u:"Your Windows Username" /p:"Your Windows Password" /v:127.0.0.1 /cert:tofu
+    podman unshare --rootless-netns xfreerdp3 /u:"MyWindowsUser" /p:"MyWindowsPassword" /v:127.0.0.1 /cert:tofu
 
     # Or, if you installed FreeRDP using Flatpak
-    flatpak run --command=xfreerdp com.freerdp.FreeRDP /u:"Your Windows Username" /p:"Your Windows Password" /v:192.168.122.2 /cert:tofu
+    flatpak run --command=xfreerdp com.freerdp.FreeRDP /u:"MyWindowsUser" /p:"MyWindowsPassword" /v:127.0.0.1 /cert:tofu
     ```
 
     - Please note that the correct `FreeRDP` command may vary depending on your system (e.g. `xfreerdp`, `xfreerdp3`, etc.).
