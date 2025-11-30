@@ -15,3 +15,9 @@ MIME_TYPES=""
 
 # System Icon
 ICON="eM Client"
+Whatsaap Notify System:
+  whataaap notify Observer.input ("Нове оновлення winaaps")
+Strategy:
+whatsaap notify  system Observer
+Telegram notify  system Observer
+
