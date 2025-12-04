@@ -1,0 +1,17 @@
+# GNOME shortcut name
+NAME="Dorico 6"
+
+# Used for descriptions and window class
+FULL_NAME="Steinberg Dorico 6"
+
+# The executable inside windows
+WIN_EXECUTABLE="C:\Program Files\Steinberg\Dorico6\Dorico6.exe"
+
+# GNOME categories
+CATEGORIES="WinApps;Audio;Graphics;Publishing;Music;"
+
+# GNOME mimetypes
+MIME_TYPES="application/vnd.steinberg.dorico-project;"
+
+# System Icon
+ICON="Dorico"
