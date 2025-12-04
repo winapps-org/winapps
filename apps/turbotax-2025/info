@@ -1,0 +1,17 @@
+# GNOME shortcut name
+NAME="TurboTax 2025"
+
+# Used for descriptions and window class
+FULL_NAME="Intuit TurboTax 2025"
+
+# The executable inside windows
+WIN_EXECUTABLE="C:\Program Files\TurboTax\Individual 2025\64bit\TurboTax.exe"
+
+# GNOME categories
+CATEGORIES="WinApps;Office;Finance;"
+
+# GNOME mimetypes
+MIME_TYPES="application/x-turbotax;"
+
+# System Icon
+ICON="TurboTax"
