@@ -620,7 +620,7 @@ function waCheckInstallDependencies() {
         echo "Red Hat/Fedora-based systems:"
         echo -e "  ${COMMAND_TEXT}sudo dnf install nmap-ncat${CLEAR_TEXT}"
         echo "Arch Linux systems:"
-        echo -e "  ${COMMAND_TEXT}sudo pacman -S gnu-netcat${CLEAR_TEXT}"
+        echo -e "  ${COMMAND_TEXT}sudo pacman -S netcat${CLEAR_TEXT}"
         echo "Gentoo Linux systems:"
         echo -e "  ${COMMAND_TEXT}sudo emerge --ask net-analyzer/netcat${CLEAR_TEXT}"
         echo "--------------------------------------------------------------------------------"
