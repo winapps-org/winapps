@@ -10,39 +10,31 @@ Function GetApplicationIcon
         [string]$exePath
     )
 
-    try
-    {
-        # Load the 'System.Drawing' assembly to access 'ExtractAssociatedIcon'.
-        Add-Type -AssemblyName System.Drawing
+    # Load the 'System.Drawing' assembly to access 'ExtractAssociatedIcon'.
+    Add-Type -AssemblyName System.Drawing
 
-        # Extract the icon from the executable.
-        $exeIcon = [System.Drawing.Icon]::ExtractAssociatedIcon($exePath)
+    # Extract the icon from the executable.
+    $exeIcon = [System.Drawing.Icon]::ExtractAssociatedIcon($exePath)
 
-        # Create a bitmap from the icon.
-        $exeIconBitmap = New-Object System.Drawing.Bitmap $exeIcon.Width, $exeIcon.Height
-        $graphics = [System.Drawing.Graphics]::FromImage($exeIconBitmap)
-        $graphics.DrawIcon($exeIcon, 0, 0)
+    # Create a bitmap from the icon.
+    $exeIconBitmap = New-Object System.Drawing.Bitmap $exeIcon.Width, $exeIcon.Height
+    $graphics = [System.Drawing.Graphics]::FromImage($exeIconBitmap)
+    $graphics.DrawIcon($exeIcon, 0, 0)
 
-        # Save the bitmap to a 'MemoryStream' as a '.PNG' to preserve the icon colour depth.
-        $memoryStream = New-Object System.IO.MemoryStream
-        $exeIconBitmap.Save($memoryStream, [System.Drawing.Imaging.ImageFormat]::Png)
+    # Save the bitmap to a 'MemoryStream' as a '.PNG' to preserve the icon colour depth.
+    $memoryStream = New-Object System.IO.MemoryStream
+    $exeIconBitmap.Save($memoryStream, [System.Drawing.Imaging.ImageFormat]::Png)
 
-        # Convert the PNG 'MemoryStream' to a base-64 string.
-        $bytes = $memoryStream.ToArray()
-        $base64String = [Convert]::ToBase64String($bytes)
+    # Convert the PNG 'MemoryStream' to a base-64 string.
+    $bytes = $memoryStream.ToArray()
+    $base64String = [Convert]::ToBase64String($bytes)
 
-        # Clean up.
-        $memoryStream.Flush()
-        $memoryStream.Dispose()
-        $graphics.Dispose()
-        $exeIconBitmap.Dispose()
-        $exeIcon.Dispose()
-    }
-    catch
-    {
-        # Use a generic 32x32 PNG.
-        $base64String = "iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAMAAABEpIrGAAAAAXNSR0IB2cksfwAAAAlwSFlzAAALEwAACxMBAJqcGAAAASZQTFRFAAAA+vr65ubm4uLkhYmLvL7A7u7w+/r729vb4eHjFYPbFoTa5eXnGIbcG4jc+fn7Gofc7+/x7OzuF4Xb+fn54uLiC37Z5OTmEIHaIIjcEYHbDoDZFIPcJ43fHYjd9fX28PDy3d3fI4rd3d3dHojc19fXttTsJIve2dnZDX/YCn3Y09PTjL/p5+fnh7zo2traJYzfIYjdE4Pb6urrW6Tf9PT1Ioneir7otNPsCX3Zhbvn+Pj5YKfhJYfWMo7a39/gKIzeKo7eMI3ZNJDcXqbg4eHhuNTsB3zYIoncBXvZLIrXIYjbLJDgt7m6ubu+YqjiKYvYvr6+tba3rs/sz8/P1+byJonXv7/DiImLxsbGjo6Ra6reurq6io6QkJKVw8PD0tLSycnJq1DGywAAAGJ0Uk5TAP////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////+BVJDaAAABY0lEQVR4nM2RaVOCUBSGr1CBgFZimppgoGnKopZSaYGmRpravq///0904IqOM9j00WeGT+9ztgtCS8Dzyh98fL6i2+HqQoaj0RPSzQNgzZc4F4wgvUuoqkr1er094MjlIeBCwRdFua9CqURQ51cty7Lykj0YCIIibnlEkS4TgCuky3nbTmSFsCKSHuso96N/Ox1aacjrlYQQ3gjNCYV7UlUJ6szCeRZyXmlkNjEZEPSuLIMAuYTreVYROQ8Y8SLTNAhlCdfzLMsaIhfHgEAT7pLtvFTH9QxTNWrmLsaEDu8558y2ZOP5LLNTNUQyiCFnHaRZnjTmzryhnR36FSdnIU9up7RGxAOuKJjOFX2vHvKU5jPiepbvxzR3BIffwROc++AAJy9qjQxQwz9rIjyGeN6tj8VACEyZCqfQn3H7F48vTvwEdlIP+aWvMNkPcl8h8DYeN5vNTqdzCNz5CIv4h7AE/AKcwUFbShJywQAAAABJRU5ErkJggg=="
-    }
+    # Clean up.
+    $memoryStream.Flush()
+    $memoryStream.Dispose()
+    $graphics.Dispose()
+    $exeIconBitmap.Dispose()
+    $exeIcon.Dispose()
 
     # Return the base-64 string.
     return $base64String
