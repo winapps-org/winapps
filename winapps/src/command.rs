@@ -1,6 +1,8 @@
-use crate::{Config, Error, IntoResult, Result, ensure};
+use crate::{Config, Error, IntoResult, Result, bail, ensure};
+use shlex::{split, try_join};
 use std::{
     fmt::{Display, Formatter},
+    iter,
     process::{Child, Command as StdCommand, Stdio},
     str::FromStr,
 };
@@ -27,23 +29,15 @@ impl FromStr for Command {
     fn from_str(command: &str) -> std::result::Result<Self, Self::Err> {
         ensure!(!command.is_empty(), Error::EmptyCommand);
 
-        let (exec, args) = if command.contains(" ") {
-            let mut split = command.split(" ");
+        let mut items = split(command).unwrap_or_default().into_iter();
 
-            (
-                split
-                    .next()
-                    .expect("There should always be at least one element in the split if the command contains a space")
-                    .to_string(),
-                split.map(|s| s.to_string()).collect::<Vec<String>>(),
-            )
-        } else {
-            (command.to_string(), Vec::new())
+        let Some(exec) = items.next() else {
+            bail!("Commands should have an executable")
         };
 
         Ok(Self {
             exec,
-            args,
+            args: items.collect(),
             error_message: String::from("Error running child command"),
             loud: false,
         })
@@ -61,7 +55,9 @@ impl Command {
     }
 
     pub fn into_remote(mut self, config: &Config) -> Self {
-        let prev = format!("{} {}", self.exec, self.args.join(" "));
+        let prev =
+            try_join(iter::once(self.exec.as_str()).chain(self.args.iter().map(|s| s.as_str())))
+                .expect("Since this has been created by shlex::join, it should always be valid");
 
         self.exec = "sshpass".to_string();
         self.clear_args()
