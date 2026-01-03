@@ -1,11 +1,13 @@
 [package]
 name = "winapps-cli"
 version = "0.1.0"
-edition = "2021"
+edition = "2024"
 default-run = "winapps-cli"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
 [dependencies]
-clap = "4.3.11"
-winapps = { path = "../winapps" }
+clap = "4.3"
+inquire = "0.9"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+miette = { version = "7.2.0", features = ["fancy"] }
+winapps.workspace = true

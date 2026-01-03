@@ -1,0 +1,50 @@
+name: Build container image
+
+on:
+  push:
+    branches: [ "rewrite" ]
+    paths: [ "winapps-image/**" ]
+  workflow_dispatch:
+  schedule:
+    # See https://crontab.guru/monthly
+    - cron: 0 0 1 * *
+
+permissions:
+  packages: write
+
+env:
+  IMAGE_REGISTRY: ghcr.io
+  IMAGE_NAME: winapps-org/windows
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Extract metadata (tags, labels) for Docker
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_NAME }}
+
+      - name: Build image
+        id: build
+        uses: redhat-actions/buildah-build@v2
+        with:
+          image: ${{ env.IMAGE_NAME }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          context: winapps-image
+          containerfiles: winapps-image/Containerfile
+
+      - name: Push image to GHCR
+        uses: redhat-actions/push-to-registry@v2
+        with:
+          image: ${{ steps.build.outputs.image }}
+          tags: ${{ steps.build.outputs.tags }}
+          registry: ${{ env.IMAGE_REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}

@@ -1,10 +1,12 @@
 # Generated files
 target/
-
-# The library shouldn't decide about the exact versions of
-# its dependencies, but let the downstream crate decide.
-Cargo.lock
+/result
+.DS_Store
 
 # We don't want to commit IDE configuration files.
 .idea/
+winapps.iml
 .vscode/
+.direnv
+.wakatime-project
+.envrc
