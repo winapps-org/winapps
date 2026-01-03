@@ -15,7 +15,7 @@ impl PartialEq for App {
 }
 
 impl Display for App {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         f.write_fmt(format_args!("{} ({})", self.name, self.win_exec))
     }
 }

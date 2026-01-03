@@ -1,30 +1,11 @@
-use parking_lot::RwLock;
-use std::{
-    fs::{self, write},
-    net::IpAddr,
-    str::FromStr,
-    sync::OnceLock,
-};
+use std::fs::{self, write};
 use tracing::warn;
 
-use crate::{Config, Error, IntoResult, Result, dirs::config_dir, ensure};
-
-static CONFIG: OnceLock<RwLock<Config>> = OnceLock::new();
+use crate::{Backends, Config, IntoResult, Result, dirs::config_dir};
 
 impl Config {
-    /// Get a lock for the config, or an error if it couldn't be read
-    pub fn try_get_lock() -> Result<&'static RwLock<Self>> {
-        CONFIG.get_or_try_init(|| Ok(RwLock::new(Self::try_new()?)))
-    }
-
-    /// Get a lock for the config
-    /// Panics: if the lock is not initialized
-    pub fn get_lock() -> &'static RwLock<Self> {
-        CONFIG.get().expect("The lock is not initialized")
-    }
-
     /// Reads the config from disk.
-    fn try_new() -> Result<Self> {
+    pub fn try_new() -> Result<Box<Self>> {
         let config = Self::new();
         let config_path = config_dir()?.join("config.toml");
 
@@ -32,33 +13,15 @@ impl Config {
             warn!("Config does not exist, writing default...");
             config.save()?;
 
-            return Ok(config);
+            return Ok(Box::new(config));
         };
 
         let config_file = fs::read_to_string(config_path).into_result()?;
-        let config: Self = toml::from_str(config_file.as_str()).into_result()?;
+        let mut config: Self = toml::from_str(config_file.as_str()).into_result()?;
 
-        ensure!(
-            [
-                config.libvirt.enable,
-                config.container.enable,
-                config.manual.enable
-            ]
-            .into_iter()
-            .filter(|enabled| *enabled)
-            .count()
-                == 1,
-            Error::Config(
-                "More than one backend enabled, please set only one of libvirt.enable, container.enable, and manual.enable"
-            )
-        );
+        config.backend = Backends::try_from_config(&config)?;
 
-        ensure!(
-            config.manual.enable && IpAddr::from_str(&config.manual.host).is_err(),
-            Error::Config("Please set manual.host to a valid IP address")
-        );
-
-        Ok(config)
+        Ok(Box::new(config))
     }
 
     pub fn save(&self) -> Result<()> {

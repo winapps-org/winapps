@@ -7,10 +7,10 @@ use std::{
 /// Check whether a directory exists and is a directory
 /// If not, try creating it
 pub fn path_ok(path: &Path) -> Result<()> {
-    if let Ok(false) = path.try_exists() {
-        if let Err(e) = fs::create_dir_all(path) {
-            bail!(e);
-        }
+    if let Ok(false) = path.try_exists()
+        && let Err(e) = fs::create_dir_all(path)
+    {
+        bail!(e);
     }
 
     if !path.is_dir() {

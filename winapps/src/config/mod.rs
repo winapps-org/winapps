@@ -1,7 +1,8 @@
-use crate::Backends;
 use derive_new::new;
 use serde::{Deserialize, Serialize};
-use std::sync::OnceLock;
+use std::net::IpAddr;
+
+use crate::Backends;
 
 mod apps;
 mod operations;
@@ -22,9 +23,10 @@ pub struct Config {
     pub linked_apps: Vec<App>,
     #[new(value = "false")]
     pub debug: bool,
-    #[new(value = "OnceLock::new()")]
+
     #[serde(skip)]
-    pub(crate) backend: OnceLock<Backends>,
+    #[new(value = "Backends::default()")]
+    pub(crate) backend: Backends,
 }
 
 #[derive(new, Debug, Deserialize, Serialize, Clone)]
@@ -61,8 +63,8 @@ pub struct LibvirtConfig {
 pub struct ManualConfig {
     #[new(value = "false")]
     pub enable: bool,
-    #[new(value = "\"127.0.0.1\".to_string()")]
-    pub host: String,
+    #[new(value = "std::net::Ipv4Addr::LOCALHOST.into()")]
+    pub host: IpAddr,
 }
 
 #[derive(new, Debug, Deserialize, Serialize, Clone)]

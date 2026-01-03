@@ -1,4 +1,4 @@
-use crate::{Backend, Config, Error, IntoResult, Result, ensure};
+use crate::{Config, Error, IntoResult, Result, ensure};
 use std::{
     fmt::{Display, Formatter},
     process::{Child, Command as StdCommand, Stdio},
@@ -14,7 +14,7 @@ pub struct Command {
 }
 
 impl Display for Command {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+    fn fmt(&self, f: &mut Formatter) -> std::fmt::Result {
         f.write_str(self.exec.as_str())?;
         f.write_str(" ")?;
         f.write_str(self.args.join(" ").as_str())
@@ -65,17 +65,13 @@ impl Command {
 
         self.exec = "sshpass".to_string();
         self.clear_args()
-            .args(["-p", &*config.auth.password])
+            .args(["-p", config.auth.password.as_str()])
             .args([
                 "ssh",
-                &*format!(
-                    "{}@{}",
-                    config.auth.username,
-                    config.get_backend().get_host()
-                ),
+                format!("{}@{}", config.auth.username, config.get_host()).as_str(),
                 "-oStrictHostKeyChecking=accept-new",
                 "-p",
-                &*config.auth.ssh_port.to_string(),
+                config.auth.ssh_port.to_string().as_str(),
             ])
             .arg(prev)
     }

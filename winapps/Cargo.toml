@@ -14,5 +14,4 @@ miette = "7.2.0"
 thiserror = "2.0.9"
 enum_dispatch = "0.3.13"
 base64 = "0.22.1"
-regex = { version = "1.11.2", features = [] }
-parking_lot = "0.12.5"
+regex = "1.11.2"

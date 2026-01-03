@@ -1,6 +1,7 @@
 # Generated files
 target/
 /result
+.DS_Store
 
 # We don't want to commit IDE configuration files.
 .idea/

@@ -3,8 +3,9 @@ use std::net::IpAddr;
 use enum_dispatch::enum_dispatch;
 
 use crate::{
-    Config, Result,
+    Config, Error, Result,
     backend::{container::Container, manual::Manual},
+    bail,
     command::Command,
     config::{App, AppKind},
 };
@@ -14,36 +15,50 @@ mod manual;
 
 #[enum_dispatch]
 pub trait Backend {
-    fn check_depends(&self) -> Result<()>;
+    fn check_depends(self, config: &Config) -> Result<()>;
 
-    fn get_host(&self) -> IpAddr;
+    fn get_host(self, config: &Config) -> IpAddr;
 }
 
 #[enum_dispatch(Backend)]
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Copy)]
 pub enum Backends {
-    Container,
-    Manual,
+    Container(Container),
+    Manual(Manual),
+}
+
+impl Default for Backends {
+    fn default() -> Self {
+        Container.into()
+    }
+}
+
+impl Backends {
+    pub fn try_from_config(config: &Config) -> Result<Self> {
+        Ok(
+            match (
+                config.libvirt.enable,
+                config.container.enable,
+                config.manual.enable,
+            ) {
+                (true, false, false) => todo!(),
+                (false, true, false) => Container.into(),
+                (false, false, true) => Manual.into(),
+                _ => bail!(Error::Config(
+                    "More than one backend enabled, please set only one of libvirt.enable, container.enable, and manual.enable"
+                )),
+            },
+        )
+    }
 }
 
 impl Config {
-    pub fn get_backend(&self) -> &Backends {
-        self.backend.get_or_init(|| {
-            match (
-                self.libvirt.enable,
-                self.container.enable,
-                self.manual.enable,
-            ) {
-                (true, _, _) => todo!(),
-                (_, true, _) => Container::new().into(),
-                (_, _, true) => Manual::new().into(),
-                _ => unreachable!(),
-            }
-        })
+    pub fn backend_check_depends(&self) -> Result<()> {
+        self.backend.check_depends(self)
     }
 
     pub fn get_host(&self) -> IpAddr {
-        self.get_backend().get_host()
+        self.backend.get_host(self)
     }
 
     pub fn get_available_apps(&self) -> Result<Vec<App>> {

@@ -1,5 +1,4 @@
 use crate::{Config, Error, RemoteClient, Result, bail, command::Command};
-use parking_lot::RwLock;
 use regex::Regex;
 use std::{
     net::{SocketAddr, TcpStream},
@@ -7,17 +6,14 @@ use std::{
 };
 use tracing::info;
 
-pub struct Freerdp {
-    config: &'static RwLock<Config>,
-}
+#[derive(Copy, Clone)]
+pub struct Freerdp;
 
 impl Freerdp {
     const TIMEOUT: Duration = Duration::from_secs(5);
     const RDP_PORT: u16 = 3389;
 
-    fn get_command(&self) -> Command {
-        let config = self.config.read();
-
+    fn get_command(self, config: &Config) -> Command {
         Command::new(config.freerdp.executable.to_owned())
             .with_err("Freerdp execution failed, check logs above!")
             .args(vec![
@@ -29,17 +25,11 @@ impl Freerdp {
             .args(config.freerdp.extra_args.iter().cloned())
             .loud(config.debug)
     }
-
-    pub fn new() -> Self {
-        Self {
-            config: Config::get_lock(),
-        }
-    }
 }
 
 impl RemoteClient for Freerdp {
-    fn check_depends(&self) -> Result<()> {
-        self.get_command()
+    fn check_depends(self, config: &Config) -> Result<()> {
+        self.get_command(config)
             .clear_args()
             .with_err("Freerdp execution failed, is `freerdp.executable` correctly set, FreeRDP properly installed and the binary on $PATH?")
             .spawn()?;
@@ -47,7 +37,7 @@ impl RemoteClient for Freerdp {
         info!("Freerdp found!");
         info!("Checking whether host is reachable..");
 
-        let socket_address = SocketAddr::new(self.config.read().get_host(), Self::RDP_PORT);
+        let socket_address = SocketAddr::new(config.get_host(), Self::RDP_PORT);
 
         TcpStream::connect_timeout(&socket_address, Self::TIMEOUT)
             .map(|_| ())
@@ -56,10 +46,8 @@ impl RemoteClient for Freerdp {
         Ok(())
     }
 
-    fn run_app(&self, app_name: String, args: Vec<String>) -> Result<()> {
-        let path = self
-            .config
-            .read()
+    fn run_app(self, config: &Config, app_name: String, args: Vec<String>) -> Result<()> {
+        let path = config
             .linked_apps
             .iter()
             .filter_map(|app| app.id.eq(&app_name).then_some(app.win_exec.clone()))
@@ -80,7 +68,7 @@ impl RemoteClient for Freerdp {
             bail!("Couldn't find $HOME")
         };
 
-        self.get_command()
+        self.get_command(config)
             .arg(format!("/app:program:{path},hidef:on"))
             .args(args.iter().map(|arg| {
                 if arg.contains("/") && home_regex.is_match(arg) {
@@ -96,8 +84,8 @@ impl RemoteClient for Freerdp {
             .map(|_| ())
     }
 
-    fn run_full_session(&self) -> Result<()> {
-        self.get_command()
+    fn run_full_session(self, config: &Config) -> Result<()> {
+        self.get_command(config)
             .arg("+dynamic-resolution".to_string())
             .spawn()
             .map(|_| ())

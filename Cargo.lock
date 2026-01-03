@@ -986,7 +986,6 @@ dependencies = [
  "dirs",
  "enum_dispatch",
  "miette",
- "parking_lot",
  "regex",
  "serde",
  "thiserror",

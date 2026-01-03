@@ -4,3 +4,6 @@ members = [
     "winapps-cli",
 ]
 resolver = "3"
+
+[workspace.dependencies]
+winapps.path = "./winapps"
