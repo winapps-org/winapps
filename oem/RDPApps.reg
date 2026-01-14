@@ -20,6 +20,10 @@ Windows Registry Editor Version 5.00
     [HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services]
     "fAllowUnlistedRemotePrograms"=dword:00000001
 
+    ; Disable Windows 11 top-of-screen window snapping toolbar (snap bar)
+    [HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced]
+    "EnableSnapBar"=dword:00000000
+
     ; Disable automatic administrator logon at startup
     [HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon]
     "AutoAdminLogon"="0"
