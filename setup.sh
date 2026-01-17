@@ -1037,6 +1037,7 @@ function waCheckRDPAccess() {
     # [INFO][com.freerdp.core] - [rdp_print_errinfo]: ERRINFO_LOGOFF_BY_USER (0x0000000C):The disconnection was initiated by the user logging off their session on the server.
     # shellcheck disable=SC2140,SC2027 # Disable warnings regarding unquoted strings.
     $FREERDP_COMMAND \
+        $RDP_FLAGS_NON_WINDOWS \
         /cert:tofu \
         /d:"$RDP_DOMAIN" \
         /u:"$RDP_USER" \
@@ -1169,6 +1170,7 @@ function waFindInstalled() {
     # [INFO][com.freerdp.core] - [rdp_print_errinfo]: ERRINFO_LOGOFF_BY_USER (0x0000000C):The disconnection was initiated by the user logging off their session on the server.
     # shellcheck disable=SC2140,SC2027 # Disable warnings regarding unquoted strings.
     $FREERDP_COMMAND \
+        $RDP_FLAGS_NON_WINDOWS \
         /cert:tofu \
         /d:"$RDP_DOMAIN" \
         /u:"$RDP_USER" \
