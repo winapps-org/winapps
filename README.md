@@ -463,7 +463,7 @@ RDP_FLAGS_NON_WINDOWS=""
 # NOTES:
 # - Use these flags to pass specific flags to the freerdp command when you are starting a full RDP session (winapps windows)
 # DEFAULT_VALUES: ''
-#VALID_VALUES: See https://github.com/awakecoding/FreeRDP-Manuals/blob/master/User/FreeRDP-User-Manual.markdown
+# VALID_VALUES: See https://github.com/awakecoding/FreeRDP-Manuals/blob/master/User/FreeRDP-User-Manual.markdown
 RDP_FLAGS_WINDOWS=""
 
 # [DEBUG WINAPPS]
