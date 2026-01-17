@@ -456,7 +456,7 @@ RDP_FLAGS="/cert:tofu /sound /microphone +home-drive"
 # NOTES:
 # - Use these flags to pass specific flags to the freerdp command when you are starting a non-full RDP session (any other command than winapps windows)
 # DEFAULT_VALUES: ''
-#VALID_VALUES: See https://github.com/awakecoding/FreeRDP-Manuals/blob/master/User/FreeRDP-User-Manual.markdown
+# VALID_VALUES: See https://github.com/awakecoding/FreeRDP-Manuals/blob/master/User/FreeRDP-User-Manual.markdown
 RDP_FLAGS_NON_WINDOWS=""
 
 # [FULL WINDOWS RDP FLAGS]
