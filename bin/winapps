@@ -54,6 +54,8 @@ AUTOPAUSE_TIME="300"
 DEBUG="true"
 BOOT_TIMEOUT=120
 HIDEF="on"
+RDP_FLAGS_WINDOWS=""
+RDP_FLAGS_NON_WINDOWS=""
 
 # OTHER
 FREERDP_PID=-1
@@ -605,6 +607,7 @@ function waRunCommand() {
         # Open Windows RDP session.
         dprint "WINDOWS"
         $FREERDP_COMMAND \
+            $RDP_FLAGS_WINDOWS \
             /d:"$RDP_DOMAIN" \
             /u:"$RDP_USER" \
             /p:"$RDP_PASS" \
@@ -621,6 +624,7 @@ function waRunCommand() {
         # Open specified application.
         dprint "MANUAL: ${2}"
         $FREERDP_COMMAND \
+            $RDP_FLAGS_NON_WINDOWS \
             /d:"$RDP_DOMAIN" \
             /u:"$RDP_USER" \
             /p:"$RDP_PASS" \
@@ -653,6 +657,7 @@ function waRunCommand() {
         if [ -z "$2" ]; then
             # No file path specified.
             $FREERDP_COMMAND \
+               $RDP_FLAGS_NON_WINDOWS \
                 /d:"$RDP_DOMAIN" \
                 /u:"$RDP_USER" \
                 /p:"$RDP_PASS" \
@@ -674,6 +679,7 @@ function waRunCommand() {
             dprint "WINDOWS_FILE_PATH: ${FILE_PATH}"
 
             $FREERDP_COMMAND \
+               $RDP_FLAGS_NON_WINDOWS \
                 /d:"$RDP_DOMAIN" \
                 /u:"$RDP_USER" \
                 /p:"$RDP_PASS" \
