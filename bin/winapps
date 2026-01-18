@@ -54,6 +54,8 @@ AUTOPAUSE_TIME="300"
 DEBUG="true"
 BOOT_TIMEOUT=120
 HIDEF="on"
+RDP_FLAGS_WINDOWS=""
+RDP_FLAGS_NON_WINDOWS=""
 
 # OTHER
 FREERDP_PID=-1
@@ -604,7 +606,9 @@ function waRunCommand() {
 
         # Open Windows RDP session.
         dprint "WINDOWS"
+        # shellcheck disable=SC2086 #Disable warning for globbing and word splitting
         $FREERDP_COMMAND \
+            $RDP_FLAGS_WINDOWS \
             /d:"$RDP_DOMAIN" \
             /u:"$RDP_USER" \
             /p:"$RDP_PASS" \
@@ -620,7 +624,9 @@ function waRunCommand() {
     elif [ "$1" = "manual" ]; then
         # Open specified application.
         dprint "MANUAL: ${2}"
+        # shellcheck disable=SC2086 #Disable warning for globbing and word splitting
         $FREERDP_COMMAND \
+            $RDP_FLAGS_NON_WINDOWS \
             /d:"$RDP_DOMAIN" \
             /u:"$RDP_USER" \
             /p:"$RDP_PASS" \
@@ -652,7 +658,9 @@ function waRunCommand() {
         # Check if a file path was specified, and pass this to the application.
         if [ -z "$2" ]; then
             # No file path specified.
+            # shellcheck disable=SC2086 #Disable warning for globbing and word splitting
             $FREERDP_COMMAND \
+               $RDP_FLAGS_NON_WINDOWS \
                 /d:"$RDP_DOMAIN" \
                 /u:"$RDP_USER" \
                 /p:"$RDP_PASS" \
@@ -673,7 +681,9 @@ function waRunCommand() {
             dprint "UNIX_FILE_PATH: ${2}"
             dprint "WINDOWS_FILE_PATH: ${FILE_PATH}"
 
+            # shellcheck disable=SC2086 #Disable warning for globbing and word splitting
             $FREERDP_COMMAND \
+               $RDP_FLAGS_NON_WINDOWS \
                 /d:"$RDP_DOMAIN" \
                 /u:"$RDP_USER" \
                 /p:"$RDP_PASS" \
