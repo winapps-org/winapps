@@ -1035,7 +1035,7 @@ function waCheckRDPAccess() {
     # If the file is created, it means Windows received the command via FreeRDP successfully and can read and write to the Linux home folder.
     # Note: The following final line is expected within the log, indicating successful execution of the 'tsdiscon' command and termination of the RDP session.
     # [INFO][com.freerdp.core] - [rdp_print_errinfo]: ERRINFO_LOGOFF_BY_USER (0x0000000C):The disconnection was initiated by the user logging off their session on the server.
-    # shellcheck disable=SC2140,SC2027 # Disable warnings regarding unquoted strings.
+    # shellcheck disable=SC2140,SC2027,SC2086 # Disable warnings regarding unquoted strings.
     $FREERDP_COMMAND \
         $RDP_FLAGS_NON_WINDOWS \
         /cert:tofu \
@@ -1168,7 +1168,7 @@ function waFindInstalled() {
     # Silently execute the batch script within Windows in the background (Log Output To File)
     # Note: The following final line is expected within the log, indicating successful execution of the 'tsdiscon' command and termination of the RDP session.
     # [INFO][com.freerdp.core] - [rdp_print_errinfo]: ERRINFO_LOGOFF_BY_USER (0x0000000C):The disconnection was initiated by the user logging off their session on the server.
-    # shellcheck disable=SC2140,SC2027 # Disable warnings regarding unquoted strings.
+    # shellcheck disable=SC2140,SC2027,SC2086 # Disable warnings regarding unquoted strings.
     $FREERDP_COMMAND \
         $RDP_FLAGS_NON_WINDOWS \
         /cert:tofu \
