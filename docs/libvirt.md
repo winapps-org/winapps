@@ -200,7 +200,7 @@ Together, these components form a powerful and flexible virtualization stack, wi
 
 13. In the 'Memory' section, set the `Current allocation` to the minimum amount of memory you want the virtual machine to use, with a recommended value of `1024MB`.
 > [!NOTE]
-> Depending upon certain apps (like OneDrive), the balloon driver cannot keep up. If you are having segfaults (random reboots). Turn off memory ballooning. `<memballoon model="none"/>`
+> Depending upon certain apps (like OneDrive), the balloon driver cannot keep up. If you are having segfaults (random reboots), turn off memory ballooning. `<memballoon model="none"/>`
 
 <p align="center">
     <img src="./libvirt_images/10.png" width="500px"/>
