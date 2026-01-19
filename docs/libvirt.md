@@ -218,8 +218,8 @@ Together, these components form a powerful and flexible virtualization stack, wi
 
 16. Navigate to 'NIC' and set the `Device model` type to `virtio` to enable paravirtualised networking.
 > [!NOTE]
-> If you want to have internet connection during install, make sure this is set to `e1000e`
-> This would be for setup with a Microsoft account or other networking needs.
+> If you want to have internet connection during install, make sure this is set to `e1000e` (Setup with a Microsoft account, etc.)
+
 <p align="center">
     <img src="./libvirt_images/13.png" width="500px"/>
 </p>
