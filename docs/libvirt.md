@@ -199,6 +199,8 @@ Together, these components form a powerful and flexible virtualization stack, wi
     ```
 
 13. In the 'Memory' section, set the `Current allocation` to the minimum amount of memory you want the virtual machine to use, with a recommended value of `1024MB`.
+> [!NOTE]
+> Depending upon certain apps (like OneDrive), the balloon driver cannot keep up. If you are having segfaults (random reboots), turn off memory ballooning. `<memballoon model="none"/>`
 
 <p align="center">
     <img src="./libvirt_images/10.png" width="500px"/>
@@ -217,6 +219,8 @@ Together, these components form a powerful and flexible virtualization stack, wi
 </p>
 
 16. Navigate to 'NIC' and set the `Device model` type to `virtio` to enable paravirtualised networking.
+> [!NOTE]
+> `virtio` is the recommended device model and should be used for normal operation. If you specifically want internet access during the Windows installation (for example, to sign in with a Microsoft account), you may temporarily set the device model to `e1000e`. After installation and VirtIO driver setup are complete, switch the NIC back to `virtio` for best performance.
 
 <p align="center">
     <img src="./libvirt_images/13.png" width="500px"/>
