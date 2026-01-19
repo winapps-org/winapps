@@ -218,8 +218,7 @@ Together, these components form a powerful and flexible virtualization stack, wi
 
 16. Navigate to 'NIC' and set the `Device model` type to `virtio` to enable paravirtualised networking.
 > [!NOTE]
-> If you want to have internet connection during install, make sure this is set to `e1000e` (Setup with a Microsoft account, etc.).
-> For best performance, install the VirtIO drivers (inside Windows) after initial setup and set the `Device model` type to `virtio`.
+> `virtio` is the recommended device model and should be used for normal operation. If you specifically want internet access during the Windows installation (for example, to sign in with a Microsoft account), you may temporarily set the device model to `e1000e`. After installation and VirtIO driver setup are complete, switch the NIC back to `virtio` for best performance.
 
 <p align="center">
     <img src="./libvirt_images/13.png" width="500px"/>
