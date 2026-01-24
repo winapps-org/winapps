@@ -668,7 +668,7 @@ You can then test whether the host GNU/Linux system can communicate with Windows
 }
 ```
 
-Next, you will need to make some registry changes to enable RDP Applications to run on the system. Start by downloading the [RDPApps.reg](../oem/RDPApps.reg) file, right-clicking on the `Raw` button, and clicking on `Save target as`. Repeat the same thing for the [install.bat](../oem/install.bat) and the [NetProfileCleanup.ps1](../oem/NetProfileCleanup.ps1). **Do not download 'Container.reg'** - this file is only required for users using docker or podman.
+Next, you will need to make some registry changes to enable RDP Applications to run on the system. Start by downloading the [RDPApps.reg](../oem/RDPApps.reg) file, right-clicking on the `Raw` button, and clicking on `Save target as`. Repeat the same thing for the [install.bat](../oem/install.bat), the [TimeSync.ps1](../oem/TimeSync.ps1) and the [NetProfileCleanup.ps1](../oem/NetProfileCleanup.ps1). **Do not download 'Container.reg'** - this file is only required for users using docker or podman.
 
 <p align="center">
     <img src="./libvirt_images/26.png" width="700px"/>
