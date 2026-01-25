@@ -1865,8 +1865,9 @@ function waUninstall() {
     echo -e "${INFO_TEXT}You can remove these manually by running:${CLEAR_TEXT}"
     echo -e "${COMMAND_TEXT}rm -r $(dirname "$CONFIG_PATH")${CLEAR_TEXT}"
     echo -e "${COMMAND_TEXT}rm -r ${SOURCE_PATH}${CLEAR_TEXT}\n"
-# Print feedback.
-echo -e "${SUCCESS_TEXT}UNINSTALLATION COMPLETE.${CLEAR_TEXT}"
+
+    # Print feedback.
+    echo -e "${SUCCESS_TEXT}UNINSTALLATION COMPLETE.${CLEAR_TEXT}"
 }
 
 # Name: 'waAddApps'
