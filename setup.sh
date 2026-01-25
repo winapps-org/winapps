@@ -82,6 +82,7 @@ OPT_SYSTEM=0    # Set to '1' if the user specifies '--system'.
 OPT_USER=0      # Set to '1' if the user specifies '--user'.
 OPT_UNINSTALL=0 # Set to '1' if the user specifies '--uninstall'.
 OPT_AOSA=0      # Set to '1' if the user specifies '--setupAllOfficiallySupportedApps'.
+OPT_ADD_APPS=0  # Set to '1' if the user specifies '--add-apps'.
 
 # WINAPPS CONFIGURATION FILE
 RDP_USER=""          # Imported variable.
@@ -127,7 +128,6 @@ function waTerminateScript() {
     # Terminate the script.
     exit "$EXIT_STATUS"
 }
-
 # Name: 'waUsage'
 # Role: Displays usage information for the script.
 function waUsage() {
@@ -138,8 +138,11 @@ function waUsage() {
   ${COMMAND_TEXT}    --system --setupAllOfficiallySupportedApps${CLEAR_TEXT}    # Install WinApps and all officially supported applications in /usr
   ${COMMAND_TEXT}    --user --uninstall${CLEAR_TEXT}                            # Uninstall everything in ${HOME}
   ${COMMAND_TEXT}    --system --uninstall${CLEAR_TEXT}                          # Uninstall everything in /usr
+  ${COMMAND_TEXT}    --user --add-apps${CLEAR_TEXT}                             # Add new applications to existing installation in ${HOME}
+  ${COMMAND_TEXT}    --system --add-apps${CLEAR_TEXT}                           # Add new applications to existing installation in /usr
   ${COMMAND_TEXT}    --help${CLEAR_TEXT}                                        # Display this usage message."
 }
+
 
 # Name: 'waGetSourceCode'
 # Role: Grab the WinApps source code using Git.
@@ -227,6 +230,9 @@ function waCheckInput() {
                 ;;
             "--uninstall")
                 OPT_UNINSTALL=1
+                ;;
+            "--add-apps")
+                OPT_ADD_APPS=1
                 ;;
             "--help")
                 waUsage
@@ -319,6 +325,40 @@ function waCheckInput() {
         return "$EC_BAD_ARGUMENT"
     fi
 
+    # Simultaneous 'Uninstall' and 'Add Apps'.
+    if [ "$OPT_UNINSTALL" -eq 1 ] && [ "$OPT_ADD_APPS" -eq 1 ]; then
+        # Display the error type.
+        echo -e "${ERROR_TEXT}ERROR:${CLEAR_TEXT} ${BOLD_TEXT}CONFLICTING ARGUMENTS.${CLEAR_TEXT}"
+
+        # Display the error details.
+        echo -e "${INFO_TEXT}You cannot specify both${CLEAR_TEXT} ${COMMAND_TEXT}--uninstall${CLEAR_TEXT} ${INFO_TEXT}and${CLEAR_TEXT} ${COMMAND_TEXT}--add-apps${CLEAR_TEXT} ${INFO_TEXT}simultaneously.${CLEAR_TEXT}"
+
+        # Display the suggested action(s).
+        echo "--------------------------------------------------------------------------------"
+        waUsage
+        echo "--------------------------------------------------------------------------------"
+
+        # Terminate the script.
+        return "$EC_BAD_ARGUMENT"
+    fi
+
+    # Simultaneous 'AOSA' and 'Add Apps'.
+    if [ "$OPT_AOSA" -eq 1 ] && [ "$OPT_ADD_APPS" -eq 1 ]; then
+        # Display the error type.
+        echo -e "${ERROR_TEXT}ERROR:${CLEAR_TEXT} ${BOLD_TEXT}CONFLICTING ARGUMENTS.${CLEAR_TEXT}"
+
+        # Display the error details.
+        echo -e "${INFO_TEXT}You cannot specify both${CLEAR_TEXT} ${COMMAND_TEXT}--setupAllOfficiallySupportedApps${CLEAR_TEXT} ${INFO_TEXT}and${CLEAR_TEXT} ${COMMAND_TEXT}--add-apps${CLEAR_TEXT} ${INFO_TEXT}simultaneously.${CLEAR_TEXT}"
+
+        # Display the suggested action(s).
+        echo "--------------------------------------------------------------------------------"
+        waUsage
+        echo "--------------------------------------------------------------------------------"
+
+        # Terminate the script.
+        return "$EC_BAD_ARGUMENT"
+    fi
+
     # No 'User' or 'System'.
     if [ "$OPT_SYSTEM" -eq 0 ] && [ "$OPT_USER" -eq 0 ]; then
         # Display the error type.
@@ -372,12 +412,47 @@ function waConfigurePathsAndPermissions() {
         }
     fi
 }
-
 # Name: 'waCheckExistingInstall'
 # Role: Identifies any existing WinApps installations that may conflict with the new installation.
 function waCheckExistingInstall() {
     # Print feedback.
     echo -n "Checking for existing conflicting WinApps installations... "
+
+    # If --add-apps is specified, we don't want to fail if an installation exists
+    if [ "$OPT_ADD_APPS" -eq 1 ]; then
+        # Check for an existing 'user' installation.
+        if [[ -f "${USER_BIN_PATH}/winapps" && -d "${USER_SOURCE_PATH}/winapps" ]]; then
+            # Complete the previous line.
+            echo -e "${DONE_TEXT}Found!${CLEAR_TEXT}"
+            echo -e "${INFO_TEXT}Adding new applications to existing user installation.${CLEAR_TEXT}"
+            return 0
+        fi
+
+        # Check for an existing 'system' installation.
+        if [[ -f "${SYS_BIN_PATH}/winapps" && -d "${SYS_SOURCE_PATH}/winapps" ]]; then
+            # Complete the previous line.
+            echo -e "${DONE_TEXT}Found!${CLEAR_TEXT}"
+            echo -e "${INFO_TEXT}Adding new applications to existing system installation.${CLEAR_TEXT}"
+            return 0
+        fi
+
+        # If we're adding apps but no installation exists, that's an error
+        echo -e "${FAIL_TEXT}Failed!${CLEAR_TEXT}\n"
+
+        # Display the error type.
+        echo -e "${ERROR_TEXT}ERROR:${CLEAR_TEXT} ${BOLD_TEXT}NO EXISTING WINAPPS INSTALLATION.${CLEAR_TEXT}"
+
+        # Display the error details.
+        echo -e "${INFO_TEXT}No existing WinApps installation was detected.${CLEAR_TEXT}"
+
+        # Display the suggested action(s).
+        echo "--------------------------------------------------------------------------------"
+        echo -e "Please install WinApps first using ${COMMAND_TEXT}winapps-setup --user${CLEAR_TEXT} or ${COMMAND_TEXT}winapps-setup --system${CLEAR_TEXT}."
+        echo "--------------------------------------------------------------------------------"
+
+        # Terminate the script.
+        return "$EC_EXISTING_INSTALL"
+    fi
 
     # Check for an existing 'user' installation.
     if [[ -f "${USER_BIN_PATH}/winapps" || -d "${USER_SOURCE_PATH}/winapps" ]]; then
@@ -422,6 +497,7 @@ function waCheckExistingInstall() {
     # Print feedback.
     echo -e "${DONE_TEXT}Done!${CLEAR_TEXT}"
 }
+
 
 # Name: 'waFixScale'
 # Role: Since FreeRDP only supports '/scale' values of 100, 140 or 180, find the closest supported argument to the user's configuration.
@@ -1794,6 +1870,83 @@ function waUninstall() {
     echo -e "${SUCCESS_TEXT}UNINSTALLATION COMPLETE.${CLEAR_TEXT}"
 }
 
+# Name: 'waAddApps'
+# Role: Adds new applications to an existing WinApps installation.
+function waAddApps() {
+    # Print feedback.
+    echo -e "${BOLD_TEXT}Adding new applications to existing WinApps installation.${CLEAR_TEXT}"
+
+    # Load the WinApps configuration file.
+    waLoadConfig
+
+    # Check for missing dependencies.
+    waCheckInstallDependencies
+
+    # Update $RDP_SCALE.
+    waFixScale
+
+    # Append additional FreeRDP flags if required.
+    if [[ -n $RDP_FLAGS ]]; then
+        FREERDP_COMMAND="${FREERDP_COMMAND} ${RDP_FLAGS}"
+    fi
+
+    # If using 'docker' or 'podman', set RDP_IP to localhost.
+    if [ "$WAFLAVOR" = "docker" ] || [ "$WAFLAVOR" = "podman" ]; then
+        RDP_IP="$DOCKER_IP"
+    fi
+
+    # If using podman backend, modify the FreeRDP command to enter a new namespace.
+    if [ "$WAFLAVOR" = "podman" ]; then
+        FREERDP_COMMAND="podman unshare --rootless-netns ${FREERDP_COMMAND}"
+    fi
+
+    if [ "$WAFLAVOR" = "docker" ] || [ "$WAFLAVOR" = "podman" ]; then
+        # Check if Windows is powered on.
+        waCheckContainerRunning
+    elif [ "$WAFLAVOR" = "libvirt" ]; then
+        # Verify the current user's group membership.
+        waCheckGroupMembership
+
+        # Check if the Windows VM is powered on.
+        waCheckVMRunning
+    elif [ "$WAFLAVOR" = "manual" ]; then
+        waCheckPortOpen
+    else
+        # Display the error type.
+        echo -e "${ERROR_TEXT}ERROR:${CLEAR_TEXT} ${BOLD_TEXT}INVALID WINAPPS BACKEND.${CLEAR_TEXT}"
+
+        # Display the error details.
+        echo -e "${INFO_TEXT}An invalid WinApps backend '${WAFLAVOR}' was specified.${CLEAR_TEXT}"
+
+        # Display the suggested action(s).
+        echo "--------------------------------------------------------------------------------"
+        echo -e "Please ensure 'WAFLAVOR' is set to 'docker', 'podman' or 'libvirt' in ${COMMAND_TEXT}${CONFIG_PATH}${CLEAR_TEXT}."
+        echo "--------------------------------------------------------------------------------"
+
+        # Terminate the script.
+        return "$EC_INVALID_FLAVOR"
+    fi
+
+    # Check if the RDP port on Windows is open.
+    waCheckPortOpen
+
+    # Test RDP access to Windows.
+    waCheckRDPAccess
+
+    # Check for installed applications.
+    waFindInstalled
+
+    # Configure officially supported applications.
+    waConfigureApps
+
+    # Configure other detected applications.
+    waConfigureDetectedApps
+    # Print feedback.
+    echo -e "${SUCCESS_TEXT}ADDING NEW APPS COMPLETE.${CLEAR_TEXT}"
+}
+
+
+
 ### SEQUENTIAL LOGIC ###
 # Welcome the user.
 echo -e "${BOLD_TEXT}\
@@ -1818,10 +1971,11 @@ waConfigurePathsAndPermissions
 
 # Get the source code
 waGetSourceCode
-
 # Install or uninstall WinApps.
 if [ "$OPT_UNINSTALL" -eq 1 ]; then
     waUninstall
+elif [ "$OPT_ADD_APPS" -eq 1 ]; then
+    waAddApps
 else
     waInstall
 fi
