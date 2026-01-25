@@ -54,6 +54,7 @@ AUTOPAUSE_TIME="300"
 DEBUG="true"
 BOOT_TIMEOUT=120
 HIDEF="on"
+RDP_FLATPAK=0
 RDP_FLAGS_WINDOWS=""
 RDP_FLAGS_NON_WINDOWS=""
 
@@ -62,18 +63,53 @@ FREERDP_PID=-1
 NEEDED_BOOT=false
 
 ### TRAPS ###
-# Catch SIGINT (CTRL+C) to call 'waCleanUp'.
-trap waCleanUp SIGINT
+# Catch SIGINT (CTRL+C) and SIGTERM to call 'waCleanUpAndExit'.
+trap waCleanUpAndExit SIGINT SIGTERM
 
 ### FUNCTIONS ###
 # Name: 'waCleanUp'
 # Role: Clean up remains prior to exit.
-waCleanUp() {
+function waCleanUp() {
+    for proc_file in "${APPDATA_PATH}"/FreeRDP_Process_*.cproc; do
+        # Protect against glob non-expansion.
+        [[ -f "$proc_file" ]] || break
+
+        # Extract the file name from the path.
+        cproc=$(basename "$proc_file")
+
+        # Remove the 'FreeRDP_Process_' prefix.
+        cproc="${cproc#FreeRDP_Process_}"
+
+        # Remove the '.cproc' file extension.
+        cproc="${cproc%.cproc}"
+
+        if [[ "$cproc" =~ ^[0-9]+$ ]]; then
+            # Proceed if process dir missing OR comm unreadable OR name doesn’t match.
+            if [[ ! -d "/proc/$cproc" ]] || [ ! -r "/proc/$cproc/comm" ] || [[ $(<"/proc/$cproc/comm") != *freerdp* ]]; then
+                # Delete the file.
+                rm "$proc_file" &>/dev/null
+            fi
+        elif [[ "$cproc" == "Flatpak" ]]; then
+            if command -v flatpak > /dev/null 2>&1; then
+                # Proceed if the flatpak is not running.
+                if ! flatpak ps --columns=application | grep -q "^com.freerdp.FreeRDP$"; then
+                    # Delete the file.
+                    rm "$proc_file" &>/dev/null
+                fi
+            fi
+        fi
+    done
+}
+
+function waCleanUpAndExit() {
     # Kill FreeRDP.
     [ "$FREERDP_PID" -gt 0 ] && kill -9 "$FREERDP_PID" &>/dev/null
 
     # Remove '.cproc' file.
     [ -f "${APPDATA_PATH}/FreeRDP_Process_${FREERDP_PID}.cproc" ] && rm "${APPDATA_PATH}/FreeRDP_Process_${FREERDP_PID}.cproc" &>/dev/null
+
+    # Run cleanup.
+    waCleanUp
 
     # Terminate script.
     exit 1
@@ -284,6 +320,7 @@ function waGetFreeRDPCommand() {
                     FREERDP_MAJOR_VERSION=$(flatpak list --columns=application,version | grep "^com.freerdp.FreeRDP" | awk '{print $2}' | cut -d'.' -f1)
                     if [[ $FREERDP_MAJOR_VERSION =~ ^[0-9]+$ ]] && ((FREERDP_MAJOR_VERSION >= 3)); then
                         FREERDP_COMMAND="flatpak run --command=xfreerdp com.freerdp.FreeRDP"
+                        RDP_FLATPAK=1
                     fi
                 fi
             fi
@@ -699,15 +736,28 @@ function waRunCommand() {
         fi
     fi
 
-    if [ "$FREERDP_PID" -ne -1 ]; then
-        # Create a file with the process ID.
-        touch "${APPDATA_PATH}/FreeRDP_Process_${FREERDP_PID}.cproc"
+    if [[ "$RDP_FLATPAK" == "0" ]]; then
+        if [ "$FREERDP_PID" -ne -1 ]; then
+            # Create a file with the process ID.
+            touch "${APPDATA_PATH}/FreeRDP_Process_${FREERDP_PID}.cproc"
+
+            # Wait for the process to terminate.
+            wait $FREERDP_PID
+
+            # Remove the file with the process ID.
+            rm "${APPDATA_PATH}/FreeRDP_Process_${FREERDP_PID}.cproc" &>/dev/null
+        fi
+    else
+        # Create a file.
+        touch "${APPDATA_PATH}/FreeRDP_Process_Flatpak.cproc"
 
         # Wait for the process to terminate.
-        wait $FREERDP_PID
+        while flatpak ps --columns=application | grep -q "^com.freerdp.FreeRDP$"; do
+            sleep 5
+        done
 
-        # Remove the file with the process ID.
-        rm "${APPDATA_PATH}/FreeRDP_Process_${FREERDP_PID}.cproc" &>/dev/null
+        # Remove the file.
+        rm "${APPDATA_PATH}/FreeRDP_Process_Flatpak.cproc" &>/dev/null
     fi
 }
 
@@ -803,6 +853,7 @@ dprint "HOME_DIR: ${HOME}"
 waLastRun
 waLoadConfig
 waGetFreeRDPCommand
+waCleanUp
 
 # If using podman backend, modify the FreeRDP command to enter a new namespace.
 if [ "$WAFLAVOR" = "podman" ]; then
