@@ -87,14 +87,14 @@ function waCleanUp() {
             # Proceed if process dir missing OR comm unreadable OR name doesn’t match.
             if [[ ! -d "/proc/$cproc" ]] || [[ ! -r "/proc/$cproc/comm" ]] || [[ $(<"/proc/$cproc/comm") != *freerdp* ]]; then
                 # Delete the file.
-                rm "$proc_file" &>/dev/null
+                rm -- "$proc_file" &>/dev/null
             fi
         elif [[ "$cproc" == "Flatpak" ]]; then
             if command -v flatpak > /dev/null 2>&1; then
                 # Proceed if the flatpak is not running.
                 if ! flatpak ps --columns=application | grep -q "^com.freerdp.FreeRDP$"; then
                     # Delete the file.
-                    rm "$proc_file" &>/dev/null
+                    rm -- "$proc_file" &>/dev/null
                 fi
             fi
         fi
@@ -305,7 +305,7 @@ function waLastRun() {
     fi
 
     # Update the file modification time with the current time.
-    touch "$LASTRUN_PATH"
+    touch -- "$LASTRUN_PATH"
     CURR_RUN_UNIX_TIME=$(stat -t -c %Y "$LASTRUN_PATH")
     dprint "THIS_RUN: ${CURR_RUN_UNIX_TIME}"
 }
@@ -642,7 +642,7 @@ function waCheckPortOpen() {
             if [ "$TIME_ELAPSED" -eq "$TIME_INTERVAL" ]; then
                 notify-send --expire-time=4000 --icon="dialog-info" --app-name="WinApps" --urgency="low" "WinApps" "Requesting Windows IP address..."
             fi
-            RDP_IP=$(ip neigh show | grep "$VM_MAC" | grep -oE "([0-9]{1,3}\.){3}[0-9]{1,3}") # VM IP address.
+            RDP_IP=$(ip neigh show | grep -F -- "$VM_MAC" | grep -oE "([0-9]{1,3}\.){3}[0-9]{1,3}") # VM IP address.
             [ -n "$RDP_IP" ] && break
             sleep $TIME_INTERVAL
             TIME_ELAPSED=$((TIME_ELAPSED + TIME_INTERVAL))
@@ -765,17 +765,17 @@ function waRunCommand() {
     if [[ "$RDP_FLATPAK" == "0" ]]; then
         if [ "$FREERDP_PID" -ne -1 ]; then
             # Create a file with the process ID.
-            touch "${APPDATA_PATH}/FreeRDP_Process_${FREERDP_PID}.cproc"
+            touch -- "${APPDATA_PATH}/FreeRDP_Process_${FREERDP_PID}.cproc"
 
             # Wait for the process to terminate.
-            wait $FREERDP_PID
+            wait "$FREERDP_PID"
 
             # Remove the file with the process ID.
-            rm "${APPDATA_PATH}/FreeRDP_Process_${FREERDP_PID}.cproc" &>/dev/null
+            rm -- "${APPDATA_PATH}/FreeRDP_Process_${FREERDP_PID}.cproc" &>/dev/null
         fi
     else
         # Create a file.
-        touch "${APPDATA_PATH}/FreeRDP_Process_Flatpak.cproc"
+        touch -- "${APPDATA_PATH}/FreeRDP_Process_Flatpak.cproc"
 
         # Wait for the process to terminate.
         while flatpak ps --columns=application | grep -q "^com.freerdp.FreeRDP$"; do
@@ -783,7 +783,7 @@ function waRunCommand() {
         done
 
         # Remove the file.
-        rm "${APPDATA_PATH}/FreeRDP_Process_Flatpak.cproc" &>/dev/null
+        rm -- "${APPDATA_PATH}/FreeRDP_Process_Flatpak.cproc" &>/dev/null
     fi
 }
 
@@ -856,7 +856,7 @@ function waTimeSync() {
             dprint "DETECTED SLEEP/WAKE CYCLE (uptime gap: ${UPTIME_DIFF}s). CREATING SLEEP MARKER TO SYNC WINDOWS TIME."
 
             # Create sleep marker which will be monitored by Windows VM to trigger time sync
-            touch "$SLEEP_MARKER"
+            touch -- "$SLEEP_MARKER"
 
             dprint "CREATED SLEEP MARKER"
         fi
