@@ -85,7 +85,7 @@ function waCleanUp() {
 
         if [[ "$cproc" =~ ^[0-9]+$ ]]; then
             # Proceed if process dir missing OR comm unreadable OR name doesn’t match.
-            if [[ ! -d "/proc/$cproc" ]] || [ ! -r "/proc/$cproc/comm" ] || [[ $(<"/proc/$cproc/comm") != *freerdp* ]]; then
+            if [[ ! -d "/proc/$cproc" ]] || [[ ! -r "/proc/$cproc/comm" ]] || [[ $(<"/proc/$cproc/comm") != *freerdp* ]]; then
                 # Delete the file.
                 rm "$proc_file" &>/dev/null
             fi
@@ -103,10 +103,36 @@ function waCleanUp() {
 
 function waCleanUpAndExit() {
     # Kill FreeRDP.
-    [ "$FREERDP_PID" -gt 0 ] && kill -9 "$FREERDP_PID" &>/dev/null
+    if [[ "$RDP_FLATPAK" == "0" ]]; then
+        if [[ "$FREERDP_PID" =~ ^[1-9][0-9]*$ ]] && \
+        [[ -d "/proc/$FREERDP_PID" ]] && \
+        [[ -r "/proc/$FREERDP_PID/comm" ]] && \
+        [[ $(<"/proc/$FREERDP_PID/comm") == *freerdp* ]]; then
+            # SIGTERM
+            kill -15 "$FREERDP_PID" &>/dev/null
 
-    # Remove '.cproc' file.
-    [ -f "${APPDATA_PATH}/FreeRDP_Process_${FREERDP_PID}.cproc" ] && rm "${APPDATA_PATH}/FreeRDP_Process_${FREERDP_PID}.cproc" &>/dev/null
+            # Wait up to 5 seconds.
+            for _ in {1..5}; do
+                sleep 1
+                [[ ! -d "/proc/$FREERDP_PID" ]] && break
+            done
+
+            # SIGKILL
+            if [[ -d "/proc/$FREERDP_PID" ]] && \
+            [[ -r "/proc/$FREERDP_PID/comm" ]] && \
+            [[ $(<"/proc/$FREERDP_PID/comm") == *freerdp* ]]; then
+                kill -9 "$FREERDP_PID" &>/dev/null
+            fi
+
+            # Remove '.cproc' file.
+            rm -f -- "${APPDATA_PATH}/FreeRDP_Process_${FREERDP_PID}.cproc"
+        fi
+    else
+        if command -v flatpak >/dev/null 2>&1 && flatpak ps --columns=application | grep -q "^com.freerdp.FreeRDP$"; then
+            # Terminate the process.
+            flatpak kill com.freerdp.FreeRDP &>/dev/null
+        fi
+    fi
 
     # Run cleanup.
     waCleanUp
