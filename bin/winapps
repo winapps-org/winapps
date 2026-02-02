@@ -101,40 +101,85 @@ function waCleanUp() {
     done
 }
 
-function waCleanUpAndExit() {
-    # Kill FreeRDP.
-    if [[ "$RDP_FLATPAK" == "0" ]]; then
-        if [[ "$FREERDP_PID" =~ ^[1-9][0-9]*$ ]] && \
-        [[ -d "/proc/$FREERDP_PID" ]] && \
-        [[ -r "/proc/$FREERDP_PID/comm" ]] && \
-        [[ $(<"/proc/$FREERDP_PID/comm") == *freerdp* ]]; then
+# Name: 'waKillFreeRDP'
+# Role: Kill WinApps FreeRDP sessions.
+function waKillFreeRDP() {
+    # Declare variables.
+    local TERMINATED_PROCESS_IDS=()
+    local TERMINATED_PROCESS_IDS_STRING=""
+
+    # Loop through each matching file and add to the array.
+    for FREERDP_PROCESS_FILE in "${APPDATA_PATH}/FreeRDP_Process_"*.cproc; do
+        # Ensure the pattern is not treated as a literal string if no files match.
+        [[ -f "$FREERDP_PROCESS_FILE" ]] || break
+
+        # Extract the file name from the path.
+        FREERDP_PROCESS_FILE=$(basename "$FREERDP_PROCESS_FILE")
+
+        # Remove the 'FreeRDP_Process_' prefix.
+        FREERDP_PROCESS_FILE="${FREERDP_PROCESS_FILE#FreeRDP_Process_}"
+
+        # Remove the '.cproc' file extension.
+        FREERDP_PROCESS_FILE="${FREERDP_PROCESS_FILE%.cproc}"
+
+        # Track termination action.
+        KILLED=false
+
+        # Terminate processes.
+        if [[ "$FREERDP_PROCESS_FILE" =~ ^[0-9]+$ ]] && \
+           [[ -d "/proc/$FREERDP_PROCESS_FILE" ]] && \
+           [[ -r "/proc/$FREERDP_PROCESS_FILE/comm" ]] && \
+           [[ $(<"/proc/$FREERDP_PROCESS_FILE/comm") == *freerdp* ]]; then
             # SIGTERM
-            kill -15 "$FREERDP_PID" &>/dev/null
+            kill -15 "$FREERDP_PROCESS_FILE" &>/dev/null
 
             # Wait up to 5 seconds.
             for _ in {1..5}; do
                 sleep 1
-                [[ ! -d "/proc/$FREERDP_PID" ]] && break
+                [[ ! -d "/proc/$FREERDP_PROCESS_FILE" ]] && break
             done
 
             # SIGKILL
-            if [[ -d "/proc/$FREERDP_PID" ]] && \
-            [[ -r "/proc/$FREERDP_PID/comm" ]] && \
-            [[ $(<"/proc/$FREERDP_PID/comm") == *freerdp* ]]; then
-                kill -9 "$FREERDP_PID" &>/dev/null
+            if [[ -d "/proc/$FREERDP_PROCESS_FILE" ]] && \
+               [[ -r "/proc/$FREERDP_PROCESS_FILE/comm" ]] && \
+               [[ $(<"/proc/$FREERDP_PROCESS_FILE/comm") == *freerdp* ]]; then
+                kill -9 "$FREERDP_PROCESS_FILE" &>/dev/null
             fi
 
-            # Remove '.cproc' file.
-            rm -f -- "${APPDATA_PATH}/FreeRDP_Process_${FREERDP_PID}.cproc"
-        fi
-    else
-        if command -v flatpak >/dev/null 2>&1 && flatpak ps --columns=application | grep -q "^com.freerdp.FreeRDP$"; then
+            # Track termination action.
+            KILLED=true
+        elif [[ "$FREERDP_PROCESS_FILE" == "Flatpak" ]] && \
+             command -v flatpak >/dev/null 2>&1 && \
+             flatpak ps --columns=application | grep -q "^com.freerdp.FreeRDP$"; then
             # Terminate the process.
             flatpak kill com.freerdp.FreeRDP &>/dev/null
-        fi
-    fi
 
-    # Run cleanup.
+            # Track termination action.
+            KILLED=true
+        fi
+
+        # Delete FreeRDP process tracking file.
+        # NOTE: Better practice to call 'waCleanUp' to handle this in case FreeRDP process(es) still not killed.
+        #rm -- "${APPDATA_PATH}/FreeRDP_Process_${FREERDP_PROCESS_FILE}.cproc" &>/dev/null
+
+        if [[ "$KILLED" == true ]]; then
+            # Add the process ID to the list of terminated processes.
+            TERMINATED_PROCESS_IDS+=("$FREERDP_PROCESS_FILE")
+        fi
+    done
+
+    # Display feedback if any processes were terminated.
+    if [ ${#TERMINATED_PROCESS_IDS[@]} -ne 0 ]; then
+        echo "Killed FreeRDP process(es):"
+        printf '%s\n' "${TERMINATED_PROCESS_IDS[@]}"
+    fi
+}
+
+function waCleanUpAndExit() {
+    # Kill FreeRDP processes.
+    waKillFreeRDP
+
+    # Clean orphaned files.
     waCleanUp
 
     # Terminate script.
@@ -243,18 +288,21 @@ function waHelp() {
 
     echo "Usage:"
     echo "  ${script_name} help"
-    echo "  ${script_name} killrdp"
     echo "  ${script_name} windows"
     echo "  ${script_name} manual <remoteapp-executable>"
     echo "  ${script_name} <app> [file]"
+    echo "  ${script_name} killrdp"
+    echo "  ${script_name} cleanrdp"
     echo
 
     echo "Commands:"
     echo "  help                           --> Show this help message."
-    echo "  killrdp                        --> Terminate any running WinApps FreeRDP sessions."
     echo "  windows                        --> Start a full Windows desktop RDP session."
     echo "  manual <remoteapp-executable>  --> Start a RemoteApp session for an arbitrary executable."
     echo "  <app> [file]                   --> Start a community-tested application using a preconfigured definition. Optionally open a file."
+    echo "  killrdp                        --> Terminate any running WinApps FreeRDP sessions."
+    echo "  cleanrdp                       --> Remove orphaned FreeRDP process tracking files."
+    exit 0
 }
 
 # Name: 'waFixScale'
