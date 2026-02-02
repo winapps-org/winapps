@@ -63,13 +63,13 @@ FREERDP_PID=-1
 NEEDED_BOOT=false
 
 ### TRAPS ###
-# Catch SIGINT (CTRL+C) and SIGTERM to call 'waCleanUpAndExit'.
-trap waCleanUpAndExit SIGINT SIGTERM
+# Catch SIGINT (CTRL+C) and SIGTERM to call 'waKillCleanExit'.
+trap waKillCleanExit SIGINT SIGTERM
 
 ### FUNCTIONS ###
-# Name: 'waCleanUp'
+# Name: 'waCleanFreeRDP'
 # Role: Clean up remains prior to exit.
-function waCleanUp() {
+function waCleanFreeRDP() {
     for proc_file in "${APPDATA_PATH}"/FreeRDP_Process_*.cproc; do
         # Protect against glob non-expansion.
         [[ -f "$proc_file" ]] || break
@@ -106,7 +106,6 @@ function waCleanUp() {
 function waKillFreeRDP() {
     # Declare variables.
     local TERMINATED_PROCESS_IDS=()
-    local TERMINATED_PROCESS_IDS_STRING=""
 
     # Loop through each matching file and add to the array.
     for FREERDP_PROCESS_FILE in "${APPDATA_PATH}/FreeRDP_Process_"*.cproc; do
@@ -159,7 +158,7 @@ function waKillFreeRDP() {
         fi
 
         # Delete FreeRDP process tracking file.
-        # NOTE: Better practice to call 'waCleanUp' to handle this in case FreeRDP process(es) still not killed.
+        # NOTE: Better practice to call 'waCleanFreeRDP' to handle this in case FreeRDP process(es) still not killed.
         #rm -- "${APPDATA_PATH}/FreeRDP_Process_${FREERDP_PROCESS_FILE}.cproc" &>/dev/null
 
         if [[ "$KILLED" == true ]]; then
@@ -170,20 +169,42 @@ function waKillFreeRDP() {
 
     # Display feedback if any processes were terminated.
     if [ ${#TERMINATED_PROCESS_IDS[@]} -ne 0 ]; then
+        dprint "KILLED FREERDP PROCESSES: $(
+            IFS=', '
+            printf '%s' "${TERMINATED_PROCESS_IDS[*]}"
+        )."
         echo "Killed FreeRDP process(es):"
         printf '%s\n' "${TERMINATED_PROCESS_IDS[@]}"
     fi
 }
 
-function waCleanUpAndExit() {
+# Name: 'waKillCleanExit'
+# Role: Kill FreeRDP processes and clean process tracking files when WinApps is forcefully terminated.
+function waKillCleanExit() {
     # Kill FreeRDP processes.
     waKillFreeRDP
 
     # Clean orphaned files.
-    waCleanUp
+    waCleanFreeRDP
 
     # Terminate script.
     exit 1
+}
+
+# Name: 'waEarlyDispatch'
+# Role: Handle lightweight subcommands.
+function waEarlyDispatch() {
+    if [[ -z "${1:-}" ]] || [[ "$1" == "help" ]]; then
+        waHelp
+        exit 0
+    elif [[ "$1" == "killrdp" ]]; then
+        waKillFreeRDP
+        waCleanFreeRDP
+        exit 0
+    elif [[ "$1" == "cleanrdp" ]]; then
+        waCleanFreeRDP
+        exit 0
+    fi
 }
 
 # Name: 'waThrowExit'
@@ -302,7 +323,6 @@ function waHelp() {
     echo "  <app> [file]                   --> Start a community-tested application using a preconfigured definition. Optionally open a file."
     echo "  killrdp                        --> Terminate any running WinApps FreeRDP sessions."
     echo "  cleanrdp                       --> Remove orphaned FreeRDP process tracking files."
-    exit 0
 }
 
 # Name: 'waFixScale'
@@ -947,10 +967,11 @@ dprint "START"
 dprint "SCRIPT_DIR: ${SCRIPT_DIR_PATH}"
 dprint "SCRIPT_ARGS: ${*}"
 dprint "HOME_DIR: ${HOME}"
+waEarlyDispatch "$@"
 waLastRun
 waLoadConfig
 waGetFreeRDPCommand
-waCleanUp
+waCleanFreeRDP
 
 # If using podman backend, modify the FreeRDP command to enter a new namespace.
 if [ "$WAFLAVOR" = "podman" ]; then
