@@ -21,6 +21,7 @@ readonly EC_INVALID_FLAVOR=15
 # PATHS
 readonly APPDATA_PATH="${HOME}/.local/share/winapps"
 readonly SYS_APP_PATH="/usr/local/share/winapps"
+readonly BREW_APP_PATH="${SCRIPT_DIR_PATH}/../share/winapps"
 readonly LASTRUN_PATH="${APPDATA_PATH}/lastrun"
 readonly LOG_PATH="${APPDATA_PATH}/winapps.log"
 readonly CONFIG_PATH="${HOME}/.config/winapps/winapps.conf"
@@ -695,10 +696,16 @@ function waRunCommand() {
         else
             # Named app — resolve info file.
             if [ -e "${SCRIPT_DIR_PATH}/../apps/${1}/info" ]; then
+                # shellcheck source=/dev/null # Exclude app info file from being checked by ShellCheck.
                 source "${SCRIPT_DIR_PATH}/../apps/${1}/info"
+            elif [ -e "${BREW_APP_PATH}/apps/${1}/info" ]; then
+                # shellcheck source=/dev/null # Exclude app info file from being checked by ShellCheck.
+                source "${BREW_APP_PATH}/apps/${1}/info"
             elif [ -e "${APPDATA_PATH}/apps/${1}/info" ]; then
+                # shellcheck source=/dev/null # Exclude app info file from being checked by ShellCheck.
                 source "${APPDATA_PATH}/apps/${1}/info"
             elif [ -e "${SYS_APP_PATH}/apps/${1}/info" ]; then
+                # shellcheck source=/dev/null # Exclude app info file from being checked by ShellCheck.
                 source "${SYS_APP_PATH}/apps/${1}/info"
             else
                 waThrowExit "$EC_UNSUPPORTED_APP"
@@ -765,6 +772,10 @@ function waRunCommand() {
             # shellcheck source=/dev/null # Exclude this file from being checked by ShellCheck.
             source "${SCRIPT_DIR_PATH}/../apps/${1}/info"
             ICON="${SCRIPT_DIR_PATH}/../apps/${1}/icon.svg"
+        elif [ -e "${BREW_APP_PATH}/apps/${1}/info" ]; then
+            # shellcheck source=/dev/null # Exclude this file from being checked by ShellCheck.
+            source "${BREW_APP_PATH}/apps/${1}/info"
+            ICON="${BREW_APP_PATH}/apps/${1}/icon.svg"
         elif [ -e "${APPDATA_PATH}/apps/${1}/info" ]; then
             # shellcheck source=/dev/null # Exclude this file from being checked by ShellCheck.
             source "${APPDATA_PATH}/apps/${1}/info"
