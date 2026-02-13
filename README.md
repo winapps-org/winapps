@@ -393,7 +393,17 @@ RDP_USER="MyWindowsUser"
 # [WINDOWS PASSWORD]
 # NOTES:
 # - If using FreeRDP v3.9.0 or greater, you *have* to set a password
+# - RDP_ASKPASS is provided as a more secure option to RDP_PASS:
+#   - Calls an external command and uses its stdout as the password
+#   - The password is not passed on the command line to freerdp, keeping it out of logs
+#   - If specified, takes precedence over RDP_PASS
+#   - Examples to use this:
+#     - RDP_ASKPASS="~/some-custom-command"
+#     - RDP_ASKPASS="bash -c 'cat ~/.some-secret-file'"
+#     - RDP_ASKPASS="bash -c 'kwallet-query --folder winapps --read-password rdp kdewallet'"
+#
 RDP_PASS="MyWindowsPassword"
+RDP_ASKPASS=""
 
 # [WINDOWS DOMAIN]
 # DEFAULT VALUE: '' (BLANK)
