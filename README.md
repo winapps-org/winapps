@@ -2,16 +2,16 @@
 <p align="center"><img align="center" width="700" src="./docs/readme/banner_light.svg#gh-light-mode-only"/></p>
 <hr>
 
-Run Windows applications (including [Microsoft 365](https://www.microsoft365.com/) and [Adobe Creative Cloud](https://www.adobe.com/creativecloud.html)) on GNU/Linux with `KDE Plasma`, `GNOME` or `XFCE`, integrated seamlessly as if they were native to the OS.
+Run Windows applications (including [Microsoft 365](https://www.microsoft365.com/) and [Adobe Creative Cloud](https://www.adobe.com/creativecloud.html)) on GNU/Linux with `KDE Plasma`, `GNOME` or `XFCE` and on **macOS**, integrated seamlessly as if they were native to the OS.
 
 <p align="center"><img src="./docs/readme/demo.png" width=1000 alt="WinApps Demonstration."></p>
 
 ## Underlying Mechanism
 WinApps works by:
-1. Running Windows in a `Docker`, `Podman` or `libvirt` virtual machine.
+1. Running Windows in a `Docker`, `Podman` or `libvirt` virtual machine (or connecting to any Windows machine with RDP enabled).
 2. Querying Windows for all installed applications.
-3. Creating shortcuts to selected Windows applications on the host GNU/Linux OS.
-4. Using [`FreeRDP`](https://www.freerdp.com/) as a backend to seamlessly render Windows applications alongside GNU/Linux applications.
+3. Creating shortcuts to selected Windows applications on the host OS.
+4. Using [`FreeRDP`](https://www.freerdp.com/) (Linux) or Microsoft ["Windows App"](https://apps.apple.com/app/windows-app/id1295203466) (macOS) as a backend to seamlessly render Windows applications alongside native applications.
 
 ## Additional Features
 - The GNU/Linux `/home` directory is accessible within Windows via the `\\tsclient\home` mount.
@@ -329,6 +329,18 @@ Contributing to the list of supported applications is encouraged through submiss
         </table>
 
 ## Installation
+
+### macOS
+
+For macOS installation and setup, see the [macOS guide](docs/macOS.md). WinApps on macOS uses Microsoft "Windows App" (free from the Mac App Store) instead of FreeRDP, and requires no virtual machine on the Mac — just a Windows machine with RDP enabled.
+
+```bash
+# Quick start (Homebrew)
+brew tap dingyifei/winapps
+brew install winapps
+```
+
+### GNU/Linux
 ### Step 1: Configure a Windows VM
 Both `Docker` and `Podman` are recommended backends for running the Windows virtual machine, as they facilitate an automated Windows installation process. WinApps is also compatible with `libvirt`. While this method requires considerably more manual configuration, it also provides greater virtual machine customisation options. All three methods leverage the `KVM` hypervisor, ensuring excellent virtual machine performance. Ultimately, the choice of backend depends on your specific use case.
 
