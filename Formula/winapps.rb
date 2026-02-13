@@ -5,8 +5,9 @@ class Winapps < Formula
   version "1.0.0"
   license "GPL-3.0-only"
 
-  depends_on "bash"   # setup.sh uses bash 4+ features (declare -A, readarray)
-  depends_on "dialog" # interactive installer menus
+  depends_on "bash"    # setup.sh uses bash 4+ features (declare -A, readarray)
+  depends_on "dialog"  # interactive installer menus
+  depends_on "freerdp" # installer uses xfreerdp (RemoteApp requires X11 backend, not SDL)
   depends_on :macos
 
   def install

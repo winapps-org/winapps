@@ -5,9 +5,10 @@ Run Windows applications on macOS via RDP RemoteApp, using the system RDP client
 ## Prerequisites
 
 1. **Microsoft "Windows App"** (free) from the [Mac App Store](https://apps.apple.com/app/windows-app/id1295203466)
-2. **`dialog`** — required for the interactive installer (`brew install dialog`)
-3. A **Windows machine with RDP enabled** (VM, remote server, or local Parallels/UTM)
-4. **RDP RemoteApp configured** on the Windows machine (merge `install/RDPApps.reg`)
+2. **FreeRDP** — used by the installer for app scanning (`brew install freerdp`)
+3. **`dialog`** — required for the interactive installer (`brew install dialog`)
+4. A **Windows machine with RDP enabled** (VM, remote server, or local Parallels/UTM)
+5. **RDP RemoteApp configured** on the Windows machine (merge `install/RDPApps.reg`)
 
 ## Installation
 
@@ -96,8 +97,12 @@ winapps manual "C:\Windows\System32\notepad.exe"
 
 ## How It Works
 
-On macOS, WinApps generates `.rdp` files dynamically and opens them with the system `open` command, which delegates to Microsoft "Windows App". This avoids the FreeRDP/XQuartz dependency chain.
+WinApps uses two different RDP approaches on macOS:
 
+- **Day-to-day usage** (`bin/winapps`): Generates `.rdp` files and opens them with Microsoft "Windows App" via the system `open` command. This provides the best RemoteApp display experience.
+- **Installer/scanner** (`setup.sh`): Uses FreeRDP (`sdl-freerdp3`) to execute commands on the Windows machine (app scanning, RDP access tests). FreeRDP's `/app:` parameter enables server-side command execution, which "Windows App" does not support. The scan runs in the background with output redirected to a log file.
+
+Day-to-day:
 - `winapps word` generates a temporary `.rdp` file with RemoteApp settings and opens it
 - `winapps windows` generates a full desktop `.rdp` file
 - Files passed as arguments are mapped through `\\tsclient\<Volume Name>\Users\...` (drive redirection)

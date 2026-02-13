@@ -393,6 +393,12 @@ function waConfigurePathsAndPermissions() {
         BIN_PATH="$USER_BIN_PATH"
         APP_PATH="$USER_APP_PATH"
         APPDATA_PATH="$USER_APPDATA_PATH"
+
+        # macOS: ~/.local/bin is not on PATH by default.
+        # Use the Homebrew bin directory, which is already on PATH.
+        if [ "$PLATFORM" = "Darwin" ] && command -v brew &>/dev/null; then
+            BIN_PATH="$(brew --prefix)/bin"
+        fi
     elif [ "$OPT_SYSTEM" -eq 1 ]; then
         SUDO="sudo"
         SOURCE_PATH="$SYS_SOURCE_PATH"
@@ -668,17 +674,65 @@ function waCheckScriptDependencies() {
 # Name: 'waCheckInstallDependencies'
 # Role: Terminate script if dependencies required to install WinApps are missing.
 function waCheckInstallDependencies() {
-    # macOS: skip Linux-specific dependency checks (FreeRDP, libnotify, libvirt, docker, etc.).
+    # macOS: check for netcat and FreeRDP (needed for app scanning), skip Linux-only deps.
     if [ "$PLATFORM" = "Darwin" ]; then
+        # Declare variables.
+        local FREERDP_MAJOR_VERSION=""
+
         echo -n "Checking whether dependencies are installed... "
-        # Only check for netcat on macOS (ships with macOS, but verify).
+
+        # 'Netcat'
         if ! command -v nc &>/dev/null; then
             echo -e "${FAIL_TEXT}Failed!${CLEAR_TEXT}\n"
             echo -e "${ERROR_TEXT}ERROR:${CLEAR_TEXT} ${BOLD_TEXT}MISSING DEPENDENCIES.${CLEAR_TEXT}"
             echo -e "${INFO_TEXT}Please install 'netcat' to proceed.${CLEAR_TEXT}"
             return "$EC_MISSING_DEPS"
         fi
+
+        # 'FreeRDP' (Version 3) — used by the installer for app scanning.
+        # macOS requires xfreerdp (not sdl-freerdp) because only xfreerdp supports
+        # RemoteApp mode (/app:). XQuartz is required as the X11 display server.
+        # Detection order: xfreerdp (v3+) → xfreerdp3.
+        if [ -z "$FREERDP_COMMAND" ]; then
+            if command -v xfreerdp &>/dev/null; then
+                FREERDP_MAJOR_VERSION=$(xfreerdp --version | head -n 1 | grep -o -m 1 '\b[0-9]\S*' | head -n 1 | cut -d'.' -f1)
+                if [[ $FREERDP_MAJOR_VERSION =~ ^[0-9]+$ ]] && ((FREERDP_MAJOR_VERSION >= 3)); then
+                    FREERDP_COMMAND="xfreerdp"
+                fi
+            fi
+
+            if [ -z "$FREERDP_COMMAND" ] && command -v xfreerdp3 &>/dev/null; then
+                FREERDP_MAJOR_VERSION=$(xfreerdp3 --version | head -n 1 | grep -o -m 1 '\b[0-9]\S*' | head -n 1 | cut -d'.' -f1)
+                if [[ $FREERDP_MAJOR_VERSION =~ ^[0-9]+$ ]] && ((FREERDP_MAJOR_VERSION >= 3)); then
+                    FREERDP_COMMAND="xfreerdp3"
+                fi
+            fi
+        fi
+
+        if [ -z "$FREERDP_COMMAND" ]; then
+            echo -e "${FAIL_TEXT}Failed!${CLEAR_TEXT}\n"
+            echo -e "${ERROR_TEXT}ERROR:${CLEAR_TEXT} ${BOLD_TEXT}MISSING DEPENDENCIES.${CLEAR_TEXT}"
+            echo -e "${INFO_TEXT}Please install 'FreeRDP' version 3 and 'XQuartz' to proceed.${CLEAR_TEXT}"
+            echo "--------------------------------------------------------------------------------"
+            echo "macOS (Homebrew):"
+            echo -e "  ${COMMAND_TEXT}brew install freerdp${CLEAR_TEXT}"
+            echo -e "  ${COMMAND_TEXT}brew install --cask xquartz${CLEAR_TEXT}"
+            echo "--------------------------------------------------------------------------------"
+            return "$EC_MISSING_DEPS"
+        fi
+
+        # xfreerdp requires an X11 display server. Launch XQuartz if not running.
+        if ! pgrep -x Xquartz &>/dev/null && ! pgrep -x X11 &>/dev/null; then
+            open -a XQuartz
+            sleep 2
+        fi
+        export DISPLAY="${DISPLAY:-:0}"
+
         echo -e "${DONE_TEXT}Done!${CLEAR_TEXT}"
+        echo ""
+        echo -e "${INFO_TEXT}NOTE: The screen may flash during app scanning (xfreerdp uses XQuartz).${CLEAR_TEXT}"
+        echo -e "${INFO_TEXT}      Starting in 5 seconds...${CLEAR_TEXT}"
+        sleep 5
         return
     fi
 
@@ -1152,68 +1206,50 @@ function waCheckRDPAccess() {
 
     # This command should create a file on the host filesystem before terminating the RDP session.
     # If the file is created, it means Windows received the command successfully and can read and write to the home folder.
+    # Note: FreeRDP's +home-drive maps $HOME -> \\tsclient\home on both Linux and macOS.
+    # Note: The following final line is expected within the log, indicating successful execution of the 'tsdiscon' command and termination of the RDP session.
+    # [INFO][com.freerdp.core] - [rdp_print_errinfo]: ERRINFO_LOGOFF_BY_USER (0x0000000C):The disconnection was initiated by the user logging off their session on the server.
+
+    # macOS: FreeRDP's +home-drive takes ~10s to register \\tsclient\home.
+    # Add a delay before accessing the drive. Use '&' so tsdiscon always runs.
+    local CMD_STRING
     if [ "$PLATFORM" = "Darwin" ]; then
-        # macOS: compute tsclient path for the test file.
-        local VOL_NAME
-        VOL_NAME=$(diskutil info / | awk -F: '/Volume Name/{gsub(/^ +| +$/,"",$2); print $2}')
-        local TSCLIENT_TEST_PATH="\\\\tsclient\\${VOL_NAME}$(echo "${TEST_PATH}" | sed 's|/|\\|g')"
-
-        local RDP_DIR="${TMPDIR:-/tmp}/winapps-rdp"
-        mkdir -p "$RDP_DIR"
-        local RDP_FILE="${RDP_DIR}/test-$$.rdp"
-        {
-            echo "full address:s:${RDP_IP}:${RDP_PORT}"
-            echo "username:s:${RDP_USER}"
-            echo "domain:s:${RDP_DOMAIN}"
-            echo "drivestoredirect:s:*"
-            echo "redirectclipboard:i:1"
-            echo "remoteapplicationmode:i:1"
-            echo "remoteapplicationprogram:s:C:\\Windows\\System32\\cmd.exe"
-            echo "remoteapplicationname:s:WinApps RDP Test"
-            echo "remoteapplicationcmdline:s:/C type NUL > ${TSCLIENT_TEST_PATH} & tsdiscon"
-            echo "disableremoteappcapscheck:i:1"
-        } > "$RDP_FILE"
-        open "$RDP_FILE"
+        CMD_STRING="/C ping -n 16 127.0.0.1 >NUL & type NUL > $TEST_PATH_WIN & tsdiscon"
     else
-        # Note: The following final line is expected within the log, indicating successful execution of the 'tsdiscon' command and termination of the RDP session.
-        # [INFO][com.freerdp.core] - [rdp_print_errinfo]: ERRINFO_LOGOFF_BY_USER (0x0000000C):The disconnection was initiated by the user logging off their session on the server.
-        # shellcheck disable=SC2140,SC2027,SC2086 # Disable warnings regarding unquoted strings.
-        $FREERDP_COMMAND \
-            $RDP_FLAGS_NON_WINDOWS \
-            /cert:tofu \
-            /d:"$RDP_DOMAIN" \
-            /u:"$RDP_USER" \
-            /p:"$RDP_PASS" \
-            /scale:"$RDP_SCALE" \
-            +auto-reconnect \
-            +home-drive \
-            /app:program:"C:\Windows\System32\cmd.exe",cmd:"/C type NUL > $TEST_PATH_WIN && tsdiscon" \
-            /v:"$RDP_IP" &>"$FREERDP_LOG" &
-
-        # Store the FreeRDP process ID.
-        FREERDP_PROC=$!
+        CMD_STRING="/C type NUL > $TEST_PATH_WIN && tsdiscon"
     fi
+
+    # shellcheck disable=SC2140,SC2027,SC2086 # Disable warnings regarding unquoted strings.
+    $FREERDP_COMMAND \
+        $RDP_FLAGS_NON_WINDOWS \
+        /cert:ignore \
+        /d:"$RDP_DOMAIN" \
+        /u:"$RDP_USER" \
+        /p:"$RDP_PASS" \
+        /scale:"$RDP_SCALE" \
+        +auto-reconnect \
+        +home-drive \
+        /app:program:"C:\Windows\System32\cmd.exe",cmd:"$CMD_STRING" \
+        /v:"$RDP_IP":"$RDP_PORT" &>"$FREERDP_LOG" &
+
+    # Store the FreeRDP process ID.
+    FREERDP_PROC=$!
 
     # Initialise the time counter.
     ELAPSED_TIME=0
 
     # Wait a maximum of $RDP_TIMEOUT seconds for the test file to appear.
     while [ "$ELAPSED_TIME" -lt "$RDP_TIMEOUT" ]; do
-        if [ "$PLATFORM" = "Darwin" ]; then
-            # macOS: just poll for the test file (no FreeRDP process to check).
-            if [ -f "$TEST_PATH" ]; then break; fi
-        else
-            # Linux: check if the FreeRDP process is complete or if the test file exists.
-            if ! ps -p "$FREERDP_PROC" &>/dev/null || [ -f "$TEST_PATH" ]; then break; fi
-        fi
+        # Check if the FreeRDP process is complete or if the test file exists.
+        if ! ps -p "$FREERDP_PROC" &>/dev/null || [ -f "$TEST_PATH" ]; then break; fi
 
         # Wait for 5 seconds.
         sleep 5
         ELAPSED_TIME=$((ELAPSED_TIME + 5))
     done
 
-    # Check if FreeRDP process is not complete (Linux only).
-    if [ "$PLATFORM" != "Darwin" ] && ps -p "$FREERDP_PROC" &>/dev/null; then
+    # Check if FreeRDP process is not complete.
+    if ps -p "$FREERDP_PROC" &>/dev/null; then
         # SIGKILL FreeRDP.
         kill -9 "$FREERDP_PROC" &>/dev/null
     fi
@@ -1278,29 +1314,16 @@ function waFindInstalled() {
     # This will enable the PowerShell script to be accessed and executed by Windows.
     cp "$PS_SCRIPT_PATH" "$PS_SCRIPT_HOME_PATH"
 
-    # Compute Windows-side tsclient paths for batch file outputs.
-    # On Linux, FreeRDP maps $HOME -> \\tsclient\home. On macOS, "Windows App" maps volumes by name.
-    local TSCLIENT_APPDATA_WIN=""
-    local TSCLIENT_TMP_INST_WIN=""
-    local TSCLIENT_INST_WIN=""
-    local TSCLIENT_PS_SCRIPT_WIN=""
-    local TSCLIENT_DETECTED_WIN=""
-    local TSCLIENT_BATCH_WIN=""
-
+    # macOS: FreeRDP's +home-drive takes ~10s to register \\tsclient\home.
+    # Prepend a polling loop so the drive is available when batch commands run.
     if [ "$PLATFORM" = "Darwin" ]; then
-        local VOL_NAME
-        VOL_NAME=$(diskutil info / | awk -F: '/Volume Name/{gsub(/^ +| +$/,"",$2); print $2}')
-        TSCLIENT_APPDATA_WIN="\\\\tsclient\\${VOL_NAME}$(echo "${USER_APPDATA_PATH}" | sed 's|/|\\|g')"
-        TSCLIENT_TMP_INST_WIN="${TSCLIENT_APPDATA_WIN}\\installed.tmp"
-        TSCLIENT_INST_WIN="${TSCLIENT_APPDATA_WIN}\\installed"
-        TSCLIENT_PS_SCRIPT_WIN="${TSCLIENT_APPDATA_WIN}\\ExtractPrograms.ps1"
-        TSCLIENT_DETECTED_WIN="${TSCLIENT_APPDATA_WIN}\\detected"
-        TSCLIENT_BATCH_WIN="${TSCLIENT_APPDATA_WIN}\\installed.bat"
-    else
-        TSCLIENT_TMP_INST_WIN="$TMP_INST_FILE_PATH_WIN"
-        TSCLIENT_PS_SCRIPT_WIN="$PS_SCRIPT_HOME_PATH_WIN"
-        TSCLIENT_DETECTED_WIN="$DETECTED_FILE_PATH_WIN"
-        TSCLIENT_BATCH_WIN="$BATCH_SCRIPT_PATH_WIN"
+        {
+            echo ":WAIT_DRIVE"
+            echo "if exist \\\\tsclient\\home goto DRIVE_READY"
+            echo "ping -n 3 127.0.0.1 >NUL"
+            echo "goto WAIT_DRIVE"
+            echo ":DRIVE_READY"
+        } >"$BATCH_SCRIPT_PATH"
     fi
 
     # Enumerate over each officially supported application.
@@ -1323,78 +1346,53 @@ function waFindInstalled() {
         source "./apps/${APPLICATION}/info"
 
         # Append commands to batch file.
-        echo "IF EXIST \"${WIN_EXECUTABLE}\" ECHO ${APPLICATION}^|^|^|${WIN_EXECUTABLE} >> ${TSCLIENT_TMP_INST_WIN}" >>"$BATCH_SCRIPT_PATH"
+        echo "IF EXIST \"${WIN_EXECUTABLE}\" ECHO ${APPLICATION}^|^|^|${WIN_EXECUTABLE} >> ${TMP_INST_FILE_PATH_WIN}" >>"$BATCH_SCRIPT_PATH"
     done
 
     # Append a command to the batch script to run the PowerShell script and store its output in the 'detected' file.
     # shellcheck disable=SC2129 # Silence warning regarding repeated redirects.
-    echo "powershell.exe -ExecutionPolicy Bypass -File ${TSCLIENT_PS_SCRIPT_WIN} > ${TSCLIENT_DETECTED_WIN}" >>"$BATCH_SCRIPT_PATH"
+    echo "powershell.exe -ExecutionPolicy Bypass -File ${PS_SCRIPT_HOME_PATH_WIN} > ${DETECTED_FILE_PATH_WIN}" >>"$BATCH_SCRIPT_PATH"
 
     # Append a command to the batch script to rename the temporary file containing the names of all detected officially supported applications.
-    echo "RENAME ${TSCLIENT_TMP_INST_WIN} installed" >>"$BATCH_SCRIPT_PATH"
+    echo "RENAME ${TMP_INST_FILE_PATH_WIN} installed" >>"$BATCH_SCRIPT_PATH"
 
     # Append a command to the batch script to terminate the remote desktop session once all previous commands are complete.
     echo "tsdiscon" >>"$BATCH_SCRIPT_PATH"
 
-    if [ "$PLATFORM" = "Darwin" ]; then
-        # macOS: generate .rdp to run cmd.exe with the batch script.
-        local RDP_DIR="${TMPDIR:-/tmp}/winapps-rdp"
-        mkdir -p "$RDP_DIR"
-        local RDP_FILE="${RDP_DIR}/scan-$$.rdp"
-        {
-            echo "full address:s:${RDP_IP}:${RDP_PORT}"
-            echo "username:s:${RDP_USER}"
-            echo "domain:s:${RDP_DOMAIN}"
-            echo "drivestoredirect:s:*"
-            echo "redirectclipboard:i:1"
-            echo "remoteapplicationmode:i:1"
-            echo "remoteapplicationprogram:s:C:\\Windows\\System32\\cmd.exe"
-            echo "remoteapplicationname:s:WinApps Scanner"
-            echo "remoteapplicationcmdline:s:/C ${TSCLIENT_BATCH_WIN}"
-            echo "disableremoteappcapscheck:i:1"
-        } > "$RDP_FILE"
-        open "$RDP_FILE"
-    else
-        # Silently execute the batch script within Windows in the background (Log Output To File)
-        # Note: The following final line is expected within the log, indicating successful execution of the 'tsdiscon' command and termination of the RDP session.
-        # [INFO][com.freerdp.core] - [rdp_print_errinfo]: ERRINFO_LOGOFF_BY_USER (0x0000000C):The disconnection was initiated by the user logging off their session on the server.
-        # shellcheck disable=SC2140,SC2027,SC2086 # Disable warnings regarding unquoted strings.
-        $FREERDP_COMMAND \
-            $RDP_FLAGS_NON_WINDOWS \
-            /cert:tofu \
-            /d:"$RDP_DOMAIN" \
-            /u:"$RDP_USER" \
-            /p:"$RDP_PASS" \
-            /scale:"$RDP_SCALE" \
-            +auto-reconnect \
-            +home-drive \
-            /app:program:"C:\Windows\System32\cmd.exe",cmd:"/C "$BATCH_SCRIPT_PATH_WIN"" \
-            /v:"$RDP_IP" &>"$FREERDP_LOG" &
+    # Silently execute the batch script within Windows in the background (Log Output To File)
+    # Note: The following final line is expected within the log, indicating successful execution of the 'tsdiscon' command and termination of the RDP session.
+    # [INFO][com.freerdp.core] - [rdp_print_errinfo]: ERRINFO_LOGOFF_BY_USER (0x0000000C):The disconnection was initiated by the user logging off their session on the server.
+    # shellcheck disable=SC2140,SC2027,SC2086 # Disable warnings regarding unquoted strings.
+    $FREERDP_COMMAND \
+        $RDP_FLAGS_NON_WINDOWS \
+        /cert:ignore \
+        /d:"$RDP_DOMAIN" \
+        /u:"$RDP_USER" \
+        /p:"$RDP_PASS" \
+        /scale:"$RDP_SCALE" \
+        +auto-reconnect \
+        +home-drive \
+        /app:program:"C:\Windows\System32\cmd.exe",cmd:"/C "$BATCH_SCRIPT_PATH_WIN"" \
+        /v:"$RDP_IP":"$RDP_PORT" &>"$FREERDP_LOG" &
 
-        # Store the FreeRDP process ID.
-        FREERDP_PROC=$!
-    fi
+    # Store the FreeRDP process ID.
+    FREERDP_PROC=$!
 
     # Initialise the time counter.
     ELAPSED_TIME=0
 
     # Wait a maximum of $APP_SCAN_TIMEOUT seconds for the batch script to finish running.
     while [ $ELAPSED_TIME -lt "$APP_SCAN_TIMEOUT" ]; do
-        if [ "$PLATFORM" = "Darwin" ]; then
-            # macOS: just poll for the installed file (no FreeRDP process to check).
-            if [ -f "$INST_FILE_PATH" ]; then break; fi
-        else
-            # Linux: check if the FreeRDP process is complete or if the 'installed' file exists.
-            if ! ps -p "$FREERDP_PROC" &>/dev/null || [ -f "$INST_FILE_PATH" ]; then break; fi
-        fi
+        # Check if the FreeRDP process is complete or if the 'installed' file exists.
+        if ! ps -p "$FREERDP_PROC" &>/dev/null || [ -f "$INST_FILE_PATH" ]; then break; fi
 
         # Wait for 5 seconds.
         sleep 5
         ELAPSED_TIME=$((ELAPSED_TIME + 5))
     done
 
-    # Check if the FreeRDP process is not complete (Linux only).
-    if [ "$PLATFORM" != "Darwin" ] && ps -p "$FREERDP_PROC" &>/dev/null; then
+    # Check if the FreeRDP process is not complete.
+    if ps -p "$FREERDP_PROC" &>/dev/null; then
         # SIGKILL FreeRDP.
         kill -9 "$FREERDP_PROC" &>/dev/null
     fi
@@ -1869,6 +1867,12 @@ function waInstall() {
         return "$EC_INVALID_FLAVOR"
     fi
 
+    # macOS: FreeRDP drive registration adds ~15s overhead; increase timeouts.
+    if [ "$PLATFORM" = "Darwin" ]; then
+        [ "$RDP_TIMEOUT" -lt 60 ] && RDP_TIMEOUT=60
+        [ "$APP_SCAN_TIMEOUT" -lt 90 ] && APP_SCAN_TIMEOUT=90
+    fi
+
     # Check if the RDP port on Windows is open.
     waCheckPortOpen
 
@@ -2076,6 +2080,12 @@ function waAddApps() {
 
         # Terminate the script.
         return "$EC_INVALID_FLAVOR"
+    fi
+
+    # macOS: FreeRDP drive registration adds ~15s overhead; increase timeouts.
+    if [ "$PLATFORM" = "Darwin" ]; then
+        [ "$RDP_TIMEOUT" -lt 60 ] && RDP_TIMEOUT=60
+        [ "$APP_SCAN_TIMEOUT" -lt 90 ] && APP_SCAN_TIMEOUT=90
     fi
 
     # Check if the RDP port on Windows is open.
