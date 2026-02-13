@@ -36,6 +36,12 @@ readonly EC_INVALID_FLAVOR="16"  # Backend specified is not 'libvirt', 'docker' 
 # PLATFORM
 readonly PLATFORM="$(uname -s)"
 
+# HOMEBREW PREFIX (macOS only)
+HOMEBREW_PREFIX=""
+if [ "$PLATFORM" = "Darwin" ] && command -v brew &>/dev/null; then
+    HOMEBREW_PREFIX="$(brew --prefix)"
+fi
+
 # PATHS
 # 'BIN'
 readonly SYS_BIN_PATH="/usr/local/bin"                  # UNIX path to 'bin' directory for a '--system' WinApps installation.
@@ -150,6 +156,13 @@ function waUsage() {
 # Name: 'waGetSourceCode'
 # Role: Grab the WinApps source code using Git.
 function waGetSourceCode() {
+    # macOS + Homebrew: apps/ and install/ are already at SOURCE_PATH
+    # (installed by the formula to pkgshare). Skip git clone.
+    if [ "$PLATFORM" = "Darwin" ] && [ -n "$HOMEBREW_PREFIX" ] && [ -d "$SOURCE_PATH/apps" ]; then
+        cd "$SOURCE_PATH" || return "$EC_FAILED_CD"
+        return
+    fi
+
     # Declare variables.
     local SCRIPT_DIR_PATH="" # Stores the absolute path of the directory containing the script.
 
@@ -200,7 +213,9 @@ function waGetSourceCode() {
 function waGetInquirer() {
     local INQUIRER=$INQUIRER_PATH
 
-    if [ -d "$SYS_SOURCE_PATH" ]; then
+    if [ -n "$HOMEBREW_PREFIX" ] && [ -f "$HOMEBREW_PREFIX/share/winapps/$INQUIRER_PATH" ]; then
+        INQUIRER="$HOMEBREW_PREFIX/share/winapps/$INQUIRER_PATH"
+    elif [ -d "$SYS_SOURCE_PATH" ]; then
         INQUIRER=$SYS_SOURCE_PATH/$INQUIRER_PATH
     elif [ -d "$USER_SOURCE_PATH" ] ; then
         INQUIRER=$USER_SOURCE_PATH/$INQUIRER_PATH
@@ -395,9 +410,10 @@ function waConfigurePathsAndPermissions() {
         APPDATA_PATH="$USER_APPDATA_PATH"
 
         # macOS: ~/.local/bin is not on PATH by default.
-        # Use the Homebrew bin directory, which is already on PATH.
-        if [ "$PLATFORM" = "Darwin" ] && command -v brew &>/dev/null; then
-            BIN_PATH="$(brew --prefix)/bin"
+        # Use Homebrew paths — bin for scripts, share for app data.
+        if [ "$PLATFORM" = "Darwin" ] && [ -n "$HOMEBREW_PREFIX" ]; then
+            BIN_PATH="$HOMEBREW_PREFIX/bin"
+            SOURCE_PATH="$HOMEBREW_PREFIX/share/winapps"
         fi
     elif [ "$OPT_SYSTEM" -eq 1 ]; then
         SUDO="sudo"
@@ -1891,8 +1907,11 @@ function waInstall() {
     waFindInstalled
 
     # Install the WinApps bash scripts.
-    $SUDO ln -sf "${SOURCE_PATH}/bin/winapps" "${BIN_PATH}/winapps"
-    $SUDO ln -sf "${SOURCE_PATH}/setup.sh" "${BIN_PATH}/winapps-setup"
+    # Skip on Homebrew — the formula already installed these to BIN_PATH.
+    if [ -z "$HOMEBREW_PREFIX" ]; then
+        $SUDO ln -sf "${SOURCE_PATH}/bin/winapps" "${BIN_PATH}/winapps"
+        $SUDO ln -sf "${SOURCE_PATH}/setup.sh" "${BIN_PATH}/winapps-setup"
+    fi
 
     # Configure the Windows RDP session application launcher.
     waConfigureWindows
