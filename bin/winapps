@@ -714,10 +714,13 @@ function waRunCommand() {
             local APP_CMDLINE=""
             if [ -n "$2" ]; then
                 # Convert UNIX path to Windows tsclient path.
-                FILE_PATH=$(echo "$2" | sed -e 's|^'"${HOME}"'|'"${TSCLIENT_HOME}"'|' -e 's|/|\\|g')
+                # Use bash parameter expansion instead of sed to avoid
+                # backslash escape interpretation in TSCLIENT_HOME.
+                FILE_PATH="${2/#${HOME}/${TSCLIENT_HOME}}"
+                FILE_PATH="${FILE_PATH//\//\\}"
                 dprint "UNIX_FILE_PATH: ${2}"
                 dprint "WINDOWS_FILE_PATH: ${FILE_PATH}"
-                APP_CMDLINE="$FILE_PATH"
+                APP_CMDLINE="\"${FILE_PATH}\""
             fi
             dprint "MACOS APP: ${1} (${WIN_EXECUTABLE})"
             RDP_FILE=$(generate_rdp "remoteapp" "$1" "$WIN_EXECUTABLE" "$APP_CMDLINE")
