@@ -41,6 +41,7 @@ readonly RUNID="${RANDOM}"
 # WINAPPS CONFIGURATION FILE
 RDP_USER=""
 RDP_PASS=""
+RDP_ASKPASS=""
 RDP_DOMAIN=""
 RDP_IP=""
 VM_NAME="RDPWindows" # FOR 'libvirt' ONLY
@@ -611,7 +612,7 @@ function waRunCommand() {
             $RDP_FLAGS_WINDOWS \
             /d:"$RDP_DOMAIN" \
             /u:"$RDP_USER" \
-            /p:"$RDP_PASS" \
+            ${RDP_PASSWORD_ARG:+"$RDP_PASSWORD_ARG"} \
             /scale:"$RDP_SCALE" \
             +auto-reconnect \
             +dynamic-resolution \
@@ -629,7 +630,7 @@ function waRunCommand() {
             $RDP_FLAGS_NON_WINDOWS \
             /d:"$RDP_DOMAIN" \
             /u:"$RDP_USER" \
-            /p:"$RDP_PASS" \
+            ${RDP_PASSWORD_ARG:+"$RDP_PASSWORD_ARG"} \
             /scale:"$RDP_SCALE" \
             +auto-reconnect \
             /app:program:"$2",hidef:"$HIDEF" \
@@ -663,7 +664,7 @@ function waRunCommand() {
                $RDP_FLAGS_NON_WINDOWS \
                 /d:"$RDP_DOMAIN" \
                 /u:"$RDP_USER" \
-                /p:"$RDP_PASS" \
+                ${RDP_PASSWORD_ARG:+"$RDP_PASSWORD_ARG"} \
                 /scale:"$RDP_SCALE" \
                 +auto-reconnect \
                 /wm-class:"$FULL_NAME" \
@@ -686,7 +687,7 @@ function waRunCommand() {
                $RDP_FLAGS_NON_WINDOWS \
                 /d:"$RDP_DOMAIN" \
                 /u:"$RDP_USER" \
-                /p:"$RDP_PASS" \
+                ${RDP_PASSWORD_ARG:+"$RDP_PASSWORD_ARG"} \
                 /scale:"$RDP_SCALE" \
                 +auto-reconnect \
                 /drive:media,"$REMOVABLE_MEDIA" \
@@ -803,6 +804,15 @@ dprint "HOME_DIR: ${HOME}"
 waLastRun
 waLoadConfig
 waGetFreeRDPCommand
+
+# Send password on the command line if a command to retrieve the password from is not given
+# Otherwise, set FREERDP_ASKPASS which freerdp will read the stdout of to use as the password
+RDP_PASSWORD_ARG="/p:$RDP_PASS"
+
+if [[ ! -z "$RDP_ASKPASS" ]]; then
+    export FREERDP_ASKPASS="$RDP_ASKPASS"
+    unset RDP_PASSWORD_ARG
+fi
 
 # If using podman backend, modify the FreeRDP command to enter a new namespace.
 if [ "$WAFLAVOR" = "podman" ]; then
