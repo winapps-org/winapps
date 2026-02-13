@@ -33,6 +33,9 @@ readonly EC_RDP_FAIL="14"        # FreeRDP failed to establish a connection with
 readonly EC_APPQUERY_FAIL="15"   # Failed to query Windows for installed applications.
 readonly EC_INVALID_FLAVOR="16"  # Backend specified is not 'libvirt', 'docker' or 'podman'.
 
+# PLATFORM
+readonly PLATFORM="$(uname -s)"
+
 # PATHS
 # 'BIN'
 readonly SYS_BIN_PATH="/usr/local/bin"                  # UNIX path to 'bin' directory for a '--system' WinApps installation.
@@ -151,7 +154,11 @@ function waGetSourceCode() {
     local SCRIPT_DIR_PATH="" # Stores the absolute path of the directory containing the script.
 
     # Determine the absolute path to the directory containing the script.
-    SCRIPT_DIR_PATH=$(readlink -f "$(dirname "${BASH_SOURCE[0]}")")
+    if [ "$PLATFORM" = "Darwin" ]; then
+        SCRIPT_DIR_PATH=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)
+    else
+        SCRIPT_DIR_PATH=$(readlink -f "$(dirname "${BASH_SOURCE[0]}")")
+    fi
 
     # Check if winapps is currently installed on $SOURCE_PATH
     if [[ -f "$SCRIPT_DIR_PATH/winapps" && "$SCRIPT_DIR_PATH" != "$SOURCE_PATH" ]]; then
@@ -645,6 +652,20 @@ function waCheckScriptDependencies() {
 # Name: 'waCheckInstallDependencies'
 # Role: Terminate script if dependencies required to install WinApps are missing.
 function waCheckInstallDependencies() {
+    # macOS: skip Linux-specific dependency checks (FreeRDP, libnotify, libvirt, docker, etc.).
+    if [ "$PLATFORM" = "Darwin" ]; then
+        echo -n "Checking whether dependencies are installed... "
+        # Only check for netcat on macOS (ships with macOS, but verify).
+        if ! command -v nc &>/dev/null; then
+            echo -e "${FAIL_TEXT}Failed!${CLEAR_TEXT}\n"
+            echo -e "${ERROR_TEXT}ERROR:${CLEAR_TEXT} ${BOLD_TEXT}MISSING DEPENDENCIES.${CLEAR_TEXT}"
+            echo -e "${INFO_TEXT}Please install 'netcat' to proceed.${CLEAR_TEXT}"
+            return "$EC_MISSING_DEPS"
+        fi
+        echo -e "${DONE_TEXT}Done!${CLEAR_TEXT}"
+        return
+    fi
+
     # Declare variables.
     local FREERDP_MAJOR_VERSION="" # Stores the major version of the installed copy of FreeRDP.
 
@@ -1063,7 +1084,13 @@ function waCheckPortOpen() {
     fi
 
     # Check for an open RDP port.
-    if ! timeout "$PORT_TIMEOUT" nc -z "$RDP_IP" "$RDP_PORT" &>/dev/null; then
+    local NC_RESULT=1
+    if [ "$PLATFORM" = "Darwin" ]; then
+        nc -z -w "$PORT_TIMEOUT" "$RDP_IP" "$RDP_PORT" &>/dev/null && NC_RESULT=0
+    else
+        timeout "$PORT_TIMEOUT" nc -z "$RDP_IP" "$RDP_PORT" &>/dev/null && NC_RESULT=0
+    fi
+    if [ "$NC_RESULT" -ne 0 ]; then
         # Complete the previous line.
         echo -e "${FAIL_TEXT}Failed!${CLEAR_TEXT}\n"
 
@@ -1107,34 +1134,61 @@ function waCheckRDPAccess() {
     # Remove existing 'FreeRDP Connection Test' file.
     rm -f "$TEST_PATH"
 
-    # This command should create a file on the host filesystem before terminating the RDP session. This command is silently executed as a background process.
-    # If the file is created, it means Windows received the command via FreeRDP successfully and can read and write to the Linux home folder.
-    # Note: The following final line is expected within the log, indicating successful execution of the 'tsdiscon' command and termination of the RDP session.
-    # [INFO][com.freerdp.core] - [rdp_print_errinfo]: ERRINFO_LOGOFF_BY_USER (0x0000000C):The disconnection was initiated by the user logging off their session on the server.
-    # shellcheck disable=SC2140,SC2027,SC2086 # Disable warnings regarding unquoted strings.
-    $FREERDP_COMMAND \
-        $RDP_FLAGS_NON_WINDOWS \
-        /cert:tofu \
-        /d:"$RDP_DOMAIN" \
-        /u:"$RDP_USER" \
-        /p:"$RDP_PASS" \
-        /scale:"$RDP_SCALE" \
-        +auto-reconnect \
-        +home-drive \
-        /app:program:"C:\Windows\System32\cmd.exe",cmd:"/C type NUL > $TEST_PATH_WIN && tsdiscon" \
-        /v:"$RDP_IP" &>"$FREERDP_LOG" &
+    # This command should create a file on the host filesystem before terminating the RDP session.
+    # If the file is created, it means Windows received the command successfully and can read and write to the home folder.
+    if [ "$PLATFORM" = "Darwin" ]; then
+        # macOS: compute tsclient path for the test file.
+        local VOL_NAME
+        VOL_NAME=$(diskutil info / | awk -F: '/Volume Name/{gsub(/^ +| +$/,"",$2); print $2}')
+        local TSCLIENT_TEST_PATH="\\\\tsclient\\${VOL_NAME}$(echo "${TEST_PATH}" | sed 's|/|\\|g')"
 
-    # Store the FreeRDP process ID.
-    FREERDP_PROC=$!
+        local RDP_DIR="${TMPDIR:-/tmp}/winapps-rdp"
+        mkdir -p "$RDP_DIR"
+        local RDP_FILE="${RDP_DIR}/test-$$.rdp"
+        {
+            echo "full address:s:${RDP_IP}:${RDP_PORT}"
+            echo "username:s:${RDP_USER}"
+            echo "domain:s:${RDP_DOMAIN}"
+            echo "drivestoredirect:s:*"
+            echo "redirectclipboard:i:1"
+            echo "remoteapplicationmode:i:1"
+            echo "remoteapplicationprogram:s:C:\\Windows\\System32\\cmd.exe"
+            echo "remoteapplicationname:s:WinApps RDP Test"
+            echo "remoteapplicationcmdline:s:/C type NUL > ${TSCLIENT_TEST_PATH} & tsdiscon"
+            echo "disableremoteappcapscheck:i:1"
+        } > "$RDP_FILE"
+        open "$RDP_FILE"
+    else
+        # Note: The following final line is expected within the log, indicating successful execution of the 'tsdiscon' command and termination of the RDP session.
+        # [INFO][com.freerdp.core] - [rdp_print_errinfo]: ERRINFO_LOGOFF_BY_USER (0x0000000C):The disconnection was initiated by the user logging off their session on the server.
+        # shellcheck disable=SC2140,SC2027,SC2086 # Disable warnings regarding unquoted strings.
+        $FREERDP_COMMAND \
+            $RDP_FLAGS_NON_WINDOWS \
+            /cert:tofu \
+            /d:"$RDP_DOMAIN" \
+            /u:"$RDP_USER" \
+            /p:"$RDP_PASS" \
+            /scale:"$RDP_SCALE" \
+            +auto-reconnect \
+            +home-drive \
+            /app:program:"C:\Windows\System32\cmd.exe",cmd:"/C type NUL > $TEST_PATH_WIN && tsdiscon" \
+            /v:"$RDP_IP" &>"$FREERDP_LOG" &
+
+        # Store the FreeRDP process ID.
+        FREERDP_PROC=$!
+    fi
 
     # Initialise the time counter.
     ELAPSED_TIME=0
 
-    # Wait a maximum of $RDP_TIMEOUT seconds for the background process to complete.
+    # Wait a maximum of $RDP_TIMEOUT seconds for the test file to appear.
     while [ "$ELAPSED_TIME" -lt "$RDP_TIMEOUT" ]; do
-        # Check if the FreeRDP process is complete or if the test file exists.
-        if ! ps -p "$FREERDP_PROC" &>/dev/null || [ -f "$TEST_PATH" ]; then
-            break
+        if [ "$PLATFORM" = "Darwin" ]; then
+            # macOS: just poll for the test file (no FreeRDP process to check).
+            if [ -f "$TEST_PATH" ]; then break; fi
+        else
+            # Linux: check if the FreeRDP process is complete or if the test file exists.
+            if ! ps -p "$FREERDP_PROC" &>/dev/null || [ -f "$TEST_PATH" ]; then break; fi
         fi
 
         # Wait for 5 seconds.
@@ -1142,8 +1196,8 @@ function waCheckRDPAccess() {
         ELAPSED_TIME=$((ELAPSED_TIME + 5))
     done
 
-    # Check if FreeRDP process is not complete.
-    if ps -p "$FREERDP_PROC" &>/dev/null; then
+    # Check if FreeRDP process is not complete (Linux only).
+    if [ "$PLATFORM" != "Darwin" ] && ps -p "$FREERDP_PROC" &>/dev/null; then
         # SIGKILL FreeRDP.
         kill -9 "$FREERDP_PROC" &>/dev/null
     fi
@@ -1208,6 +1262,31 @@ function waFindInstalled() {
     # This will enable the PowerShell script to be accessed and executed by Windows.
     cp "$PS_SCRIPT_PATH" "$PS_SCRIPT_HOME_PATH"
 
+    # Compute Windows-side tsclient paths for batch file outputs.
+    # On Linux, FreeRDP maps $HOME -> \\tsclient\home. On macOS, "Windows App" maps volumes by name.
+    local TSCLIENT_APPDATA_WIN=""
+    local TSCLIENT_TMP_INST_WIN=""
+    local TSCLIENT_INST_WIN=""
+    local TSCLIENT_PS_SCRIPT_WIN=""
+    local TSCLIENT_DETECTED_WIN=""
+    local TSCLIENT_BATCH_WIN=""
+
+    if [ "$PLATFORM" = "Darwin" ]; then
+        local VOL_NAME
+        VOL_NAME=$(diskutil info / | awk -F: '/Volume Name/{gsub(/^ +| +$/,"",$2); print $2}')
+        TSCLIENT_APPDATA_WIN="\\\\tsclient\\${VOL_NAME}$(echo "${USER_APPDATA_PATH}" | sed 's|/|\\|g')"
+        TSCLIENT_TMP_INST_WIN="${TSCLIENT_APPDATA_WIN}\\installed.tmp"
+        TSCLIENT_INST_WIN="${TSCLIENT_APPDATA_WIN}\\installed"
+        TSCLIENT_PS_SCRIPT_WIN="${TSCLIENT_APPDATA_WIN}\\ExtractPrograms.ps1"
+        TSCLIENT_DETECTED_WIN="${TSCLIENT_APPDATA_WIN}\\detected"
+        TSCLIENT_BATCH_WIN="${TSCLIENT_APPDATA_WIN}\\installed.bat"
+    else
+        TSCLIENT_TMP_INST_WIN="$TMP_INST_FILE_PATH_WIN"
+        TSCLIENT_PS_SCRIPT_WIN="$PS_SCRIPT_HOME_PATH_WIN"
+        TSCLIENT_DETECTED_WIN="$DETECTED_FILE_PATH_WIN"
+        TSCLIENT_BATCH_WIN="$BATCH_SCRIPT_PATH_WIN"
+    fi
+
     # Enumerate over each officially supported application.
     for APPLICATION in ./apps/*; do
         # Extract the name of the application from the absolute path of the folder.
@@ -1228,46 +1307,69 @@ function waFindInstalled() {
         source "./apps/${APPLICATION}/info"
 
         # Append commands to batch file.
-        echo "IF EXIST \"${WIN_EXECUTABLE}\" ECHO ${APPLICATION}^|^|^|${WIN_EXECUTABLE} >> ${TMP_INST_FILE_PATH_WIN}" >>"$BATCH_SCRIPT_PATH"
+        echo "IF EXIST \"${WIN_EXECUTABLE}\" ECHO ${APPLICATION}^|^|^|${WIN_EXECUTABLE} >> ${TSCLIENT_TMP_INST_WIN}" >>"$BATCH_SCRIPT_PATH"
     done
 
     # Append a command to the batch script to run the PowerShell script and store its output in the 'detected' file.
     # shellcheck disable=SC2129 # Silence warning regarding repeated redirects.
-    echo "powershell.exe -ExecutionPolicy Bypass -File ${PS_SCRIPT_HOME_PATH_WIN} > ${DETECTED_FILE_PATH_WIN}" >>"$BATCH_SCRIPT_PATH"
+    echo "powershell.exe -ExecutionPolicy Bypass -File ${TSCLIENT_PS_SCRIPT_WIN} > ${TSCLIENT_DETECTED_WIN}" >>"$BATCH_SCRIPT_PATH"
 
     # Append a command to the batch script to rename the temporary file containing the names of all detected officially supported applications.
-    echo "RENAME ${TMP_INST_FILE_PATH_WIN} installed" >>"$BATCH_SCRIPT_PATH"
+    echo "RENAME ${TSCLIENT_TMP_INST_WIN} installed" >>"$BATCH_SCRIPT_PATH"
 
     # Append a command to the batch script to terminate the remote desktop session once all previous commands are complete.
     echo "tsdiscon" >>"$BATCH_SCRIPT_PATH"
 
-    # Silently execute the batch script within Windows in the background (Log Output To File)
-    # Note: The following final line is expected within the log, indicating successful execution of the 'tsdiscon' command and termination of the RDP session.
-    # [INFO][com.freerdp.core] - [rdp_print_errinfo]: ERRINFO_LOGOFF_BY_USER (0x0000000C):The disconnection was initiated by the user logging off their session on the server.
-    # shellcheck disable=SC2140,SC2027,SC2086 # Disable warnings regarding unquoted strings.
-    $FREERDP_COMMAND \
-        $RDP_FLAGS_NON_WINDOWS \
-        /cert:tofu \
-        /d:"$RDP_DOMAIN" \
-        /u:"$RDP_USER" \
-        /p:"$RDP_PASS" \
-        /scale:"$RDP_SCALE" \
-        +auto-reconnect \
-        +home-drive \
-        /app:program:"C:\Windows\System32\cmd.exe",cmd:"/C "$BATCH_SCRIPT_PATH_WIN"" \
-        /v:"$RDP_IP" &>"$FREERDP_LOG" &
+    if [ "$PLATFORM" = "Darwin" ]; then
+        # macOS: generate .rdp to run cmd.exe with the batch script.
+        local RDP_DIR="${TMPDIR:-/tmp}/winapps-rdp"
+        mkdir -p "$RDP_DIR"
+        local RDP_FILE="${RDP_DIR}/scan-$$.rdp"
+        {
+            echo "full address:s:${RDP_IP}:${RDP_PORT}"
+            echo "username:s:${RDP_USER}"
+            echo "domain:s:${RDP_DOMAIN}"
+            echo "drivestoredirect:s:*"
+            echo "redirectclipboard:i:1"
+            echo "remoteapplicationmode:i:1"
+            echo "remoteapplicationprogram:s:C:\\Windows\\System32\\cmd.exe"
+            echo "remoteapplicationname:s:WinApps Scanner"
+            echo "remoteapplicationcmdline:s:/C ${TSCLIENT_BATCH_WIN}"
+            echo "disableremoteappcapscheck:i:1"
+        } > "$RDP_FILE"
+        open "$RDP_FILE"
+    else
+        # Silently execute the batch script within Windows in the background (Log Output To File)
+        # Note: The following final line is expected within the log, indicating successful execution of the 'tsdiscon' command and termination of the RDP session.
+        # [INFO][com.freerdp.core] - [rdp_print_errinfo]: ERRINFO_LOGOFF_BY_USER (0x0000000C):The disconnection was initiated by the user logging off their session on the server.
+        # shellcheck disable=SC2140,SC2027,SC2086 # Disable warnings regarding unquoted strings.
+        $FREERDP_COMMAND \
+            $RDP_FLAGS_NON_WINDOWS \
+            /cert:tofu \
+            /d:"$RDP_DOMAIN" \
+            /u:"$RDP_USER" \
+            /p:"$RDP_PASS" \
+            /scale:"$RDP_SCALE" \
+            +auto-reconnect \
+            +home-drive \
+            /app:program:"C:\Windows\System32\cmd.exe",cmd:"/C "$BATCH_SCRIPT_PATH_WIN"" \
+            /v:"$RDP_IP" &>"$FREERDP_LOG" &
 
-    # Store the FreeRDP process ID.
-    FREERDP_PROC=$!
+        # Store the FreeRDP process ID.
+        FREERDP_PROC=$!
+    fi
 
     # Initialise the time counter.
     ELAPSED_TIME=0
 
     # Wait a maximum of $APP_SCAN_TIMEOUT seconds for the batch script to finish running.
     while [ $ELAPSED_TIME -lt "$APP_SCAN_TIMEOUT" ]; do
-        # Check if the FreeRDP process is complete or if the 'installed' file exists.
-        if ! ps -p "$FREERDP_PROC" &>/dev/null || [ -f "$INST_FILE_PATH" ]; then
-            break
+        if [ "$PLATFORM" = "Darwin" ]; then
+            # macOS: just poll for the installed file (no FreeRDP process to check).
+            if [ -f "$INST_FILE_PATH" ]; then break; fi
+        else
+            # Linux: check if the FreeRDP process is complete or if the 'installed' file exists.
+            if ! ps -p "$FREERDP_PROC" &>/dev/null || [ -f "$INST_FILE_PATH" ]; then break; fi
         fi
 
         # Wait for 5 seconds.
@@ -1275,8 +1377,8 @@ function waFindInstalled() {
         ELAPSED_TIME=$((ELAPSED_TIME + 5))
     done
 
-    # Check if the FreeRDP process is not complete.
-    if ps -p "$FREERDP_PROC" &>/dev/null; then
+    # Check if the FreeRDP process is not complete (Linux only).
+    if [ "$PLATFORM" != "Darwin" ] && ps -p "$FREERDP_PROC" &>/dev/null; then
         # SIGKILL FreeRDP.
         kill -9 "$FREERDP_PROC" &>/dev/null
     fi
@@ -1333,8 +1435,10 @@ Comment=Microsoft Windows RDP Session"
     # Copy the 'Windows' icon.
     $SUDO cp "./install/windows.svg" "${APPDATA_PATH}/icons/windows.svg"
 
-    # Write the desktop entry content to a file.
-    echo "$WIN_DESKTOP" | $SUDO tee "${APP_PATH}/windows.desktop" &>/dev/null
+    # Write the desktop entry content to a file (Linux only).
+    if [ "$PLATFORM" != "Darwin" ]; then
+        echo "$WIN_DESKTOP" | $SUDO tee "${APP_PATH}/windows.desktop" &>/dev/null
+    fi
 
     # Write the bash script to a file.
     echo "$WIN_BASH" | $SUDO tee "${BIN_PATH}/windows" &>/dev/null
@@ -1385,8 +1489,10 @@ Comment=${FULL_NAME}
 Categories=${CATEGORIES}
 MimeType=${MIME_TYPES}"
 
-    # Store the '.desktop' file for the application.
-    echo "$APP_DESKTOP_FILE" | $SUDO tee "${APP_PATH}/${1}.desktop" &>/dev/null
+    # Store the '.desktop' file for the application (Linux only).
+    if [ "$PLATFORM" != "Darwin" ]; then
+        echo "$APP_DESKTOP_FILE" | $SUDO tee "${APP_PATH}/${1}.desktop" &>/dev/null
+    fi
 
     # Store the bash script for the application.
     echo "$APP_BASH" | $SUDO tee "${BIN_PATH}/${1}" &>/dev/null
@@ -1420,8 +1526,12 @@ function waConfigureOfficiallySupported() {
         echo -n "Creating an application entry for ${APP_NAME}... "
 
         # Copy the original, unmodified application assets.
-        # --no-preserve=mode is needed to avoid missing write permissions when copying from Nix store.
-        $SUDO cp -r --no-preserve=mode "./apps/${APP_NAME}" "${APPDATA_PATH}/apps"
+        if [ "$PLATFORM" = "Darwin" ]; then
+            $SUDO cp -R "./apps/${APP_NAME}" "${APPDATA_PATH}/apps"
+        else
+            # --no-preserve=mode is needed to avoid missing write permissions when copying from Nix store.
+            $SUDO cp -r --no-preserve=mode "./apps/${APP_NAME}" "${APPDATA_PATH}/apps"
+        fi
 
         local DESTINATION_INFO_FILE="${APPDATA_PATH}/apps/${APP_NAME}/info"
 
@@ -1430,13 +1540,17 @@ function waConfigureOfficiallySupported() {
         SED_SAFE_PATH="${SED_SAFE_PATH//\\/\\\\}"
 
         # Use the sanitized string to safely edit the file.
-        $SUDO sed -i "s|^WIN_EXECUTABLE=.*|WIN_EXECUTABLE=\"${SED_SAFE_PATH}\"|" "$DESTINATION_INFO_FILE"
+        if [ "$PLATFORM" = "Darwin" ]; then
+            $SUDO sed -i '' "s|^WIN_EXECUTABLE=.*|WIN_EXECUTABLE=\"${SED_SAFE_PATH}\"|" "$DESTINATION_INFO_FILE"
+        else
+            $SUDO sed -i "s|^WIN_EXECUTABLE=.*|WIN_EXECUTABLE=\"${SED_SAFE_PATH}\"|" "$DESTINATION_INFO_FILE"
+        fi
 
         # Configure the application using the clean name.
         waConfigureApp "$APP_NAME" svg
 
-        # Check if the application is an Office app and copy the protocol handler.
-        if [[ " ${OFFICE_APPS[*]} " == *" $APP_NAME "* ]]; then
+        # Check if the application is an Office app and copy the protocol handler (Linux only).
+        if [ "$PLATFORM" != "Darwin" ] && [[ " ${OFFICE_APPS[*]} " == *" $APP_NAME "* ]]; then
             # Determine the target directory based on whether the installation is for the system or user.
             if [[ "$OPT_SYSTEM" -eq 1 ]]; then
                 TARGET_DIR="$SYS_APP_PATH"
@@ -1569,7 +1683,11 @@ function waConfigureDetectedApps() {
         # On UNIX systems, lines are terminated with a newline character (\n).
         # On WINDOWS systems, lines are terminated with both a carriage return (\r) and a newline (\n) character.
         # Remove all carriage returns (\r) within the 'detected' file, as the file was written by Windows.
-        sed -i 's/\r//g' "$DETECTED_FILE_PATH"
+        if [ "$PLATFORM" = "Darwin" ]; then
+            sed -i '' 's/\r//g' "$DETECTED_FILE_PATH"
+        else
+            sed -i 's/\r//g' "$DETECTED_FILE_PATH"
+        fi
 
         # Import the detected application information:
         # - Application Names               (NAMES)
@@ -1682,14 +1800,19 @@ function waInstall() {
     # Load the WinApps configuration file.
     waLoadConfig
 
+    # macOS always uses 'manual' flavor.
+    if [ "$PLATFORM" = "Darwin" ]; then WAFLAVOR="manual"; fi
+
     # Check for missing dependencies.
     waCheckInstallDependencies
 
-    # Update $RDP_SCALE.
-    waFixScale
+    # Update $RDP_SCALE (Linux/FreeRDP only).
+    if [ "$PLATFORM" != "Darwin" ]; then
+        waFixScale
+    fi
 
-    # Append additional FreeRDP flags if required.
-    if [[ -n $RDP_FLAGS ]]; then
+    # Append additional FreeRDP flags if required (Linux only).
+    if [ "$PLATFORM" != "Darwin" ] && [[ -n $RDP_FLAGS ]]; then
         FREERDP_COMMAND="${FREERDP_COMMAND} ${RDP_FLAGS}"
     fi
 
@@ -1738,7 +1861,9 @@ function waInstall() {
 
     # Create required directories.
     $SUDO mkdir -p "$BIN_PATH"
-    $SUDO mkdir -p "$APP_PATH"
+    if [ "$PLATFORM" != "Darwin" ]; then
+        $SUDO mkdir -p "$APP_PATH"
+    fi
     $SUDO mkdir -p "$APPDATA_PATH/apps"
     $SUDO mkdir -p "$APPDATA_PATH/icons"
 
@@ -1799,8 +1924,10 @@ function waUninstall() {
         TARGET_DIR="$USER_APP_PATH"
     fi
 
-    # Remove the 'ms-office-protocol-handler.desktop' file if it exists.
-    $SUDO rm -f "$TARGET_DIR/ms-office-protocol-handler.desktop"
+    # Remove the 'ms-office-protocol-handler.desktop' file if it exists (Linux only).
+    if [ "$PLATFORM" != "Darwin" ]; then
+        $SUDO rm -f "$TARGET_DIR/ms-office-protocol-handler.desktop"
+    fi
 
     # Declare variables.
     local WINAPPS_DESKTOP_FILES=()    # Stores a list of '.desktop' file paths.
@@ -1818,26 +1945,29 @@ function waUninstall() {
     # Remove application icons and shortcuts.
     $SUDO rm -rf "$APPDATA_PATH"
 
-    # Store '.desktop' files containing "${BIN_PATH}/winapps" in an array, returning an empty array if no such files exist.
-    readarray -t WINAPPS_DESKTOP_FILES < <(grep -l -d skip "${BIN_PATH}/winapps" "${APP_PATH}/"* 2>/dev/null || true)
+    # Remove '.desktop' files (Linux only — macOS never creates them).
+    if [ "$PLATFORM" != "Darwin" ]; then
+        # Store '.desktop' files containing "${BIN_PATH}/winapps" in an array, returning an empty array if no such files exist.
+        readarray -t WINAPPS_DESKTOP_FILES < <(grep -l -d skip "${BIN_PATH}/winapps" "${APP_PATH}/"* 2>/dev/null || true)
 
-    # Remove each '.desktop' file.
-    for DESKTOP_FILE_PATH in "${WINAPPS_DESKTOP_FILES[@]}"; do
-        # Trim leading and trailing whitespace from '.desktop' file path.
-        DESKTOP_FILE_PATH=$(echo "$DESKTOP_FILE_PATH" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
+        # Remove each '.desktop' file.
+        for DESKTOP_FILE_PATH in "${WINAPPS_DESKTOP_FILES[@]}"; do
+            # Trim leading and trailing whitespace from '.desktop' file path.
+            DESKTOP_FILE_PATH=$(echo "$DESKTOP_FILE_PATH" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
 
-        # Extract the file name.
-        DESKTOP_FILE_NAME=$(basename "$DESKTOP_FILE_PATH" | sed 's/\.[^.]*$//')
+            # Extract the file name.
+            DESKTOP_FILE_NAME=$(basename "$DESKTOP_FILE_PATH" | sed 's/\.[^.]*$//')
 
-        # Print feedback.
-        echo -n "Removing '.desktop' file for '${DESKTOP_FILE_NAME}'... "
+            # Print feedback.
+            echo -n "Removing '.desktop' file for '${DESKTOP_FILE_NAME}'... "
 
-        # Delete the file.
-        $SUDO rm "$DESKTOP_FILE_PATH"
+            # Delete the file.
+            $SUDO rm "$DESKTOP_FILE_PATH"
 
-        # Print feedback.
-        echo -e "${DONE_TEXT}Done!${CLEAR_TEXT}"
-    done
+            # Print feedback.
+            echo -e "${DONE_TEXT}Done!${CLEAR_TEXT}"
+        done
+    fi
 
     # Store the paths of bash scripts calling 'WinApps' to launch specific applications in an array, returning an empty array if no such files exist.
     readarray -t WINAPPS_APP_BASH_SCRIPTS < <(grep -l -d skip "${BIN_PATH}/winapps" "${BIN_PATH}/"* 2>/dev/null || true)
@@ -1879,14 +2009,19 @@ function waAddApps() {
     # Load the WinApps configuration file.
     waLoadConfig
 
+    # macOS always uses 'manual' flavor.
+    if [ "$PLATFORM" = "Darwin" ]; then WAFLAVOR="manual"; fi
+
     # Check for missing dependencies.
     waCheckInstallDependencies
 
-    # Update $RDP_SCALE.
-    waFixScale
+    # Update $RDP_SCALE (Linux/FreeRDP only).
+    if [ "$PLATFORM" != "Darwin" ]; then
+        waFixScale
+    fi
 
-    # Append additional FreeRDP flags if required.
-    if [[ -n $RDP_FLAGS ]]; then
+    # Append additional FreeRDP flags if required (Linux only).
+    if [ "$PLATFORM" != "Darwin" ] && [[ -n $RDP_FLAGS ]]; then
         FREERDP_COMMAND="${FREERDP_COMMAND} ${RDP_FLAGS}"
     fi
 
