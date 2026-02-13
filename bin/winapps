@@ -32,7 +32,8 @@ readonly SLEEP_DETECT_PATH="${APPDATA_PATH}/last_activity"
 readonly SLEEP_MARKER="${APPDATA_PATH}/sleep_marker"
 
 # PLATFORM
-readonly PLATFORM="$(uname -s)"
+PLATFORM="$(uname -s)"
+readonly PLATFORM
 
 # OTHER
 readonly CONTAINER_NAME="WinApps" # FOR 'docker' AND 'podman' ONLY
@@ -276,7 +277,7 @@ function waLoadConfig() {
         if [ "$PLATFORM" = "Darwin" ]; then
             local VOL_NAME
             VOL_NAME=$(diskutil info / | awk -F: '/Volume Name/{gsub(/^ +| +$/,"",$2); print $2}')
-            TSCLIENT_HOME="\\\\tsclient\\${VOL_NAME}$(echo "$HOME" | sed 's|/|\\|g')"
+            TSCLIENT_HOME="\\\\tsclient\\${VOL_NAME}${HOME//\//\\}"
         else
             TSCLIENT_HOME='\\tsclient\home'
         fi

@@ -34,7 +34,8 @@ readonly EC_APPQUERY_FAIL="15"   # Failed to query Windows for installed applica
 readonly EC_INVALID_FLAVOR="16"  # Backend specified is not 'libvirt', 'docker' or 'podman'.
 
 # PLATFORM
-readonly PLATFORM="$(uname -s)"
+PLATFORM="$(uname -s)"
+readonly PLATFORM
 
 # HOMEBREW PREFIX (macOS only)
 HOMEBREW_PREFIX=""
@@ -1335,7 +1336,7 @@ function waFindInstalled() {
     if [ "$PLATFORM" = "Darwin" ]; then
         {
             echo ":WAIT_DRIVE"
-            echo "if exist \\\\tsclient\\home goto DRIVE_READY"
+            printf '%s\n' "if exist \\\\tsclient\\home goto DRIVE_READY"
             echo "ping -n 3 127.0.0.1 >NUL"
             echo "goto WAIT_DRIVE"
             echo ":DRIVE_READY"
