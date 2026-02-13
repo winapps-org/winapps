@@ -76,7 +76,7 @@ readonly CONFIG_PATH="${HOME}/.config/winapps/winapps.conf" # UNIX path to the W
 readonly INQUIRER_PATH="./install/inquirer.sh" # UNIX path to the 'inquirer' script, which is used to produce selection menus.
 
 # REMOTE DESKTOP CONFIGURATION
-readonly RDP_PORT=3389         # Port used for RDP on Windows.
+RDP_PORT=3389         # Port used for RDP on Windows. Overridable via config.
 readonly DOCKER_IP="127.0.0.1" # Localhost.
 
 ### GLOBAL VARIABLES ###
@@ -586,14 +586,20 @@ function waCheckScriptDependencies() {
 
         # Display the suggested action(s).
         echo "--------------------------------------------------------------------------------"
-        echo "Debian/Ubuntu-based systems:"
-        echo -e "  ${COMMAND_TEXT}sudo apt install git${CLEAR_TEXT}"
-        echo "Red Hat/Fedora-based systems:"
-        echo -e "  ${COMMAND_TEXT}sudo dnf install git${CLEAR_TEXT}"
-        echo "Arch Linux systems:"
-        echo -e "  ${COMMAND_TEXT}sudo pacman -S git${CLEAR_TEXT}"
-        echo "Gentoo Linux systems:"
-        echo -e "  ${COMMAND_TEXT}sudo emerge --ask dev-vcs/git${CLEAR_TEXT}"
+        if [ "$PLATFORM" = "Darwin" ]; then
+            echo "macOS:"
+            echo -e "  ${COMMAND_TEXT}xcode-select --install${CLEAR_TEXT}"
+            echo -e "  ${COMMAND_TEXT}brew install git${CLEAR_TEXT}"
+        else
+            echo "Debian/Ubuntu-based systems:"
+            echo -e "  ${COMMAND_TEXT}sudo apt install git${CLEAR_TEXT}"
+            echo "Red Hat/Fedora-based systems:"
+            echo -e "  ${COMMAND_TEXT}sudo dnf install git${CLEAR_TEXT}"
+            echo "Arch Linux systems:"
+            echo -e "  ${COMMAND_TEXT}sudo pacman -S git${CLEAR_TEXT}"
+            echo "Gentoo Linux systems:"
+            echo -e "  ${COMMAND_TEXT}sudo emerge --ask dev-vcs/git${CLEAR_TEXT}"
+        fi
         echo "--------------------------------------------------------------------------------"
 
         # Terminate the script.
@@ -610,14 +616,19 @@ function waCheckScriptDependencies() {
 
         # Display the suggested action(s).
         echo "--------------------------------------------------------------------------------"
-        echo "Debian/Ubuntu-based systems:"
-        echo -e "  ${COMMAND_TEXT}sudo apt install curl${CLEAR_TEXT}"
-        echo "Red Hat/Fedora-based systems:"
-        echo -e "  ${COMMAND_TEXT}sudo dnf install curl${CLEAR_TEXT}"
-        echo "Arch Linux systems:"
-        echo -e "  ${COMMAND_TEXT}sudo pacman -S curl${CLEAR_TEXT}"
-        echo "Gentoo Linux systems:"
-        echo -e "  ${COMMAND_TEXT}sudo emerge --ask net-misc/curl${CLEAR_TEXT}"
+        if [ "$PLATFORM" = "Darwin" ]; then
+            echo "macOS:"
+            echo -e "  ${COMMAND_TEXT}brew install curl${CLEAR_TEXT}"
+        else
+            echo "Debian/Ubuntu-based systems:"
+            echo -e "  ${COMMAND_TEXT}sudo apt install curl${CLEAR_TEXT}"
+            echo "Red Hat/Fedora-based systems:"
+            echo -e "  ${COMMAND_TEXT}sudo dnf install curl${CLEAR_TEXT}"
+            echo "Arch Linux systems:"
+            echo -e "  ${COMMAND_TEXT}sudo pacman -S curl${CLEAR_TEXT}"
+            echo "Gentoo Linux systems:"
+            echo -e "  ${COMMAND_TEXT}sudo emerge --ask net-misc/curl${CLEAR_TEXT}"
+        fi
         echo "--------------------------------------------------------------------------------"
 
         # Terminate the script.
@@ -634,14 +645,19 @@ function waCheckScriptDependencies() {
 
         # Display the suggested action(s).
         echo "--------------------------------------------------------------------------------"
-        echo "Debian/Ubuntu-based systems:"
-        echo -e "  ${COMMAND_TEXT}sudo apt install dialog${CLEAR_TEXT}"
-        echo "Red Hat/Fedora-based systems:"
-        echo -e "  ${COMMAND_TEXT}sudo dnf install dialog${CLEAR_TEXT}"
-        echo "Arch Linux systems:"
-        echo -e "  ${COMMAND_TEXT}sudo pacman -S dialog${CLEAR_TEXT}"
-        echo "Gentoo Linux systems:"
-        echo -e "  ${COMMAND_TEXT}sudo emerge --ask dialog${CLEAR_TEXT}"
+        if [ "$PLATFORM" = "Darwin" ]; then
+            echo "macOS:"
+            echo -e "  ${COMMAND_TEXT}brew install dialog${CLEAR_TEXT}"
+        else
+            echo "Debian/Ubuntu-based systems:"
+            echo -e "  ${COMMAND_TEXT}sudo apt install dialog${CLEAR_TEXT}"
+            echo "Red Hat/Fedora-based systems:"
+            echo -e "  ${COMMAND_TEXT}sudo dnf install dialog${CLEAR_TEXT}"
+            echo "Arch Linux systems:"
+            echo -e "  ${COMMAND_TEXT}sudo pacman -S dialog${CLEAR_TEXT}"
+            echo "Gentoo Linux systems:"
+            echo -e "  ${COMMAND_TEXT}sudo emerge --ask dialog${CLEAR_TEXT}"
+        fi
         echo "--------------------------------------------------------------------------------"
 
         # Terminate the script.

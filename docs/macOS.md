@@ -5,8 +5,9 @@ Run Windows applications on macOS via RDP RemoteApp, using the system RDP client
 ## Prerequisites
 
 1. **Microsoft "Windows App"** (free) from the [Mac App Store](https://apps.apple.com/app/windows-app/id1295203466)
-2. A **Windows machine with RDP enabled** (VM, remote server, or local Parallels/UTM)
-3. **RDP RemoteApp configured** on the Windows machine (merge `install/RDPApps.reg`)
+2. **`dialog`** — required for the interactive installer (`brew install dialog`)
+3. A **Windows machine with RDP enabled** (VM, remote server, or local Parallels/UTM)
+4. **RDP RemoteApp configured** on the Windows machine (merge `install/RDPApps.reg`)
 
 ## Installation
 
