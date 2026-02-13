@@ -1,7 +1,7 @@
 class Winapps < Formula
   desc "Run Windows apps on macOS via RDP RemoteApp"
-  homepage "https://github.com/dingyifei/winapps-macos"
-  url "https://github.com/dingyifei/winapps-macos.git", branch: "main"
+  homepage "https://github.com/winapps-org/winapps"
+  url "https://github.com/winapps-org/winapps.git", branch: "main"
   version "1.0.0"
   license "GPL-3.0-only"
 
@@ -42,7 +42,7 @@ class Winapps < Formula
       Then run the installer to detect Windows apps:
         winapps-setup --user
 
-      See: #{homepage}/blob/main/docs/macOS.md
+      See: https://github.com/winapps-org/winapps/blob/main/docs/macOS.md
     EOS
   end
 

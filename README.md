@@ -336,7 +336,7 @@ For macOS installation and setup, see the [macOS guide](docs/macOS.md). WinApps 
 
 ```bash
 # Quick start (Homebrew)
-brew tap dingyifei/winapps
+brew tap winapps-org/winapps
 brew install winapps
 ```
 

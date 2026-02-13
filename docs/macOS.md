@@ -15,15 +15,15 @@ Run Windows applications on macOS via RDP RemoteApp, using the system RDP client
 ### Via Homebrew (recommended)
 
 ```bash
-brew tap dingyifei/winapps
+brew tap winapps-org/winapps
 brew install winapps
 ```
 
 ### Manual
 
 ```bash
-git clone https://github.com/dingyifei/winapps-macos.git
-cd winapps-macos
+git clone https://github.com/winapps-org/winapps.git
+cd winapps
 ```
 
 ## Configuration
