@@ -30,6 +30,9 @@ readonly SCRIPT_DIR_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && p
 readonly SLEEP_DETECT_PATH="${APPDATA_PATH}/last_activity"
 readonly SLEEP_MARKER="${APPDATA_PATH}/sleep_marker"
 
+# PLATFORM
+readonly PLATFORM="$(uname -s)"
+
 # OTHER
 readonly CONTAINER_NAME="WinApps" # FOR 'docker' AND 'podman' ONLY
 readonly RDP_PORT=3389
@@ -56,6 +59,7 @@ BOOT_TIMEOUT=120
 HIDEF="on"
 RDP_FLAGS_WINDOWS=""
 RDP_FLAGS_NON_WINDOWS=""
+TSCLIENT_HOME=""
 
 # OTHER
 FREERDP_PID=-1
@@ -90,66 +94,66 @@ function waThrowExit() {
     "$EC_MISSING_CONFIG")
         # Missing WinApps configuration file.
         dprint "ERROR: MISSING WINAPPS CONFIGURATION FILE. EXITING."
-        notify-send --expire-time=8000 --icon="dialog-error" --app-name="WinApps" --urgency="low" "WinApps" "The WinApps configuration file is missing.\nPlease create a WinApps configuration file at '${CONFIG_PATH}'."
+        waNotify "WinApps" "The WinApps configuration file is missing.\nPlease create a WinApps configuration file at '${CONFIG_PATH}'." "dialog-error"
         ;;
     "$EC_MISSING_FREERDP")
         dprint "ERROR: FREERDP VERSION 3 IS NOT INSTALLED. EXITING."
-        notify-send --expire-time=8000 --icon="dialog-error" --app-name="WinApps" --urgency="low" "WinApps" "FreeRDP version 3 is not installed."
+        waNotify "WinApps" "FreeRDP version 3 is not installed." "dialog-error"
         ;;
     "$EC_NOT_IN_GROUP")
         dprint "ERROR: USER NOT PART OF REQUIRED GROUPS. EXITING."
-        notify-send --expire-time=8000 --icon="dialog-error" --app-name="WinApps" --urgency="low" "WinApps" "The user $(whoami) is not part of the required groups.
+        waNotify "WinApps" "The user $(whoami) is not part of the required groups.
 Please run:
     sudo usermod -a -G libvirt $(whoami)
-    sudo usermod -a -G kvm $(whoami)"
+    sudo usermod -a -G kvm $(whoami)" "dialog-error"
         ;;
     "$EC_FAIL_START")
         dprint "ERROR: WINDOWS FAILED TO START. EXITING."
-        notify-send --expire-time=8000 --icon="dialog-error" --app-name="WinApps" --urgency="low" "WinApps" "Windows failed to start."
+        waNotify "WinApps" "Windows failed to start." "dialog-error"
         ;;
     "$EC_FAIL_RESUME")
         dprint "ERROR: WINDOWS FAILED TO RESUME. EXITING."
-        notify-send --expire-time=8000 --icon="dialog-error" --app-name="WinApps" --urgency="low" "WinApps" "Windows failed to resume."
+        waNotify "WinApps" "Windows failed to resume." "dialog-error"
         ;;
     "$EC_FAIL_DESTROY")
         dprint "ERROR: FAILED TO FORCE STOP WINDOWS. EXITING."
-        notify-send --expire-time=8000 --icon="dialog-error" --app-name="WinApps" --urgency="low" "WinApps" "Failed to forcibly stop Windows."
+        waNotify "WinApps" "Failed to forcibly stop Windows." "dialog-error"
         ;;
     "$EC_SD_TIMEOUT")
         dprint "ERROR: WINDOWS TOOK TOO LONG TO SHUT DOWN. EXITING."
-        notify-send --expire-time=8000 --icon="dialog-error" --app-name="WinApps" --urgency="low" "WinApps" "Windows took too long to shut down."
+        waNotify "WinApps" "Windows took too long to shut down." "dialog-error"
         ;;
     "$EC_DIE_TIMEOUT")
         dprint "ERROR: WINDOWS TOOK TOO LONG TO DIE. EXITING."
-        notify-send --expire-time=8000 --icon="dialog-error" --app-name="WinApps" --urgency="low" "WinApps" "Windows took too long to die."
+        waNotify "WinApps" "Windows took too long to die." "dialog-error"
         ;;
     "$EC_RESTART_TIMEOUT")
         dprint "ERROR: WINDOWS TOOK TOO LONG TO RESTART. EXITING."
-        notify-send --expire-time=8000 --icon="dialog-error" --app-name="WinApps" --urgency="low" "WinApps" "Windows took too long to restart."
+        waNotify "WinApps" "Windows took too long to restart." "dialog-error"
         ;;
     "$EC_NOT_EXIST")
         dprint "ERROR: WINDOWS NONEXISTENT. EXITING."
-        notify-send --expire-time=8000 --icon="dialog-error" --app-name="WinApps" --urgency="low" "WinApps" "Windows VM named '${VM_NAME}' does not exist."
+        waNotify "WinApps" "Windows VM named '${VM_NAME}' does not exist." "dialog-error"
         ;;
     "$EC_UNKNOWN")
         dprint "ERROR: UNKNOWN CONTAINER ERROR. EXITING."
-        notify-send --expire-time=8000 --icon="dialog-error" --app-name="WinApps" --urgency="low" "WinApps" "Unknown Windows container error."
+        waNotify "WinApps" "Unknown Windows container error." "dialog-error"
         ;;
     "$EC_NO_IP")
         dprint "ERROR: WINDOWS UNREACHABLE. EXITING."
-        notify-send --expire-time=8000 --icon="dialog-error" --app-name="WinApps" --urgency="low" "WinApps" "Windows is unreachable.\nPlease ensure Windows is assigned an IP address."
+        waNotify "WinApps" "Windows is unreachable.\nPlease ensure Windows is assigned an IP address." "dialog-error"
         ;;
     "$EC_BAD_PORT")
         dprint "ERROR: RDP PORT CLOSED. EXITING."
-        notify-send --expire-time=8000 --icon="dialog-error" --app-name="WinApps" --urgency="low" "WinApps" "The Windows RDP port '${RDP_PORT}' is closed.\nPlease ensure Remote Desktop is correctly configured on Windows."
+        waNotify "WinApps" "The Windows RDP port '${RDP_PORT}' is closed.\nPlease ensure Remote Desktop is correctly configured on Windows." "dialog-error"
         ;;
     "$EC_UNSUPPORTED_APP")
         dprint "ERROR: APPLICATION NOT FOUND. EXITING."
-        notify-send --expire-time=8000 --icon="dialog-error" --app-name="WinApps" --urgency="low" "WinApps" "Application not found.\nPlease ensure the program is correctly configured as an officially supported application."
+        waNotify "WinApps" "Application not found.\nPlease ensure the program is correctly configured as an officially supported application." "dialog-error"
         ;;
     "$EC_INVALID_FLAVOR")
         dprint "ERROR: INVALID FLAVOR. EXITING."
-        notify-send --expire-time=8000 --icon="dialog-error" --app-name="WinApps" --urgency="low" "WinApps" "Invalid WinApps flavor.\nPlease ensure 'docker', 'podman' or 'libvirt' are specified as the flavor in the WinApps configuration file."
+        waNotify "WinApps" "Invalid WinApps flavor.\nPlease ensure 'docker', 'podman' or 'libvirt' are specified as the flavor in the WinApps configuration file." "dialog-error"
         ;;
     esac
 
@@ -162,14 +166,63 @@ Please run:
 function dprint() {
     [ "$DEBUG" = "true" ] && echo "[$(date)-$RUNID] $1" >>"$LOG_PATH"
 }
+
+# Name: 'waNotify'
+# Role: Send cross-platform desktop notifications.
+# Args: $1=title, $2=body, $3=icon (default: dialog-info), $4=expire-time in ms (default: 8000)
+# Note: macOS 'osascript' does not support custom icons or expire times; notifications use the default app icon.
+function waNotify() {
+    local TITLE="$1"
+    local BODY="$2"
+    local ICON="${3:-dialog-info}"
+    local EXPIRE="${4:-8000}"
+    if [ "$PLATFORM" = "Darwin" ]; then
+        osascript -e "display notification \"$BODY\" with title \"$TITLE\"" 2>/dev/null || echo "$TITLE: $BODY"
+    else
+        notify-send --expire-time="$EXPIRE" --icon="$ICON" --app-name="WinApps" --urgency="low" "$TITLE" "$BODY"
+    fi
+}
+
+# Name: 'generate_rdp'
+# Role: Generate a .rdp file for macOS and return the path.
+function generate_rdp() {
+    local MODE="$1"          # "desktop" or "remoteapp"
+    local APP_NAME="$2"      # App name (for remoteapp)
+    local APP_EXE="$3"       # Windows executable (for remoteapp)
+    local APP_CMDLINE="$4"   # Command line args (optional)
+    local RDP_DIR="${TMPDIR:-/tmp}/winapps-rdp"
+    local RDP_FILE="${RDP_DIR}/${APP_NAME:-desktop}-$$.rdp"
+
+    mkdir -p "${RDP_DIR}"
+    {
+        echo "full address:s:${RDP_IP}:${RDP_PORT}"
+        echo "username:s:${RDP_USER}"
+        echo "domain:s:${RDP_DOMAIN}"
+        echo "drivestoredirect:s:*"
+        echo "redirectclipboard:i:1"
+        echo "autoreconnection enabled:i:1"
+        if [ "$MODE" = "remoteapp" ]; then
+            echo "remoteapplicationmode:i:1"
+            echo "remoteapplicationprogram:s:${APP_EXE}"
+            echo "remoteapplicationname:s:${APP_NAME}"
+            echo "remoteapplicationcmdline:s:${APP_CMDLINE}"
+            echo "disableremoteappcapscheck:i:1"
+        else
+            echo "desktopwidth:i:1920"
+            echo "desktopheight:i:1080"
+            echo "smart sizing:i:1"
+        fi
+    } > "${RDP_FILE}"
+    echo "${RDP_FILE}"
+}
+
 # Name: 'waFixRemovableMedia'
 # Role: If REMOVABLE_MEDIA is empty, default to /run/media (udisks default) and show a warning.
 function waFixRemovableMedia() {
     if [ -z "$REMOVABLE_MEDIA" ]; then
         REMOVABLE_MEDIA="/run/media"  # Default for udisks
         dprint "NOTICE: Using default REMOVABLE_MEDIA: $REMOVABLE_MEDIA"
-        notify-send --expire-time=3000 --icon="drive-removable-media" \
-            "WinApps Notice" "Using default removable media path: $REMOVABLE_MEDIA"
+        waNotify "WinApps Notice" "Using default removable media path: $REMOVABLE_MEDIA" "drive-removable-media" "3000"
     fi
 }
 # Name: 'waFixScale'
@@ -202,7 +255,7 @@ function waFixScale() {
 
         # Print feedback.
         dprint "WARNING: Unsupported RDP_SCALE value '${OLD_SCALE}'. Defaulting to '${RDP_SCALE}'."
-        notify-send --expire-time=4000 --icon="dialog-warning" --app-name="WinApps" --urgency="low" "WinApps" "Unsupported RDP_SCALE value '${OLD_SCALE}'.\nDefaulting to '${RDP_SCALE}'."
+        waNotify "WinApps" "Unsupported RDP_SCALE value '${OLD_SCALE}'.\nDefaulting to '${RDP_SCALE}'." "dialog-warning" "4000"
     fi
 }
 
@@ -217,10 +270,23 @@ function waLoadConfig() {
         waThrowExit $EC_MISSING_CONFIG
     fi
 
+    # Compute TSCLIENT_HOME if not set in config.
+    if [ -z "$TSCLIENT_HOME" ]; then
+        if [ "$PLATFORM" = "Darwin" ]; then
+            local VOL_NAME
+            VOL_NAME=$(diskutil info / | awk -F: '/Volume Name/{gsub(/^ +| +$/,"",$2); print $2}')
+            TSCLIENT_HOME="\\\\tsclient\\${VOL_NAME}$(echo "$HOME" | sed 's|/|\\|g')"
+        else
+            TSCLIENT_HOME='\\tsclient\home'
+        fi
+    fi
+
     # Update $RDP_SCALE.
     waFixScale
     # Update when $REMOVABLE_MEDIA is null
-    waFixRemovableMedia
+    if [ "$PLATFORM" != "Darwin" ]; then
+        waFixRemovableMedia
+    fi
     # Update $AUTOPAUSE_TIME.
     # RemoteApp RDP sessions take, at minimum, 20 seconds to be terminated by the Windows server.
     # Hence, subtract 20 from the timeout specified by the user, as a 'built in' timeout of 20 seconds will occur.
@@ -238,19 +304,33 @@ function waLastRun() {
 
     # Store the time this script was run last as a unix timestamp.
     if [ -f "$LASTRUN_PATH" ]; then
-        LAST_RUN_UNIX_TIME=$(stat -t -c %Y "$LASTRUN_PATH")
+        if [ "$PLATFORM" = "Darwin" ]; then
+            LAST_RUN_UNIX_TIME=$(stat -f %m "$LASTRUN_PATH")
+        else
+            LAST_RUN_UNIX_TIME=$(stat -t -c %Y "$LASTRUN_PATH")
+        fi
         dprint "LAST_RUN: ${LAST_RUN_UNIX_TIME}"
     fi
 
     # Update the file modification time with the current time.
     touch "$LASTRUN_PATH"
-    CURR_RUN_UNIX_TIME=$(stat -t -c %Y "$LASTRUN_PATH")
+    if [ "$PLATFORM" = "Darwin" ]; then
+        CURR_RUN_UNIX_TIME=$(stat -f %m "$LASTRUN_PATH")
+    else
+        CURR_RUN_UNIX_TIME=$(stat -t -c %Y "$LASTRUN_PATH")
+    fi
     dprint "THIS_RUN: ${CURR_RUN_UNIX_TIME}"
 }
 
 # Name: 'waGetFreeRDPCommand'
 # Role: Determine the correct FreeRDP command to use.
 function waGetFreeRDPCommand() {
+    # macOS uses .rdp files instead of FreeRDP.
+    if [ "$PLATFORM" = "Darwin" ]; then
+        dprint "macOS: using .rdp files via Microsoft Windows App"
+        return
+    fi
+
     # Declare variables.
     local FREERDP_MAJOR_VERSION="" # Stores the major version of the installed copy of FreeRDP.
 
@@ -330,28 +410,28 @@ function waCheckVMRunning() {
     if (virsh list --all --name | grep -Fxq -- "$VM_NAME"); then
         if (virsh list --state-shutoff --name | grep -Fxq -- "$VM_NAME"); then
             dprint "WINDOWS SHUT OFF. BOOTING WINDOWS."
-            notify-send --expire-time=4000 --icon="dialog-info" --app-name="WinApps" --urgency="low" "WinApps" "Booting Windows."
+            waNotify "WinApps" "Booting Windows." "dialog-info" "4000"
             NEEDED_BOOT=true
             virsh start "$VM_NAME" &>/dev/null || EXIT_STATUS=$EC_FAIL_START
             if (virsh list --state-paused --name | grep -Fxq -- "$VM_NAME"); then
                 dprint "WINDOWS PAUSED. RESUMING WINDOWS."
-                notify-send --expire-time=4000 --icon="dialog-info" --app-name="WinApps" --urgency="low" "WinApps" "Resuming Windows."
+                waNotify "WinApps" "Resuming Windows." "dialog-info" "4000"
                 virsh resume "$VM_NAME" &>/dev/null || EXIT_STATUS=$EC_FAIL_RESUME
             fi
         elif (virsh list --state-paused --name | grep -Fxq -- "$VM_NAME"); then
             dprint "WINDOWS PAUSED. RESUMING WINDOWS."
-            notify-send --expire-time=4000 --icon="dialog-info" --app-name="WinApps" --urgency="low" "WinApps" "Resuming Windows."
+            waNotify "WinApps" "Resuming Windows." "dialog-info" "4000"
             virsh resume "$VM_NAME" &>/dev/null || EXIT_STATUS=$EC_FAIL_RESUME
         elif (virsh list --state-other --name | grep -Fxq -- "$VM_NAME"); then
             if (virsh domstate "$VM_NAME" | grep -Fxq "in shutdown"); then
                 dprint "WINDOWS SHUTTING DOWN. WAITING."
-                notify-send --expire-time=4000 --icon="dialog-info" --app-name="WinApps" --urgency="low" "WinApps" "Windows is currently shutting down.\nIt will automatically restart once the shutdown process is complete."
+                waNotify "WinApps" "Windows is currently shutting down.\nIt will automatically restart once the shutdown process is complete." "dialog-info" "4000"
                 EXIT_STATUS=$EC_SD_TIMEOUT
                 while (( TIME_ELAPSED < TIME_LIMIT )); do
                     if (virsh list --state-shutoff --name | grep -Fxq -- "$VM_NAME"); then
                         EXIT_STATUS=0
                         dprint "WINDOWS SHUT OFF. BOOTING WINDOWS."
-                        notify-send --expire-time=4000 --icon="dialog-info" --app-name="WinApps" --urgency="low" "WinApps" "Booting Windows."
+                        waNotify "WinApps" "Booting Windows." "dialog-info" "4000"
                         virsh start "$VM_NAME" &>/dev/null || EXIT_STATUS=$EC_FAIL_START
                         NEEDED_BOOT=true
                         break
@@ -361,27 +441,27 @@ function waCheckVMRunning() {
                 done
             elif (virsh domstate "$VM_NAME" | grep -Fxq "crashed"); then
                 dprint "WINDOWS CRASHED. DESTROYING WINDOWS."
-                notify-send --expire-time=4000 --icon="dialog-info" --app-name="WinApps" --urgency="low" "WinApps" "Windows experienced an unexpected crash.\nAttempting to restart Windows."
+                waNotify "WinApps" "Windows experienced an unexpected crash.\nAttempting to restart Windows." "dialog-info" "4000"
                 virsh destroy "$VM_NAME" &>/dev/null || EXIT_STATUS=$EC_FAIL_DESTROY
                 if [ "$EXIT_STATUS" -eq 0 ]; then
                     dprint "WINDOWS DESTROYED. BOOTING WINDOWS."
-                    notify-send --expire-time=4000 --icon="dialog-info" --app-name="WinApps" --urgency="low" "WinApps" "Booting Windows."
+                    waNotify "WinApps" "Booting Windows." "dialog-info" "4000"
                     virsh start "$VM_NAME" &>/dev/null || EXIT_STATUS=$EC_FAIL_START
                     NEEDED_BOOT=true
                 fi
             elif (virsh domstate "$VM_NAME" | grep -Fxq "dying"); then
                 dprint "WINDOWS DYING. WAITING."
-                notify-send --expire-time=4000 --icon="dialog-info" --app-name="WinApps" --urgency="low" "WinApps" "Windows is currently shutting down unexpectedly.\nIt will try to restart once the shutdown process finishes."
+                waNotify "WinApps" "Windows is currently shutting down unexpectedly.\nIt will try to restart once the shutdown process finishes." "dialog-info" "4000"
                 EXIT_STATUS=$EC_DIE_TIMEOUT
                 while (( TIME_ELAPSED < TIME_LIMIT )); do
                     if (virsh domstate "$VM_NAME" | grep -Fxq "crashed"); then
                         EXIT_STATUS=0
                         dprint "WINDOWS CRASHED. DESTROYING WINDOWS."
-                        notify-send --expire-time=4000 --icon="dialog-info" --app-name="WinApps" --urgency="low" "WinApps" "Windows experienced an unexpected crash.\nAttempting to restart Windows."
+                        waNotify "WinApps" "Windows experienced an unexpected crash.\nAttempting to restart Windows." "dialog-info" "4000"
                         virsh destroy "$VM_NAME" &>/dev/null || EXIT_STATUS=$EC_FAIL_DESTROY
                         if [ "$EXIT_STATUS" -eq 0 ]; then
                             dprint "WINDOWS DESTROYED. BOOTING WINDOWS."
-                            notify-send --expire-time=4000 --icon="dialog-info" --app-name="WinApps" --urgency="low" "WinApps" "Booting Windows."
+                            waNotify "WinApps" "Booting Windows." "dialog-info" "4000"
                             virsh start "$VM_NAME" &>/dev/null || EXIT_STATUS=$EC_FAIL_START
                             NEEDED_BOOT=true
                         fi
@@ -389,7 +469,7 @@ function waCheckVMRunning() {
                     elif (virsh list --state-shutoff --name | grep -Fxq -- "$VM_NAME"); then
                         EXIT_STATUS=0
                         dprint "WINDOWS SHUT OFF. BOOTING WINDOWS."
-                        notify-send --expire-time=4000 --icon="dialog-info" --app-name="WinApps" --urgency="low" "WinApps" "Booting Windows."
+                        waNotify "WinApps" "Booting Windows." "dialog-info" "4000"
                         virsh start "$VM_NAME" &>/dev/null || EXIT_STATUS=$EC_FAIL_START
                         NEEDED_BOOT=true
                         break
@@ -412,7 +492,7 @@ function waCheckVMRunning() {
     # Wait for VM to be fully ready
     if [[ "$NEEDED_BOOT" == "true" ]]; then
         dprint "WAITING FOR VM TO BE FULLY READY..."
-        notify-send --expire-time=4000 --icon="dialog-info" --app-name="WinApps" --urgency="low" "WinApps" "Waiting for Windows to be ready..."
+        waNotify "WinApps" "Waiting for Windows to be ready..." "dialog-info" "4000"
 
         TIME_ELAPSED=0
 
@@ -422,7 +502,7 @@ function waCheckVMRunning() {
                 # Try to connect to RDP port to verify it's ready
                 if timeout 1 bash -c ">/dev/tcp/$RDP_IP/$RDP_PORT" 2>/dev/null; then
                     dprint "VM IS READY"
-                    notify-send --expire-time=4000 --icon="dialog-info" --app-name="WinApps" --urgency="low" "WinApps" "Windows is ready."
+                    waNotify "WinApps" "Windows is ready." "dialog-info" "4000"
                     # Add a delay after Windows is ready
                     if [ "$NEEDED_BOOT" = "true" ]; then
                         sleep 10
@@ -436,14 +516,14 @@ function waCheckVMRunning() {
 
             # Show progress every 30 seconds
             if (( TIME_ELAPSED % 30 == 0 )); then
-                notify-send --expire-time=4000 --icon="dialog-info" --app-name="WinApps" --urgency="low" "WinApps" "Still waiting for Windows to be ready... ($TIME_ELAPSED seconds elapsed)"
+                waNotify "WinApps" "Still waiting for Windows to be ready... ($TIME_ELAPSED seconds elapsed)" "dialog-info" "4000"
             fi
         done
 
         # If we timed out waiting for the VM
         if (( TIME_ELAPSED >= BOOT_TIMEOUT )); then
             dprint "TIMEOUT WAITING FOR VM TO BE READY"
-            notify-send --expire-time=4000 --icon="dialog-info" --app-name="WinApps" --urgency="low" "WinApps" "Timeout waiting for Windows to be ready. Please try again."
+            waNotify "WinApps" "Timeout waiting for Windows to be ready. Please try again." "dialog-info" "4000"
             waThrowExit $EC_FAIL_START
         fi
     fi
@@ -476,19 +556,19 @@ function waCheckContainerRunning() {
     case "$CONTAINER_STATE" in
         "created")
             dprint "WINDOWS CREATED. BOOTING WINDOWS."
-            notify-send --expire-time=4000 --icon="dialog-info" --app-name="WinApps" --urgency="low" "WinApps" "Booting Windows."
+            waNotify "WinApps" "Booting Windows." "dialog-info" "4000"
             $COMPOSE_COMMAND --file "$COMPOSE_PATH" start &>/dev/null
             NEEDED_BOOT=true
             ;;
         "restarting")
             dprint "WINDOWS RESTARTING. WAITING."
-            notify-send --expire-time=4000 --icon="dialog-info" --app-name="WinApps" --urgency="low" "WinApps" "Windows is currently restarting. Please wait."
+            waNotify "WinApps" "Windows is currently restarting. Please wait." "dialog-info" "4000"
             EXIT_STATUS=$EC_RESTART_TIMEOUT
             while (( TIME_ELAPSED < TIME_LIMIT )); do
                 if [[ $("$WAFLAVOR" inspect --format='{{.State.Status}}' "$CONTAINER_NAME") == "running" ]]; then
                     EXIT_STATUS=0
                     dprint "WINDOWS RESTARTED."
-                    notify-send --expire-time=4000 --icon="dialog-info" --app-name="WinApps" --urgency="low" "WinApps" "Restarted Windows."
+                    waNotify "WinApps" "Restarted Windows." "dialog-info" "4000"
                     NEEDED_BOOT=true
                     break
                 fi
@@ -498,18 +578,18 @@ function waCheckContainerRunning() {
             ;;
         "paused")
             dprint "WINDOWS PAUSED. RESUMING WINDOWS."
-            notify-send --expire-time=4000 --icon="dialog-info" --app-name="WinApps" --urgency="low" "WinApps" "Resuming Windows."
+            waNotify "WinApps" "Resuming Windows." "dialog-info" "4000"
             $COMPOSE_COMMAND --file "$COMPOSE_PATH" unpause &>/dev/null
             ;;
         "exited")
             dprint "WINDOWS SHUT OFF. BOOTING WINDOWS."
-            notify-send --expire-time=4000 --icon="dialog-info" --app-name="WinApps" --urgency="low" "WinApps" "Booting Windows."
+            waNotify "WinApps" "Booting Windows." "dialog-info" "4000"
             $COMPOSE_COMMAND --file "$COMPOSE_PATH" start &>/dev/null
             NEEDED_BOOT=true
             ;;
         "dead")
             dprint "WINDOWS DEAD. RECREATING WINDOWS CONTAINER."
-            notify-send --expire-time=4000 --icon="dialog-info" --app-name="WinApps" --urgency="low" "WinApps" "Re-creating and booting Windows."
+            waNotify "WinApps" "Re-creating and booting Windows." "dialog-info" "4000"
             $COMPOSE_COMMAND --file "$COMPOSE_PATH" down &>/dev/null && $COMPOSE_COMMAND --file "$COMPOSE_PATH" up -d &>/dev/null
             NEEDED_BOOT=true
             ;;
@@ -524,7 +604,7 @@ function waCheckContainerRunning() {
     # Wait for container to be fully ready
     if [[ "$CONTAINER_STATE" == "created" || "$CONTAINER_STATE" == "exited" || "$CONTAINER_STATE" == "dead" || "$CONTAINER_STATE" == "restarting" ]]; then
         dprint "WAITING FOR CONTAINER TO BE FULLY READY..."
-        notify-send --expire-time=4000 --icon="dialog-info" --app-name="WinApps" --urgency="low" "WinApps" "Waiting for Windows to be ready..."
+        waNotify "WinApps" "Waiting for Windows to be ready..." "dialog-info" "4000"
 
         TIME_ELAPSED=0
 
@@ -534,7 +614,7 @@ function waCheckContainerRunning() {
                 # Try to connect to RDP port to verify it's ready
                 if timeout 1 bash -c ">/dev/tcp/$RDP_IP/$RDP_PORT" 2>/dev/null; then
                     dprint "CONTAINER IS READY"
-                    notify-send --expire-time=4000 --icon="dialog-info" --app-name="WinApps" --urgency="low" "WinApps" "Windows is ready."
+                    waNotify "WinApps" "Windows is ready." "dialog-info" "4000"
                     # Add a delay after Windows is ready
                     if [ "$NEEDED_BOOT" = "true" ]; then
                         sleep 10
@@ -548,14 +628,14 @@ function waCheckContainerRunning() {
 
             # Show progress every 30 seconds
             if (( TIME_ELAPSED % 30 == 0 )); then
-                notify-send --expire-time=4000 --icon="dialog-info" --app-name="WinApps" --urgency="low" "WinApps" "Still waiting for Windows to be ready... ($TIME_ELAPSED seconds elapsed)"
+                waNotify "WinApps" "Still waiting for Windows to be ready... ($TIME_ELAPSED seconds elapsed)" "dialog-info" "4000"
             fi
         done
 
         # If we timed out waiting for the container
         if (( TIME_ELAPSED >= BOOT_TIMEOUT )); then
             dprint "TIMEOUT WAITING FOR CONTAINER TO BE READY"
-            notify-send --expire-time=4000 --icon="dialog-info" --app-name="WinApps" --urgency="low" "WinApps" "Timeout waiting for Windows to be ready. Please try again."
+            waNotify "WinApps" "Timeout waiting for Windows to be ready. Please try again." "dialog-info" "4000"
             waThrowExit $EC_FAIL_START
         fi
     fi
@@ -577,7 +657,7 @@ function waCheckPortOpen() {
 
         while (( TIME_ELAPSED < TIME_LIMIT )); do
             if [ "$TIME_ELAPSED" -eq "$TIME_INTERVAL" ]; then
-                notify-send --expire-time=4000 --icon="dialog-info" --app-name="WinApps" --urgency="low" "WinApps" "Requesting Windows IP address..."
+                waNotify "WinApps" "Requesting Windows IP address..." "dialog-info" "4000"
             fi
             RDP_IP=$(ip neigh show | grep "$VM_MAC" | grep -oE "([0-9]{1,3}\.){3}[0-9]{1,3}") # VM IP address.
             [ -n "$RDP_IP" ] && break
@@ -589,7 +669,11 @@ function waCheckPortOpen() {
     fi
 
     # Check for an open RDP port.
-    timeout 10 nc -z "$RDP_IP" "$RDP_PORT" &>/dev/null || waThrowExit "$EC_BAD_PORT"
+    if [ "$PLATFORM" = "Darwin" ]; then
+        nc -z -w 10 "$RDP_IP" "$RDP_PORT" &>/dev/null || waThrowExit "$EC_BAD_PORT"
+    else
+        timeout 10 nc -z "$RDP_IP" "$RDP_PORT" &>/dev/null || waThrowExit "$EC_BAD_PORT"
+    fi
 }
 
 # Name: 'waRunCommand'
@@ -598,6 +682,44 @@ function waRunCommand() {
     # Declare variables.
     local ICON=""
     local FILE_PATH=""
+
+    # macOS: generate .rdp files and open with Microsoft "Windows App".
+    if [ "$PLATFORM" = "Darwin" ]; then
+        local RDP_FILE=""
+        if [ "$1" = "windows" ]; then
+            dprint "MACOS WINDOWS DESKTOP"
+            RDP_FILE=$(generate_rdp "desktop" "windows" "" "")
+        elif [ "$1" = "manual" ]; then
+            dprint "MACOS MANUAL: ${2}"
+            RDP_FILE=$(generate_rdp "remoteapp" "manual" "$2" "")
+        else
+            # Named app — resolve info file.
+            if [ -e "${SCRIPT_DIR_PATH}/../apps/${1}/info" ]; then
+                source "${SCRIPT_DIR_PATH}/../apps/${1}/info"
+            elif [ -e "${APPDATA_PATH}/apps/${1}/info" ]; then
+                source "${APPDATA_PATH}/apps/${1}/info"
+            elif [ -e "${SYS_APP_PATH}/apps/${1}/info" ]; then
+                source "${SYS_APP_PATH}/apps/${1}/info"
+            else
+                waThrowExit "$EC_UNSUPPORTED_APP"
+            fi
+
+            local APP_CMDLINE=""
+            if [ -n "$2" ]; then
+                # Convert UNIX path to Windows tsclient path.
+                FILE_PATH=$(echo "$2" | sed -e 's|^'"${HOME}"'|'"${TSCLIENT_HOME}"'|' -e 's|/|\\|g')
+                dprint "UNIX_FILE_PATH: ${2}"
+                dprint "WINDOWS_FILE_PATH: ${FILE_PATH}"
+                APP_CMDLINE="$FILE_PATH"
+            fi
+            dprint "MACOS APP: ${1} (${WIN_EXECUTABLE})"
+            RDP_FILE=$(generate_rdp "remoteapp" "$1" "$WIN_EXECUTABLE" "$APP_CMDLINE")
+        fi
+
+        dprint "RDP_FILE: ${RDP_FILE}"
+        open "$RDP_FILE"
+        return
+    fi
 
     # Run option.
     if [ "$1" = "windows" ]; then
@@ -737,7 +859,7 @@ function waCheckIdle() {
         # Hibernate/Pause Windows.
         if [ "$SUSPEND_WINDOWS" -eq 1 ]; then
             dprint "IDLE FOR ${AUTOPAUSE_TIME} SECONDS. SUSPENDING WINDOWS."
-            notify-send --expire-time=8000 --icon="info" --app-name="WinApps" --urgency="low" "WinApps" "Pausing Windows due to inactivity."
+            waNotify "WinApps" "Pausing Windows due to inactivity." "info" "8000"
             if [ "$WAFLAVOR" = "docker" ]; then
                 docker compose --file "$COMPOSE_PATH" pause &>/dev/null
             elif [ "$WAFLAVOR" = "podman" ]; then
@@ -752,6 +874,9 @@ function waCheckIdle() {
 # Name: 'waTimeSync'
 # Role: Detect if system went to sleep by comparing uptime progression, then sync time in Windows VM
 function waTimeSync() {
+    # macOS does not have /proc/uptime; skip sleep detection.
+    if [ "$PLATFORM" = "Darwin" ]; then return; fi
+
     local CURRENT_TIME
     local CURRENT_UPTIME
     local STORED_TIME=0
@@ -802,6 +927,10 @@ dprint "SCRIPT_ARGS: ${*}"
 dprint "HOME_DIR: ${HOME}"
 waLastRun
 waLoadConfig
+
+# macOS always uses 'manual' flavor (no VM management, just RDP to a remote Windows machine).
+if [ "$PLATFORM" = "Darwin" ]; then WAFLAVOR="manual"; fi
+
 waGetFreeRDPCommand
 
 # If using podman backend, modify the FreeRDP command to enter a new namespace.
