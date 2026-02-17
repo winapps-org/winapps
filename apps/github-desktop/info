@@ -1,0 +1,14 @@
+# GNOME shortcut name
+NAME="GitHub Desktop"
+
+# Used for descriptions and window class
+FULL_NAME="GitHub Desktop"
+
+# The executable inside windows
+WIN_EXECUTABLE="C:\Users\localadmin\AppData\Local\GitHubDesktop\GitHubDesktop.exe"
+
+# GNOME categories
+CATEGORIES="WinApps;Development"
+
+# GNOME mimetypes
+MIME_TYPES=""
