@@ -5,7 +5,7 @@ NAME="GitHub Desktop"
 FULL_NAME="GitHub Desktop"
 
 # The executable inside windows
-WIN_EXECUTABLE="C:\Users\localadmin\AppData\Local\GitHubDesktop\GitHubDesktop.exe"
+WIN_EXECUTABLE="C:\Users\%USERNAME%\AppData\Local\GitHubDesktop\GitHubDesktop.exe"
 
 # GNOME categories
 CATEGORIES="WinApps;Development"
