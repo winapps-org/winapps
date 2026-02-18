@@ -1323,18 +1323,6 @@ function waFindInstalled() {
     # This will enable the PowerShell script to be accessed and executed by Windows.
     cp "$PS_SCRIPT_PATH" "$PS_SCRIPT_HOME_PATH"
 
-    # macOS: FreeRDP's +home-drive takes ~10s to register \\tsclient\home.
-    # Prepend a polling loop so the drive is available when batch commands run.
-    if [ "$PLATFORM" = "Darwin" ]; then
-        {
-            echo ":WAIT_DRIVE"
-            printf '%s\n' "if exist \\\\tsclient\\home goto DRIVE_READY"
-            echo "ping -n 3 127.0.0.1 >NUL"
-            echo "goto WAIT_DRIVE"
-            echo ":DRIVE_READY"
-        } >"$BATCH_SCRIPT_PATH"
-    fi
-
     # Enumerate over each officially supported application.
     for APPLICATION in ./apps/*; do
         # Extract the name of the application from the absolute path of the folder.
