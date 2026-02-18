@@ -1864,6 +1864,12 @@ function waInstall() {
         return "$EC_INVALID_FLAVOR"
     fi
 
+    # macOS: FreeRDP drive registration adds ~15s overhead; increase timeouts.
+    if [ "$PLATFORM" = "Darwin" ]; then
+        [ "$RDP_TIMEOUT" -lt 60 ] && RDP_TIMEOUT=60
+        [ "$APP_SCAN_TIMEOUT" -lt 90 ] && APP_SCAN_TIMEOUT=90
+    fi
+
     # Check if the RDP port on Windows is open.
     waCheckPortOpen
 
@@ -2074,6 +2080,12 @@ function waAddApps() {
 
         # Terminate the script.
         return "$EC_INVALID_FLAVOR"
+    fi
+
+    # macOS: FreeRDP drive registration adds ~15s overhead; increase timeouts.
+    if [ "$PLATFORM" = "Darwin" ]; then
+        [ "$RDP_TIMEOUT" -lt 60 ] && RDP_TIMEOUT=60
+        [ "$APP_SCAN_TIMEOUT" -lt 90 ] && APP_SCAN_TIMEOUT=90
     fi
 
     # Check if the RDP port on Windows is open.
