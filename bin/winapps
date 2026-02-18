@@ -184,9 +184,9 @@ function waNotify() {
     fi
 }
 
-# Name: 'waGenerateRdpFiles'
+# Name: 'waGenerateRdpFile'
 # Role: Generate a .rdp file for macOS and return the path.
-function waGenerateRdpFiles() {
+function waGenerateRdpFile() {
     local MODE="$1"          # "desktop" or "remoteapp"
     local APP_NAME="$2"      # App name (for remoteapp)
     local APP_EXE="$3"       # Windows executable (for remoteapp)
@@ -679,10 +679,10 @@ function waRunCommand() {
         local RDP_FILE=""
         if [ "$1" = "windows" ]; then
             dprint "MACOS WINDOWS DESKTOP"
-            RDP_FILE=$(waGenerateRdpFiles "desktop" "windows" "" "")
+            RDP_FILE=$(waGenerateRdpFile "desktop" "windows" "" "")
         elif [ "$1" = "manual" ]; then
             dprint "MACOS MANUAL: ${2}"
-            RDP_FILE=$(waGenerateRdpFiles "remoteapp" "manual" "$2" "")
+            RDP_FILE=$(waGenerateRdpFile "remoteapp" "manual" "$2" "")
         else
             # Named app — resolve info file.
             if [ -e "${SCRIPT_DIR_PATH}/../apps/${1}/info" ]; then
@@ -703,7 +703,7 @@ function waRunCommand() {
 
             local APP_CMDLINE=""
             dprint "MACOS APP: ${1} (${WIN_EXECUTABLE})"
-            RDP_FILE=$(waGenerateRdpFiles "remoteapp" "$1" "$WIN_EXECUTABLE" "$APP_CMDLINE")
+            RDP_FILE=$(waGenerateRdpFile "remoteapp" "$1" "$WIN_EXECUTABLE" "$APP_CMDLINE")
         fi
 
         dprint "RDP_FILE: ${RDP_FILE}"
