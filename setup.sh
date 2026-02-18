@@ -1225,14 +1225,8 @@ function waCheckRDPAccess() {
     # Note: The following final line is expected within the log, indicating successful execution of the 'tsdiscon' command and termination of the RDP session.
     # [INFO][com.freerdp.core] - [rdp_print_errinfo]: ERRINFO_LOGOFF_BY_USER (0x0000000C):The disconnection was initiated by the user logging off their session on the server.
 
-    # macOS: FreeRDP's +home-drive takes ~10s to register \\tsclient\home.
-    # Add a delay before accessing the drive. Use '&' so tsdiscon always runs.
     local CMD_STRING
-    if [ "$PLATFORM" = "Darwin" ]; then
-        CMD_STRING="/C ping -n 16 127.0.0.1 >NUL & type NUL > $TEST_PATH_WIN & tsdiscon"
-    else
-        CMD_STRING="/C type NUL > $TEST_PATH_WIN && tsdiscon"
-    fi
+    CMD_STRING="/C type NUL > $TEST_PATH_WIN && tsdiscon"
 
     # shellcheck disable=SC2140,SC2027,SC2086 # Disable warnings regarding unquoted strings.
     $FREERDP_COMMAND \
@@ -1713,7 +1707,7 @@ function waConfigureDetectedApps() {
         # On WINDOWS systems, lines are terminated with both a carriage return (\r) and a newline (\n) character.
         # Remove all carriage returns (\r) within the 'detected' file, as the file was written by Windows.
         if [ "$PLATFORM" = "Darwin" ]; then
-            sed -i '' 's/\r//g' "$DETECTED_FILE_PATH"
+            sed -i '' 's/\r//g' "$DETECTED_FILE_PATH" # BSD sed require explisit '' for "no backup file"
         else
             sed -i 's/\r//g' "$DETECTED_FILE_PATH"
         fi
