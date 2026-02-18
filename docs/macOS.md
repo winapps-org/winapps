@@ -43,14 +43,6 @@ chmod 600 ~/.config/winapps/winapps.conf
 
 Set `RDP_IP` to your Windows machine's IP address. Unlike Linux, macOS does not support KVM auto-detection, so `RDP_IP` is **required**.
 
-### Optional: `TSCLIENT_HOME`
-
-WinApps auto-detects your macOS volume name (e.g., `Macintosh HD`) to compute the correct `\\tsclient\...` path for file passthrough. If auto-detection fails or you use a non-standard volume name, you can override it:
-
-```bash
-TSCLIENT_HOME='\\tsclient\Macintosh HD\Users\myuser'
-```
-
 ## Windows Setup
 
 1. **Enable Remote Desktop** on the Windows machine
@@ -105,16 +97,10 @@ WinApps uses two different RDP approaches on macOS:
 Day-to-day:
 - `winapps word` generates a temporary `.rdp` file with RemoteApp settings and opens it
 - `winapps windows` generates a full desktop `.rdp` file
-- Files passed as arguments are mapped through `\\tsclient\<Volume Name>\Users\...` (drive redirection)
 
 ### Path Mapping
 
 On Linux, FreeRDP's `+home-drive` flag maps `$HOME` to `\\tsclient\home`.
-
-On macOS, Microsoft "Windows App" with `drivestoredirect:s:*` maps volumes by name:
-`\\tsclient\Macintosh HD\Users\username\...`
-
-WinApps auto-detects the volume name via `diskutil info /` and computes the correct tsclient base path.
 
 ## Credential Handling
 
@@ -126,5 +112,4 @@ Passwords are not stored in `.rdp` files for security. The RDP client will promp
 - **Connection refused**: Verify `RDP_IP` is correct and RDP is enabled on Windows
 - **RemoteApp not working**: Ensure `install/RDPApps.reg` was merged on the Windows machine
 - **Files not accessible**: Check that drive redirection is enabled (it is by default in generated `.rdp` files)
-- **Wrong volume name detected**: Override with `TSCLIENT_HOME` in your config file
 - **`nc` timeout errors**: macOS uses `-w` flag for timeout instead of the `timeout` wrapper; this is handled automatically
