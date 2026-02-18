@@ -330,16 +330,6 @@ Contributing to the list of supported applications is encouraged through submiss
 
 ## Installation
 
-### macOS
-
-For macOS installation and setup, see the [macOS guide](docs/macOS.md). WinApps on macOS uses Microsoft "Windows App" (free from the Mac App Store) instead of FreeRDP, and requires no virtual machine on the Mac — just a Windows machine with RDP enabled.
-
-```bash
-# Quick start (Homebrew)
-brew tap winapps-org/winapps
-brew install winapps
-```
-
 ### GNU/Linux
 ### Step 1: Configure a Windows VM
 Both `Docker` and `Podman` are recommended backends for running the Windows virtual machine, as they facilitate an automated Windows installation process. WinApps is also compatible with `libvirt`. While this method requires considerably more manual configuration, it also provides greater virtual machine customisation options. All three methods leverage the `KVM` hypervisor, ensuring excellent virtual machine performance. Ultimately, the choice of backend depends on your specific use case.
@@ -638,6 +628,17 @@ bash <(curl https://raw.githubusercontent.com/winapps-org/winapps/main/setup.sh)
 Once WinApps is installed, a list of additional arguments can be accessed by running `winapps-setup --help`.
 
 <img src="./docs/readme/installer.gif" width=1000 alt="WinApps Installer Animation.">
+
+### macOS
+
+For macOS installation and setup, see the [macOS guide](docs/macOS.md). WinApps on macOS uses Microsoft "Windows App" (free from the Mac App Store) instead of FreeRDP, and requires no virtual machine on the Mac — just a Windows machine with RDP enabled.
+
+```bash
+# Quick start (Homebrew)
+brew tap winapps-org/winapps
+brew install winapps
+```
+
 
 ## Adding Additional Pre-defined Applications
 Adding your own applications with custom icons and MIME types to the installer is easy. Simply copy one of the application configurations in the `apps` folder located within the WinApps repository, and:
