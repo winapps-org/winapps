@@ -32,8 +32,8 @@ readonly SLEEP_DETECT_PATH="${APPDATA_PATH}/last_activity"
 readonly SLEEP_MARKER="${APPDATA_PATH}/sleep_marker"
 
 # PLATFORM
-PLATFORM="$(uname -s)"
-readonly PLATFORM
+# shellcheck disable=SC2155 # Silence warnings regarding masking return values through simultaneous declaration and assignment.
+readonly PLATFORM="$(uname -s)"
 
 # OTHER
 readonly CONTAINER_NAME="WinApps" # FOR 'docker' AND 'podman' ONLY
@@ -185,9 +185,9 @@ function waNotify() {
     fi
 }
 
-# Name: 'generate_rdp'
+# Name: 'waGenerateRdpFiles'
 # Role: Generate a .rdp file for macOS and return the path.
-function generate_rdp() {
+function waGenerateRdpFiles() {
     local MODE="$1"          # "desktop" or "remoteapp"
     local APP_NAME="$2"      # App name (for remoteapp)
     local APP_EXE="$3"       # Windows executable (for remoteapp)
@@ -690,10 +690,10 @@ function waRunCommand() {
         local RDP_FILE=""
         if [ "$1" = "windows" ]; then
             dprint "MACOS WINDOWS DESKTOP"
-            RDP_FILE=$(generate_rdp "desktop" "windows" "" "")
+            RDP_FILE=$(waGenerateRdpFiles "desktop" "windows" "" "")
         elif [ "$1" = "manual" ]; then
             dprint "MACOS MANUAL: ${2}"
-            RDP_FILE=$(generate_rdp "remoteapp" "manual" "$2" "")
+            RDP_FILE=$(waGenerateRdpFiles "remoteapp" "manual" "$2" "")
         else
             # Named app — resolve info file.
             if [ -e "${SCRIPT_DIR_PATH}/../apps/${1}/info" ]; then
@@ -724,7 +724,7 @@ function waRunCommand() {
                 APP_CMDLINE="\"${FILE_PATH}\""
             fi
             dprint "MACOS APP: ${1} (${WIN_EXECUTABLE})"
-            RDP_FILE=$(generate_rdp "remoteapp" "$1" "$WIN_EXECUTABLE" "$APP_CMDLINE")
+            RDP_FILE=$(waGenerateRdpFiles "remoteapp" "$1" "$WIN_EXECUTABLE" "$APP_CMDLINE")
         fi
 
         dprint "RDP_FILE: ${RDP_FILE}"
