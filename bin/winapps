@@ -61,7 +61,6 @@ BOOT_TIMEOUT=120
 HIDEF="on"
 RDP_FLAGS_WINDOWS=""
 RDP_FLAGS_NON_WINDOWS=""
-TSCLIENT_HOME=""
 
 # OTHER
 FREERDP_PID=-1
@@ -272,16 +271,6 @@ function waLoadConfig() {
         waThrowExit $EC_MISSING_CONFIG
     fi
 
-    # Compute TSCLIENT_HOME if not set in config.
-    if [ -z "$TSCLIENT_HOME" ]; then
-        if [ "$PLATFORM" = "Darwin" ]; then
-            local VOL_NAME
-            VOL_NAME=$(diskutil info / | awk -F: '/Volume Name/{gsub(/^ +| +$/,"",$2); print $2}')
-            TSCLIENT_HOME="\\\\tsclient\\${VOL_NAME}${HOME//\//\\}"
-        else
-            TSCLIENT_HOME='\\tsclient\home'
-        fi
-    fi
 
     # Update $RDP_SCALE.
     waFixScale
@@ -713,13 +702,6 @@ function waRunCommand() {
             fi
 
             local APP_CMDLINE=""
-            if [ -n "$2" ]; then
-                # Convert UNIX path to Windows tsclient path.
-                FILE_PATH=$(echo "$2" | sed -e 's|^'"${HOME}"'|'"${TSCLIENT_HOME}"'|' -e 's|/|\\|g')
-                dprint "UNIX_FILE_PATH: ${2}"
-                dprint "WINDOWS_FILE_PATH: ${FILE_PATH}"
-                APP_CMDLINE="$FILE_PATH"
-            fi
             dprint "MACOS APP: ${1} (${WIN_EXECUTABLE})"
             RDP_FILE=$(waGenerateRdpFiles "remoteapp" "$1" "$WIN_EXECUTABLE" "$APP_CMDLINE")
         fi
