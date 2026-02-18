@@ -612,7 +612,6 @@ function waCheckScriptDependencies() {
         if [ "$PLATFORM" = "Darwin" ]; then
             echo "macOS:"
             echo -e "  ${COMMAND_TEXT}xcode-select --install${CLEAR_TEXT}"
-            echo -e "  ${COMMAND_TEXT}brew install git${CLEAR_TEXT}"
         else
             echo "Debian/Ubuntu-based systems:"
             echo -e "  ${COMMAND_TEXT}sudo apt install git${CLEAR_TEXT}"
@@ -640,8 +639,7 @@ function waCheckScriptDependencies() {
         # Display the suggested action(s).
         echo "--------------------------------------------------------------------------------"
         if [ "$PLATFORM" = "Darwin" ]; then
-            echo "macOS:"
-            echo -e "  ${COMMAND_TEXT}brew install curl${CLEAR_TEXT}"
+            echo "macOS should come with curl!"
         else
             echo "Debian/Ubuntu-based systems:"
             echo -e "  ${COMMAND_TEXT}sudo apt install curl${CLEAR_TEXT}"
@@ -1239,7 +1237,7 @@ function waCheckRDPAccess() {
     # shellcheck disable=SC2140,SC2027,SC2086 # Disable warnings regarding unquoted strings.
     $FREERDP_COMMAND \
         $RDP_FLAGS_NON_WINDOWS \
-        /cert:ignore \
+        /cert:tofu \
         /d:"$RDP_DOMAIN" \
         /u:"$RDP_USER" \
         /p:"$RDP_PASS" \
