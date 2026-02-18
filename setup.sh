@@ -1864,7 +1864,7 @@ function waInstall() {
         return "$EC_INVALID_FLAVOR"
     fi
 
-    # macOS: FreeRDP drive registration adds ~15s overhead; increase timeouts.
+    # macOS: xFreeRDP on xquartz adds ~15s overhead; increase timeouts.
     if [ "$PLATFORM" = "Darwin" ]; then
         [ "$RDP_TIMEOUT" -lt 60 ] && RDP_TIMEOUT=60
         [ "$APP_SCAN_TIMEOUT" -lt 90 ] && APP_SCAN_TIMEOUT=90
@@ -2082,7 +2082,7 @@ function waAddApps() {
         return "$EC_INVALID_FLAVOR"
     fi
 
-    # macOS: FreeRDP drive registration adds ~15s overhead; increase timeouts.
+    # macOS: xFreeRDP on xquartz adds ~15s overhead; increase timeouts.
     if [ "$PLATFORM" = "Darwin" ]; then
         [ "$RDP_TIMEOUT" -lt 60 ] && RDP_TIMEOUT=60
         [ "$APP_SCAN_TIMEOUT" -lt 90 ] && APP_SCAN_TIMEOUT=90
