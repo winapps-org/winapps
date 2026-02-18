@@ -34,8 +34,8 @@ readonly EC_APPQUERY_FAIL="15"   # Failed to query Windows for installed applica
 readonly EC_INVALID_FLAVOR="16"  # Backend specified is not 'libvirt', 'docker' or 'podman'.
 
 # PLATFORM
-PLATFORM="$(uname -s)"
-readonly PLATFORM
+# shellcheck disable=SC2155 # Silence warnings regarding masking return values through simultaneous declaration and assignment.
+readonly PLATFORM="$(uname -s)"
 
 # HOMEBREW PREFIX (macOS only)
 HOMEBREW_PREFIX=""
