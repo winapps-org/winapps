@@ -7,7 +7,6 @@
   libnotify,
   netcat,
   iproute2,
-  writeShellScriptBin,
   nix-filter ? throw "Pass github:numtide/nix-filter as an argument!",
   ...
 }:
@@ -30,7 +29,7 @@ stdenv.mkDerivation rec {
 
   nativeBuildInputs = [ makeWrapper ];
   buildInputs = [
-    (writeShellScriptBin "xfreerdp3" ''${lib.getExe' freerdp "xfreerdp"} "$@"'')
+    freerdp
     libnotify
     dialog
     netcat
