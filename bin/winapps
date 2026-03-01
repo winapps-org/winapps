@@ -55,6 +55,7 @@ AUTOPAUSE_TIME="300"
 DEBUG="true"
 BOOT_TIMEOUT=120
 HIDEF="on"
+RDP_FLATPAK=0
 RDP_FLAGS_WINDOWS=""
 RDP_FLAGS_NON_WINDOWS=""
 
@@ -63,21 +64,148 @@ FREERDP_PID=-1
 NEEDED_BOOT=false
 
 ### TRAPS ###
-# Catch SIGINT (CTRL+C) to call 'waCleanUp'.
-trap waCleanUp SIGINT
+# Catch SIGINT (CTRL+C) and SIGTERM to call 'waKillCleanExit'.
+trap waKillCleanExit SIGINT SIGTERM
 
 ### FUNCTIONS ###
-# Name: 'waCleanUp'
+# Name: 'waCleanFreeRDP'
 # Role: Clean up remains prior to exit.
-waCleanUp() {
-    # Kill FreeRDP.
-    [ "$FREERDP_PID" -gt 0 ] && kill -9 "$FREERDP_PID" &>/dev/null
+function waCleanFreeRDP() {
+    for proc_file in "${APPDATA_PATH}"/FreeRDP_Process_*.cproc; do
+        # Protect against glob non-expansion.
+        [[ -f "$proc_file" ]] || break
 
-    # Remove '.cproc' file.
-    [ -f "${APPDATA_PATH}/FreeRDP_Process_${FREERDP_PID}.cproc" ] && rm "${APPDATA_PATH}/FreeRDP_Process_${FREERDP_PID}.cproc" &>/dev/null
+        # Extract the file name from the path.
+        cproc=$(basename "$proc_file")
+
+        # Remove the 'FreeRDP_Process_' prefix.
+        cproc="${cproc#FreeRDP_Process_}"
+
+        # Remove the '.cproc' file extension.
+        cproc="${cproc%.cproc}"
+
+        if [[ "$cproc" =~ ^[0-9]+$ ]]; then
+            # Proceed if process dir missing OR comm unreadable OR name doesn’t match.
+            if [[ ! -d "/proc/$cproc" ]] || [[ ! -r "/proc/$cproc/comm" ]] || [[ $(<"/proc/$cproc/comm") != *freerdp* ]]; then
+                # Delete the file.
+                rm -- "$proc_file" &>/dev/null
+            fi
+        elif [[ "$cproc" == "Flatpak" ]]; then
+            if command -v flatpak > /dev/null 2>&1; then
+                # Proceed if the flatpak is not running.
+                if ! flatpak ps --columns=application | grep -q "^com.freerdp.FreeRDP$"; then
+                    # Delete the file.
+                    rm -- "$proc_file" &>/dev/null
+                fi
+            fi
+        fi
+    done
+}
+
+# Name: 'waKillFreeRDP'
+# Role: Kill WinApps FreeRDP sessions.
+function waKillFreeRDP() {
+    # Declare variables.
+    local TERMINATED_PROCESS_IDS=()
+
+    # Loop through each matching file and add to the array.
+    for FREERDP_PROCESS_FILE in "${APPDATA_PATH}/FreeRDP_Process_"*.cproc; do
+        # Ensure the pattern is not treated as a literal string if no files match.
+        [[ -f "$FREERDP_PROCESS_FILE" ]] || break
+
+        # Extract the file name from the path.
+        FREERDP_PROCESS_FILE=$(basename "$FREERDP_PROCESS_FILE")
+
+        # Remove the 'FreeRDP_Process_' prefix.
+        FREERDP_PROCESS_FILE="${FREERDP_PROCESS_FILE#FreeRDP_Process_}"
+
+        # Remove the '.cproc' file extension.
+        FREERDP_PROCESS_FILE="${FREERDP_PROCESS_FILE%.cproc}"
+
+        # Track termination action.
+        KILLED=false
+
+        # Terminate processes.
+        if [[ "$FREERDP_PROCESS_FILE" =~ ^[0-9]+$ ]] && \
+           [[ -d "/proc/$FREERDP_PROCESS_FILE" ]] && \
+           [[ -r "/proc/$FREERDP_PROCESS_FILE/comm" ]] && \
+           [[ $(<"/proc/$FREERDP_PROCESS_FILE/comm") == *freerdp* ]]; then
+            # SIGTERM
+            kill -15 "$FREERDP_PROCESS_FILE" &>/dev/null
+
+            # Wait up to 5 seconds.
+            for _ in {1..5}; do
+                sleep 1
+                [[ ! -d "/proc/$FREERDP_PROCESS_FILE" ]] && break
+            done
+
+            # SIGKILL
+            if [[ -d "/proc/$FREERDP_PROCESS_FILE" ]] && \
+               [[ -r "/proc/$FREERDP_PROCESS_FILE/comm" ]] && \
+               [[ $(<"/proc/$FREERDP_PROCESS_FILE/comm") == *freerdp* ]]; then
+                kill -9 "$FREERDP_PROCESS_FILE" &>/dev/null
+            fi
+
+            # Track termination action.
+            KILLED=true
+        elif [[ "$FREERDP_PROCESS_FILE" == "Flatpak" ]] && \
+             command -v flatpak >/dev/null 2>&1 && \
+             flatpak ps --columns=application | grep -q "^com.freerdp.FreeRDP$"; then
+            # Terminate the process.
+            flatpak kill com.freerdp.FreeRDP &>/dev/null
+
+            # Track termination action.
+            KILLED=true
+        fi
+
+        # Delete FreeRDP process tracking file.
+        # NOTE: Better practice to call 'waCleanFreeRDP' to handle this in case FreeRDP process(es) still not killed.
+        #rm -- "${APPDATA_PATH}/FreeRDP_Process_${FREERDP_PROCESS_FILE}.cproc" &>/dev/null
+
+        if [[ "$KILLED" == true ]]; then
+            # Add the process ID to the list of terminated processes.
+            TERMINATED_PROCESS_IDS+=("$FREERDP_PROCESS_FILE")
+        fi
+    done
+
+    # Display feedback if any processes were terminated.
+    if [ ${#TERMINATED_PROCESS_IDS[@]} -ne 0 ]; then
+        dprint "KILLED FREERDP PROCESSES: $(
+            IFS=', '
+            printf '%s' "${TERMINATED_PROCESS_IDS[*]}"
+        )."
+        echo "Killed FreeRDP process(es):"
+        printf '%s\n' "${TERMINATED_PROCESS_IDS[@]}"
+    fi
+}
+
+# Name: 'waKillCleanExit'
+# Role: Kill FreeRDP processes and clean process tracking files when WinApps is forcefully terminated.
+function waKillCleanExit() {
+    # Kill FreeRDP processes.
+    waKillFreeRDP
+
+    # Clean orphaned files.
+    waCleanFreeRDP
 
     # Terminate script.
     exit 1
+}
+
+# Name: 'waEarlyDispatch'
+# Role: Handle lightweight subcommands.
+function waEarlyDispatch() {
+    if [[ -z "${1:-}" ]] || [[ "$1" == "help" ]]; then
+        waHelp
+        exit 0
+    elif [[ "$1" == "killrdp" ]]; then
+        waKillFreeRDP
+        waCleanFreeRDP
+        exit 0
+    elif [[ "$1" == "cleanrdp" ]]; then
+        waCleanFreeRDP
+        exit 0
+    fi
 }
 
 # Name: 'waThrowExit'
@@ -173,6 +301,31 @@ function waFixRemovableMedia() {
             "WinApps Notice" "Using default removable media path: $REMOVABLE_MEDIA"
     fi
 }
+
+# Name: 'waHelp'
+# Role: Print usage information.
+function waHelp() {
+    local script_name
+    script_name="$(basename "$0")"
+
+    echo "Usage:"
+    echo "  ${script_name} help"
+    echo "  ${script_name} windows"
+    echo "  ${script_name} manual <remoteapp-executable>"
+    echo "  ${script_name} <app> [file]"
+    echo "  ${script_name} killrdp"
+    echo "  ${script_name} cleanrdp"
+    echo
+
+    echo "Commands:"
+    echo "  help                           --> Show this help message."
+    echo "  windows                        --> Start a full Windows desktop RDP session."
+    echo "  manual <remoteapp-executable>  --> Start a RemoteApp session for an arbitrary executable."
+    echo "  <app> [file]                   --> Start a community-tested application using a preconfigured definition. Optionally open a file."
+    echo "  killrdp                        --> Terminate any running WinApps FreeRDP sessions."
+    echo "  cleanrdp                       --> Remove orphaned FreeRDP process tracking files."
+}
+
 # Name: 'waFixScale'
 # Role: Since FreeRDP only supports '/scale' values of 100, 140 or 180, find the closest supported argument to the user's configuration.
 function waFixScale() {
@@ -244,7 +397,7 @@ function waLastRun() {
     fi
 
     # Update the file modification time with the current time.
-    touch "$LASTRUN_PATH"
+    touch -- "$LASTRUN_PATH"
     CURR_RUN_UNIX_TIME=$(stat -t -c %Y "$LASTRUN_PATH")
     dprint "THIS_RUN: ${CURR_RUN_UNIX_TIME}"
 }
@@ -285,6 +438,7 @@ function waGetFreeRDPCommand() {
                     FREERDP_MAJOR_VERSION=$(flatpak list --columns=application,version | grep "^com.freerdp.FreeRDP" | awk '{print $2}' | cut -d'.' -f1)
                     if [[ $FREERDP_MAJOR_VERSION =~ ^[0-9]+$ ]] && ((FREERDP_MAJOR_VERSION >= 3)); then
                         FREERDP_COMMAND="flatpak run --command=xfreerdp com.freerdp.FreeRDP"
+                        RDP_FLATPAK=1
                     fi
                 fi
             fi
@@ -580,7 +734,7 @@ function waCheckPortOpen() {
             if [ "$TIME_ELAPSED" -eq "$TIME_INTERVAL" ]; then
                 notify-send --expire-time=4000 --icon="dialog-info" --app-name="WinApps" --urgency="low" "WinApps" "Requesting Windows IP address..."
             fi
-            RDP_IP=$(ip neigh show | grep "$VM_MAC" | grep -oE "([0-9]{1,3}\.){3}[0-9]{1,3}") # VM IP address.
+            RDP_IP=$(ip neigh show | grep -F -- "$VM_MAC" | grep -oE "([0-9]{1,3}\.){3}[0-9]{1,3}") # VM IP address.
             [ -n "$RDP_IP" ] && break
             sleep $TIME_INTERVAL
             TIME_ELAPSED=$((TIME_ELAPSED + TIME_INTERVAL))
@@ -700,15 +854,28 @@ function waRunCommand() {
         fi
     fi
 
-    if [ "$FREERDP_PID" -ne -1 ]; then
-        # Create a file with the process ID.
-        touch "${APPDATA_PATH}/FreeRDP_Process_${FREERDP_PID}.cproc"
+    if [[ "$RDP_FLATPAK" == "0" ]]; then
+        if [ "$FREERDP_PID" -ne -1 ]; then
+            # Create a file with the process ID.
+            touch -- "${APPDATA_PATH}/FreeRDP_Process_${FREERDP_PID}.cproc"
+
+            # Wait for the process to terminate.
+            wait "$FREERDP_PID"
+
+            # Remove the file with the process ID.
+            rm -- "${APPDATA_PATH}/FreeRDP_Process_${FREERDP_PID}.cproc" &>/dev/null
+        fi
+    else
+        # Create a file.
+        touch -- "${APPDATA_PATH}/FreeRDP_Process_Flatpak.cproc"
 
         # Wait for the process to terminate.
-        wait $FREERDP_PID
+        while flatpak ps --columns=application | grep -q "^com.freerdp.FreeRDP$"; do
+            sleep 5
+        done
 
-        # Remove the file with the process ID.
-        rm "${APPDATA_PATH}/FreeRDP_Process_${FREERDP_PID}.cproc" &>/dev/null
+        # Remove the file.
+        rm -- "${APPDATA_PATH}/FreeRDP_Process_Flatpak.cproc" &>/dev/null
     fi
 }
 
@@ -781,7 +948,7 @@ function waTimeSync() {
             dprint "DETECTED SLEEP/WAKE CYCLE (uptime gap: ${UPTIME_DIFF}s). CREATING SLEEP MARKER TO SYNC WINDOWS TIME."
 
             # Create sleep marker which will be monitored by Windows VM to trigger time sync
-            touch "$SLEEP_MARKER"
+            touch -- "$SLEEP_MARKER"
 
             dprint "CREATED SLEEP MARKER"
         fi
@@ -801,9 +968,11 @@ dprint "START"
 dprint "SCRIPT_DIR: ${SCRIPT_DIR_PATH}"
 dprint "SCRIPT_ARGS: ${*}"
 dprint "HOME_DIR: ${HOME}"
+waEarlyDispatch "$@"
 waLastRun
 waLoadConfig
 waGetFreeRDPCommand
+waCleanFreeRDP
 
 # Send password on the command line if a command to retrieve the password from is not given
 # Otherwise, set FREERDP_ASKPASS which freerdp will read the stdout of to use as the password
