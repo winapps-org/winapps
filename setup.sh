@@ -33,6 +33,16 @@ readonly EC_RDP_FAIL="14"        # FreeRDP failed to establish a connection with
 readonly EC_APPQUERY_FAIL="15"   # Failed to query Windows for installed applications.
 readonly EC_INVALID_FLAVOR="16"  # Backend specified is not 'libvirt', 'docker' or 'podman'.
 
+# PLATFORM
+# shellcheck disable=SC2155 # Silence warnings regarding masking return values through simultaneous declaration and assignment.
+readonly PLATFORM="$(uname -s)"
+
+# HOMEBREW PREFIX (macOS only)
+HOMEBREW_PREFIX=""
+if [ "$PLATFORM" = "Darwin" ] && command -v brew &>/dev/null; then
+    HOMEBREW_PREFIX="$(brew --prefix)"
+fi
+
 # PATHS
 # 'BIN'
 readonly SYS_BIN_PATH="/usr/local/bin"                  # UNIX path to 'bin' directory for a '--system' WinApps installation.
@@ -147,11 +157,22 @@ function waUsage() {
 # Name: 'waGetSourceCode'
 # Role: Grab the WinApps source code using Git.
 function waGetSourceCode() {
+    # macOS + Homebrew: apps/ and install/ are already at SOURCE_PATH
+    # (installed by the formula to pkgshare). Skip git clone.
+    if [ "$PLATFORM" = "Darwin" ] && [ -n "$HOMEBREW_PREFIX" ] && [ -d "$SOURCE_PATH/apps" ]; then
+        cd "$SOURCE_PATH" || return "$EC_FAILED_CD"
+        return
+    fi
+
     # Declare variables.
     local SCRIPT_DIR_PATH="" # Stores the absolute path of the directory containing the script.
 
     # Determine the absolute path to the directory containing the script.
-    SCRIPT_DIR_PATH=$(readlink -f "$(dirname "${BASH_SOURCE[0]}")")
+    if [ "$PLATFORM" = "Darwin" ]; then
+        SCRIPT_DIR_PATH=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)
+    else
+        SCRIPT_DIR_PATH=$(readlink -f "$(dirname "${BASH_SOURCE[0]}")")
+    fi
 
     # Check if winapps is currently installed on $SOURCE_PATH
     if [[ -f "$SCRIPT_DIR_PATH/winapps" && "$SCRIPT_DIR_PATH" != "$SOURCE_PATH" ]]; then
@@ -193,7 +214,9 @@ function waGetSourceCode() {
 function waGetInquirer() {
     local INQUIRER=$INQUIRER_PATH
 
-    if [ -d "$SYS_SOURCE_PATH" ]; then
+    if [ -n "$HOMEBREW_PREFIX" ] && [ -f "$HOMEBREW_PREFIX/share/winapps/$INQUIRER_PATH" ]; then
+        INQUIRER="$HOMEBREW_PREFIX/share/winapps/$INQUIRER_PATH"
+    elif [ -d "$SYS_SOURCE_PATH" ]; then
         INQUIRER=$SYS_SOURCE_PATH/$INQUIRER_PATH
     elif [ -d "$USER_SOURCE_PATH" ] ; then
         INQUIRER=$USER_SOURCE_PATH/$INQUIRER_PATH
@@ -386,6 +409,13 @@ function waConfigurePathsAndPermissions() {
         BIN_PATH="$USER_BIN_PATH"
         APP_PATH="$USER_APP_PATH"
         APPDATA_PATH="$USER_APPDATA_PATH"
+
+        # macOS: ~/.local/bin is not on PATH by default.
+        # Use Homebrew paths — bin for scripts, share for app data.
+        if [ "$PLATFORM" = "Darwin" ] && [ -n "$HOMEBREW_PREFIX" ]; then
+            BIN_PATH="$HOMEBREW_PREFIX/bin"
+            SOURCE_PATH="$HOMEBREW_PREFIX/share/winapps"
+        fi
     elif [ "$OPT_SYSTEM" -eq 1 ]; then
         SUDO="sudo"
         SOURCE_PATH="$SYS_SOURCE_PATH"
@@ -579,14 +609,19 @@ function waCheckScriptDependencies() {
 
         # Display the suggested action(s).
         echo "--------------------------------------------------------------------------------"
-        echo "Debian/Ubuntu-based systems:"
-        echo -e "  ${COMMAND_TEXT}sudo apt install git${CLEAR_TEXT}"
-        echo "Red Hat/Fedora-based systems:"
-        echo -e "  ${COMMAND_TEXT}sudo dnf install git${CLEAR_TEXT}"
-        echo "Arch Linux systems:"
-        echo -e "  ${COMMAND_TEXT}sudo pacman -S git${CLEAR_TEXT}"
-        echo "Gentoo Linux systems:"
-        echo -e "  ${COMMAND_TEXT}sudo emerge --ask dev-vcs/git${CLEAR_TEXT}"
+        if [ "$PLATFORM" = "Darwin" ]; then
+            echo "macOS:"
+            echo -e "  ${COMMAND_TEXT}xcode-select --install${CLEAR_TEXT}"
+        else
+            echo "Debian/Ubuntu-based systems:"
+            echo -e "  ${COMMAND_TEXT}sudo apt install git${CLEAR_TEXT}"
+            echo "Red Hat/Fedora-based systems:"
+            echo -e "  ${COMMAND_TEXT}sudo dnf install git${CLEAR_TEXT}"
+            echo "Arch Linux systems:"
+            echo -e "  ${COMMAND_TEXT}sudo pacman -S git${CLEAR_TEXT}"
+            echo "Gentoo Linux systems:"
+            echo -e "  ${COMMAND_TEXT}sudo emerge --ask dev-vcs/git${CLEAR_TEXT}"
+        fi
         echo "--------------------------------------------------------------------------------"
 
         # Terminate the script.
@@ -603,14 +638,18 @@ function waCheckScriptDependencies() {
 
         # Display the suggested action(s).
         echo "--------------------------------------------------------------------------------"
-        echo "Debian/Ubuntu-based systems:"
-        echo -e "  ${COMMAND_TEXT}sudo apt install curl${CLEAR_TEXT}"
-        echo "Red Hat/Fedora-based systems:"
-        echo -e "  ${COMMAND_TEXT}sudo dnf install curl${CLEAR_TEXT}"
-        echo "Arch Linux systems:"
-        echo -e "  ${COMMAND_TEXT}sudo pacman -S curl${CLEAR_TEXT}"
-        echo "Gentoo Linux systems:"
-        echo -e "  ${COMMAND_TEXT}sudo emerge --ask net-misc/curl${CLEAR_TEXT}"
+        if [ "$PLATFORM" = "Darwin" ]; then
+            echo "macOS should come with curl!"
+        else
+            echo "Debian/Ubuntu-based systems:"
+            echo -e "  ${COMMAND_TEXT}sudo apt install curl${CLEAR_TEXT}"
+            echo "Red Hat/Fedora-based systems:"
+            echo -e "  ${COMMAND_TEXT}sudo dnf install curl${CLEAR_TEXT}"
+            echo "Arch Linux systems:"
+            echo -e "  ${COMMAND_TEXT}sudo pacman -S curl${CLEAR_TEXT}"
+            echo "Gentoo Linux systems:"
+            echo -e "  ${COMMAND_TEXT}sudo emerge --ask net-misc/curl${CLEAR_TEXT}"
+        fi
         echo "--------------------------------------------------------------------------------"
 
         # Terminate the script.
@@ -627,14 +666,19 @@ function waCheckScriptDependencies() {
 
         # Display the suggested action(s).
         echo "--------------------------------------------------------------------------------"
-        echo "Debian/Ubuntu-based systems:"
-        echo -e "  ${COMMAND_TEXT}sudo apt install dialog${CLEAR_TEXT}"
-        echo "Red Hat/Fedora-based systems:"
-        echo -e "  ${COMMAND_TEXT}sudo dnf install dialog${CLEAR_TEXT}"
-        echo "Arch Linux systems:"
-        echo -e "  ${COMMAND_TEXT}sudo pacman -S dialog${CLEAR_TEXT}"
-        echo "Gentoo Linux systems:"
-        echo -e "  ${COMMAND_TEXT}sudo emerge --ask dialog${CLEAR_TEXT}"
+        if [ "$PLATFORM" = "Darwin" ]; then
+            echo "macOS:"
+            echo -e "  ${COMMAND_TEXT}brew install dialog${CLEAR_TEXT}"
+        else
+            echo "Debian/Ubuntu-based systems:"
+            echo -e "  ${COMMAND_TEXT}sudo apt install dialog${CLEAR_TEXT}"
+            echo "Red Hat/Fedora-based systems:"
+            echo -e "  ${COMMAND_TEXT}sudo dnf install dialog${CLEAR_TEXT}"
+            echo "Arch Linux systems:"
+            echo -e "  ${COMMAND_TEXT}sudo pacman -S dialog${CLEAR_TEXT}"
+            echo "Gentoo Linux systems:"
+            echo -e "  ${COMMAND_TEXT}sudo emerge --ask dialog${CLEAR_TEXT}"
+        fi
         echo "--------------------------------------------------------------------------------"
 
         # Terminate the script.
@@ -645,6 +689,68 @@ function waCheckScriptDependencies() {
 # Name: 'waCheckInstallDependencies'
 # Role: Terminate script if dependencies required to install WinApps are missing.
 function waCheckInstallDependencies() {
+    # macOS: check for netcat and FreeRDP (needed for app scanning), skip Linux-only deps.
+    if [ "$PLATFORM" = "Darwin" ]; then
+        # Declare variables.
+        local FREERDP_MAJOR_VERSION=""
+
+        echo -n "Checking whether dependencies are installed... "
+
+        # 'Netcat'
+        if ! command -v nc &>/dev/null; then
+            echo -e "${FAIL_TEXT}Failed!${CLEAR_TEXT}\n"
+            echo -e "${ERROR_TEXT}ERROR:${CLEAR_TEXT} ${BOLD_TEXT}MISSING DEPENDENCIES.${CLEAR_TEXT}"
+            echo -e "${INFO_TEXT}Please install 'netcat' to proceed.${CLEAR_TEXT}"
+            return "$EC_MISSING_DEPS"
+        fi
+
+        # 'FreeRDP' (Version 3) — used by the installer for app scanning.
+        # macOS requires xfreerdp (not sdl-freerdp) because only xfreerdp supports
+        # RemoteApp mode (/app:). XQuartz is required as the X11 display server.
+        # Detection order: xfreerdp (v3+) → xfreerdp3.
+        if [ -z "$FREERDP_COMMAND" ]; then
+            if command -v xfreerdp &>/dev/null; then
+                FREERDP_MAJOR_VERSION=$(xfreerdp --version | head -n 1 | grep -o -m 1 '\b[0-9]\S*' | head -n 1 | cut -d'.' -f1)
+                if [[ $FREERDP_MAJOR_VERSION =~ ^[0-9]+$ ]] && ((FREERDP_MAJOR_VERSION >= 3)); then
+                    FREERDP_COMMAND="xfreerdp"
+                fi
+            fi
+
+            if [ -z "$FREERDP_COMMAND" ] && command -v xfreerdp3 &>/dev/null; then
+                FREERDP_MAJOR_VERSION=$(xfreerdp3 --version | head -n 1 | grep -o -m 1 '\b[0-9]\S*' | head -n 1 | cut -d'.' -f1)
+                if [[ $FREERDP_MAJOR_VERSION =~ ^[0-9]+$ ]] && ((FREERDP_MAJOR_VERSION >= 3)); then
+                    FREERDP_COMMAND="xfreerdp3"
+                fi
+            fi
+        fi
+
+        if [ -z "$FREERDP_COMMAND" ]; then
+            echo -e "${FAIL_TEXT}Failed!${CLEAR_TEXT}\n"
+            echo -e "${ERROR_TEXT}ERROR:${CLEAR_TEXT} ${BOLD_TEXT}MISSING DEPENDENCIES.${CLEAR_TEXT}"
+            echo -e "${INFO_TEXT}Please install 'FreeRDP' version 3 and 'XQuartz' to proceed.${CLEAR_TEXT}"
+            echo "--------------------------------------------------------------------------------"
+            echo "macOS (Homebrew):"
+            echo -e "  ${COMMAND_TEXT}brew install freerdp${CLEAR_TEXT}"
+            echo -e "  ${COMMAND_TEXT}brew install --cask xquartz${CLEAR_TEXT}"
+            echo "--------------------------------------------------------------------------------"
+            return "$EC_MISSING_DEPS"
+        fi
+
+        # xfreerdp requires an X11 display server. Launch XQuartz if not running.
+        if ! pgrep -x Xquartz &>/dev/null && ! pgrep -x X11 &>/dev/null; then
+            open -a XQuartz
+            sleep 2
+        fi
+        export DISPLAY="${DISPLAY:-:0}"
+
+        echo -e "${DONE_TEXT}Done!${CLEAR_TEXT}"
+        echo ""
+        echo -e "${INFO_TEXT}NOTE: The screen may flash during app scanning (xfreerdp uses XQuartz).${CLEAR_TEXT}"
+        echo -e "${INFO_TEXT}      Starting in 5 seconds...${CLEAR_TEXT}"
+        sleep 5
+        return
+    fi
+
     # Declare variables.
     local FREERDP_MAJOR_VERSION="" # Stores the major version of the installed copy of FreeRDP.
 
@@ -1063,7 +1169,13 @@ function waCheckPortOpen() {
     fi
 
     # Check for an open RDP port.
-    if ! timeout "$PORT_TIMEOUT" nc -z "$RDP_IP" "$RDP_PORT" &>/dev/null; then
+    local NC_RESULT=1
+    if [ "$PLATFORM" = "Darwin" ]; then
+        nc -z -w "$PORT_TIMEOUT" "$RDP_IP" "$RDP_PORT" &>/dev/null && NC_RESULT=0
+    else
+        timeout "$PORT_TIMEOUT" nc -z "$RDP_IP" "$RDP_PORT" &>/dev/null && NC_RESULT=0
+    fi
+    if [ "$NC_RESULT" -ne 0 ]; then
         # Complete the previous line.
         echo -e "${FAIL_TEXT}Failed!${CLEAR_TEXT}\n"
 
@@ -1107,10 +1219,15 @@ function waCheckRDPAccess() {
     # Remove existing 'FreeRDP Connection Test' file.
     rm -f "$TEST_PATH"
 
-    # This command should create a file on the host filesystem before terminating the RDP session. This command is silently executed as a background process.
-    # If the file is created, it means Windows received the command via FreeRDP successfully and can read and write to the Linux home folder.
+    # This command should create a file on the host filesystem before terminating the RDP session.
+    # If the file is created, it means Windows received the command successfully and can read and write to the home folder.
+    # Note: FreeRDP's +home-drive maps $HOME -> \\tsclient\home on both Linux and macOS.
     # Note: The following final line is expected within the log, indicating successful execution of the 'tsdiscon' command and termination of the RDP session.
     # [INFO][com.freerdp.core] - [rdp_print_errinfo]: ERRINFO_LOGOFF_BY_USER (0x0000000C):The disconnection was initiated by the user logging off their session on the server.
+
+    local CMD_STRING
+    CMD_STRING="/C type NUL > $TEST_PATH_WIN && tsdiscon"
+
     # shellcheck disable=SC2140,SC2027,SC2086 # Disable warnings regarding unquoted strings.
     $FREERDP_COMMAND \
         $RDP_FLAGS_NON_WINDOWS \
@@ -1121,8 +1238,8 @@ function waCheckRDPAccess() {
         /scale:"$RDP_SCALE" \
         +auto-reconnect \
         +home-drive \
-        /app:program:"C:\Windows\System32\cmd.exe",cmd:"/C type NUL > $TEST_PATH_WIN && tsdiscon" \
-        /v:"$RDP_IP" &>"$FREERDP_LOG" &
+        /app:program:"C:\Windows\System32\cmd.exe",cmd:"$CMD_STRING" \
+        /v:"$RDP_IP":"$RDP_PORT" &>"$FREERDP_LOG" &
 
     # Store the FreeRDP process ID.
     FREERDP_PROC=$!
@@ -1130,12 +1247,10 @@ function waCheckRDPAccess() {
     # Initialise the time counter.
     ELAPSED_TIME=0
 
-    # Wait a maximum of $RDP_TIMEOUT seconds for the background process to complete.
+    # Wait a maximum of $RDP_TIMEOUT seconds for the test file to appear.
     while [ "$ELAPSED_TIME" -lt "$RDP_TIMEOUT" ]; do
         # Check if the FreeRDP process is complete or if the test file exists.
-        if ! ps -p "$FREERDP_PROC" &>/dev/null || [ -f "$TEST_PATH" ]; then
-            break
-        fi
+        if ! ps -p "$FREERDP_PROC" &>/dev/null || [ -f "$TEST_PATH" ]; then break; fi
 
         # Wait for 5 seconds.
         sleep 5
@@ -1247,7 +1362,7 @@ function waFindInstalled() {
     # shellcheck disable=SC2140,SC2027,SC2086 # Disable warnings regarding unquoted strings.
     $FREERDP_COMMAND \
         $RDP_FLAGS_NON_WINDOWS \
-        /cert:tofu \
+        /cert:ignore \
         /d:"$RDP_DOMAIN" \
         /u:"$RDP_USER" \
         /p:"$RDP_PASS" \
@@ -1255,7 +1370,7 @@ function waFindInstalled() {
         +auto-reconnect \
         +home-drive \
         /app:program:"C:\Windows\System32\cmd.exe",cmd:"/C "$BATCH_SCRIPT_PATH_WIN"" \
-        /v:"$RDP_IP" &>"$FREERDP_LOG" &
+        /v:"$RDP_IP":"$RDP_PORT" &>"$FREERDP_LOG" &
 
     # Store the FreeRDP process ID.
     FREERDP_PROC=$!
@@ -1266,9 +1381,7 @@ function waFindInstalled() {
     # Wait a maximum of $APP_SCAN_TIMEOUT seconds for the batch script to finish running.
     while [ $ELAPSED_TIME -lt "$APP_SCAN_TIMEOUT" ]; do
         # Check if the FreeRDP process is complete or if the 'installed' file exists.
-        if ! ps -p "$FREERDP_PROC" &>/dev/null || [ -f "$INST_FILE_PATH" ]; then
-            break
-        fi
+        if ! ps -p "$FREERDP_PROC" &>/dev/null || [ -f "$INST_FILE_PATH" ]; then break; fi
 
         # Wait for 5 seconds.
         sleep 5
@@ -1333,8 +1446,10 @@ Comment=Microsoft Windows RDP Session"
     # Copy the 'Windows' icon.
     $SUDO cp "./install/windows.svg" "${APPDATA_PATH}/icons/windows.svg"
 
-    # Write the desktop entry content to a file.
-    echo "$WIN_DESKTOP" | $SUDO tee "${APP_PATH}/windows.desktop" &>/dev/null
+    # Write the desktop entry content to a file (Linux only).
+    if [ "$PLATFORM" != "Darwin" ]; then
+        echo "$WIN_DESKTOP" | $SUDO tee "${APP_PATH}/windows.desktop" &>/dev/null
+    fi
 
     # Write the bash script to a file.
     echo "$WIN_BASH" | $SUDO tee "${BIN_PATH}/windows" &>/dev/null
@@ -1385,8 +1500,10 @@ Comment=${FULL_NAME}
 Categories=${CATEGORIES}
 MimeType=${MIME_TYPES}"
 
-    # Store the '.desktop' file for the application.
-    echo "$APP_DESKTOP_FILE" | $SUDO tee "${APP_PATH}/${1}.desktop" &>/dev/null
+    # Store the '.desktop' file for the application (Linux only).
+    if [ "$PLATFORM" != "Darwin" ]; then
+        echo "$APP_DESKTOP_FILE" | $SUDO tee "${APP_PATH}/${1}.desktop" &>/dev/null
+    fi
 
     # Store the bash script for the application.
     echo "$APP_BASH" | $SUDO tee "${BIN_PATH}/${1}" &>/dev/null
@@ -1420,8 +1537,12 @@ function waConfigureOfficiallySupported() {
         echo -n "Creating an application entry for ${APP_NAME}... "
 
         # Copy the original, unmodified application assets.
-        # --no-preserve=mode is needed to avoid missing write permissions when copying from Nix store.
-        $SUDO cp -r --no-preserve=mode "./apps/${APP_NAME}" "${APPDATA_PATH}/apps"
+        if [ "$PLATFORM" = "Darwin" ]; then
+            $SUDO cp -R "./apps/${APP_NAME}" "${APPDATA_PATH}/apps"
+        else
+            # --no-preserve=mode is needed to avoid missing write permissions when copying from Nix store.
+            $SUDO cp -r --no-preserve=mode "./apps/${APP_NAME}" "${APPDATA_PATH}/apps"
+        fi
 
         local DESTINATION_INFO_FILE="${APPDATA_PATH}/apps/${APP_NAME}/info"
 
@@ -1430,13 +1551,17 @@ function waConfigureOfficiallySupported() {
         SED_SAFE_PATH="${SED_SAFE_PATH//\\/\\\\}"
 
         # Use the sanitized string to safely edit the file.
-        $SUDO sed -i "s|^WIN_EXECUTABLE=.*|WIN_EXECUTABLE=\"${SED_SAFE_PATH}\"|" "$DESTINATION_INFO_FILE"
+        if [ "$PLATFORM" = "Darwin" ]; then
+            $SUDO sed -i '' "s|^WIN_EXECUTABLE=.*|WIN_EXECUTABLE=\"${SED_SAFE_PATH}\"|" "$DESTINATION_INFO_FILE"
+        else
+            $SUDO sed -i "s|^WIN_EXECUTABLE=.*|WIN_EXECUTABLE=\"${SED_SAFE_PATH}\"|" "$DESTINATION_INFO_FILE"
+        fi
 
         # Configure the application using the clean name.
         waConfigureApp "$APP_NAME" svg
 
-        # Check if the application is an Office app and copy the protocol handler.
-        if [[ " ${OFFICE_APPS[*]} " == *" $APP_NAME "* ]]; then
+        # Check if the application is an Office app and copy the protocol handler (Linux only).
+        if [ "$PLATFORM" != "Darwin" ] && [[ " ${OFFICE_APPS[*]} " == *" $APP_NAME "* ]]; then
             # Determine the target directory based on whether the installation is for the system or user.
             if [[ "$OPT_SYSTEM" -eq 1 ]]; then
                 TARGET_DIR="$SYS_APP_PATH"
@@ -1569,7 +1694,11 @@ function waConfigureDetectedApps() {
         # On UNIX systems, lines are terminated with a newline character (\n).
         # On WINDOWS systems, lines are terminated with both a carriage return (\r) and a newline (\n) character.
         # Remove all carriage returns (\r) within the 'detected' file, as the file was written by Windows.
-        sed -i 's/\r//g' "$DETECTED_FILE_PATH"
+        if [ "$PLATFORM" = "Darwin" ]; then
+            sed -i '' 's/\r//g' "$DETECTED_FILE_PATH" # BSD sed require explisit '' for "no backup file"
+        else
+            sed -i 's/\r//g' "$DETECTED_FILE_PATH"
+        fi
 
         # Import the detected application information:
         # - Application Names               (NAMES)
@@ -1682,14 +1811,19 @@ function waInstall() {
     # Load the WinApps configuration file.
     waLoadConfig
 
+    # macOS always uses 'manual' flavor.
+    if [ "$PLATFORM" = "Darwin" ]; then WAFLAVOR="manual"; fi
+
     # Check for missing dependencies.
     waCheckInstallDependencies
 
-    # Update $RDP_SCALE.
-    waFixScale
+    # Update $RDP_SCALE (Linux/FreeRDP only).
+    if [ "$PLATFORM" != "Darwin" ]; then
+        waFixScale
+    fi
 
-    # Append additional FreeRDP flags if required.
-    if [[ -n $RDP_FLAGS ]]; then
+    # Append additional FreeRDP flags if required (Linux only).
+    if [ "$PLATFORM" != "Darwin" ] && [[ -n $RDP_FLAGS ]]; then
         FREERDP_COMMAND="${FREERDP_COMMAND} ${RDP_FLAGS}"
     fi
 
@@ -1730,6 +1864,12 @@ function waInstall() {
         return "$EC_INVALID_FLAVOR"
     fi
 
+    # macOS: xFreeRDP on xquartz adds ~15s overhead; increase timeouts.
+    if [ "$PLATFORM" = "Darwin" ]; then
+        [ "$RDP_TIMEOUT" -lt 60 ] && RDP_TIMEOUT=60
+        [ "$APP_SCAN_TIMEOUT" -lt 90 ] && APP_SCAN_TIMEOUT=90
+    fi
+
     # Check if the RDP port on Windows is open.
     waCheckPortOpen
 
@@ -1738,7 +1878,9 @@ function waInstall() {
 
     # Create required directories.
     $SUDO mkdir -p "$BIN_PATH"
-    $SUDO mkdir -p "$APP_PATH"
+    if [ "$PLATFORM" != "Darwin" ]; then
+        $SUDO mkdir -p "$APP_PATH"
+    fi
     $SUDO mkdir -p "$APPDATA_PATH/apps"
     $SUDO mkdir -p "$APPDATA_PATH/icons"
 
@@ -1746,8 +1888,11 @@ function waInstall() {
     waFindInstalled
 
     # Install the WinApps bash scripts.
-    $SUDO ln -sf "${SOURCE_PATH}/bin/winapps" "${BIN_PATH}/winapps"
-    $SUDO ln -sf "${SOURCE_PATH}/setup.sh" "${BIN_PATH}/winapps-setup"
+    # Skip on Homebrew — the formula already installed these to BIN_PATH.
+    if [ -z "$HOMEBREW_PREFIX" ]; then
+        $SUDO ln -sf "${SOURCE_PATH}/bin/winapps" "${BIN_PATH}/winapps"
+        $SUDO ln -sf "${SOURCE_PATH}/setup.sh" "${BIN_PATH}/winapps-setup"
+    fi
 
     # Configure the Windows RDP session application launcher.
     waConfigureWindows
@@ -1799,8 +1944,10 @@ function waUninstall() {
         TARGET_DIR="$USER_APP_PATH"
     fi
 
-    # Remove the 'ms-office-protocol-handler.desktop' file if it exists.
-    $SUDO rm -f "$TARGET_DIR/ms-office-protocol-handler.desktop"
+    # Remove the 'ms-office-protocol-handler.desktop' file if it exists (Linux only).
+    if [ "$PLATFORM" != "Darwin" ]; then
+        $SUDO rm -f "$TARGET_DIR/ms-office-protocol-handler.desktop"
+    fi
 
     # Declare variables.
     local WINAPPS_DESKTOP_FILES=()    # Stores a list of '.desktop' file paths.
@@ -1818,26 +1965,29 @@ function waUninstall() {
     # Remove application icons and shortcuts.
     $SUDO rm -rf "$APPDATA_PATH"
 
-    # Store '.desktop' files containing "${BIN_PATH}/winapps" in an array, returning an empty array if no such files exist.
-    readarray -t WINAPPS_DESKTOP_FILES < <(grep -l -d skip "${BIN_PATH}/winapps" "${APP_PATH}/"* 2>/dev/null || true)
+    # Remove '.desktop' files (Linux only — macOS never creates them).
+    if [ "$PLATFORM" != "Darwin" ]; then
+        # Store '.desktop' files containing "${BIN_PATH}/winapps" in an array, returning an empty array if no such files exist.
+        readarray -t WINAPPS_DESKTOP_FILES < <(grep -l -d skip "${BIN_PATH}/winapps" "${APP_PATH}/"* 2>/dev/null || true)
 
-    # Remove each '.desktop' file.
-    for DESKTOP_FILE_PATH in "${WINAPPS_DESKTOP_FILES[@]}"; do
-        # Trim leading and trailing whitespace from '.desktop' file path.
-        DESKTOP_FILE_PATH=$(echo "$DESKTOP_FILE_PATH" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
+        # Remove each '.desktop' file.
+        for DESKTOP_FILE_PATH in "${WINAPPS_DESKTOP_FILES[@]}"; do
+            # Trim leading and trailing whitespace from '.desktop' file path.
+            DESKTOP_FILE_PATH=$(echo "$DESKTOP_FILE_PATH" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
 
-        # Extract the file name.
-        DESKTOP_FILE_NAME=$(basename "$DESKTOP_FILE_PATH" | sed 's/\.[^.]*$//')
+            # Extract the file name.
+            DESKTOP_FILE_NAME=$(basename "$DESKTOP_FILE_PATH" | sed 's/\.[^.]*$//')
 
-        # Print feedback.
-        echo -n "Removing '.desktop' file for '${DESKTOP_FILE_NAME}'... "
+            # Print feedback.
+            echo -n "Removing '.desktop' file for '${DESKTOP_FILE_NAME}'... "
 
-        # Delete the file.
-        $SUDO rm "$DESKTOP_FILE_PATH"
+            # Delete the file.
+            $SUDO rm "$DESKTOP_FILE_PATH"
 
-        # Print feedback.
-        echo -e "${DONE_TEXT}Done!${CLEAR_TEXT}"
-    done
+            # Print feedback.
+            echo -e "${DONE_TEXT}Done!${CLEAR_TEXT}"
+        done
+    fi
 
     # Store the paths of bash scripts calling 'WinApps' to launch specific applications in an array, returning an empty array if no such files exist.
     readarray -t WINAPPS_APP_BASH_SCRIPTS < <(grep -l -d skip "${BIN_PATH}/winapps" "${BIN_PATH}/"* 2>/dev/null || true)
@@ -1879,14 +2029,19 @@ function waAddApps() {
     # Load the WinApps configuration file.
     waLoadConfig
 
+    # macOS always uses 'manual' flavor.
+    if [ "$PLATFORM" = "Darwin" ]; then WAFLAVOR="manual"; fi
+
     # Check for missing dependencies.
     waCheckInstallDependencies
 
-    # Update $RDP_SCALE.
-    waFixScale
+    # Update $RDP_SCALE (Linux/FreeRDP only).
+    if [ "$PLATFORM" != "Darwin" ]; then
+        waFixScale
+    fi
 
-    # Append additional FreeRDP flags if required.
-    if [[ -n $RDP_FLAGS ]]; then
+    # Append additional FreeRDP flags if required (Linux only).
+    if [ "$PLATFORM" != "Darwin" ] && [[ -n $RDP_FLAGS ]]; then
         FREERDP_COMMAND="${FREERDP_COMMAND} ${RDP_FLAGS}"
     fi
 
@@ -1925,6 +2080,12 @@ function waAddApps() {
 
         # Terminate the script.
         return "$EC_INVALID_FLAVOR"
+    fi
+
+    # macOS: xFreeRDP on xquartz adds ~15s overhead; increase timeouts.
+    if [ "$PLATFORM" = "Darwin" ]; then
+        [ "$RDP_TIMEOUT" -lt 60 ] && RDP_TIMEOUT=60
+        [ "$APP_SCAN_TIMEOUT" -lt 90 ] && APP_SCAN_TIMEOUT=90
     fi
 
     # Check if the RDP port on Windows is open.
