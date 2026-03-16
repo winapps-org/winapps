@@ -967,7 +967,7 @@ function waFindVMIP() {
     local VM_MAC=""
 
     VM_MAC=$(virsh domiflist "$VM_NAME" | grep -oE "([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})") # VM MAC address.
-    
+
     # VM IP address
     ip neigh show | grep -F -- "$VM_MAC" | grep -oE "([0-9]{1,3}\.){3}[0-9]{1,3}"
 }
