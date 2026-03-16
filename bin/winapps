@@ -572,6 +572,10 @@ function waCheckVMRunning() {
         TIME_ELAPSED=0
 
         while (( TIME_ELAPSED < BOOT_TIMEOUT )); do
+            # libvirt users need to find the IP address dynamically
+            if [[ -z "$RDP_IP" ]]; then
+                RDP_IP=$(waFindVMIP)
+            fi
             # Check if VM is running
             if (virsh list --state-running --name | grep -Fxq -- "$VM_NAME"); then
                 # Try to connect to RDP port to verify it's ready
@@ -720,7 +724,6 @@ function waCheckContainerRunning() {
 # Role: Assesses whether the RDP port on Windows is open.
 function waCheckPortOpen() {
     # Declare variables.
-    local VM_MAC="" # Stores the MAC address of the Windows VM.
     local TIME_ELAPSED=0
     local TIME_LIMIT=30
     local TIME_INTERVAL=5
@@ -728,13 +731,12 @@ function waCheckPortOpen() {
     # Obtain Windows VM IP Address ('libvirt' ONLY)
     # Note: 'RDP_IP' should not be empty if 'WAFLAVOR' is 'docker', since it is set to localhost before this function is called.
     if [ -z "$RDP_IP" ] && [ "$WAFLAVOR" = "libvirt" ]; then
-        VM_MAC=$(virsh domiflist "$VM_NAME" | grep -oE "([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})") # VM MAC address.
 
         while (( TIME_ELAPSED < TIME_LIMIT )); do
             if [ "$TIME_ELAPSED" -eq "$TIME_INTERVAL" ]; then
                 notify-send --expire-time=4000 --icon="dialog-info" --app-name="WinApps" --urgency="low" "WinApps" "Requesting Windows IP address..."
             fi
-            RDP_IP=$(ip neigh show | grep -F -- "$VM_MAC" | grep -oE "([0-9]{1,3}\.){3}[0-9]{1,3}") # VM IP address.
+            RDP_IP=$(waFindVMIP)
             [ -n "$RDP_IP" ] && break
             sleep $TIME_INTERVAL
             TIME_ELAPSED=$((TIME_ELAPSED + TIME_INTERVAL))
@@ -959,6 +961,15 @@ function waTimeSync() {
         echo "$CURRENT_TIME"
         echo "$CURRENT_UPTIME"
     } > "$SLEEP_DETECT_PATH"
+}
+
+function waFindVMIP() {
+    local VM_MAC=""
+
+    VM_MAC=$(virsh domiflist "$VM_NAME" | grep -oE "([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})") # VM MAC address.
+
+    # VM IP address
+    ip neigh show | grep -F -- "$VM_MAC" | grep -oE "([0-9]{1,3}\.){3}[0-9]{1,3}"
 }
 
 ### MAIN LOGIC ###
