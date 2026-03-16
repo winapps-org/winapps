@@ -87,6 +87,7 @@ OPT_ADD_APPS=0  # Set to '1' if the user specifies '--add-apps'.
 # WINAPPS CONFIGURATION FILE
 RDP_USER=""          # Imported variable.
 RDP_PASS=""          # Imported variable.
+RDP_ASKPASS=""       # Imported variable.
 RDP_DOMAIN=""        # Imported variable.
 RDP_IP=""            # Imported variable.
 VM_NAME="RDPWindows" # Name of the Windows VM (FOR 'libvirt' ONLY).
@@ -560,6 +561,15 @@ function waLoadConfig() {
         # Load the WinApps configuration file.
         # shellcheck source=/dev/null # Exclude this file from being checked by ShellCheck.
         source "$CONFIG_PATH"
+
+        # Send password on the command line if a command to retrieve the password from is not given
+        # Otherwise, set FREERDP_ASKPASS which freerdp will read the stdout of to use as the password
+        RDP_PASSWORD_ARG="/p:$RDP_PASS"
+
+        if [[ ! -z "$RDP_ASKPASS" ]]; then
+            export FREERDP_ASKPASS="$RDP_ASKPASS"
+            unset RDP_PASSWORD_ARG
+        fi
     fi
 
     # Print feedback.
@@ -1117,7 +1127,7 @@ function waCheckRDPAccess() {
         /cert:tofu \
         /d:"$RDP_DOMAIN" \
         /u:"$RDP_USER" \
-        /p:"$RDP_PASS" \
+        ${RDP_PASSWORD_ARG:+"$RDP_PASSWORD_ARG"} \
         /scale:"$RDP_SCALE" \
         +auto-reconnect \
         +home-drive \
@@ -1250,7 +1260,7 @@ function waFindInstalled() {
         /cert:tofu \
         /d:"$RDP_DOMAIN" \
         /u:"$RDP_USER" \
-        /p:"$RDP_PASS" \
+        ${RDP_PASSWORD_ARG:+"$RDP_PASSWORD_ARG"} \
         /scale:"$RDP_SCALE" \
         +auto-reconnect \
         +home-drive \
