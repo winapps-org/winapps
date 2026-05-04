@@ -36,7 +36,9 @@ pub struct AuthConfig {
     #[new(value = "\"MyWindowsPassword\".to_string()")]
     pub password: String,
     #[new(value = "2222")]
-    pub ssh_port: u32,
+    pub ssh_port: u16,
+    #[new(value = "3389")]
+    pub rdp_port: u16,
     #[new(value = "\"\".to_string()")]
     pub domain: String,
 }

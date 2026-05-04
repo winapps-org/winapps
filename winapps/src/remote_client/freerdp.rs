@@ -11,7 +11,6 @@ pub struct Freerdp;
 
 impl Freerdp {
     const TIMEOUT: Duration = Duration::from_secs(5);
-    const RDP_PORT: u16 = 3389;
 
     fn get_command(self, config: &Config) -> Command {
         Command::new(config.freerdp.executable.to_owned())
@@ -20,7 +19,7 @@ impl Freerdp {
                 format!("/d:{}", &config.auth.domain),
                 format!("/u:{}", &config.auth.username),
                 format!("/p:{}", &config.auth.password),
-                format!("/v:{}", &config.get_host()),
+                format!("/v:{}:{}", &config.get_host(), &config.auth.rdp_port),
             ])
             .args(config.freerdp.extra_args.iter().cloned())
             .loud(config.debug)
@@ -37,7 +36,7 @@ impl RemoteClient for Freerdp {
         info!("Freerdp found!");
         info!("Checking whether host is reachable..");
 
-        let socket_address = SocketAddr::new(config.get_host(), Self::RDP_PORT);
+        let socket_address = SocketAddr::new(config.get_host(), config.auth.rdp_port);
 
         TcpStream::connect_timeout(&socket_address, Self::TIMEOUT)
             .map(|_| ())
