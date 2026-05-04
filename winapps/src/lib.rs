@@ -1,7 +1,8 @@
 #![allow(clippy::new_without_default)]
+#![warn(clippy::unwrap_used)]
 #![feature(decl_macro)]
 #![feature(exit_status_error)]
-#![feature(once_cell_try)]
+#![feature(string_from_utf8_lossy_owned)]
 
 pub use crate::{
     backend::{Backend, Backends},

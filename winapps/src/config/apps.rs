@@ -5,12 +5,20 @@ use crate::{
     ensure,
 };
 use base64::{Engine, prelude::BASE64_STANDARD};
-use std::{fmt::Display, fs::write};
-use tracing::debug;
+use std::{fmt::Display, fs, os::unix::fs::PermissionsExt};
+use tracing::{debug, warn};
 
 impl PartialEq for App {
     fn eq(&self, other: &Self) -> bool {
         self.id == other.id
+    }
+}
+
+impl Eq for App {}
+
+impl std::hash::Hash for App {
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        self.id.hash(state);
     }
 }
 
@@ -32,7 +40,7 @@ impl App {
         match &self.kind {
             AppKind::FromBase64(base64) => {
                 let path = icons_dir()?.join(format!("{}.png", self.id));
-                write(path.clone(), BASE64_STANDARD.decode(base64)?)?;
+                fs::write(path.clone(), BASE64_STANDARD.decode(base64)?)?;
 
                 self.kind = AppKind::Existing;
 
@@ -72,21 +80,33 @@ Comment={} (WinApps)",
 
         let path = desktop_dir()?.join(format!("{}.desktop", self.id));
 
-        write(&path, self.try_as_desktop_file()?)?;
+        fs::write(&path, self.try_as_desktop_file()?)?;
+        fs::set_permissions(&path, PermissionsExt::from_mode(0o750))?;
 
-        if !config.linked_apps.contains(&self) {
+        if !config.linked_apps.contains_key(&self.id) {
             debug!("Writing app {} to config", self.id);
 
-            config.linked_apps.push(self);
+            config.linked_apps.insert(self.id.clone(), self);
             config.save()?;
         }
 
         Ok(())
     }
-}
 
-impl Config {
-    pub fn find_linked_app(&self, id: String) -> Option<&App> {
-        self.linked_apps.iter().find(|app| app.id == id)
+    pub fn unlink(self, config: &mut Config) -> Result<()> {
+        let path = desktop_dir()?.join(format!("{}.desktop", self.id));
+
+        fs::remove_file(&path).unwrap_or_else(|_| {
+            warn!(
+                "Could not delete desktop file for {} ({})",
+                self.id,
+                path.to_string_lossy()
+            )
+        });
+
+        debug!("Removing app {} to config", self.id);
+
+        config.linked_apps.remove_entry(&self.id);
+        config.save()
     }
 }

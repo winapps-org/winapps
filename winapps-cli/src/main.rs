@@ -1,8 +1,11 @@
+use std::collections::HashSet;
+
 use clap::{Command, arg};
+use inquire::MultiSelect;
 use miette::{IntoDiagnostic, Result};
-use tracing::{Level, info};
+use tracing::{Level, debug, info};
 use tracing_subscriber::EnvFilter;
-use winapps::{Config, Freerdp, RemoteClient};
+use winapps::{Config, Freerdp, RemoteClient, config::App};
 
 fn cli() -> Command {
     Command::new("winapps-cli")
@@ -26,8 +29,6 @@ fn cli() -> Command {
 
 fn main() -> Result<()> {
     tracing_subscriber::fmt()
-        .without_time()
-        .with_target(false)
         .with_level(true)
         .with_max_level(Level::INFO)
         .with_env_filter(EnvFilter::from_default_env())
@@ -45,16 +46,41 @@ fn main() -> Result<()> {
         Some(("setup", _)) => {
             info!("Running setup");
 
-            // TODO: Allow deleting apps, maybe pass installed apps
-            // so they can be deselected?
-            match inquire::MultiSelect::new("Select apps to link", config.get_available_apps()?)
+            let available = config.get_available_apps()?;
+            let installed: Vec<usize> = available
+                .iter()
+                .enumerate()
+                .filter_map(|(i, app)| config.linked_apps.contains_key(&app.id).then_some(i))
+                .collect();
+
+            debug!(
+                "{} apps available, {} apps installed",
+                available.len(),
+                config.linked_apps.len()
+            );
+
+            match MultiSelect::new("Select apps to link", available)
+                .with_default(installed.as_slice())
+                .with_page_size(20)
                 .prompt_skippable()
                 .map_err(|e| winapps::Error::Command {
                     message: "Failed to display selection dialog".into(),
                     source: e.into(),
                 })? {
-                Some(apps) => apps.into_iter().try_for_each(|app| app.link(&mut config))?,
-                None => info!("No apps selected, skipping setup..."),
+                Some(apps) => {
+                    let selected: HashSet<App> = apps.into_iter().collect();
+                    let installed: HashSet<App> = config.linked_apps.values().cloned().collect();
+
+                    for app in selected.symmetric_difference(&installed).cloned() {
+                        match (selected.contains(&app), installed.contains(&app)) {
+                            (true, false) => app.link(&mut config)?,
+                            (false, true) => app.unlink(&mut config)?,
+                            (false, false) => (),
+                            (true, true) => unreachable!(),
+                        }
+                    }
+                }
+                None => info!("No apps (de-)selected, skipping setup..."),
             };
 
             Ok(())

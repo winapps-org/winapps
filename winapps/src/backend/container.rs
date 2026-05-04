@@ -34,7 +34,7 @@ impl Backend for Container {
         .with_err("Could not get container status")
         .wait_with_output()?;
 
-        debug!("{command} returned state: {state}");
+        debug!("{command} returned state: {}", state.trim());
         ensure!(state.trim() == Self::STATE_RUNNING, Error::VmNotRunning);
 
         Ok(())

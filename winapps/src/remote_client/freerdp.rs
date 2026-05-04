@@ -48,9 +48,8 @@ impl RemoteClient for Freerdp {
     fn run_app(self, config: &Config, app_name: String, args: Vec<String>) -> Result<()> {
         let path = config
             .linked_apps
-            .iter()
-            .filter_map(|app| app.id.eq(&app_name).then_some(app.win_exec.clone()))
-            .next()
+            .get(&app_name)
+            .map(|app| app.win_exec.clone())
             .unwrap_or(app_name);
 
         let Some(home_regex) = dirs::home_dir().map(|home| {

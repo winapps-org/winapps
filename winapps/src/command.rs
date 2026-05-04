@@ -1,5 +1,5 @@
 use crate::{Config, Error, IntoResult, Result, bail, ensure};
-use shlex::{split, try_join};
+use shlex::split;
 use std::{
     fmt::{Display, Formatter},
     iter,
@@ -35,29 +35,25 @@ impl FromStr for Command {
             bail!("Commands should have an executable")
         };
 
-        Ok(Self {
-            exec,
-            args: items.collect(),
-            error_message: String::from("Error running child command"),
-            loud: false,
-        })
+        Ok(Command::new(exec).args(items))
     }
 }
 
 impl Command {
-    pub fn new<T: Into<String>>(exec: T) -> Self {
+    pub fn new<T: Into<String> + Display>(exec: T) -> Self {
         Self {
+            error_message: format!("Error running child command {}", &exec),
             exec: exec.into(),
             args: Vec::new(),
-            error_message: String::from("Error running child command"),
             loud: false,
         }
     }
 
     pub fn into_remote(mut self, config: &Config) -> Self {
-        let prev =
-            try_join(iter::once(self.exec.as_str()).chain(self.args.iter().map(|s| s.as_str())))
-                .expect("Since this has been created by shlex::join, it should always be valid");
+        let prev = iter::once(self.exec)
+            .chain(self.args.iter().cloned())
+            .collect::<Vec<String>>()
+            .join(" ");
 
         self.exec = "sshpass".to_string();
         self.clear_args()
@@ -66,6 +62,7 @@ impl Command {
                 "ssh",
                 format!("{}@{}", config.auth.username, config.get_host()).as_str(),
                 "-oStrictHostKeyChecking=accept-new",
+                "-oWarnWeakCrypto=no-pq-kex",
                 "-p",
                 config.auth.ssh_port.to_string().as_str(),
             ])
@@ -137,17 +134,15 @@ impl Command {
             message: self.error_message.clone(),
         })?;
 
+        let stdout = String::from_utf8_lossy_owned(output.stdout);
+
+        debug!("Got stdout: {stdout}");
         debug!(
-            "Child exit code is zero, returning output {} {}",
-            output.stdout.len(),
-            output.stderr.len()
+            "Got stderr: {}",
+            String::from_utf8_lossy_owned(output.stderr)
         );
 
-        Ok(format!(
-            "{}\n{}",
-            String::from_utf8(output.stdout).expect("Commands should always return valid utf-8"),
-            String::from_utf8(output.stderr).expect("Commands should always return valid utf-8")
-        ))
+        Ok(stdout)
     }
 }
 

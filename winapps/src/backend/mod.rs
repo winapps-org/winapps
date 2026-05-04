@@ -61,7 +61,15 @@ impl Config {
         self.backend.get_host(self)
     }
 
+    fn normalize_app_id(input: String) -> String {
+        input
+            .strip_suffix(".exe")
+            .map(|s| s.to_string())
+            .unwrap_or(input)
+    }
+
     pub fn get_available_apps(&self) -> Result<Vec<App>> {
+        // todo: stronger parsing, better errors
         let apps = Command::new("C:\\ExtractPrograms.ps1")
             .into_remote(self)
             .wait_with_output()?
@@ -71,11 +79,14 @@ impl Config {
 
                 match (split.next(), split.next(), split.next(), split.next()) {
                     (Some(id), Some(name), Some(path), Some(icon)) => Some(App {
-                        id: id.to_string(),
+                        id: Self::normalize_app_id(id.to_string()),
                         name: name.to_string(),
                         win_exec: path.to_string(),
                         kind: AppKind::FromBase64(icon.to_string()),
                     }),
+
+                    // Skip ids ending in .dll for now
+                    (Some(id), _, _, _) if id.ends_with(".dll") => None,
                     _ => None,
                 }
             })

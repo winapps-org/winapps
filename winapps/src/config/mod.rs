@@ -1,6 +1,6 @@
 use derive_new::new;
-use serde::{Deserialize, Serialize};
-use std::net::IpAddr;
+use serde::{Deserialize, Deserializer, Serialize};
+use std::{collections::HashMap, net::IpAddr};
 
 use crate::Backends;
 
@@ -19,8 +19,9 @@ pub struct Config {
     pub manual: ManualConfig,
     #[new(value = "FreerdpConfig::new()")]
     pub freerdp: FreerdpConfig,
-    #[new(value = "Vec::new()")]
-    pub linked_apps: Vec<App>,
+    #[new(value = "HashMap::new()")]
+    #[serde(deserialize_with = "deserialize_apps")]
+    pub linked_apps: HashMap<String, App>,
     #[new(value = "false")]
     pub debug: bool,
 
@@ -92,9 +93,25 @@ pub enum AppKind {
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct App {
-    pub id: String,
     pub name: String,
     pub win_exec: String,
+
+    #[serde(skip)]
+    pub id: String,
+
     #[serde(skip)]
     pub kind: AppKind,
+}
+
+fn deserialize_apps<'de, D>(deserializer: D) -> Result<HashMap<String, App>, D::Error>
+where
+    D: Deserializer<'de>,
+{
+    let mut apps = HashMap::<String, App>::deserialize(deserializer)?;
+
+    for (id, app) in apps.iter_mut() {
+        app.id = id.clone();
+    }
+
+    Ok(apps)
 }
