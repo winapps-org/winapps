@@ -418,6 +418,13 @@ RDP_DOMAIN=""
 # - 'libvirt': '' (BLANK)
 RDP_IP="127.0.0.1"
 
+# [RDP PORT]
+# NOTES:
+# - For Docker and Podman, this is the host port mapped to Windows port 3389.
+# - If you changed the host-side RDP port in compose.yaml, set this to match.
+# DEFAULT VALUE: '3389'
+RDP_PORT="3389"
+
 # [VM NAME]
 # NOTES:
 # - Only applicable when using 'libvirt'
@@ -576,13 +583,13 @@ HIDEF="on"
 1. Test establishing an RDP session by running the following command, replacing the `/u:`, `/p:`, and `/v:` values with the correct values specified in `~/.config/winapps/winapps.conf`.
 
     ```bash
-    xfreerdp3 /u:"MyWindowsUser" /p:"MyWindowsPassword" /v:127.0.0.1 /cert:tofu
+    xfreerdp3 /u:"MyWindowsUser" /p:"MyWindowsPassword" /v:127.0.0.1:3389 /cert:tofu
 
     # Or, if you are using Podman
-    podman unshare --rootless-netns xfreerdp3 /u:"MyWindowsUser" /p:"MyWindowsPassword" /v:127.0.0.1 /cert:tofu
+    podman unshare --rootless-netns xfreerdp3 /u:"MyWindowsUser" /p:"MyWindowsPassword" /v:127.0.0.1:3389 /cert:tofu
 
     # Or, if you installed FreeRDP using Flatpak
-    flatpak run --command=xfreerdp com.freerdp.FreeRDP /u:"MyWindowsUser" /p:"MyWindowsPassword" /v:127.0.0.1 /cert:tofu
+    flatpak run --command=xfreerdp com.freerdp.FreeRDP /u:"MyWindowsUser" /p:"MyWindowsPassword" /v:127.0.0.1:3389 /cert:tofu
     ```
 
     - Please note that the correct `FreeRDP` command may vary depending on your system (e.g. `xfreerdp`, `xfreerdp3`, etc.).
