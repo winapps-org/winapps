@@ -32,7 +32,7 @@ readonly SLEEP_MARKER="${APPDATA_PATH}/sleep_marker"
 
 # OTHER
 readonly CONTAINER_NAME="WinApps" # FOR 'docker' AND 'podman' ONLY
-readonly RDP_PORT=3389
+RDP_PORT=3389
 readonly DOCKER_IP="127.0.0.1"
 # shellcheck disable=SC2155 # Silence warnings regarding masking return values through simultaneous declaration and assignment.
 readonly RUNID="${RANDOM}"
@@ -370,6 +370,8 @@ function waLoadConfig() {
     else
         waThrowExit $EC_MISSING_CONFIG
     fi
+
+    RDP_PORT="${RDP_PORT:-3389}"
 
     # Update $RDP_SCALE.
     waFixScale
@@ -787,7 +789,7 @@ function waRunCommand() {
             +dynamic-resolution \
             /wm-class:"Microsoft Windows" \
             /t:"Windows RDP Session [$RDP_IP]" \
-            /v:"$RDP_IP" &>/dev/null &
+            /v:"$RDP_IP":"$RDP_PORT" &>/dev/null &
 
         # Capture the process ID.
         FREERDP_PID=$!
@@ -803,7 +805,7 @@ function waRunCommand() {
             /scale:"$RDP_SCALE" \
             +auto-reconnect \
             /app:program:"$2",hidef:"$HIDEF" \
-            /v:"$RDP_IP" &>/dev/null &
+            /v:"$RDP_IP":"$RDP_PORT" &>/dev/null &
 
         # Capture the process ID.
         FREERDP_PID=$!
@@ -838,7 +840,7 @@ function waRunCommand() {
                 +auto-reconnect \
                 /wm-class:"$FULL_NAME" \
                 /app:program:"$WIN_EXECUTABLE",hidef:"$HIDEF",icon:"$ICON",name:"$FULL_NAME" \
-                /v:"$RDP_IP" &>/dev/null &
+                /v:"$RDP_IP":"$RDP_PORT" &>/dev/null &
 
             # Capture the process ID.
             FREERDP_PID=$!
@@ -862,7 +864,7 @@ function waRunCommand() {
                 /drive:media,"$REMOVABLE_MEDIA" \
                 /wm-class:"$FULL_NAME" \
                 /app:program:"$WIN_EXECUTABLE",hidef:"$HIDEF",icon:"$ICON",name:"$FULL_NAME",cmd:\""$FILE_PATH"\" \
-                /v:"$RDP_IP" &>/dev/null &
+                /v:"$RDP_IP":"$RDP_PORT" &>/dev/null &
 
             # Capture the process ID.
             FREERDP_PID=$!

@@ -53,6 +53,7 @@ docker compose --file ~/.config/winapps/compose.yaml down
 
 # Remove the existing FreeRDP certificate (if required).
 # Note: A new certificate will be created when connecting via RDP for the first time.
+# If you configured a custom RDP_PORT, replace 3389 with that port.
 rm ~/.config/freerdp/server/127.0.0.1_3389.pem
 
 # Re-create the container with the updated configuration.
@@ -105,6 +106,7 @@ podman-compose --file ~/.config/winapps/compose.yaml down
 
 # Remove the existing FreeRDP certificate (if required).
 # Note: A new certificate will be created when connecting via RDP for the first time.
+# If you configured a custom RDP_PORT, replace 3389 with that port.
 rm ~/.config/freerdp/server/127.0.0.1_3389.pem
 
 # Re-create the container with the updated configuration.

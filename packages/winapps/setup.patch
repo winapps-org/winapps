@@ -21,7 +21,7 @@ index 3a871c8..71a8fa0 100755
 +readonly INQUIRER_PATH="@out@/src/install/inquirer.sh" # UNIX path to the 'inquirer' script, which is used to produce selection menus.
  
  # REMOTE DESKTOP CONFIGURATION
- readonly RDP_PORT=3389         # Port used for RDP on Windows.
+ RDP_PORT=3389                  # Port used for RDP on Windows.
 @@ -157,13 +157,6 @@ function waGetSourceCode() {
          echo -e "${WARNING_TEXT}[WARNING]${CLEAR_TEXT} You might want to remove your old installation on '${SCRIPT_DIR_PATH}'."
      fi
