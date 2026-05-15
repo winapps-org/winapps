@@ -16,6 +16,8 @@ Thank you for contributing to winapps! Before you can contribute, we ask some th
 
 When using AI assistance, we expect contributors to understand the code that is produced and be able to answer critical questions about it. It isn't a maintainers job to review a PR so broken that it requires significant rework to be acceptable. In a perfect world, AI assistance would produce equal or higher quality work than any human. That isn't the world we live in today, and in most cases it's generating slop. A good rule of thumb is that if another person can easily tell a pull request is AI-generated, it needs some more work.
 
+We will also outright deny pull requests using AI tools to rewrite large parts of the codebase (even if the result is "better") to conserve maintainability.
+
 ### Other kinds of AI assistance
 
 Currently, [CodeRabbit](https://coderabbit.ai) is configured to review pull requests *on demand* when `@coderabbitai review` is commented on pull requests.
