@@ -82,6 +82,9 @@ pub struct FreerdpConfig {
     pub extra_args: Vec<String>,
     #[new(value = "\"xfreerdp\".to_string()")]
     pub executable: String,
+    #[serde(deserialize_with = "deserialize_rdp_scale")]
+    #[new(value = "100")]
+    pub rdp_scale: u8,
 }
 
 #[derive(Debug, Default, Deserialize, Serialize, Clone)]
@@ -101,6 +104,20 @@ pub struct App {
 
     #[serde(skip)]
     pub kind: AppKind,
+}
+
+fn deserialize_rdp_scale<'de, D>(deserializer: D) -> Result<u8, D::Error>
+where
+    D: Deserializer<'de>,
+{
+    let scale = u8::deserialize(deserializer)?;
+
+    match scale {
+        100 | 140 | 180 => Ok(scale),
+        _ => Err(serde::de::Error::custom(format!(
+            "Found invalid rdp_scale {scale}, only 100, 140 and 180 are supported"
+        ))),
+    }
 }
 
 fn deserialize_apps<'de, D>(deserializer: D) -> Result<HashMap<String, App>, D::Error>
