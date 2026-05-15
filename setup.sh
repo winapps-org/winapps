@@ -1266,7 +1266,7 @@ function waFindInstalled() {
         /scale:"$RDP_SCALE" \
         +auto-reconnect \
         +home-drive \
-        /app:program:"C:\Windows\System32\cmd.exe",cmd:"/C "$BATCH_SCRIPT_PATH_WIN"" \
+        /app:program:"C:\Windows\System32\cmd.exe",cmd:"/C $BATCH_SCRIPT_PATH_WIN" \
         /v:"$RDP_IP":"$RDP_PORT" &>"$FREERDP_LOG" &
 
     # Store the FreeRDP process ID.
