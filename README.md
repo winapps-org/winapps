@@ -367,12 +367,11 @@ Install the required dependencies.
       ```
 
 > [!NOTE]
-> WinApps requires `FreeRDP` version 3 or later. If not available for your distribution through your package manager, you can install the [Flatpak](https://flathub.org/apps/com.freerdp.FreeRDP):
+> WinApps requires `FreeRDP` version 3 or later, the newer, the better. If it is not available in your distribution's packages, try compiling from source according to [this guide](https://github.com/FreeRDP/FreeRDP/wiki/Compilation) or grab the package from a third party package manager like [Homebrew](https://brew.sh) or [Nix](https://nixos.org).
+> Alternatively, you can try using the [Flatpak](https://flathub.org/apps/com.freerdp.FreeRDP). However, this is not recommended as it can cause sandboxing-related issues. If you use Flatpak, run the following command once to allow the use of `+home-drive`:
 > ```bash
-> flatpak install flathub com.freerdp.FreeRDP
-> sudo flatpak override --filesystem=home com.freerdp.FreeRDP # To use `+home-drive`
+> sudo flatpak override --filesystem=home com.freerdp.FreeRDP
 > ```
-> However, if you have weird issues like [#233](https://github.com/winapps-org/winapps/issues/233) when running Flatpak, please compile FreeRDP from source according to [this guide](https://github.com/FreeRDP/FreeRDP/wiki/Compilation).
 
 ### Step 3: Create a WinApps Configuration File
 Create a configuration file at `~/.config/winapps/winapps.conf` containing the following:
