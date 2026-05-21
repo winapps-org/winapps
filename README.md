@@ -350,7 +350,7 @@ Install the required dependencies.
 > For instructions, see https://backports.debian.org/Instructions.
 
 > [!IMPORTANT]
-> Also, after downloading `freerdp3-x11` on Debian 12, you may need to activate legacy openssl provider by redacting `/etc/ssl/openssl.cnf`, otherwise freerdp3 will fail silently. 
+> Also, after downloading `freerdp3-x11` on Debian 12, you may need to activate legacy openssl provider by redacting `/etc/ssl/openssl.cnf`, otherwise freerdp3 will fail silently.
 > For instructions, see https://lindevs.com/enable-openssl-legacy-provider-on-ubuntu.
 
 
