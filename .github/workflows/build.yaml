@@ -1,0 +1,26 @@
+name: "Build winapps"
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+  nix:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Nix
+        uses: cachix/install-nix-action@v31
+
+      - name: Set up cache
+        uses: cachix/cachix-action@v17
+        with:
+          name: winapps
+          authToken: "${{ secrets.CACHIX_AUTH_TOKEN }}"
+          skipPush: "${{ github.event_name == 'pull_request' }}"
+
+      - run: nix flake check

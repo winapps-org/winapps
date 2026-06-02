@@ -9,16 +9,6 @@
     nix-filter.url = "github:numtide/nix-filter";
   };
 
-  nixConfig = {
-    extra-substituters = [
-      "https://cache.garnix.io"
-    ];
-
-    extra-trusted-public-keys = [
-      "cache.garnix.io:CTFPyKSLcx5RMJKfLo5EEPUObbA78b0YQ2DTCJXqr9g="
-    ];
-  };
-
   outputs =
     {
       nixpkgs,
@@ -32,11 +22,18 @@
         pkgs = import nixpkgs { inherit system; };
       in
       rec {
-        formatter = pkgs.nixfmt-rfc-style;
+        formatter = pkgs.nixfmt;
 
-        packages.winapps = pkgs.callPackage ./packages/winapps { inherit nix-filter; };
-        packages.winapps-launcher = pkgs.callPackage ./packages/winapps-launcher {
-          inherit (packages) winapps;
+        packages = {
+          winapps = pkgs.callPackage ./packages/winapps { inherit nix-filter; };
+          winapps-launcher = pkgs.callPackage ./packages/winapps-launcher {
+            inherit (packages) winapps;
+          };
+        };
+
+        checks = {
+          build-winapps = packages.winapps;
+          build-launcher = packages.winapps-launcher;
         };
       }
     );
