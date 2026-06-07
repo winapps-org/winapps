@@ -643,6 +643,47 @@ Once WinApps is installed, a list of additional arguments can be accessed by run
 
 <img src="./docs/readme/installer.gif" width=1000 alt="WinApps Installer Animation.">
 
+### Managing apps post-installation
+## Redetect apps installed in Windows using the WinaApps Install Wizard so they are added to WinApps
+The initial setup process will detect any Community Tested Applications and any additionally detected applications and make them available in your Linux menus. If in the future you install a new application in Windows and want to add it to WinApps you need to run the WinApps Install Wizard again to detect the new application(s).
+
+For a local user based installation the setup program is found in:
+```
+~/.local/bin/winapps-src/setup.sh
+```
+The setup.sh command (WinApps Install Wizard) has a number of flags that can be passed to it:
+```
+ ./setup.sh --help
+################################################################################
+#                                                                              #
+#                            WinApps Install Wizard                            #
+#                                                                              #
+################################################################################
+
+Usage:
+      --user                                        # Install WinApps and selected applications in /home/alex
+      --system                                      # Install WinApps and selected applications in /usr
+      --user --setupAllOfficiallySupportedApps      # Install WinApps and all officially supported applications in /home/alex
+      --system --setupAllOfficiallySupportedApps    # Install WinApps and all officially supported applications in /usr
+      --user --uninstall                            # Uninstall everything in /home/alex
+      --system --uninstall                          # Uninstall everything in /usr
+      --user --add-apps                             # Add new applications to existing installation in /home/alex
+      --system --add-apps                           # Add new applications to existing installation in /usr
+      --help                                        # Display this usage message.
+```
+
+To rerun the app detection go to the installation location and run the WinApps Install Wizard:
+```
+cd  ~/.local/bin/winapps-src/
+```
+and then run the setup.sh
+```
+./setup.sh --user --add-apps
+```
+This will bring up the familiar setup wizard screen and you step through the wizard as above choosing the apps you wish to make available.
+
+* Note that if your windows VM is not yet running the WinApps Install Wizard may exit and tell you to start the vm first, and will share the correct command to start it depending if it is a docker, podman or libvirt vm. So, make sure your vm is running before you run the WinApps Install Wizard
+
 ## Adding Additional Pre-defined Applications
 Adding your own applications with custom icons and MIME types to the installer is easy. Simply copy one of the application configurations in the `apps` folder located within the WinApps repository, and:
 1. Modify the name and variables to reflect the appropriate/desired values for your application.
