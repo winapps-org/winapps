@@ -643,8 +643,8 @@ Once WinApps is installed, a list of additional arguments can be accessed by run
 
 <img src="./docs/readme/installer.gif" width=1000 alt="WinApps Installer Animation.">
 
-### Managing apps post-installation
-## Redetect apps installed in Windows using the WinaApps Install Wizard so they are added to WinApps
+## Managing apps post-installation
+### Redetect apps installed in Windows using the WinaApps Install Wizard so they are added to WinApps
 The initial setup process will detect any Community Tested Applications and any additionally detected applications and make them available in your Linux menus. If in the future you install a new application in Windows and want to add it to WinApps you need to run the WinApps Install Wizard again to detect the new application(s).
 
 For a local user based installation the setup program is found in:
@@ -684,14 +684,14 @@ This will bring up the familiar setup wizard screen and you step through the wiz
 
 * Note that if your windows VM is not yet running the WinApps Install Wizard may exit and tell you to start the vm first, and will share the correct command to start it depending if it is a docker, podman or libvirt vm. So, make sure your vm is running before you run the WinApps Install Wizard
 
-## Adding Additional Pre-defined Applications
+### Adding Additional Pre-defined Applications
 Adding your own applications with custom icons and MIME types to the installer is easy. Simply copy one of the application configurations in the `apps` folder located within the WinApps repository, and:
 1. Modify the name and variables to reflect the appropriate/desired values for your application.
 2. Replace `icon.svg` with an SVG for your application (ensuring the icon is appropriately licensed).
 3. Remove and reinstall WinApps.
 4. Submit a pull request to add your application to WinApps as a community tested application once you have tested and verified your configuration (optional, but encouraged).
 
-## Running Applications Manually
+### Running Applications Manually
 WinApps offers a manual mode for running applications that were not configured by the WinApps installer. This is completed with the `manual` flag. Executables that are in the Windows PATH do not require full path definition.
 
 ```bash
