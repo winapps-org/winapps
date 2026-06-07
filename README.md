@@ -672,7 +672,7 @@ Usage:
       --help                                        # Display this usage message.
 ```
 
-To rerun the app detection go to the installation location and run the WinApps Install Wizard:
+To rerun the app detection go to the installation location and run the WinApps Install Wizard as the user that WinApps is installed for:
 ```
 cd  ~/.local/bin/winapps-src/
 ```
