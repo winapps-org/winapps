@@ -651,7 +651,7 @@ For a local user based installation the setup program is found in:
 ```
 ~/.local/bin/winapps-src/setup.sh
 ```
-The setup.sh command (WinApps Install Wizard) has a number of flags that can be passed to it:
+The setup.sh command (WinApps Install Wizard) has a number of options that can be passed to it:
 ```
  ./setup.sh --help
 ################################################################################
@@ -672,7 +672,7 @@ Usage:
       --help                                        # Display this usage message.
 ```
 
-To rerun the app detection go to the installation location and run the WinApps Install Wizard as the user that WinApps is installed for:
+To re-run the app detection go to the installation location and run the WinApps Install Wizard as the user that WinApps is installed for:
 ```
 cd  ~/.local/bin/winapps-src/
 ```
