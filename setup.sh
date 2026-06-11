@@ -1331,7 +1331,7 @@ function waConfigureWindows() {
     # Populate variables.
     WIN_BASH="\
 #!/usr/bin/env bash
-${BIN_PATH}/winapps windows"
+${BIN_PATH}/winapps windows \"\$@\""
     WIN_DESKTOP="\
 [Desktop Entry]
 Name=Windows
@@ -1382,7 +1382,7 @@ function waConfigureApp() {
     # Determine the content of the bash script for the application.
     APP_BASH="\
 #!/usr/bin/env bash
-${BIN_PATH}/winapps ${1}"
+${BIN_PATH}/winapps ${1} \"\$@\""
 
     # Determine the content of the '.desktop' file for the application.
     APP_DESKTOP_FILE="\
