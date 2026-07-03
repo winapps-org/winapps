@@ -3,5 +3,6 @@ members = [
     "winapps",
     "winapps-cli",
     "winapps-gui",
+    "winapps-monitor",
 ]
 resolver = "2"

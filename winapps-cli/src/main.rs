@@ -1,7 +1,7 @@
-use clap::{arg, Command};
+use clap::{Command, arg};
 use winapps::freerdp::freerdp_back::Freerdp;
 use winapps::quickemu::{create_vm, kill_vm, start_vm};
-use winapps::{unwrap_or_panic, RemoteClient};
+use winapps::{RemoteClient, unwrap_or_panic};
 
 fn cli() -> Command {
     Command::new("winapps-cli")
