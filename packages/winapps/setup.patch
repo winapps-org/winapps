@@ -72,8 +72,8 @@ index 3a871c8..71a8fa0 100755
      # Populate variables.
      WIN_BASH="\
  #!/usr/bin/env bash
--${BIN_PATH}/winapps windows"
-+@out@/bin/winapps windows"
+-${BIN_PATH}/winapps windows \"\$@\""
++@out@/bin/winapps windows \"\$@\""
      WIN_DESKTOP="\
  [Desktop Entry]
  Name=Windows
@@ -86,8 +86,8 @@ index 3a871c8..71a8fa0 100755
      # Determine the content of the bash script for the application.
      APP_BASH="\
  #!/usr/bin/env bash
--${BIN_PATH}/winapps ${1}"
-+@out@/bin/winapps ${1}"
+-${BIN_PATH}/winapps ${1} \"\$@\""
++@out@/bin/winapps ${1} \"\$@\""
  
      # Determine the content of the '.desktop' file for the application.
      APP_DESKTOP_FILE="\
