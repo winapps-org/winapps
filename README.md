@@ -644,7 +644,7 @@ Once WinApps is installed, a list of additional arguments can be accessed by run
 <img src="./docs/readme/installer.gif" width=1000 alt="WinApps Installer Animation.">
 
 ## Managing apps post-installation
-### Redetect and add new apps installed in Windows using the WinaApps Install Wizard
+### Redetect and add new apps installed in Windows using the WinApps Install Wizard
 The initial setup process will detect any Community Tested Applications and any additionally detected applications and make them available in your Linux application menu. If in the future you install a new application in Windows and want to add it to WinApps, you need to run the `winapps-setup` again to detect the new application(s).
 
 The setup command has a number of options that can be passed to it:
