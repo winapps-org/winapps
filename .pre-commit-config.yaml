@@ -1,6 +1,8 @@
 ci:
   skip: [clippy, cargo-check]
 
+default_install_hook_types: [pre-commit, commit-msg]
+
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v6.0.0
@@ -14,9 +16,10 @@ repos:
       - id: end-of-file-fixer
       - id: mixed-line-ending
       - id: trailing-whitespace
-  - repo: https://github.com/winapps-org/pre-commit-rust
-    rev: v1.1
+  - repo: https://github.com/winapps-org/pre-commit-hooks
+    rev: v2.0.1
     hooks:
-      - id: fmt
+      - id: rustfmt
       - id: clippy
       - id: cargo-check
+      - id: signoff

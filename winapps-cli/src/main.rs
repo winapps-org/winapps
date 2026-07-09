@@ -1,7 +1,11 @@
-use clap::{arg, Command};
-use winapps::freerdp::freerdp_back::Freerdp;
-use winapps::quickemu::{create_vm, kill_vm, start_vm};
-use winapps::{unwrap_or_panic, RemoteClient};
+use std::collections::HashSet;
+
+use clap::{Command, arg};
+use inquire::MultiSelect;
+use miette::{IntoDiagnostic, Result};
+use tracing::{Level, debug, info};
+use tracing_subscriber::EnvFilter;
+use winapps::{Config, Freerdp, RemoteClient, config::App};
 
 fn cli() -> Command {
     Command::new("winapps-cli")
@@ -9,83 +13,104 @@ fn cli() -> Command {
         .subcommand_required(true)
         .arg_required_else_help(true)
         .allow_external_subcommands(true)
-        .subcommand(Command::new("check").about("Checks remote connection"))
-        .subcommand(Command::new("connect").about("Connects to remote"))
+        .subcommand(Command::new("connect").about("Opens full session on remote"))
+        .subcommand(Command::new("setup").about("Create desktop files for installed Windows apps"))
         .subcommand(
             Command::new("run")
-                .about("Connects to app on remote")
-                .arg(arg!(<APP> "App to open")),
-        )
-        .subcommand(
-            Command::new("vm")
-                .about("Manage a windows 10 vm using quickemu")
-                .subcommand_required(true)
-                .arg_required_else_help(true)
-                .allow_external_subcommands(true)
-                .subcommand(Command::new("create").about("Create a windows 10 vm using quickget"))
-                .subcommand(Command::new("start").about("Start the vm"))
-                .subcommand(Command::new("kill").about("Kill the running VM")),
+                .about("Runs a configured app or an executable on the remote")
+                .arg(arg!(<NAME> "the name of the app/the path to the executable"))
+                .arg(
+                    arg!([ARGS]... "Arguments to pass to the command")
+                        .trailing_var_arg(true)
+                        .allow_hyphen_values(true),
+                ),
         )
 }
 
-fn main() {
+fn main() -> Result<()> {
+    tracing_subscriber::fmt()
+        .with_level(true)
+        .with_max_level(Level::INFO)
+        .with_env_filter(EnvFilter::from_default_env())
+        .init();
+
+    let mut config = Config::try_new()?;
+    let client = Freerdp;
+
+    config.backend_check_depends()?;
+    client.check_depends(&config)?;
+
     let cli = cli();
-    let matches = cli.clone().get_matches();
 
-    let client: &dyn RemoteClient = &Freerdp {};
-    let config = winapps::load_config(None);
+    match cli.clone().get_matches().subcommand() {
+        Some(("setup", _)) => {
+            info!("Running setup");
 
-    match matches.subcommand() {
-        Some(("check", _)) => {
-            println!("Checking remote connection");
+            let available = config.get_available_apps()?;
+            let installed: Vec<usize> = available
+                .iter()
+                .enumerate()
+                .filter_map(|(i, app)| config.linked_apps.contains_key(&app.id).then_some(i))
+                .collect();
 
-            client.check_depends(config);
-        }
-        Some(("connect", _)) => {
-            println!("Connecting to remote");
-
-            client.run_app(config, None);
-        }
-        Some(("run", sub_matches)) => {
-            println!("Connecting to app on remote");
-
-            client.run_app(config, sub_matches.get_one::<String>("APP"));
-        }
-
-        Some(("vm", command)) => {
-            match command.subcommand() {
-                Some(("create", _)) => {
-                    println!("Creating windows 10 vm..");
-                    create_vm(config);
-                }
-                Some(("start", _)) => {
-                    println!("Starting vm..");
-                    start_vm(config);
-                }
-
-                Some(("kill", _)) => {
-                    println!("Killing vm..");
-                    kill_vm(config);
-                }
-
-                Some((_, _)) => {
-                    unwrap_or_panic!(
-                        cli.about("Command not found, try existing ones!")
-                            .print_help(),
-                        "Couldn't print help"
-                    );
-                }
-                _ => unreachable!(),
-            };
-        }
-
-        Some((_, _)) => {
-            unwrap_or_panic!(
-                cli.about("Command not found, try existing ones!")
-                    .print_help(),
-                "Couldn't print help"
+            debug!(
+                "{} apps available, {} apps installed",
+                available.len(),
+                config.linked_apps.len()
             );
+
+            match MultiSelect::new("Select apps to link", available)
+                .with_default(installed.as_slice())
+                .with_page_size(20)
+                .prompt_skippable()
+                .map_err(|e| winapps::Error::Command {
+                    message: "Failed to display selection dialog".into(),
+                    source: e.into(),
+                })? {
+                Some(apps) => {
+                    let selected: HashSet<App> = apps.into_iter().collect();
+                    let installed: HashSet<App> = config.linked_apps.values().cloned().collect();
+
+                    for app in selected.symmetric_difference(&installed).cloned() {
+                        match (selected.contains(&app), installed.contains(&app)) {
+                            (true, false) => app.link(&mut config)?,
+                            (false, true) => app.unlink(&mut config)?,
+                            (false, false) => (),
+                            (true, true) => unreachable!(),
+                        }
+                    }
+                }
+                None => info!("No apps (de-)selected, skipping setup..."),
+            };
+
+            Ok(())
         }
-        _ => unreachable!(),
+
+        Some(("connect", _)) => {
+            info!("Connecting to remote");
+
+            client.run_full_session(&config)?;
+            Ok(())
+        }
+
+        Some(("run", sub_matches)) => {
+            info!("Connecting to app on remote");
+
+            let args = sub_matches
+                .get_many::<String>("ARGS")
+                .map_or(Vec::new(), |args| args.map(|v| v.to_owned()).collect());
+
+            match sub_matches.get_one::<String>("NAME") {
+                None => unreachable!("App is required and should never be None here"),
+                Some(app) => client.run_app(&config, app.to_owned(), args),
+            }?;
+
+            Ok(())
+        }
+
+        _ => cli
+            .about("Command not found, try existing ones!")
+            .print_help()
+            .into_diagnostic(),
     }
 }

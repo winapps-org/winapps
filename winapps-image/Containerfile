@@ -1,0 +1,3 @@
+FROM ghcr.io/dockur/windows:latest
+
+COPY oem/ /oem
