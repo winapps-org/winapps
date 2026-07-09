@@ -42,7 +42,7 @@ impl FromStr for Command {
 impl Command {
     pub fn new<T: Into<String> + Display>(exec: T) -> Self {
         Self {
-            error_message: format!("Error running child command {}", &exec),
+            error_message: format!("Error running child command {}", exec),
             exec: exec.into(),
             args: Vec::new(),
             loud: false,
