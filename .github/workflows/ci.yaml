@@ -14,12 +14,18 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
 
-      - uses: dtolnay/rust-toolchain@nightly
+      - uses: dtolnay/rust-toolchain@efcb852328a9f50117170cc43094fb6f09eaf1ae # nightly @ 0-unstable-2026-06-30
         with:
           components: clippy
 
-      - uses: auguwu/clippy-action@1.4.0
+      - uses: sksat/action-clippy@87e08e0c289f2654fe702b0aaf88c2f1027a3e57 # v1.1.1
+        if: github.event_name == 'push'
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          reporter: github-check
+
+      - uses: sksat/action-clippy@87e08e0c289f2654fe702b0aaf88c2f1027a3e57 # v1.1.1
+        if: github.event_name == 'pull_request'
+        with:
+          reporter: github-pr-review
