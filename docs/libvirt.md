@@ -612,7 +612,8 @@ Once you get to the point of selecting the location for installation, you will s
 </p>
 
 The next hurdle will be bypassing the network selection screen. As the `VirtIO` drivers for networking have not yet been loaded, the virtual machine will not be able to be connected to the internet.
-- For Windows 11: When prompted to select your country or region, press "Shift + F10" to open the command prompt. Enter `OOBE\BYPASSNRO` and press Enter. The system will restart, allowing you to select "I don't have internet" later on. It is crucial to run this command as soon as possible, as doing so later in the installation process will not work, and you may be required to create a Microsoft account despite not having an internet connection.
+- Method 1: When prompted to select your country or region during the Windows 11 setup, press Shift + F10 to open the Command Prompt. Type OOBE\BYPASSNRO and press Enter. The system will restart, allowing you to select "I don't have internet" on the network screen. Note: It is crucial to do this as early in the setup process as possible.
+- Method 2 (Alternative): If you are already further along in the installation and the first command fails, you can try a fallback method. Press Shift + F10 to open the Command Prompt, type start ms-cxh:localonly, and press Enter. The setup will immediately skip to the local account creation page.
 
 <p align="center">
     <img src="./libvirt_images/21.png" width="700px"/>
