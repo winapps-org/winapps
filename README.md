@@ -808,10 +808,10 @@ However, if you still don't want to use flakes, you can use WinApps with flake-c
 ```
 
 ## Star History
-<a href="https://star-history.com/#winapps-org/winapps&Date">
+<a href="https://star-history.dera.page/#winapps-org/winapps&Date">
  <picture>
-   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=winapps-org/winapps&type=Date&theme=dark"/>
-   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=winapps-org/winapps&type=Date"/>
-   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=winapps-org/winapps&type=Date"/>
+   <source media="(prefers-color-scheme: dark)" srcset="https://star-history.dera.page/svg?repos=winapps-org/winapps&type=Date&theme=dark"/>
+   <source media="(prefers-color-scheme: light)" srcset="https://star-history.dera.page/svg?repos=winapps-org/winapps&type=Date"/>
+   <img alt="Star History Chart" src="https://star-history.dera.page/svg?repos=winapps-org/winapps&type=Date"/>
  </picture>
 </a>
