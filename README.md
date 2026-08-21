@@ -442,13 +442,11 @@ WAFLAVOR="docker"
 
 # [DISPLAY SCALING FACTOR]
 # NOTES:
-# - If an unsupported value is specified, a warning will be displayed.
-# - If an unsupported value is specified, WinApps will use the closest supported value.
+# - RDP_SCALE must be an integer. Values outside the supported range will be clamped.
+# - WinApps automatically approximates the device scale to 100, 140 or 180.
 # DEFAULT VALUE: '100'
-# VALID VALUES:
-# - '100'
-# - '140'
-# - '180'
+# VALID RANGE:
+# - '100' to '500'
 RDP_SCALE="100"
 
 # [MOUNTING REMOVABLE PATHS FOR FILES]
@@ -571,7 +569,7 @@ HIDEF="on"
 - If using a pre-existing Windows RDP server on your LAN, you must use `RDP_IP` to specify the location of the Windows server. You may also wish to configure a static IP address for this server.
 - If running a Windows VM using `libvirt` with NAT enabled, leave `RDP_IP` commented out and WinApps will auto-detect the local IP address for the VM.
 - For domain users, you can uncomment and change `RDP_DOMAIN`.
-- On high-resolution (UHD) displays, you can set `RDP_SCALE` to the scale you would like to use (100, 140 or 180).
+- On high-resolution (UHD) displays, you can set `RDP_SCALE` to an integer from 100 to 500. WinApps passes that exact desktop scale to FreeRDP and approximates the device scale to the nearest supported value (100, 140 or 180).
 - To add additional flags to the FreeRDP call (e.g. `/prevent-session-lock 120`), uncomment and use the `RDP_FLAGS` configuration option.
 - For multi-monitor setups, you can try adding `/multimon` to `RDP_FLAGS`. A FreeRDP bug may result in a black screen however, in which case you should revert this change.
 - To enable non-English input and seamless language switching, you can try adding `/kbd:unicode` to `RDP_FLAGS`. This ensures client inputs are sent as Unicode sequences.
