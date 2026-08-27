@@ -26,7 +26,7 @@ Together, these components form a powerful and flexible virtualization stack, wi
     ```bash
     sudo apt install virt-manager # Debian/Ubuntu
     sudo dnf install virt-manager # Fedora/RHEL
-    sudo pacman -S virt-manager # Arch Linux
+    sudo pacman -S virt-manager qemu-full swtpm # Arch Linux
     sudo emerge app-emulation/virt-manager # Gentoo Linux
     ```
 
