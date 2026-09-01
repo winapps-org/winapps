@@ -2,7 +2,7 @@ pub mod freerdp_back {
     use std::process::{Command, Stdio};
     use tracing::{info, warn};
 
-    use crate::{unwrap_or_exit, Config, RemoteClient};
+    use crate::{Config, RemoteClient, unwrap_or_exit};
 
     pub struct Freerdp {}
 

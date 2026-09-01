@@ -8,3 +8,9 @@ Cargo.lock
 # We don't want to commit IDE configuration files.
 .idea/
 .vscode/
+*.iml
+
+# Operating system generated metadata files
+.DS_Store
+Thumbs.db
+Desktop.ini

@@ -1,0 +1,23 @@
+[package]
+name = "winapps-monitor"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+tray-icon = "0.21.1"
+ico = "0.4.0"
+anyhow = "1.0.100"
+chrono = "0.4.42"
+
+[dependencies.windows]
+version = "0.62.1"
+features = [
+    "Win32_Foundation",
+    "Win32_UI_WindowsAndMessaging",
+    "Win32_System_Threading",
+    "Win32_Storage_FileSystem",
+    "Win32_System_ProcessStatus",
+    "Win32_Graphics_Dwm",
+    "Win32_UI_Accessibility",
+    "Win32_System_Com"
+]
