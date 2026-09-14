@@ -872,6 +872,9 @@ function waRunCommand() {
             # Capture the process ID.
             FREERDP_PID=$!
         else
+        # Resolve relative file paths to absolute
+        [ "${2#/}" = "${2}" ] && set -- "${1}" "$(pwd)/${2}"
+
             # Convert path from UNIX to Windows style.
             FILE_PATH=$(echo "$2" | sed \
                 -e 's|^'"${HOME}"'|\\\\tsclient\\home|' \
