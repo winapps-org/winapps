@@ -32,6 +32,7 @@ readonly EC_BAD_PORT="13"        # Windows is unreachable via RDP_PORT.
 readonly EC_RDP_FAIL="14"        # FreeRDP failed to establish a connection with Windows.
 readonly EC_APPQUERY_FAIL="15"   # Failed to query Windows for installed applications.
 readonly EC_INVALID_FLAVOR="16"  # Backend specified is not 'libvirt', 'docker' or 'podman'.
+readonly EC_INVALID_SCALE="17"   # A display scale setting is invalid.
 
 # PATHS
 # 'BIN'
@@ -92,7 +93,11 @@ RDP_DOMAIN=""        # Imported variable.
 RDP_IP=""            # Imported variable.
 VM_NAME="RDPWindows" # Name of the Windows VM (FOR 'libvirt' ONLY).
 WAFLAVOR="docker"    # Imported variable.
-RDP_SCALE=100        # Imported variable.
+RDP_SCALE="auto"     # Imported variable for RemoteApp sessions.
+RDP_DEVICE_SCALE=100 # Derived from RDP_SCALE.
+# RDP_DESKTOP_SCALE controls full-desktop sessions, not FreeRDP's /scale-desktop option.
+RDP_DESKTOP_SCALE="inherit"
+RDP_DESKTOP_DEVICE_SCALE=100
 RDP_FLAGS=""         # Imported variable.
 DEBUG="true"         # Imported variable.
 FREERDP_COMMAND=""   # Imported variable.
@@ -500,37 +505,317 @@ function waCheckExistingInstall() {
 }
 
 
+# Name: 'waDetectHostScale'
+# Role: Detect the host's logical display scale.
+function waDetectHostScale() {
+    local DISPLAY_STATE=""
+    local LOGICAL_MONITORS=""
+    local LOGICAL_MONITOR_PATTERN='\([[:space:]]*-?[0-9]+[[:space:]]*,[[:space:]]*-?[0-9]+[[:space:]]*,[[:space:]]*([^,[:space:]]*)[[:space:]]*,[[:space:]]*uint32[[:space:]]+[0-9]+[[:space:]]*,[[:space:]]*(true|false)[[:space:]]*,[[:space:]]*\['
+    local REMAINDER=""
+    local MATCHED_ENTRY=""
+    local PRIMARY_SCALE=""
+    local SCALE_WHOLE=""
+    local SCALE_FRACTION=""
+    local SCALE_FRACTION_PADDED=""
+    local SCALE_HUNDREDTHS=""
+    local SCALE_ROUND_DIGIT=""
+    local SCALE_PERCENTAGE=0
+    local FOUND_LOGICAL_MONITOR=0
+    local FOUND_PRIMARY_MONITOR=0
+
+    if ! command -v gdbus >/dev/null 2>&1; then
+        return 1
+    fi
+
+    if ! DISPLAY_STATE="$(gdbus call --session --timeout 5 \
+        --dest org.cinnamon.Muffin.DisplayConfig \
+        --object-path /org/cinnamon/Muffin/DisplayConfig \
+        --method org.cinnamon.Muffin.DisplayConfig.GetCurrentState 2>/dev/null)"; then
+        return 2
+    fi
+
+    if [ -z "$DISPLAY_STATE" ]; then
+        return 3
+    fi
+
+    # Extract the third top-level tuple field while respecting nested GVariant containers.
+    if ! LOGICAL_MONITORS="$(printf '%s\n' "$DISPLAY_STATE" | LC_ALL=C awk '
+        {
+            value = $0
+            if ((substr(value, 1, 1) != "(") || (substr(value, length(value), 1) != ")"))
+                exit 1
+
+            parentheses = 0
+            brackets = 0
+            braces = 0
+            quoted = 0
+            escaped = 0
+            field = 1
+            start = 2
+
+            for (position = 2; position < length(value); position++) {
+                character = substr(value, position, 1)
+
+                if (quoted) {
+                    if (escaped)
+                        escaped = 0
+                    else if (character == "\\")
+                        escaped = 1
+                    else if (character == "\047")
+                        quoted = 0
+                    continue
+                }
+
+                if (character == "\047") {
+                    quoted = 1
+                    continue
+                }
+
+                if (character == "(")
+                    parentheses++
+                else if (character == ")")
+                    parentheses--
+                else if (character == "[")
+                    brackets++
+                else if (character == "]")
+                    brackets--
+                else if (character == "{")
+                    braces++
+                else if (character == "}")
+                    braces--
+                else if ((character == ",") && (parentheses == 0) && (brackets == 0) && (braces == 0)) {
+                    if (field == 3) {
+                        logical_monitors = substr(value, start, position - start)
+                        sub(/^[[:space:]]+/, "", logical_monitors)
+                        sub(/[[:space:]]+$/, "", logical_monitors)
+                        print logical_monitors
+                        exit 0
+                    }
+                    field++
+                    start = position + 1
+                }
+
+                if ((parentheses < 0) || (brackets < 0) || (braces < 0))
+                    exit 1
+            }
+
+            exit 1
+        }
+    ' 2>/dev/null)"; then
+        return 3
+    fi
+
+    if [[ ! "$LOGICAL_MONITORS" =~ ^\[.*\]$ ]]; then
+        return 3
+    fi
+
+    # Select the primary logical monitor independently of scale conversion.
+    REMAINDER="${LOGICAL_MONITORS:1:${#LOGICAL_MONITORS}-2}"
+    if [[ "$REMAINDER" =~ ^[[:space:]]*$ ]]; then
+        return 4
+    fi
+
+    while [[ "$REMAINDER" =~ $LOGICAL_MONITOR_PATTERN ]]; do
+        FOUND_LOGICAL_MONITOR=1
+        MATCHED_ENTRY="${BASH_REMATCH[0]}"
+        if [ "${BASH_REMATCH[2]}" = "true" ]; then
+            FOUND_PRIMARY_MONITOR=1
+            PRIMARY_SCALE="${BASH_REMATCH[1]}"
+            break
+        fi
+        REMAINDER="${REMAINDER#*"$MATCHED_ENTRY"}"
+    done
+
+    if [ "$FOUND_LOGICAL_MONITOR" -eq 0 ]; then
+        return 3
+    fi
+    if [ "$FOUND_PRIMARY_MONITOR" -eq 0 ]; then
+        return 4
+    fi
+
+    # Convert the GVariant decimal string without locale-sensitive floating-point parsing.
+    if [[ ! "$PRIMARY_SCALE" =~ ^([0-9]+)([.]([0-9]+))?$ ]]; then
+        return 5
+    fi
+
+    SCALE_WHOLE="${BASH_REMATCH[1]}"
+    SCALE_FRACTION="${BASH_REMATCH[3]:-}"
+    while [[ "$SCALE_WHOLE" == 0* ]] && [ "$SCALE_WHOLE" != "0" ]; do
+        SCALE_WHOLE="${SCALE_WHOLE#0}"
+    done
+    if (( ${#SCALE_WHOLE} > 1 )); then
+        return 5
+    fi
+
+    SCALE_FRACTION_PADDED="${SCALE_FRACTION}000"
+    SCALE_HUNDREDTHS="${SCALE_FRACTION_PADDED:0:2}"
+    SCALE_ROUND_DIGIT="${SCALE_FRACTION_PADDED:2:1}"
+    SCALE_PERCENTAGE=$(( 10#$SCALE_WHOLE * 100 + 10#$SCALE_HUNDREDTHS ))
+    if (( 10#$SCALE_ROUND_DIGIT >= 5 )); then
+        SCALE_PERCENTAGE=$(( SCALE_PERCENTAGE + 1 ))
+    fi
+
+    if (( SCALE_PERCENTAGE < 100 || SCALE_PERCENTAGE > 500 )); then
+        return 5
+    fi
+
+    printf '%s\n' "$SCALE_PERCENTAGE"
+    return 0
+}
+
 # Name: 'waFixScale'
-# Role: Since FreeRDP only supports '/scale' values of 100, 140 or 180, find the closest supported argument to the user's configuration.
+# Role: Resolve RemoteApp and full-desktop scales and derive their device scales.
 function waFixScale() {
-    # Define variables.
-    local OLD_SCALE=100
+    # Capture both raw settings before either is resolved.
+    local RAW_RDP_SCALE="$RDP_SCALE"
+    local RAW_RDP_DESKTOP_SCALE="$RDP_DESKTOP_SCALE"
+    local INVALID_SCALE_KEY=""
+    local INVALID_SCALE_VALUE=""
+
+    # Validate both raw settings independently.
+    if [[ "$RAW_RDP_SCALE" != "auto" && ! "$RAW_RDP_SCALE" =~ ^[+-]?[0-9]+$ ]]; then
+        INVALID_SCALE_KEY="RDP_SCALE"
+        INVALID_SCALE_VALUE="$RAW_RDP_SCALE"
+    elif [[ "$RAW_RDP_DESKTOP_SCALE" != "auto" && "$RAW_RDP_DESKTOP_SCALE" != "inherit" && ! "$RAW_RDP_DESKTOP_SCALE" =~ ^[+-]?[0-9]+$ ]]; then
+        INVALID_SCALE_KEY="RDP_DESKTOP_SCALE"
+        INVALID_SCALE_VALUE="$RAW_RDP_DESKTOP_SCALE"
+    fi
+
+    if [ -n "$INVALID_SCALE_KEY" ]; then
+        echo -e "${ERROR_TEXT}ERROR:${CLEAR_TEXT} ${BOLD_TEXT}${INVALID_SCALE_KEY} must be 'auto' or an integer; received '${INVALID_SCALE_VALUE}'.${CLEAR_TEXT}"
+        return "$EC_INVALID_SCALE"
+    fi
+
+    # Resolve each scale and derive the nearest supported device scale.
+    local SCALE_KEY=""
+    local DEVICE_SCALE_KEY=""
+    local RAW_SCALE=""
+    local SCALE_VALUE=""
+    local SCALE_SOURCE=""
+    local DETECTED_SCALE=""
+    local DETECTION_STATUS=0
+    local DETECTION_REASON=""
+    local DETECTION_ATTEMPTED=0
+    local CACHED_DETECTED_SCALE=""
+    local CACHED_DETECTION_STATUS=0
+    local DBUS_ENV_STATE=""
+    local OLD_SCALE=""
+    local SCALE_DIGITS=""
+    local SCALE_SIGN=""
+    local RESOLVED_SCALE=0
+    local DEVICE_SCALE=0
     local VALID_SCALE_1=100
     local VALID_SCALE_2=140
     local VALID_SCALE_3=180
+    local DIFF_1=0
+    local DIFF_2=0
+    local DIFF_3=0
 
-    # Check for an unsupported value.
-    if [ "$RDP_SCALE" != "$VALID_SCALE_1" ] && [ "$RDP_SCALE" != "$VALID_SCALE_2" ] && [ "$RDP_SCALE" != "$VALID_SCALE_3" ]; then
-        # Save the unsupported scale.
-        OLD_SCALE="$RDP_SCALE"
-
-        # Calculate the absolute differences.
-        local DIFF_1=$(( RDP_SCALE > VALID_SCALE_1 ? RDP_SCALE - VALID_SCALE_1 : VALID_SCALE_1 - RDP_SCALE ))
-        local DIFF_2=$(( RDP_SCALE > VALID_SCALE_2 ? RDP_SCALE - VALID_SCALE_2 : VALID_SCALE_2 - RDP_SCALE ))
-        local DIFF_3=$(( RDP_SCALE > VALID_SCALE_3 ? RDP_SCALE - VALID_SCALE_3 : VALID_SCALE_3 - RDP_SCALE ))
-
-        # Set the final scale to the valid scale value with the smallest absolute difference.
-        if (( DIFF_1 <= DIFF_2 && DIFF_1 <= DIFF_3 )); then
-            RDP_SCALE="$VALID_SCALE_1"
-        elif (( DIFF_2 <= DIFF_1 && DIFF_2 <= DIFF_3 )); then
-            RDP_SCALE="$VALID_SCALE_2"
+    for SCALE_KEY in RDP_SCALE RDP_DESKTOP_SCALE; do
+        if [ "$SCALE_KEY" = "RDP_SCALE" ]; then
+            RAW_SCALE="$RAW_RDP_SCALE"
+            DEVICE_SCALE_KEY="RDP_DEVICE_SCALE"
         else
-            RDP_SCALE="$VALID_SCALE_3"
+            RAW_SCALE="$RAW_RDP_DESKTOP_SCALE"
+            DEVICE_SCALE_KEY="RDP_DESKTOP_DEVICE_SCALE"
         fi
 
-        # Print feedback.
-        echo -e "${WARNING_TEXT}[WARNING]${CLEAR_TEXT} Unsupported RDP_SCALE value '${OLD_SCALE}' detected. Defaulting to '${RDP_SCALE}'."
-    fi
+        if [ "$SCALE_KEY" = "RDP_DESKTOP_SCALE" ] && [ "$RAW_SCALE" = "inherit" ]; then
+            RDP_DESKTOP_SCALE="$RDP_SCALE"
+            printf -v RDP_DESKTOP_DEVICE_SCALE '%s' "$RDP_DEVICE_SCALE"
+            echo -e "${INFO_TEXT}RDP_DESKTOP_SCALE inherited resolved RDP_SCALE value '${RDP_DESKTOP_SCALE}'.${CLEAR_TEXT}"
+            continue
+        fi
+
+        SCALE_VALUE="$RAW_SCALE"
+        SCALE_SOURCE="configuration"
+        if [ "$RAW_SCALE" = "auto" ]; then
+            DETECTED_SCALE=""
+            DETECTION_STATUS=0
+            if [ "$DETECTION_ATTEMPTED" -eq 0 ]; then
+                DBUS_ENV_STATE="not set"
+                if [ -n "${DBUS_SESSION_BUS_ADDRESS:-}" ]; then
+                    DBUS_ENV_STATE="set"
+                fi
+                echo -e "${INFO_TEXT}DBUS_SESSION_BUS_ADDRESS is ${DBUS_ENV_STATE}; attempting host-scale detection through the session bus.${CLEAR_TEXT}"
+
+                DETECTED_SCALE="$(waDetectHostScale)" || DETECTION_STATUS=$?
+                if [ "$DETECTION_STATUS" -eq 0 ] && [[ ! "$DETECTED_SCALE" =~ ^[+-]?[0-9]+$ ]]; then
+                    DETECTION_STATUS=5
+                fi
+                DETECTION_ATTEMPTED=1
+                CACHED_DETECTED_SCALE="$DETECTED_SCALE"
+                CACHED_DETECTION_STATUS=$DETECTION_STATUS
+            else
+                DETECTED_SCALE="$CACHED_DETECTED_SCALE"
+                DETECTION_STATUS=$CACHED_DETECTION_STATUS
+                echo -e "${INFO_TEXT}Reusing the host-scale detection result for ${SCALE_KEY}.${CLEAR_TEXT}"
+            fi
+
+            if [ "$DETECTION_STATUS" -eq 0 ]; then
+                SCALE_VALUE="$DETECTED_SCALE"
+                SCALE_SOURCE="detection"
+            else
+                case "$DETECTION_STATUS" in
+                1) DETECTION_REASON="gdbus is unavailable" ;;
+                2) DETECTION_REASON="the Cinnamon DisplayConfig call failed or timed out" ;;
+                3) DETECTION_REASON="the Cinnamon DisplayConfig reply could not be parsed" ;;
+                4) DETECTION_REASON="Cinnamon DisplayConfig reported no primary logical monitor" ;;
+                5) DETECTION_REASON="the primary logical-monitor scale was invalid" ;;
+                *) DETECTION_REASON="host-scale detection returned unexpected status ${DETECTION_STATUS}" ;;
+                esac
+                SCALE_VALUE=100
+                SCALE_SOURCE="fallback"
+                echo -e "${WARNING_TEXT}[WARNING]${CLEAR_TEXT} ${SCALE_KEY} automatic detection failed because ${DETECTION_REASON}; falling back to 100."
+            fi
+        fi
+
+        OLD_SCALE="$SCALE_VALUE"
+        SCALE_DIGITS="${SCALE_VALUE#[+-]}"
+        SCALE_SIGN="${SCALE_VALUE%"$SCALE_DIGITS"}"
+        while [[ "$SCALE_DIGITS" == 0* ]] && [ "$SCALE_DIGITS" != "0" ]; do
+            SCALE_DIGITS="${SCALE_DIGITS#0}"
+        done
+
+        if [ "$SCALE_SIGN" = "-" ]; then
+            RESOLVED_SCALE=100
+            echo -e "${WARNING_TEXT}[WARNING]${CLEAR_TEXT} ${SCALE_KEY} value '${OLD_SCALE}' is below 100. Clamping desktop scale to '${RESOLVED_SCALE}'."
+        elif (( ${#SCALE_DIGITS} > 3 )); then
+            RESOLVED_SCALE=500
+            echo -e "${WARNING_TEXT}[WARNING]${CLEAR_TEXT} ${SCALE_KEY} value '${OLD_SCALE}' is above 500. Clamping desktop scale to '${RESOLVED_SCALE}'."
+        else
+            RESOLVED_SCALE=$(( 10#$SCALE_DIGITS ))
+            if (( RESOLVED_SCALE < 100 )); then
+                RESOLVED_SCALE=100
+                echo -e "${WARNING_TEXT}[WARNING]${CLEAR_TEXT} ${SCALE_KEY} value '${OLD_SCALE}' is below 100. Clamping desktop scale to '${RESOLVED_SCALE}'."
+            elif (( RESOLVED_SCALE > 500 )); then
+                RESOLVED_SCALE=500
+                echo -e "${WARNING_TEXT}[WARNING]${CLEAR_TEXT} ${SCALE_KEY} value '${OLD_SCALE}' is above 500. Clamping desktop scale to '${RESOLVED_SCALE}'."
+            fi
+        fi
+
+        DIFF_1=$(( RESOLVED_SCALE > VALID_SCALE_1 ? RESOLVED_SCALE - VALID_SCALE_1 : VALID_SCALE_1 - RESOLVED_SCALE ))
+        DIFF_2=$(( RESOLVED_SCALE > VALID_SCALE_2 ? RESOLVED_SCALE - VALID_SCALE_2 : VALID_SCALE_2 - RESOLVED_SCALE ))
+        DIFF_3=$(( RESOLVED_SCALE > VALID_SCALE_3 ? RESOLVED_SCALE - VALID_SCALE_3 : VALID_SCALE_3 - RESOLVED_SCALE ))
+
+        if (( DIFF_1 <= DIFF_2 && DIFF_1 <= DIFF_3 )); then
+            DEVICE_SCALE="$VALID_SCALE_1"
+        elif (( DIFF_2 <= DIFF_1 && DIFF_2 <= DIFF_3 )); then
+            DEVICE_SCALE="$VALID_SCALE_2"
+        else
+            DEVICE_SCALE="$VALID_SCALE_3"
+        fi
+
+        printf -v "$SCALE_KEY" '%s' "$RESOLVED_SCALE"
+        printf -v "$DEVICE_SCALE_KEY" '%s' "$DEVICE_SCALE"
+        echo -e "${INFO_TEXT}${SCALE_KEY} resolved from ${SCALE_SOURCE} to '${RESOLVED_SCALE}'.${CLEAR_TEXT}"
+
+        if [ "$DEVICE_SCALE" != "$RESOLVED_SCALE" ]; then
+            echo -e "${INFO_TEXT}Approximating the device scale for ${SCALE_KEY} from '${RESOLVED_SCALE}' to '${DEVICE_SCALE}'; desktop scale remains '${RESOLVED_SCALE}'.${CLEAR_TEXT}"
+        fi
+    done
+
+    return 0
 }
 
 # Name: 'waLoadConfig'
@@ -1156,7 +1441,8 @@ function waCheckRDPAccess() {
         /d:"$RDP_DOMAIN" \
         /u:"$RDP_USER" \
         ${RDP_PASSWORD_ARG:+"$RDP_PASSWORD_ARG"} \
-        /scale:"$RDP_SCALE" \
+        /scale-desktop:"$RDP_SCALE" \
+        /scale-device:"$RDP_DEVICE_SCALE" \
         +auto-reconnect \
         +home-drive \
         /app:program:"C:\Windows\System32\cmd.exe",cmd:"/C type NUL > $TEST_PATH_WIN && tsdiscon" \
@@ -1289,7 +1575,8 @@ function waFindInstalled() {
         /d:"$RDP_DOMAIN" \
         /u:"$RDP_USER" \
         ${RDP_PASSWORD_ARG:+"$RDP_PASSWORD_ARG"} \
-        /scale:"$RDP_SCALE" \
+        /scale-desktop:"$RDP_SCALE" \
+        /scale-device:"$RDP_DEVICE_SCALE" \
         +auto-reconnect \
         +home-drive \
         /app:program:"C:\Windows\System32\cmd.exe",cmd:"/C $BATCH_SCRIPT_PATH_WIN" \
@@ -1723,8 +2010,8 @@ function waInstall() {
     # Check for missing dependencies.
     waCheckInstallDependencies
 
-    # Update $RDP_SCALE.
-    waFixScale
+    # Resolve RemoteApp and full-desktop scale settings.
+    waFixScale || return "$?"
 
     # Append additional FreeRDP flags if required.
     if [[ -n $RDP_FLAGS ]]; then
@@ -1920,8 +2207,8 @@ function waAddApps() {
     # Check for missing dependencies.
     waCheckInstallDependencies
 
-    # Update $RDP_SCALE.
-    waFixScale
+    # Resolve RemoteApp and full-desktop scale settings.
+    waFixScale || return "$?"
 
     # Append additional FreeRDP flags if required.
     if [[ -n $RDP_FLAGS ]]; then

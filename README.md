@@ -440,16 +440,28 @@ VM_NAME="RDPWindows"
 # - 'manual'
 WAFLAVOR="docker"
 
-# [DISPLAY SCALING FACTOR]
+# [DISPLAY SCALING FACTORS]
 # NOTES:
-# - If an unsupported value is specified, a warning will be displayed.
-# - If an unsupported value is specified, WinApps will use the closest supported value.
-# DEFAULT VALUE: '100'
-# VALID VALUES:
-# - '100'
-# - '140'
-# - '180'
-RDP_SCALE="100"
+# - RDP_SCALE controls RemoteApp launches.
+# - RDP_DESKTOP_SCALE controls the full-desktop session started by 'winapps windows'. Its name
+#   refers to the launch type; both settings provide FreeRDP's '/scale-desktop' value.
+# - Each setting accepts 'auto' or an integer. Other values stop the launch with an error;
+#   integers outside the supported range are clamped.
+# - 'auto' detects the primary monitor's applied logical scale on Cinnamon under X11. It uses
+#   'gdbus', normally installed with Cinnamon; unsupported desktops or detection failures fall back to 100.
+# - An explicit integer always wins and is never replaced by automatic detection.
+# - The resolved value sizes the Windows UI. WinApps derives the separate device scale automatically
+#   and approximates only that value to 100, 140 or 180.
+# - Display resolution and display scale are different; automatic detection follows only the scale.
+# - Per-monitor scaling and scale changes during a running session are not supported.
+# DEFAULT VALUES:
+# - RDP_SCALE: 'auto'
+# - RDP_DESKTOP_SCALE: the resolved RDP_SCALE value
+# VALID RANGE:
+# - '100' to '500'
+RDP_SCALE="auto"
+# Keep this assignment after RDP_SCALE so its default inherits the value above.
+RDP_DESKTOP_SCALE="${RDP_SCALE}"
 
 # [MOUNTING REMOVABLE PATHS FOR FILES]
 # NOTES:
@@ -571,7 +583,7 @@ HIDEF="on"
 - If using a pre-existing Windows RDP server on your LAN, you must use `RDP_IP` to specify the location of the Windows server. You may also wish to configure a static IP address for this server.
 - If running a Windows VM using `libvirt` with NAT enabled, leave `RDP_IP` commented out and WinApps will auto-detect the local IP address for the VM.
 - For domain users, you can uncomment and change `RDP_DOMAIN`.
-- On high-resolution (UHD) displays, you can set `RDP_SCALE` to the scale you would like to use (100, 140 or 180).
+- `RDP_SCALE` controls RemoteApp launches, while `RDP_DESKTOP_SCALE` controls the full-desktop session started by `winapps windows`. Each accepts `auto` or an integer from 100 to 500; explicit numbers are honoured exactly and are never overridden. For each launch, WinApps passes the resolved value as FreeRDP's desktop scale, which sizes the Windows UI, and derives the corresponding device scale separately. Only the device value is approximated, to 100, 140 or 180. On Cinnamon under X11, `auto` uses the primary monitor's applied logical scale, which can differ slightly from the percentage shown in display settings because Cinnamon quantises scale for the active display mode. Changing the display resolution is not the same as changing its scale; automatic detection follows only the scale, so a display running below its native resolution at scale 1 resolves to 100. Detection uses the `gdbus` tool from `libglib2.0-bin` or its equivalent, which is normally installed with the Cinnamon desktop. Without it, on other desktops, or when detection fails, WinApps falls back to 100 without affecting other features. Per-monitor values, rescaling a window when it moves between monitors, monitor hotplug and scale changes during a running session are not implemented. Older configurations may omit either key: a missing `RDP_SCALE` behaves as `auto`, and a missing `RDP_DESKTOP_SCALE` inherits the resolved `RDP_SCALE` value.
 - To add additional flags to the FreeRDP call (e.g. `/prevent-session-lock 120`), uncomment and use the `RDP_FLAGS` configuration option.
 - For multi-monitor setups, you can try adding `/multimon` to `RDP_FLAGS`. A FreeRDP bug may result in a black screen however, in which case you should revert this change.
 - To enable non-English input and seamless language switching, you can try adding `/kbd:unicode` to `RDP_FLAGS`. This ensures client inputs are sent as Unicode sequences.
