@@ -1039,6 +1039,46 @@ function waCheckContainerRunning() {
     echo -e "${DONE_TEXT}Done!${CLEAR_TEXT}"
 }
 
+# Name: 'waFindVMIPs'
+# Role: List unique IPv4 addresses associated with the Windows VM MAC in the neighbour table.
+# Note: After a VM reset, 'ip neigh' can return more than one IP for the same MAC (#432).
+function waFindVMIPs() {
+    local VM_MAC=""
+
+    VM_MAC=$(virsh domiflist "$VM_NAME" | grep -oE "([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})") # VM MAC address.
+    [ -z "$VM_MAC" ] && return 1
+
+    ip neigh show | grep -F -- "$VM_MAC" | grep -oE "([0-9]{1,3}\.){3}[0-9]{1,3}" | awk '!seen[$0]++'
+}
+
+# Name: 'waSelectReachableVMIP'
+# Role: Try each VM neighbour IP until RDP_PORT accepts a connection; set RDP_IP on success.
+# Returns: 0 if a reachable IP was selected, 1 if no IPs found, 2 if all candidates failed.
+function waSelectReachableVMIP() {
+    local candidate=""
+    local ips=""
+    local last_ip=""
+
+    ips=$(waFindVMIPs)
+    if [ -z "$ips" ]; then
+        return 1
+    fi
+
+    while IFS= read -r candidate; do
+        [ -z "$candidate" ] && continue
+        last_ip="$candidate"
+        if timeout "$PORT_TIMEOUT" nc -z "$candidate" "$RDP_PORT" &>/dev/null; then
+            RDP_IP="$candidate"
+            return 0
+        fi
+        echo -e "${WARNING_TEXT}RDP port ${RDP_PORT} closed on ${candidate}; trying next address if any...${CLEAR_TEXT}"
+    done <<< "$ips"
+
+    # Preserve last candidate so the BAD_PORT message can include the IP.
+    RDP_IP="$last_ip"
+    return 2
+}
+
 # Name: 'waCheckPortOpen'
 # Role: Assesses whether the RDP port on Windows is open.
 function waCheckPortOpen() {
@@ -1046,35 +1086,52 @@ function waCheckPortOpen() {
     echo -n "Checking for an open RDP Port on Windows... "
 
     # Declare variables.
-    local VM_MAC="" # Stores the MAC address of the Windows VM.
+    local SELECT_STATUS=0
 
     # Obtain Windows VM IP Address (FOR 'libvirt' ONLY)
     # Note: 'RDP_IP' should not be empty if 'WAFLAVOR' is 'docker', since it is set to localhost before this function is called.
     if [ -z "$RDP_IP" ] && [ "$WAFLAVOR" = "libvirt" ]; then
-        VM_MAC=$(virsh domiflist "$VM_NAME" | grep -oE "([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})") # VM MAC address.
-        RDP_IP=$(ip neigh show | grep "$VM_MAC" | grep -oE "([0-9]{1,3}\.){3}[0-9]{1,3}")         # VM IP address.
-
-        if [ -z "$RDP_IP" ]; then
+        waSelectReachableVMIP
+        SELECT_STATUS=$?
+        if [ "$SELECT_STATUS" -ne 0 ]; then
             # Complete the previous line.
             echo -e "${FAIL_TEXT}Failed!${CLEAR_TEXT}\n"
 
             # Display the error type.
             echo -e "${ERROR_TEXT}ERROR:${CLEAR_TEXT} ${BOLD_TEXT}NETWORK CONFIGURATION ERROR.${CLEAR_TEXT}"
 
-            # Display the error details.
-            echo -e "${INFO_TEXT}The IP address of the Windows VM '${VM_NAME}' could not be found.${CLEAR_TEXT}"
+            if [ "$SELECT_STATUS" -eq 1 ]; then
+                # Display the error details.
+                echo -e "${INFO_TEXT}The IP address of the Windows VM '${VM_NAME}' could not be found.${CLEAR_TEXT}"
+
+                # Display the suggested action(s).
+                echo "--------------------------------------------------------------------------------"
+                echo "Please ensure networking is properly configured for the Windows VM."
+                echo "--------------------------------------------------------------------------------"
+
+                # Terminate the script.
+                return "$EC_NO_IP"
+            fi
+
+            # Display the error details (include IP for debugging multi-address neigh tables).
+            echo -e "${INFO_TEXT}Failed to establish a connection with Windows at '${RDP_IP}:${RDP_PORT}'.${CLEAR_TEXT}"
 
             # Display the suggested action(s).
             echo "--------------------------------------------------------------------------------"
-            echo "Please ensure networking is properly configured for the Windows VM."
+            echo "Please ensure Remote Desktop is configured on Windows as per the WinApps README."
+            echo -e "Then you can try increasing the ${COMMAND_TEXT}PORT_TIMEOUT${CLEAR_TEXT} in ${COMMAND_TEXT}${CONFIG_PATH}${CLEAR_TEXT}."
             echo "--------------------------------------------------------------------------------"
 
             # Terminate the script.
-            return "$EC_NO_IP"
+            return "$EC_BAD_PORT"
         fi
+
+        # Print feedback.
+        echo -e "${DONE_TEXT}Done!${CLEAR_TEXT}"
+        return 0
     fi
 
-    # Check for an open RDP port.
+    # Check for an open RDP port (configured / non-libvirt path).
     if ! timeout "$PORT_TIMEOUT" nc -z "$RDP_IP" "$RDP_PORT" &>/dev/null; then
         # Complete the previous line.
         echo -e "${FAIL_TEXT}Failed!${CLEAR_TEXT}\n"
