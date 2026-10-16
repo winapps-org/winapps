@@ -271,8 +271,8 @@ Please run:
         notify-send --expire-time=8000 --icon="dialog-error" --app-name="WinApps" --app-icon="$APP_ICON_PATH" --urgency="low" "WinApps" "Windows is unreachable.\nPlease ensure Windows is assigned an IP address."
         ;;
     "$EC_BAD_PORT")
-        dprint "ERROR: RDP PORT CLOSED. EXITING."
-        notify-send --expire-time=8000 --icon="dialog-error" --app-name="WinApps" --app-icon="$APP_ICON_PATH" --urgency="low" "WinApps" "The Windows RDP port '${RDP_PORT}' is closed.\nPlease ensure Remote Desktop is correctly configured on Windows."
+        dprint "ERROR: RDP PORT CLOSED ON '${RDP_IP}:${RDP_PORT}'. EXITING."
+        notify-send --expire-time=8000 --icon="dialog-error" --app-name="WinApps" --app-icon="$APP_ICON_PATH" --urgency="low" "WinApps" "The Windows RDP port '${RDP_PORT}' on ip '${RDP_IP}' is closed.\nPlease ensure Remote Desktop is correctly configured on Windows."
         ;;
     "$EC_UNSUPPORTED_APP")
         dprint "ERROR: APPLICATION NOT FOUND. EXITING."
@@ -589,14 +589,19 @@ function waCheckVMRunning() {
         TIME_ELAPSED=0
 
         while (( TIME_ELAPSED < BOOT_TIMEOUT )); do
-            # libvirt users need to find the IP address dynamically
-            if [[ -z "$RDP_IP" ]]; then
-                RDP_IP=$(waFindVMIP)
-            fi
             # Check if VM is running
             if (virsh list --state-running --name | grep -Fxq -- "$VM_NAME"); then
-                # Try to connect to RDP port to verify it's ready
-                if timeout 1 bash -c ">/dev/tcp/$RDP_IP/$RDP_PORT" 2>/dev/null; then
+                # libvirt: try each neighbour IP until RDP answers (ip neigh may list several)
+                if [[ -z "$RDP_IP" ]]; then
+                    if waSelectReachableVMIP 1; then
+                        dprint "VM IS READY"
+                        notify-send --expire-time=4000 --icon="dialog-info" --app-name="WinApps" --urgency="low" "WinApps" "Windows is ready."
+                        if [ "$NEEDED_BOOT" = "true" ]; then
+                            sleep 10
+                        fi
+                        break
+                    fi
+                elif timeout 1 bash -c ">/dev/tcp/$RDP_IP/$RDP_PORT" 2>/dev/null; then
                     dprint "VM IS READY"
                     notify-send --expire-time=4000 --icon="dialog-info" --app-name="WinApps" --app-icon="$APP_ICON_PATH" --urgency="low" "WinApps" "Windows is ready."
                     # Add a delay after Windows is ready
@@ -744,6 +749,7 @@ function waCheckPortOpen() {
     local TIME_ELAPSED=0
     local TIME_LIMIT=30
     local TIME_INTERVAL=5
+    local SELECT_STATUS=0
 
     # Obtain Windows VM IP Address ('libvirt' ONLY)
     # Note: 'RDP_IP' should not be empty if 'WAFLAVOR' is 'docker', since it is set to localhost before this function is called.
@@ -753,16 +759,24 @@ function waCheckPortOpen() {
             if [ "$TIME_ELAPSED" -eq "$TIME_INTERVAL" ]; then
                 notify-send --expire-time=4000 --icon="dialog-info" --app-name="WinApps" --app-icon="$APP_ICON_PATH" --urgency="low" "WinApps" "Requesting Windows IP address..."
             fi
-            RDP_IP=$(waFindVMIP)
-            [ -n "$RDP_IP" ] && break
+            # Try every neighbour IP for this MAC until RDP answers (see #432).
+            waSelectReachableVMIP 10
+            SELECT_STATUS=$?
+            if [ "$SELECT_STATUS" -eq 0 ]; then
+                return 0
+            fi
+            # 1 = no IP in neighbour table yet; 2 = IPs present but RDP still closed (keep waiting during boot).
             sleep $TIME_INTERVAL
             TIME_ELAPSED=$((TIME_ELAPSED + TIME_INTERVAL))
         done
 
-        [ -z "$RDP_IP" ] && waThrowExit "$EC_NO_IP"
+        if [ "$SELECT_STATUS" -eq 2 ] || [ -n "$RDP_IP" ]; then
+            waThrowExit "$EC_BAD_PORT"
+        fi
+        waThrowExit "$EC_NO_IP"
     fi
 
-    # Check for an open RDP port.
+    # Check for an open RDP port (configured / non-libvirt path).
     timeout 10 nc -z "$RDP_IP" "$RDP_PORT" &>/dev/null || waThrowExit "$EC_BAD_PORT"
 }
 
@@ -1006,13 +1020,53 @@ function waTimeSync() {
     } > "$SLEEP_DETECT_PATH"
 }
 
-function waFindVMIP() {
+# Name: 'waFindVMIPs'
+# Role: List unique IPv4 addresses associated with the Windows VM MAC in the neighbour table.
+# Note: After a VM reset, 'ip neigh' can return more than one IP for the same MAC (#432).
+function waFindVMIPs() {
     local VM_MAC=""
 
     VM_MAC=$(virsh domiflist "$VM_NAME" | grep -oE "([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})") # VM MAC address.
+    [ -z "$VM_MAC" ] && return 1
 
-    # VM IP address
-    ip neigh show | grep -F -- "$VM_MAC" | grep -oE "([0-9]{1,3}\.){3}[0-9]{1,3}"
+    ip neigh show | grep -F -- "$VM_MAC" | grep -oE "([0-9]{1,3}\.){3}[0-9]{1,3}" | awk '!seen[$0]++'
+}
+
+# Name: 'waSelectReachableVMIP'
+# Role: Try each VM neighbour IP until RDP_PORT accepts a connection; set RDP_IP on success.
+# Args: $1 - timeout seconds for each nc probe (default: 10)
+# Returns: 0 if a reachable IP was selected, 1 if no IPs found, 2 if all candidates failed.
+function waSelectReachableVMIP() {
+    local port_timeout="${1:-10}"
+    local candidate=""
+    local ips=""
+    local tried=0
+    local last_ip=""
+
+    ips=$(waFindVMIPs)
+    if [ -z "$ips" ]; then
+        return 1
+    fi
+
+    while IFS= read -r candidate; do
+        [ -z "$candidate" ] && continue
+        tried=$((tried + 1))
+        last_ip="$candidate"
+        if timeout "$port_timeout" nc -z "$candidate" "$RDP_PORT" &>/dev/null; then
+            RDP_IP="$candidate"
+            if [ "$tried" -gt 1 ]; then
+                dprint "SELECTED REACHABLE VM IP '${RDP_IP}' AFTER TRYING ${tried} ADDRESS(ES)."
+            else
+                dprint "SELECTED REACHABLE VM IP '${RDP_IP}'."
+            fi
+            return 0
+        fi
+        dprint "WARNING: RDP PORT '${RDP_PORT}' CLOSED ON IP '${candidate}'. TRYING NEXT ADDRESS IF ANY."
+    done <<< "$ips"
+
+    # Preserve last candidate so BAD_PORT notifications can include the IP.
+    RDP_IP="$last_ip"
+    return 2
 }
 
 ### MAIN LOGIC ###
