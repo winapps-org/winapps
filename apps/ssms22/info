@@ -1,0 +1,14 @@
+# GNOME shortcut name
+NAME="SQL Server Management Studio 22"
+
+# Used for descriptions and window class
+FULL_NAME="SQL Server Management Studio 22"
+
+# The executable inside windows
+WIN_EXECUTABLE="C:\Program Files\Microsoft SQL Server Management Studio 22\Release\Common7\IDE\SSMS.exe"
+
+# GNOME categories
+CATEGORIES="Development"
+
+# GNOME mimetypes
+MIME_TYPES="text/sql"
