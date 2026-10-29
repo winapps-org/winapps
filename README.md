@@ -440,16 +440,19 @@ VM_NAME="RDPWindows"
 # - 'manual'
 WAFLAVOR="docker"
 
-# [DISPLAY SCALING FACTOR]
+# [DISPLAY SCALING FACTORS]
 # NOTES:
-# - If an unsupported value is specified, a warning will be displayed.
-# - If an unsupported value is specified, WinApps will use the closest supported value.
-# DEFAULT VALUE: '100'
+# - RDP_SCALE sets RemoteApp scaling. RDP_DESKTOP_SCALE sets scaling for 'winapps windows'.
+# - Values outside 100-500 are set to the nearest limit. Non-integer scales stop the launch.
+# - WinApps keeps the exact scale and rounds the device scale, used by MS Store (UWP) apps, to the nearest 100, 140 or 180.
+# DEFAULT VALUES:
+# - RDP_SCALE: '100'
+# - RDP_DESKTOP_SCALE: 'inherit' (use RDP_SCALE)
 # VALID VALUES:
-# - '100'
-# - '140'
-# - '180'
+# - Integers from '100' to '500'
+# - 'inherit' for RDP_DESKTOP_SCALE
 RDP_SCALE="100"
+RDP_DESKTOP_SCALE="inherit"
 
 # [MOUNTING REMOVABLE PATHS FOR FILES]
 # NOTES:
@@ -571,7 +574,7 @@ HIDEF="on"
 - If using a pre-existing Windows RDP server on your LAN, you must use `RDP_IP` to specify the location of the Windows server. You may also wish to configure a static IP address for this server.
 - If running a Windows VM using `libvirt` with NAT enabled, leave `RDP_IP` commented out and WinApps will auto-detect the local IP address for the VM.
 - For domain users, you can uncomment and change `RDP_DOMAIN`.
-- On high-resolution (UHD) displays, you can set `RDP_SCALE` to the scale you would like to use (100, 140 or 180).
+- On high-resolution (UHD) displays, set `RDP_SCALE` to a percentage from 100 to 500. Use `RDP_DESKTOP_SCALE` to set a different scale for `winapps windows`.
 - To add additional flags to the FreeRDP call (e.g. `/prevent-session-lock 120`), uncomment and use the `RDP_FLAGS` configuration option.
 - For multi-monitor setups, you can try adding `/multimon` to `RDP_FLAGS`. A FreeRDP bug may result in a black screen however, in which case you should revert this change.
 - To enable non-English input and seamless language switching, you can try adding `/kbd:unicode` to `RDP_FLAGS`. This ensures client inputs are sent as Unicode sequences.

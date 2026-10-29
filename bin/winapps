@@ -17,6 +17,7 @@ readonly EC_NO_IP=12
 readonly EC_BAD_PORT=13
 readonly EC_UNSUPPORTED_APP=14
 readonly EC_INVALID_FLAVOR=15
+readonly EC_INVALID_SCALE=16
 
 # PATHS
 readonly APPDATA_PATH="${HOME}/.local/share/winapps"
@@ -51,6 +52,10 @@ RDP_FLAGS=""
 FREERDP_COMMAND=""
 REMOVABLE_MEDIA=""
 RDP_SCALE=100
+RDP_DEVICE_SCALE=100
+# Scale for 'winapps windows'; 'inherit' uses RDP_SCALE.
+RDP_DESKTOP_SCALE="inherit"
+RDP_DESKTOP_DEVICE_SCALE=100
 AUTOPAUSE="off"
 AUTOPAUSE_TIME="300"
 DEBUG="true"
@@ -215,6 +220,8 @@ function waEarlyDispatch() {
 function waThrowExit() {
     # Declare variables.
     local ERR_CODE="$1"
+    local INVALID_SCALE_KEY="${2:-RDP_SCALE}"
+    local INVALID_SCALE_VALUE="${3-$RDP_SCALE}"
 
     # Throw error.
     case "$ERR_CODE" in
@@ -282,6 +289,11 @@ Please run:
         dprint "ERROR: INVALID FLAVOR. EXITING."
         notify-send --expire-time=8000 --icon="dialog-error" --app-name="WinApps" --app-icon="$APP_ICON_PATH" --urgency="low" "WinApps" "Invalid WinApps flavor.\nPlease ensure 'docker', 'podman' or 'libvirt' are specified as the flavor in the WinApps configuration file."
         ;;
+    "$EC_INVALID_SCALE")
+        dprint "ERROR: ${INVALID_SCALE_KEY} MUST BE AN INTEGER. EXITING."
+        printf "ERROR: %s must be an integer; received '%s'.\n" "$INVALID_SCALE_KEY" "$INVALID_SCALE_VALUE" >&2
+        notify-send --expire-time=8000 --icon="dialog-error" --app-name="WinApps" --app-icon="$APP_ICON_PATH" --urgency="low" "WinApps" "Invalid ${INVALID_SCALE_KEY} value '${INVALID_SCALE_VALUE}'.\nPlease specify an integer value."
+        ;;
     esac
 
     # Terminate the script.
@@ -329,37 +341,61 @@ function waHelp() {
 }
 
 # Name: 'waFixScale'
-# Role: Since FreeRDP only supports '/scale' values of 100, 140 or 180, find the closest supported argument to the user's configuration.
+# Role: Validate the scales and choose the nearest device scales.
 function waFixScale() {
-    # Define variables.
-    local OLD_SCALE=100
-    local VALID_SCALE_1=100
-    local VALID_SCALE_2=140
-    local VALID_SCALE_3=180
+    local SCALE_KEY=""
+    local DEVICE_SCALE_KEY=""
+    local RAW_SCALE=""
+    local SCALE_DIGITS=""
+    local SCALE_VALUE=0
+    local DEVICE_SCALE=0
 
-    # Check for an unsupported value.
-    if [ "$RDP_SCALE" != "$VALID_SCALE_1" ] && [ "$RDP_SCALE" != "$VALID_SCALE_2" ] && [ "$RDP_SCALE" != "$VALID_SCALE_3" ]; then
-        # Save the unsupported scale.
-        OLD_SCALE="$RDP_SCALE"
-
-        # Calculate the absolute differences.
-        local DIFF_1=$(( RDP_SCALE > VALID_SCALE_1 ? RDP_SCALE - VALID_SCALE_1 : VALID_SCALE_1 - RDP_SCALE ))
-        local DIFF_2=$(( RDP_SCALE > VALID_SCALE_2 ? RDP_SCALE - VALID_SCALE_2 : VALID_SCALE_2 - RDP_SCALE ))
-        local DIFF_3=$(( RDP_SCALE > VALID_SCALE_3 ? RDP_SCALE - VALID_SCALE_3 : VALID_SCALE_3 - RDP_SCALE ))
-
-        # Set the final scale to the valid scale value with the smallest absolute difference.
-        if (( DIFF_1 <= DIFF_2 && DIFF_1 <= DIFF_3 )); then
-            RDP_SCALE="$VALID_SCALE_1"
-        elif (( DIFF_2 <= DIFF_1 && DIFF_2 <= DIFF_3 )); then
-            RDP_SCALE="$VALID_SCALE_2"
+    for SCALE_KEY in RDP_SCALE RDP_DESKTOP_SCALE; do
+        RAW_SCALE="${!SCALE_KEY}"
+        if [ "$SCALE_KEY" = "RDP_SCALE" ]; then
+            DEVICE_SCALE_KEY="RDP_DEVICE_SCALE"
         else
-            RDP_SCALE="$VALID_SCALE_3"
+            DEVICE_SCALE_KEY="RDP_DESKTOP_DEVICE_SCALE"
+            if [ "$RAW_SCALE" = "inherit" ]; then
+                RAW_SCALE="$RDP_SCALE"
+            fi
         fi
 
-        # Print feedback.
-        dprint "WARNING: Unsupported RDP_SCALE value '${OLD_SCALE}'. Defaulting to '${RDP_SCALE}'."
-        notify-send --expire-time=4000 --icon="dialog-warning" --app-name="WinApps" --app-icon="$APP_ICON_PATH" --urgency="low" "WinApps" "Unsupported RDP_SCALE value '${OLD_SCALE}'.\nDefaulting to '${RDP_SCALE}'."
-    fi
+        if [[ ! "$RAW_SCALE" =~ ^[+-]?[0-9]+$ ]]; then
+            waThrowExit "$EC_INVALID_SCALE" "$SCALE_KEY" "$RAW_SCALE"
+        fi
+
+        SCALE_DIGITS="${RAW_SCALE#[+-]}"
+        while [[ "$SCALE_DIGITS" == 0* ]] && [ "$SCALE_DIGITS" != "0" ]; do
+            SCALE_DIGITS="${SCALE_DIGITS#0}"
+        done
+
+        # Bound the value before arithmetic to avoid integer overflow.
+        if [[ "$RAW_SCALE" == -* ]]; then
+            SCALE_VALUE=0
+        elif (( ${#SCALE_DIGITS} > 3 )); then
+            SCALE_VALUE=501
+        else
+            SCALE_VALUE=$(( 10#$SCALE_DIGITS ))
+        fi
+
+        if (( SCALE_VALUE < 100 )); then
+            SCALE_VALUE=100
+            dprint "WARNING: ${SCALE_KEY} value '${RAW_SCALE}' is below 100. Clamping desktop scale to '${SCALE_VALUE}'."
+        elif (( SCALE_VALUE > 500 )); then
+            SCALE_VALUE=500
+            dprint "WARNING: ${SCALE_KEY} value '${RAW_SCALE}' is above 500. Clamping desktop scale to '${SCALE_VALUE}'."
+        fi
+
+        DEVICE_SCALE=$(( SCALE_VALUE <= 120 ? 100 : SCALE_VALUE <= 160 ? 140 : 180 ))
+        printf -v "$SCALE_KEY" '%s' "$SCALE_VALUE"
+        printf -v "$DEVICE_SCALE_KEY" '%s' "$DEVICE_SCALE"
+        if [ "$DEVICE_SCALE" != "$SCALE_VALUE" ]; then
+            dprint "NOTICE: Approximating the device scale for ${SCALE_KEY} from '${SCALE_VALUE}' to '${DEVICE_SCALE}'; desktop scale remains '${SCALE_VALUE}'."
+        fi
+    done
+
+    return 0
 }
 
 # Name: 'waLoadConfig'
@@ -375,7 +411,7 @@ function waLoadConfig() {
 
     RDP_PORT="${RDP_PORT:-3389}"
 
-    # Update $RDP_SCALE.
+    # Resolve RemoteApp and full-desktop scale settings.
     waFixScale
     # Update when $REMOVABLE_MEDIA is null
     waFixRemovableMedia
@@ -826,7 +862,8 @@ function waRunCommand() {
             /d:"$RDP_DOMAIN" \
             /u:"$RDP_USER" \
             ${RDP_PASSWORD_ARG:+"$RDP_PASSWORD_ARG"} \
-            /scale:"$RDP_SCALE" \
+            /scale-desktop:"$RDP_DESKTOP_SCALE" \
+            /scale-device:"$RDP_DESKTOP_DEVICE_SCALE" \
             +auto-reconnect \
             +dynamic-resolution \
             /wm-class:"Microsoft Windows" \
@@ -844,7 +881,8 @@ function waRunCommand() {
             /d:"$RDP_DOMAIN" \
             /u:"$RDP_USER" \
             ${RDP_PASSWORD_ARG:+"$RDP_PASSWORD_ARG"} \
-            /scale:"$RDP_SCALE" \
+            /scale-desktop:"$RDP_SCALE" \
+            /scale-device:"$RDP_DEVICE_SCALE" \
             +auto-reconnect \
             /app:program:"$2",hidef:"$HIDEF" \
             /v:"$RDP_IP":"$RDP_PORT" &>/dev/null &
@@ -878,7 +916,8 @@ function waRunCommand() {
                 /d:"$RDP_DOMAIN" \
                 /u:"$RDP_USER" \
                 ${RDP_PASSWORD_ARG:+"$RDP_PASSWORD_ARG"} \
-                /scale:"$RDP_SCALE" \
+                /scale-desktop:"$RDP_SCALE" \
+                /scale-device:"$RDP_DEVICE_SCALE" \
                 +auto-reconnect \
                 /wm-class:"$FULL_NAME" \
                 /app:program:"$WIN_EXECUTABLE",hidef:"$HIDEF",icon:"$ICON",name:"$FULL_NAME" \
@@ -901,7 +940,8 @@ function waRunCommand() {
                 /d:"$RDP_DOMAIN" \
                 /u:"$RDP_USER" \
                 ${RDP_PASSWORD_ARG:+"$RDP_PASSWORD_ARG"} \
-                /scale:"$RDP_SCALE" \
+                /scale-desktop:"$RDP_SCALE" \
+                /scale-device:"$RDP_DEVICE_SCALE" \
                 +auto-reconnect \
                 /drive:media,"$REMOVABLE_MEDIA" \
                 /wm-class:"$FULL_NAME" \

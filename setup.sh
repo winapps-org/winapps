@@ -32,6 +32,7 @@ readonly EC_BAD_PORT="13"        # Windows is unreachable via RDP_PORT.
 readonly EC_RDP_FAIL="14"        # FreeRDP failed to establish a connection with Windows.
 readonly EC_APPQUERY_FAIL="15"   # Failed to query Windows for installed applications.
 readonly EC_INVALID_FLAVOR="16"  # Backend specified is not 'libvirt', 'docker' or 'podman'.
+readonly EC_INVALID_SCALE="17"   # A display scale setting is invalid.
 
 # PATHS
 # 'BIN'
@@ -93,6 +94,10 @@ RDP_IP=""            # Imported variable.
 VM_NAME="RDPWindows" # Name of the Windows VM (FOR 'libvirt' ONLY).
 WAFLAVOR="docker"    # Imported variable.
 RDP_SCALE=100        # Imported variable.
+RDP_DEVICE_SCALE=100 # Derived from RDP_SCALE.
+# Scale for 'winapps windows'; 'inherit' uses RDP_SCALE.
+RDP_DESKTOP_SCALE="inherit"
+RDP_DESKTOP_DEVICE_SCALE=100
 RDP_FLAGS=""         # Imported variable.
 DEBUG="true"         # Imported variable.
 FREERDP_COMMAND=""   # Imported variable.
@@ -501,36 +506,62 @@ function waCheckExistingInstall() {
 
 
 # Name: 'waFixScale'
-# Role: Since FreeRDP only supports '/scale' values of 100, 140 or 180, find the closest supported argument to the user's configuration.
+# Role: Validate the scales and choose the nearest device scales.
 function waFixScale() {
-    # Define variables.
-    local OLD_SCALE=100
-    local VALID_SCALE_1=100
-    local VALID_SCALE_2=140
-    local VALID_SCALE_3=180
+    local SCALE_KEY=""
+    local DEVICE_SCALE_KEY=""
+    local RAW_SCALE=""
+    local SCALE_DIGITS=""
+    local SCALE_VALUE=0
+    local DEVICE_SCALE=0
 
-    # Check for an unsupported value.
-    if [ "$RDP_SCALE" != "$VALID_SCALE_1" ] && [ "$RDP_SCALE" != "$VALID_SCALE_2" ] && [ "$RDP_SCALE" != "$VALID_SCALE_3" ]; then
-        # Save the unsupported scale.
-        OLD_SCALE="$RDP_SCALE"
-
-        # Calculate the absolute differences.
-        local DIFF_1=$(( RDP_SCALE > VALID_SCALE_1 ? RDP_SCALE - VALID_SCALE_1 : VALID_SCALE_1 - RDP_SCALE ))
-        local DIFF_2=$(( RDP_SCALE > VALID_SCALE_2 ? RDP_SCALE - VALID_SCALE_2 : VALID_SCALE_2 - RDP_SCALE ))
-        local DIFF_3=$(( RDP_SCALE > VALID_SCALE_3 ? RDP_SCALE - VALID_SCALE_3 : VALID_SCALE_3 - RDP_SCALE ))
-
-        # Set the final scale to the valid scale value with the smallest absolute difference.
-        if (( DIFF_1 <= DIFF_2 && DIFF_1 <= DIFF_3 )); then
-            RDP_SCALE="$VALID_SCALE_1"
-        elif (( DIFF_2 <= DIFF_1 && DIFF_2 <= DIFF_3 )); then
-            RDP_SCALE="$VALID_SCALE_2"
+    for SCALE_KEY in RDP_SCALE RDP_DESKTOP_SCALE; do
+        RAW_SCALE="${!SCALE_KEY}"
+        if [ "$SCALE_KEY" = "RDP_SCALE" ]; then
+            DEVICE_SCALE_KEY="RDP_DEVICE_SCALE"
         else
-            RDP_SCALE="$VALID_SCALE_3"
+            DEVICE_SCALE_KEY="RDP_DESKTOP_DEVICE_SCALE"
+            if [ "$RAW_SCALE" = "inherit" ]; then
+                RAW_SCALE="$RDP_SCALE"
+            fi
         fi
 
-        # Print feedback.
-        echo -e "${WARNING_TEXT}[WARNING]${CLEAR_TEXT} Unsupported RDP_SCALE value '${OLD_SCALE}' detected. Defaulting to '${RDP_SCALE}'."
-    fi
+        if [[ ! "$RAW_SCALE" =~ ^[+-]?[0-9]+$ ]]; then
+            echo -e "${ERROR_TEXT}ERROR:${CLEAR_TEXT} ${BOLD_TEXT}${SCALE_KEY} must be an integer; received '${RAW_SCALE}'.${CLEAR_TEXT}"
+            return "$EC_INVALID_SCALE"
+        fi
+
+        SCALE_DIGITS="${RAW_SCALE#[+-]}"
+        while [[ "$SCALE_DIGITS" == 0* ]] && [ "$SCALE_DIGITS" != "0" ]; do
+            SCALE_DIGITS="${SCALE_DIGITS#0}"
+        done
+
+        # Bound the value before arithmetic to avoid integer overflow.
+        if [[ "$RAW_SCALE" == -* ]]; then
+            SCALE_VALUE=0
+        elif (( ${#SCALE_DIGITS} > 3 )); then
+            SCALE_VALUE=501
+        else
+            SCALE_VALUE=$(( 10#$SCALE_DIGITS ))
+        fi
+
+        if (( SCALE_VALUE < 100 )); then
+            SCALE_VALUE=100
+            echo -e "${WARNING_TEXT}[WARNING]${CLEAR_TEXT} ${SCALE_KEY} value '${RAW_SCALE}' is below 100. Clamping desktop scale to '${SCALE_VALUE}'.${CLEAR_TEXT}"
+        elif (( SCALE_VALUE > 500 )); then
+            SCALE_VALUE=500
+            echo -e "${WARNING_TEXT}[WARNING]${CLEAR_TEXT} ${SCALE_KEY} value '${RAW_SCALE}' is above 500. Clamping desktop scale to '${SCALE_VALUE}'.${CLEAR_TEXT}"
+        fi
+
+        DEVICE_SCALE=$(( SCALE_VALUE <= 120 ? 100 : SCALE_VALUE <= 160 ? 140 : 180 ))
+        printf -v "$SCALE_KEY" '%s' "$SCALE_VALUE"
+        printf -v "$DEVICE_SCALE_KEY" '%s' "$DEVICE_SCALE"
+        if [ "$DEVICE_SCALE" != "$SCALE_VALUE" ]; then
+            echo -e "${INFO_TEXT}Approximating the device scale for ${SCALE_KEY} from '${SCALE_VALUE}' to '${DEVICE_SCALE}'; desktop scale remains '${SCALE_VALUE}'.${CLEAR_TEXT}"
+        fi
+    done
+
+    return 0
 }
 
 # Name: 'waLoadConfig'
@@ -1213,7 +1244,8 @@ function waCheckRDPAccess() {
         /d:"$RDP_DOMAIN" \
         /u:"$RDP_USER" \
         ${RDP_PASSWORD_ARG:+"$RDP_PASSWORD_ARG"} \
-        /scale:"$RDP_SCALE" \
+        /scale-desktop:"$RDP_SCALE" \
+        /scale-device:"$RDP_DEVICE_SCALE" \
         +auto-reconnect \
         +home-drive \
         /app:program:"C:\Windows\System32\cmd.exe",cmd:"/C type NUL > $TEST_PATH_WIN && tsdiscon" \
@@ -1346,7 +1378,8 @@ function waFindInstalled() {
         /d:"$RDP_DOMAIN" \
         /u:"$RDP_USER" \
         ${RDP_PASSWORD_ARG:+"$RDP_PASSWORD_ARG"} \
-        /scale:"$RDP_SCALE" \
+        /scale-desktop:"$RDP_SCALE" \
+        /scale-device:"$RDP_DEVICE_SCALE" \
         +auto-reconnect \
         +home-drive \
         /app:program:"C:\Windows\System32\cmd.exe",cmd:"/C $BATCH_SCRIPT_PATH_WIN" \
@@ -1780,8 +1813,8 @@ function waInstall() {
     # Check for missing dependencies.
     waCheckInstallDependencies
 
-    # Update $RDP_SCALE.
-    waFixScale
+    # Resolve RemoteApp and full-desktop scale settings.
+    waFixScale || return "$?"
 
     # Append additional FreeRDP flags if required.
     if [[ -n $RDP_FLAGS ]]; then
@@ -1977,8 +2010,8 @@ function waAddApps() {
     # Check for missing dependencies.
     waCheckInstallDependencies
 
-    # Update $RDP_SCALE.
-    waFixScale
+    # Resolve RemoteApp and full-desktop scale settings.
+    waFixScale || return "$?"
 
     # Append additional FreeRDP flags if required.
     if [[ -n $RDP_FLAGS ]]; then
