@@ -1,0 +1,14 @@
+# GNOME shortcut name
+NAME="SQL Server Profiler 22"
+
+# Used for descriptions and window class
+FULL_NAME="SQL Server Profiler 22"
+
+# The executable inside windows
+WIN_EXECUTABLE="C:\Program Files\Microsoft SQL Server Management Studio 22\Release\Common7\PROFILER.exe"
+
+# GNOME categories
+CATEGORIES="Development"
+
+# GNOME mimetypes
+MIME_TYPES=""
