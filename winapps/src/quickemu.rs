@@ -1,4 +1,4 @@
-use crate::{get_data_dir, save_config, unwrap_or_exit, Config};
+use crate::{Config, get_data_dir, save_config, unwrap_or_exit};
 use std::fs;
 use std::process::Command;
 use tracing::info;
