@@ -62,6 +62,7 @@ DEBUG="true"
 BOOT_TIMEOUT=120
 PORT_TIMEOUT=5
 HIDEF="on"
+EXIT_WITH_APP="on"
 RDP_FLATPAK=0
 RDP_FLAGS_WINDOWS=""
 RDP_FLAGS_NON_WINDOWS=""
@@ -842,12 +843,55 @@ function waSelectPodmanRoute() {
     fi
 }
 
+# Name: 'waWaitForAppWindow'
+# Role: Wait for FreeRDP to exit, terminating it once the application's window is gone.
+# Notes:
+# - RemoteApp sessions are not terminated when the launched application exits. Windows keeps
+#   the session (and helper windows owned by e.g. the input method or the shell) alive, so the
+#   FreeRDP process, and with it every remaining RAIL window, stays on screen indefinitely.
+# - Such helper windows are override-redirect: they cannot be closed by the window manager.
+# - Once the application's own (managed) window has been gone for a grace period, the FreeRDP
+#   process is terminated, which removes the helper windows as well.
+function waWaitForAppWindow() {
+    # Declare variables.
+    local PID="$1"
+    local WM_CLASS="$2"
+    local SEEN=0
+    local MISSING=0
+    local GRACE_TICKS=5 # 5 x 2 seconds without the application window before exiting.
+
+    # Without 'wmctrl' the application window cannot be observed. Wait for FreeRDP instead of
+    # risking a termination based on a failed command.
+    if ! command -v wmctrl &>/dev/null; then
+        wait "$PID" 2>/dev/null
+        return
+    fi
+
+    while kill -0 "$PID" 2>/dev/null; do
+        if wmctrl -lx 2>/dev/null | grep -qF "RAIL.${WM_CLASS}"; then
+            SEEN=1
+            MISSING=0
+        elif [ "$SEEN" -eq 1 ]; then
+            MISSING=$((MISSING + 1))
+            if [ "$MISSING" -ge "$GRACE_TICKS" ]; then
+                dprint "APPLICATION WINDOW CLOSED. TERMINATING FREERDP (PID ${PID})."
+                kill "$PID" 2>/dev/null
+                break
+            fi
+        fi
+        sleep 2
+    done
+
+    wait "$PID" 2>/dev/null
+}
+
 # Name: 'waRunCommand'
 # Role: Run the requested WinApps command.
 function waRunCommand() {
     # Declare variables.
     local ICON=""
     local FILE_PATH=""
+    local WATCH_WM_CLASS="" # Set when the session is bound to one application's window.
 
     # Run option.
     if [ "$1" = "windows" ]; then
@@ -925,6 +969,7 @@ function waRunCommand() {
 
             # Capture the process ID.
             FREERDP_PID=$!
+            WATCH_WM_CLASS="$FULL_NAME"
         else
             # Convert path from UNIX to Windows style.
             FILE_PATH=$(echo "$2" | sed \
@@ -950,6 +995,7 @@ function waRunCommand() {
 
             # Capture the process ID.
             FREERDP_PID=$!
+            WATCH_WM_CLASS="$FULL_NAME"
         fi
     fi
 
@@ -959,7 +1005,11 @@ function waRunCommand() {
             touch -- "${APPDATA_PATH}/FreeRDP_Process_${FREERDP_PID}.cproc"
 
             # Wait for the process to terminate.
-            wait "$FREERDP_PID"
+            if [ "$EXIT_WITH_APP" = "on" ] && [ -n "$WATCH_WM_CLASS" ]; then
+                waWaitForAppWindow "$FREERDP_PID" "$WATCH_WM_CLASS"
+            else
+                wait "$FREERDP_PID"
+            fi
 
             # Remove the file with the process ID.
             rm -- "${APPDATA_PATH}/FreeRDP_Process_${FREERDP_PID}.cproc" &>/dev/null
