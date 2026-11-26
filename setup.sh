@@ -594,6 +594,9 @@ function waLoadConfig() {
         source "$CONFIG_PATH"
 
         RDP_PORT="${RDP_PORT:-3389}"
+        # An empty domain makes FreeRDP try Kerberos against the system default realm,
+        # which can stall the login for minutes. '.' means the local Windows account.
+        RDP_DOMAIN="${RDP_DOMAIN:-.}"
 
         # Send password on the command line if a command to retrieve the password from is not given
         # Otherwise, set FREERDP_ASKPASS which freerdp will read the stdout of to use as the password

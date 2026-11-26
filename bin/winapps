@@ -410,6 +410,9 @@ function waLoadConfig() {
     fi
 
     RDP_PORT="${RDP_PORT:-3389}"
+    # An empty domain makes FreeRDP try Kerberos against the system default realm,
+    # which can stall the login for minutes. '.' means the local Windows account.
+    RDP_DOMAIN="${RDP_DOMAIN:-.}"
 
     # Resolve RemoteApp and full-desktop scale settings.
     waFixScale
