@@ -555,6 +555,16 @@ BOOT_TIMEOUT="120"
 # - Setting this option to 'off' may resolve window misalignment issues related to maximized windows.
 # DEFAULT VALUE: 'on'
 HIDEF="on"
+
+# EXIT WITH APPLICATION
+# - When enabled, the FreeRDP session is terminated once the launched application's window has
+#   been closed for a few seconds.
+# - Windows keeps a RemoteApp session alive after the application exits, and override-redirect
+#   helper windows (such as the floating toolbar of a Windows input method) stay on the desktop
+#   with no window decorations, so they cannot be closed by the window manager.
+# - Disable this option if the application is expected to keep running without any window.
+# DEFAULT VALUE: 'on'
+EXIT_WITH_APP="on"
 ```
 
 > [!IMPORTANT]
